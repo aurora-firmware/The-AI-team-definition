@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "el-equipo-ai"
+version = "0.1.0"
+description = "Thin glue layer orchestrating Superpowers + Vibe Kanban with multi-provider AI routing"
+requires-python = ">=3.11"
+dependencies = [
+    "openai>=1.0",
+    "pyyaml>=6.0",
+    "requests>=2.28",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-mock>=3.0",
+]
+
+[project.scripts]
+el-equipo-ai = "el_equipo_ai.main:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["el_equipo_ai*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

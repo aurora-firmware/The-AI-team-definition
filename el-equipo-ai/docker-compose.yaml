@@ -1,0 +1,50 @@
+# El-equipo-AI — Docker Compose
+# Run: docker compose up
+# The container includes Vibe Kanban (port 3000), El-equipo-AI glue, and Claude Code.
+
+services:
+  el-equipo-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: el-equipo-ai:latest
+    container_name: el-equipo-ai
+
+    # Mount your project repo(s) here.
+    # The agents will work inside /workspace.
+    volumes:
+      - ./projects:/workspace
+      - el-equipo-ai-data:/data
+
+    # API keys — set these in a .env file (never commit the .env file!)
+    environment:
+      # Model providers
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+
+      # Notification webhooks (optional)
+      - TELEGRAM_WEBHOOK_URL=${TELEGRAM_WEBHOOK_URL:-}
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL:-}
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
+
+      # El-equipo-AI config
+      - EL_EQUIPO_CONFIG=${EL_EQUIPO_CONFIG:-/app/el-equipo-ai.yaml}
+
+      # Data dir (logs, quota state JSON)
+      - EL_EQUIPO_DATA_DIR=/data
+
+    # Vibe Kanban web UI
+    ports:
+      - "3000:3000"
+
+    # Keep container running so you can exec into it
+    stdin_open: true
+    tty: true
+
+    # Restart policy for long-running autonomous sessions
+    restart: unless-stopped
+
+volumes:
+  el-equipo-ai-data:
+    driver: local

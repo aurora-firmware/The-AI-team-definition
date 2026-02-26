@@ -1,0 +1,137 @@
+# el-equipo-ai.yaml
+# Full configuration reference for El-equipo-AI.
+# Copy this file, fill in your API key env var names, and point --config at it.
+
+# ---------------------------------------------------------------------------
+# Model Providers
+#
+# Each entry declares a provider accessible via the OpenAI-compatible API.
+# api_key_env: name of the environment variable that holds the API key.
+#              Set to null for providers that don't require a key (e.g. local Ollama).
+# ---------------------------------------------------------------------------
+providers:
+  - name: nvidia
+    base_url: "https://integrate.api.nvidia.com/v1"
+    api_key_env: "NVIDIA_API_KEY"
+
+  - name: anthropic
+    base_url: "https://api.anthropic.com/v1"
+    api_key_env: "ANTHROPIC_API_KEY"
+
+  - name: openai
+    base_url: "https://api.openai.com/v1"
+    api_key_env: "OPENAI_API_KEY"
+
+  - name: local
+    base_url: "http://localhost:11434/v1"
+    api_key_env: null   # Ollama doesn't need a key
+
+
+# ---------------------------------------------------------------------------
+# Roles
+#
+# Each role has:
+#   temperature: controls creativity vs determinism
+#   json_mode:   (optional) request JSON output if the model supports it
+#   models:      ordered fallback list — highest priority first
+#                provider must match a name from the providers section above
+# ---------------------------------------------------------------------------
+roles:
+  planner_creative:
+    temperature: 0.7   # brainstorming — explore ideas
+    models:
+      - { provider: nvidia, model: "z-ai/glm5" }
+      - { provider: anthropic, model: "claude-sonnet-4-6" }
+
+  planner_structured:
+    temperature: 0.2   # JSON manifest — be precise
+    json_mode: true    # request JSON output if supported
+    models:
+      - { provider: nvidia, model: "z-ai/glm5" }
+      - { provider: anthropic, model: "claude-sonnet-4-6" }
+
+  executor:
+    temperature: 0.3   # code writing — deterministic
+    models:
+      - { provider: anthropic, model: "claude-sonnet-4-6" }
+      - { provider: nvidia, model: "minimaxai/minimax-m2.1" }
+
+  tester:
+    temperature: 0.3   # test writing — deterministic
+    models:
+      - { provider: openai, model: "gpt-4o" }
+      - { provider: anthropic, model: "claude-sonnet-4-6" }
+
+  reviewer:
+    temperature: 0.4   # code review — think critically
+    models:
+      - { provider: openai, model: "gpt-4o" }
+      - { provider: nvidia, model: "z-ai/glm5" }
+
+
+# ---------------------------------------------------------------------------
+# Stall Detection
+#
+# repeat_threshold:        how many identical tool calls constitute a stall
+# grace_calls_after_signal: how many more API calls the agent gets after stall signal
+# hard_timeout_minutes:    absolute wall-clock limit per task
+# grace_timeout_minutes:   extra time given after hard timeout to summarize and exit
+# ---------------------------------------------------------------------------
+stall_detection:
+  repeat_threshold: 3
+  grace_calls_after_signal: 5
+  hard_timeout_minutes: 30
+  grace_timeout_minutes: 2
+
+
+# ---------------------------------------------------------------------------
+# Notifications
+#
+# action_required: channels that receive webhooks when human input is needed.
+#   type:    currently only "webhook" is supported
+#   name:    human-readable label (for logs and messages)
+#   url_env: env var holding the full webhook URL
+#            (e.g. Telegram bot webhook, Discord incoming webhook, Slack webhook)
+# ---------------------------------------------------------------------------
+notifications:
+  action_required:
+    - type: webhook
+      name: "my-telegram"
+      url_env: "TELEGRAM_WEBHOOK_URL"
+    - type: webhook
+      name: "collaborator-discord"
+      url_env: "DISCORD_WEBHOOK_URL"
+
+
+# ---------------------------------------------------------------------------
+# Logging
+#
+# file:              path to the JSONL log file (relative to working directory)
+# max_size_mb:       rotate when the file exceeds this size
+# max_rotated_files: keep at most this many rotated files (.1, .2, ...) — older ones deleted
+# ---------------------------------------------------------------------------
+logging:
+  file: "el-equipo-ai.log"
+  max_size_mb: 10
+  max_rotated_files: 3
+
+
+# ---------------------------------------------------------------------------
+# Project
+#
+# test_command:  the command that runs your full test suite (from repo root)
+# setup_script:  (optional) run once in each worktree before the agent starts
+# ---------------------------------------------------------------------------
+project:
+  test_command: "pytest"
+  setup_script: null   # e.g. "npm install" or "pip install -e ."
+
+
+# ---------------------------------------------------------------------------
+# Runtime (optional overrides)
+#
+# vk_url:     base URL of the running Vibe Kanban instance
+# state_file: path to the JSON file used for quota/provider state persistence
+# ---------------------------------------------------------------------------
+vk_url: "http://localhost:3000"
+state_file: ".el-equipo-ai-state.json"
