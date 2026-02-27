@@ -14,28 +14,14 @@ if command -v opencode &>/dev/null; then
         cat > "${HOME}/.config/opencode/opencode.json" <<'OCEOF'
 {
   "$schema": "https://opencode.ai/config.json",
-
-  // PLACEHOLDER: Configure your preferred model here.
-  // OpenCode supports 75+ providers. Set the model to match your API keys.
-  // Examples:
-  //   "anthropic/claude-sonnet-4-20250514"
-  //   "openai/gpt-4o"
-  //   "nvidia/z-ai/glm5"
-  //
-  // HOW TO ENABLE: Replace the model below with your provider/model pair.
-  // Provider credentials are read from environment variables (set in .env).
-  // See: https://opencode.ai/docs/config/
-
-  "model": "anthropic/claude-sonnet-4-20250514",
-
-  "shell": {
-    "path": "/bin/zsh",
-    "args": ["-l"]
-  },
-
-  "autoCompact": true
+  "model": "anthropic/claude-sonnet-4-20250514"
 }
 OCEOF
+        # NOTE: Edit the model to match your API keys. Examples:
+        #   "anthropic/claude-sonnet-4-20250514"
+        #   "openai/gpt-4o"
+        #   "nvidia/z-ai/glm5"
+        # See: https://opencode.ai/docs/config/
     fi
 
     # Clean up stale TOML config from previous versions
@@ -70,10 +56,10 @@ if [ "$1" = "__tmux_workspace" ]; then
     tmux select-pane -T "OpenCode Agent"
     tmux send-keys "opencode" Enter
 
-    # Right pane: zsh shell (utility commands)
+    # Right pane: zsh shell with aliases and welcome banner
     tmux split-window -h -p 35
-    tmux select-pane -T "Shell (el-equipo-ai status, pytest, etc.)"
-    tmux send-keys "echo '── El-equipo-AI Shell ──'; echo 'Quick commands:'; echo '  el-equipo-ai --config /app/el-equipo-ai.yaml status'; echo '  pytest /app/tests/ -v'; echo ''" Enter
+    tmux select-pane -T "Shell — type 'help' for commands"
+    tmux send-keys "source /app/shell-profile.sh" Enter
 
     # Focus the OpenCode pane
     tmux select-pane -t 0

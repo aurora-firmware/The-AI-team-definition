@@ -66,6 +66,9 @@ RUN mkdir -p /workspace /data
 # ---- Config ----
 COPY el-equipo-ai.yaml /app/el-equipo-ai.yaml
 
+# ---- Shell profile (aliases for the utility pane) ----
+COPY shell-profile.sh /app/shell-profile.sh
+
 # ---- Entrypoint ----
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
