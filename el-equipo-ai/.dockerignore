@@ -1,0 +1,14 @@
+# Exclude from Docker build context
+.env
+.env.example
+.git
+.gitignore
+.dockerignore
+projects/
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+docker-compose.yaml
+first-use.md
+README.md

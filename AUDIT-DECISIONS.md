@@ -31,10 +31,10 @@ Status: PENDING | DECIDED | DEFERRED
 
 ## Point 1: Executor Tool Set
 **Original problem:** The spec defined a minimal 4-tool set (read_file, write_file, run_command, task_complete) for a custom tool-calling loop. write_file overwrites entire files = merge conflicts + code destruction.
-**REFRAMED after Point 0:** El-equipo-AI does NOT implement its own tool-calling loop. Execution is delegated to Vibe Kanban, which dispatches host agents (Claude Code, OpenCode, Codex, etc.). Each host agent brings its own native tools (Glob, Grep, Read, Edit, etc.). Superpowers' methodology guides how agents use those tools effectively.
+**REFRAMED after Point 0:** El-equipo-AI does NOT implement its own tool-calling loop. Execution is delegated to Vibe Kanban, which dispatches host agents (OpenCode, Codex, etc.). Each host agent brings its own native tools (Glob, Grep, Read, Edit, etc.). Superpowers' methodology guides how agents use those tools effectively.
 **Status:** DECIDED — RESOLVED BY POINT 0
 **Decision:** No custom tool set needed. Host agents provide their own tools. Superpowers provides the discipline. Section 5.4 of the original spec (Direct NIM tool-calling loop) is dropped entirely.
-**Rationale:** Don't rebuild what the agent platforms already provide. Claude Code has Edit (surgical), Glob, Grep. OpenCode has equivalents. Superpowers' "Search, Don't Index" philosophy applies — use native tools, don't layer custom ones on top.
+**Rationale:** Don't rebuild what the agent platforms already provide. OpenCode has Edit (surgical), Glob, Grep, and equivalents across providers. Superpowers' "Search, Don't Index" philosophy applies — use native tools, don't layer custom ones on top.
 
 ---
 
@@ -289,3 +289,19 @@ Pin dependency versions in config/lockfile. Never auto-update.
     - Provider exhaustion: wait (default), abort
     - Final merge: approve, reject
 **Rationale:** v1 keeps it simple — webhooks are universal (Telegram, Discord, Slack all support them), one-way is trivial to implement (~30 lines), and the human acts via VK where full context is available. v2 adds convenience (reply from phone without opening VK) and team collaboration (any-responder), but the message bus pattern (notification IDs, response tracking, cross-channel broadcasts) is real complexity best deferred until v1 patterns are proven.
+
+---
+
+## Point 15: Host Agent — OpenCode (full migration from Claude Code)
+**Problem:** The Dockerfile hardcoded `@anthropic-ai/claude-code` as the sole host agent CLI, creating a single-provider dependency at the execution layer — the layer that does ~90% of real work (editing files, running tests, navigating code). This directly contradicts the core design principle from Point 0: use whatever model/tool is available, swap via config.
+**Status:** DECIDED
+**Decision:**
+- **Host agent:** OpenCode (https://opencode.ai). Installed in the container as the execution agent. Claude Code is removed from the default stack entirely.
+- **Why OpenCode:**
+  1. **75+ provider support** — OpenCode natively supports NVIDIA NIM, OpenAI, Anthropic, Ollama, and 70+ other providers via its own config. Matches our provider-agnostic philosophy.
+  2. **Both key tools support it** — Superpowers works with OpenCode via hooks (auto-bootstrap on agent start). Vibe Kanban has a dedicated OpenCode integration documented at their docs site.
+  3. **No single-vendor lock-in** — OpenCode starts with whatever provider you configure. A user with only an NVIDIA NIM key can run the full stack without needing an Anthropic key for the agent itself.
+  4. **Go binary** — Single binary install, no npm dependency chain for the agent itself. Node.js is still needed for Vibe Kanban but is no longer required for the host agent.
+- **Superpowers integration:** Superpowers is cloned and integrated via OpenCode hooks (the `hooks` field in OpenCode's config). The hooks auto-bootstrap Superpowers methodology on agent start. No plugin marketplace dependency.
+- **Impact on Python code:** None. The Provider Router handles glue-layer API calls (planning, escalation). Host agent selection is orthogonal — it's a container-level decision, not a code-level one.
+**Rationale:** The execution layer should be as provider-agnostic as the glue layer. Locking the host agent to a single vendor while preaching multi-provider everywhere else is inconsistent. OpenCode aligns with the architecture: configure your provider, start working.

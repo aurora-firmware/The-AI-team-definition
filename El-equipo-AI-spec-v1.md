@@ -31,9 +31,9 @@ Built as a thin glue layer on top of two battle-tested open-source tools, not as
 │         │              │                │                │
 │  ┌──────▼──────┐ ┌─────▼──────┐ ┌──────▼──────────┐    │
 │  │ Superpowers  │ │Vibe Kanban │ │  Host Agents    │    │
-│  │ (methodology)│ │(execution) │ │ (Claude Code,   │    │
-│  │              │ │            │ │  OpenCode,       │    │
-│  │ brainstorm   │ │ worktrees  │ │  Codex, etc.)   │    │
+│  │ (methodology)│ │(execution) │ │ (OpenCode —      │    │
+│  │              │ │            │ │  75+ providers)  │    │
+│  │ brainstorm   │ │ worktrees  │ │                  │    │
 │  │ plan writing │ │ task board │ │                  │    │
 │  │ TDD          │ │ agent life │ │  Native tools:   │    │
 │  │ code review  │ │ diff review│ │  Glob, Grep,     │    │
@@ -53,7 +53,7 @@ Built as a thin glue layer on top of two battle-tested open-source tools, not as
 |---|---|---|
 | **Superpowers** | Methodology — HOW agents think and work (brainstorm, TDD, review discipline, debugging, skill framework) | obra + community (28k stars) |
 | **Vibe Kanban** | Execution infra — WHERE agents work (parallel worktrees, task board, agent lifecycle, diff review, MCP server) | BloopAI (YC-backed) |
-| **Host Agents** | Tool execution — WHAT tools agents use (Glob, Grep, Edit, Read — native to each agent platform) | Agent platforms (Anthropic, OpenAI, etc.) |
+| **Host Agents** | Tool execution — WHAT tools agents use (Glob, Grep, Edit, Read — native to each agent platform). OpenCode supports 75+ providers natively. | Agent platforms (OpenCode project) |
 | **Provider Router** | Brain selection — WHICH model fulfills each role (priority lists, fallback, quota handling) | Us (~900 lines) |
 | **Model Providers** | Intelligence — the API endpoints (NVIDIA NIM, OpenAI, Anthropic, Ollama) | Provider companies |
 
@@ -465,8 +465,8 @@ project:
 
 The entire system runs in one container:
 - Vibe Kanban
-- Superpowers (installed as plugin)
-- Host agents (Claude Code, OpenCode, Codex — configured per user)
+- Superpowers (integrated via OpenCode hooks)
+- Host agent: OpenCode (supports 75+ providers)
 - El-equipo-AI glue code
 - Git, Python, Node.js runtimes
 

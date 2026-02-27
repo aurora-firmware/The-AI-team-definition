@@ -1,0 +1,20 @@
+# Secrets — never commit
+.env
+
+# Runtime / build artifacts
+projects/
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.venv/
+
+# Logs and state
+*.log
+*.log.*
+el-equipo-ai-state.json
+
+# OS
+.DS_Store
+Thumbs.db

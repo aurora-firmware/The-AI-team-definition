@@ -1,6 +1,6 @@
 # El-equipo-AI — Docker Compose
 # Run: docker compose up
-# The container includes Vibe Kanban (port 3000), El-equipo-AI glue, and Claude Code.
+# The container includes Vibe Kanban (port 3000), El-equipo-AI glue, and OpenCode (default host agent).
 
 services:
   el-equipo-ai:

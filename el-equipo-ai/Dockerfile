@@ -1,11 +1,12 @@
 # El-equipo-AI — single-container deployment
 #
 # Includes:
-#   - Python 3.11 (El-equipo-AI glue + agent CLIs)
+#   - Python 3.11 (El-equipo-AI glue code)
 #   - Node.js 20 LTS (Vibe Kanban)
 #   - Git (worktree operations)
-#   - Claude Code CLI (primary host agent)
+#   - OpenCode (default host agent — 75+ provider support)
 #   - Vibe Kanban (via npm global install)
+#   - Superpowers (methodology — integrated via OpenCode hooks)
 #
 # The container IS the sandbox. Agents operate freely inside it.
 # Mount your project repo at /workspace and API keys as env vars.
@@ -30,8 +31,16 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 # NOTE: replace @latest with a pinned version after first stable release
 RUN npm install -g vibe-kanban@latest
 
-# ---- Claude Code CLI (primary host agent) ----
-RUN npm install -g @anthropic-ai/claude-code@latest
+# ---- OpenCode (default host agent) ----
+# OpenCode is a Go binary supporting 75+ providers (NVIDIA NIM, OpenAI, Anthropic, Ollama, etc.)
+# Install via official install script (https://opencode.ai), then move binary to PATH.
+# The script puts the binary in ~/.opencode/bin/ or ~/bin/ depending on version.
+RUN curl -fsSL https://opencode.ai/install | bash \
+    && { cp /root/.opencode/bin/opencode /usr/local/bin/opencode 2>/dev/null \
+      || cp /root/bin/opencode /usr/local/bin/opencode 2>/dev/null \
+      || find /root -name opencode -type f -executable -exec cp {} /usr/local/bin/opencode \; ; } \
+    && chmod +x /usr/local/bin/opencode \
+    && opencode version
 
 # ---- El-equipo-AI Python package ----
 WORKDIR /app
@@ -40,11 +49,10 @@ COPY el_equipo_ai/ ./el_equipo_ai/
 
 RUN pip install --no-cache-dir -e ".[dev]"
 
-# ---- Superpowers plugin ----
-# Superpowers is installed as a Claude Code plugin / git-cloned skill pack.
+# ---- Superpowers (methodology) ----
+# Superpowers is cloned and integrated with OpenCode via hooks.
+# The entrypoint script configures OpenCode hooks to auto-bootstrap Superpowers.
 # See: https://github.com/obra/superpowers
-# The ENTRYPOINT script sets up the plugin path on first run.
-# Alternatively mount a pre-cloned superpowers repo at /superpowers.
 RUN git clone --depth 1 https://github.com/obra/superpowers /superpowers \
     || echo "WARNING: Could not clone Superpowers (offline build). Mount manually."
 

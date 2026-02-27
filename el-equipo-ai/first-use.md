@@ -44,10 +44,10 @@ cd The-AI-team-definition/el-equipo-ai
 Copy the example and fill in your keys. **Never commit this file.**
 
 ```bash
-cp .env.example .env   # if it doesn't exist yet, create it manually (see below)
+cp .env.example .env
 ```
 
-Create `.env` with the keys you have. Leave the others empty — the system will skip providers with no key.
+Edit `.env` and fill in the keys you have. Leave the others empty — the system will skip providers with no key.
 
 ```bash
 # .env — your API keys (git-ignored)
@@ -85,7 +85,7 @@ ln -s /path/to/your-local-repo projects/your-project
 
 ### Step 4 — Build the container
 
-The first build takes a few minutes — it installs Python, Node.js, Vibe Kanban, Claude Code, Superpowers, and the El-equipo-AI package.
+The first build takes a few minutes — it installs Python, Node.js, Vibe Kanban, OpenCode, Superpowers, and the El-equipo-AI package.
 
 ```bash
 docker compose build

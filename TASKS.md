@@ -392,10 +392,11 @@ Independent of all other groups — can run in parallel with GROUPS 1-5.
 - Python 3.11+, Node.js (for VK), git
 - Vibe Kanban (via npm: `npx vibe-kanban`)
 - El-equipo-AI Python package (pip install from local)
-- Superpowers plugin for Claude Code
-- Any configured host agent CLIs (Claude Code, OpenCode, etc.)
-**NOTE FOR CODING AGENT:** Research the latest installation methods for Vibe Kanban and Superpowers before writing. Check `npx vibe-kanban` and Superpowers marketplace install commands. Pin versions.
-**Verification:** `docker build -t el-equipo-ai .` succeeds.
+- OpenCode (host agent — Go binary via install script, supports 75+ providers)
+- Superpowers (git clone + OpenCode hooks integration)
+- Node.js is kept for Vibe Kanban
+**NOTE FOR CODING AGENT:** Research the latest installation methods for Vibe Kanban, OpenCode, and Superpowers before writing. OpenCode is a Go binary — use the official install script or download a pre-built release. Superpowers integrates via OpenCode hooks. Pin versions.
+**Verification:** `docker build -t el-equipo-ai .` succeeds. `opencode --version` runs inside the container.
 
 ### T6.2 — docker-compose.yaml
 
