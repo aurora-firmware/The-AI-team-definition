@@ -71,4 +71,6 @@ WORKDIR /workspace
 EXPOSE 3000
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["el-equipo-ai", "--help"]
+# Default: keep the container running for interactive use (docker compose exec).
+# Override with a specific command: docker compose run --rm el-equipo-ai el-equipo-ai plan "..."
+CMD ["bash"]
