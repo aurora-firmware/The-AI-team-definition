@@ -144,8 +144,17 @@ class App:
         """Print current provider and task status."""
         self.provider_router.check_cooldowns()
         states = self.provider_router.get_state()
+        # Build a lookup of which providers have an API key configured
+        configured = {
+            p.name
+            for p in self.config.providers
+            if p.api_key or p.api_key_env is None  # key resolved, or no key needed (e.g. Ollama)
+        }
         print("=== Provider Status ===")
         for name, state in states.items():
+            if name not in configured:
+                print(f"  {name}: not configured (no API key)")
+                continue
             reset_str = f" (resets: {state.reset_at})" if state.reset_at else ""
             print(f"  {name}: {state.status.value}{reset_str}")
         swap_log = self.quota_manager.get_swap_log()

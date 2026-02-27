@@ -48,6 +48,7 @@ RUN curl -fsSL https://opencode.ai/install | bash \
 WORKDIR /app
 COPY pyproject.toml requirements.txt ./
 COPY el_equipo_ai/ ./el_equipo_ai/
+COPY tests/ ./tests/
 
 RUN pip install --no-cache-dir -e ".[dev]"
 
@@ -73,7 +74,8 @@ WORKDIR /workspace
 EXPOSE 3000
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-# Start a tmux session running OpenCode, falling back to zsh if it exits or crashes.
+# Default: launch the tmux split-pane workspace (OpenCode + shell).
 # Attach from any device: docker compose exec el-equipo-ai tmux attach
 # Detach without stopping: Ctrl+b, then d
-CMD ["tmux", "new-session", "-s", "main", "opencode; zsh"]
+# Override: docker compose run --rm el-equipo-ai bash
+CMD ["__tmux_workspace"]

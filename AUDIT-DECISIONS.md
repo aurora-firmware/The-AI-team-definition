@@ -308,13 +308,19 @@ Pin dependency versions in config/lockfile. Never auto-update.
 
 ---
 
-## Point 16: Container Terminal — tmux + zsh with OpenCode as default session
-**Problem:** The container needs a persistent, attachable terminal. `sleep infinity` keeps the container alive but provides no interactive session. A bare `bash` CMD exits immediately in detached mode. Users need to attach from any device, detach without killing the container, and land in a usable shell if the agent exits.
+## Point 16: Container Terminal — tmux split-pane workspace
+**Problem:** The container needs a persistent, attachable terminal. Users need to: (1) talk to the AI agent conversationally, (2) run quick utility commands without spending tokens, (3) attach from any device, (4) detach without killing the container. OpenCode doesn't yet support zero-token custom slash commands (feature requests #7337, #5305 exist upstream), so we need a way to run `el-equipo-ai status` and similar utilities without going through the LLM.
 **Status:** DECIDED
 **Decision:**
-- **CMD:** `tmux new-session -s main "opencode; zsh"` — starts a tmux session named `main` that runs OpenCode. When OpenCode exits (or crashes), the user lands in a zsh shell instead of the container dying.
-- **Attach:** `docker compose exec el-equipo-ai tmux attach` — works from any device with Docker access.
-- **Detach:** `Ctrl+b, d` — standard tmux detach. Container keeps running.
-- **Why tmux + zsh:** Proven pattern from Anthropic's official devcontainer. tmux as PID 1 keeps the container alive, provides session persistence, and allows multiple panes/windows. zsh is the fallback shell — if OpenCode exits, you're in a terminal ready to debug, run tests, or restart manually.
+- **Split-pane tmux layout:**
+  - **Left pane (65%):** OpenCode agent session — conversational interface for brainstorming, planning, code review, and agent-driven execution.
+  - **Right pane (35%):** zsh shell — for zero-token utility commands (`el-equipo-ai status`, `pytest`, `git log`, etc.).
+  - **Bottom status bar:** Always-visible navigation hints: `Ctrl+b ← → switch panes | Ctrl+b d detach`.
+  - **Pane title labels:** Each pane has a visible label at the top ("OpenCode Agent" / "Shell").
+- **Attach:** `docker compose exec el-equipo-ai tmux attach` — works from any device.
+- **Detach:** `Ctrl+b, d` — container keeps running.
+- **Override CMD:** `docker compose run --rm el-equipo-ai bash` — bypasses tmux for scripted/CI use.
+- **OpenCode config:** JSON format (`opencode.json`), auto-generated on first run if not present. Manual edits preserved across restarts.
 - **Dependencies added:** `tmux`, `zsh` (~2MB combined, negligible image size impact).
-**Rationale:** A dev container should be a persistent workspace, not a run-and-exit tool. tmux provides exactly this — attach, work, detach, come back later. The `opencode; zsh` pattern means the container is immediately useful (OpenCode starts) and gracefully recoverable (zsh catches the exit).
+- **Future:** When OpenCode adds native zero-token slash commands (upstream #7337/#5305), utility commands can migrate into the left pane and the split becomes optional. Until then, the right pane provides the escape hatch.
+**Rationale:** The primary interaction model is conversational — the user talks to OpenCode, the agent uses el-equipo-ai modules as tools. But some operations (checking status, running tests, inspecting logs) should cost zero tokens and be deterministic. A tmux split gives both: agent conversation on the left, reliable shell on the right, always-visible hints so users don't have to memorize shortcuts.

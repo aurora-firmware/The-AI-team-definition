@@ -97,6 +97,14 @@ Expected output ends with something like:
  => => naming to docker.io/library/el-equipo-ai:latest
 ```
 
+### Step 5 — Make the convenience script executable
+
+```bash
+chmod +x call-the-team.sh
+```
+
+From now on, `./call-the-team.sh` starts the container (if needed) and attaches you to the workspace in one command.
+
 ---
 
 ## 3. Configuration
@@ -109,11 +117,15 @@ The bundled `el-equipo-ai.yaml` already has sensible defaults. You only need to 
 
 ### Option B — Customise for your setup
 
-Edit `el-equipo-ai.yaml`. The most important things to adjust:
+Edit `el-equipo-ai.yaml`. The sections below follow the same order as the config file:
 
-**1. Provider order — who goes first?**
+**1. Providers — remove what you don't have**
 
-In each role's `models` list, the first entry is the preferred provider. Put your cheapest or most available provider first.
+If you only have an NVIDIA key, remove the `anthropic` and `openai` entries from `providers:`. The `status` command will show unconfigured providers as "not configured".
+
+**2. Roles — who goes first?**
+
+In each role's `models` list, the first entry is the preferred provider. Put your cheapest or most available provider first. Remove providers you deleted from the `providers:` section.
 
 ```yaml
 roles:
@@ -124,21 +136,7 @@ roles:
       - { provider: anthropic, model: "claude-sonnet-4-6" }     # fallback
 ```
 
-**2. Remove providers you don't have keys for**
-
-If you only have an NVIDIA key, remove the `anthropic` and `openai` entries from `providers:` and from each role's `models:` list. The system will only try providers that are listed.
-
-**3. Set your project's test command**
-
-```yaml
-project:
-  test_command: "pytest"          # Python
-  # test_command: "npm test"      # Node.js
-  # test_command: "cargo test"    # Rust
-  setup_script: "pip install -e ." # runs in each worktree before agents start
-```
-
-**4. Adjust timeouts if needed**
+**3. Stall detection — adjust timeouts if needed**
 
 The defaults are conservative. For faster feedback during testing:
 
@@ -147,6 +145,16 @@ stall_detection:
   repeat_threshold: 3        # calls before a loop is flagged
   hard_timeout_minutes: 30   # max time per task
   grace_timeout_minutes: 2   # extra time to wrap up after timeout
+```
+
+**4. Project — set your test command**
+
+```yaml
+project:
+  test_command: "pytest"          # Python
+  # test_command: "npm test"      # Node.js
+  # test_command: "cargo test"    # Rust
+  setup_script: "pip install -e ." # runs in each worktree before agents start
 ```
 
 ---
@@ -159,7 +167,7 @@ stall_detection:
 docker compose up -d
 ```
 
-The container starts a tmux session running OpenCode. If OpenCode exits, you land in a zsh shell.
+The container starts a tmux split-pane workspace.
 
 ### Check it's running
 
@@ -173,20 +181,38 @@ NAME            IMAGE               STATUS    PORTS
 el-equipo-ai    el-equipo-ai:latest running   0.0.0.0:3000->3000/tcp
 ```
 
-### Attach to the terminal
+### Attach to the workspace
 
 ```bash
 docker compose exec el-equipo-ai tmux attach
 ```
 
-You'll be inside the OpenCode session (or a zsh shell if OpenCode has exited). Detach without stopping the container: `Ctrl+b`, then `d`.
+You'll see a split-pane layout:
+
+```
+┌─────────────────────────────┬──────────────────────┐
+│  OpenCode Agent             │  Shell               │
+│                             │                      │
+│  (conversational AI)        │  Quick commands:      │
+│                             │  el-equipo-ai status  │
+│                             │  pytest /app/tests/   │
+│                             │                      │
+├─────────────────────────────┴──────────────────────┤
+│ EL-EQUIPO-AI │ Ctrl+b ← → switch panes │ Ctrl+b d │
+└─────────────────────────────────────────────────────┘
+```
+
+- **Left pane:** OpenCode — talk to the agent, brainstorm features, review code.
+- **Right pane:** Shell — run utility commands without spending tokens.
+- **Switch panes:** `Ctrl+b`, then `←` or `→`.
+- **Detach** (container keeps running): `Ctrl+b`, then `d`.
 
 ### Test the CLI
 
-From inside the tmux session (or via exec):
+From the right shell pane:
 
 ```bash
-docker compose exec el-equipo-ai el-equipo-ai --help
+el-equipo-ai --config /app/el-equipo-ai.yaml status
 ```
 
 Expected output:
@@ -385,11 +411,11 @@ npx vibe-kanban
 # Start
 docker compose up -d
 
-# Attach to tmux session (OpenCode + zsh fallback)
+# Attach to workspace (split pane: OpenCode + shell)
 docker compose exec el-equipo-ai tmux attach
-# Detach: Ctrl+b, then d
+# Inside tmux: Ctrl+b ← → to switch panes, Ctrl+b d to detach
 
-# Check status
+# Check status (from shell pane, or from host via exec)
 docker compose exec el-equipo-ai el-equipo-ai --config /app/el-equipo-ai.yaml status
 
 # Plan a feature
