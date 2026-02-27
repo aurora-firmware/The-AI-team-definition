@@ -159,6 +159,8 @@ stall_detection:
 docker compose up -d
 ```
 
+The container starts a tmux session running OpenCode. If OpenCode exits, you land in a zsh shell.
+
 ### Check it's running
 
 ```bash
@@ -171,7 +173,17 @@ NAME            IMAGE               STATUS    PORTS
 el-equipo-ai    el-equipo-ai:latest running   0.0.0.0:3000->3000/tcp
 ```
 
+### Attach to the terminal
+
+```bash
+docker compose exec el-equipo-ai tmux attach
+```
+
+You'll be inside the OpenCode session (or a zsh shell if OpenCode has exited). Detach without stopping the container: `Ctrl+b`, then `d`.
+
 ### Test the CLI
+
+From inside the tmux session (or via exec):
 
 ```bash
 docker compose exec el-equipo-ai el-equipo-ai --help
@@ -372,6 +384,10 @@ npx vibe-kanban
 ```bash
 # Start
 docker compose up -d
+
+# Attach to tmux session (OpenCode + zsh fallback)
+docker compose exec el-equipo-ai tmux attach
+# Detach: Ctrl+b, then d
 
 # Check status
 docker compose exec el-equipo-ai el-equipo-ai --config /app/el-equipo-ai.yaml status

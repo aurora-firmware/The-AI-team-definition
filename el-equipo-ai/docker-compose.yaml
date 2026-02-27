@@ -38,7 +38,7 @@ services:
     ports:
       - "${VK_PORT:-3000}:3000"
 
-    # Keep container running so you can exec into it
+    # tmux needs a TTY. Attach with: docker compose exec el-equipo-ai tmux attach
     stdin_open: true
     tty: true
 

@@ -305,3 +305,16 @@ Pin dependency versions in config/lockfile. Never auto-update.
 - **Superpowers integration:** Superpowers is cloned and integrated via OpenCode hooks (the `hooks` field in OpenCode's config). The hooks auto-bootstrap Superpowers methodology on agent start. No plugin marketplace dependency.
 - **Impact on Python code:** None. The Provider Router handles glue-layer API calls (planning, escalation). Host agent selection is orthogonal — it's a container-level decision, not a code-level one.
 **Rationale:** The execution layer should be as provider-agnostic as the glue layer. Locking the host agent to a single vendor while preaching multi-provider everywhere else is inconsistent. OpenCode aligns with the architecture: configure your provider, start working.
+
+---
+
+## Point 16: Container Terminal — tmux + zsh with OpenCode as default session
+**Problem:** The container needs a persistent, attachable terminal. `sleep infinity` keeps the container alive but provides no interactive session. A bare `bash` CMD exits immediately in detached mode. Users need to attach from any device, detach without killing the container, and land in a usable shell if the agent exits.
+**Status:** DECIDED
+**Decision:**
+- **CMD:** `tmux new-session -s main "opencode; zsh"` — starts a tmux session named `main` that runs OpenCode. When OpenCode exits (or crashes), the user lands in a zsh shell instead of the container dying.
+- **Attach:** `docker compose exec el-equipo-ai tmux attach` — works from any device with Docker access.
+- **Detach:** `Ctrl+b, d` — standard tmux detach. Container keeps running.
+- **Why tmux + zsh:** Proven pattern from Anthropic's official devcontainer. tmux as PID 1 keeps the container alive, provides session persistence, and allows multiple panes/windows. zsh is the fallback shell — if OpenCode exits, you're in a terminal ready to debug, run tests, or restart manually.
+- **Dependencies added:** `tmux`, `zsh` (~2MB combined, negligible image size impact).
+**Rationale:** A dev container should be a persistent workspace, not a run-and-exit tool. tmux provides exactly this — attach, work, detach, come back later. The `opencode; zsh` pattern means the container is immediately useful (OpenCode starts) and gracefully recoverable (zsh catches the exit).

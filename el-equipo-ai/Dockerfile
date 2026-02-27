@@ -20,6 +20,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
     build-essential \
+    tmux \
+    zsh \
     && rm -rf /var/lib/apt/lists/*
 
 # ---- Node.js 20 (for Vibe Kanban) ----
@@ -71,6 +73,7 @@ WORKDIR /workspace
 EXPOSE 3000
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-# Default: keep the container running for interactive use (docker compose exec).
-# Override with a specific command: docker compose run --rm el-equipo-ai el-equipo-ai plan "..."
-CMD ["bash"]
+# Start a tmux session running OpenCode, falling back to zsh if it exits or crashes.
+# Attach from any device: docker compose exec el-equipo-ai tmux attach
+# Detach without stopping: Ctrl+b, then d
+CMD ["tmux", "new-session", "-s", "main", "opencode; zsh"]
