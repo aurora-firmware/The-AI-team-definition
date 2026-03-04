@@ -7,17 +7,67 @@ set -e
 # ---- OpenCode config (JSON, not TOML) ----
 if command -v opencode &>/dev/null; then
     mkdir -p "${HOME}/.config/opencode"
-
-    # Always regenerate config to avoid stale keys from previous versions.
-    # To customise, set OPENCODE_MODEL env var or mount a volume at
-    # ~/.config/opencode/opencode.json.
     rm -f "${HOME}/.config/opencode/config.toml"
-    cat > "${HOME}/.config/opencode/opencode.json" <<OCEOF
+
+    # If the user explicitly set OPENCODE_MODEL, use it directly.
+    # Otherwise, auto-detect the first available provider from env vars.
+    if [ -n "${OPENCODE_MODEL}" ]; then
+        _OC_MODEL="${OPENCODE_MODEL}"
+    elif [ -n "${ANTHROPIC_API_KEY}" ]; then
+        _OC_MODEL="anthropic/claude-sonnet-4-20250514"
+    elif [ -n "${OPENAI_API_KEY}" ]; then
+        _OC_MODEL="openai/gpt-4o"
+    elif [ -n "${NVIDIA_API_KEY}" ]; then
+        _OC_MODEL="nvidia/meta/llama-3.3-70b-instruct"
+    else
+        _OC_MODEL=""
+    fi
+
+    # Build the config. For NVIDIA NIM we need a custom provider block
+    # because it is not a built-in OpenCode provider.
+    _OC_NVIDIA_BLOCK=""
+    if [ -n "${NVIDIA_API_KEY}" ]; then
+        _OC_NVIDIA_BLOCK=$(cat <<'NVEOF'
+,
+    "nvidia": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "NVIDIA NIM",
+      "options": {
+        "baseURL": "https://integrate.api.nvidia.com/v1",
+        "apiKey": "{env:NVIDIA_API_KEY}"
+      },
+      "models": {
+        "meta/llama-3.3-70b-instruct": { "name": "Llama 3.3 70B" },
+        "deepseek-ai/deepseek-r1": { "name": "DeepSeek R1" }
+      }
+    }
+NVEOF
+)
+    fi
+
+    if [ -n "${_OC_MODEL}" ]; then
+        cat > "${HOME}/.config/opencode/opencode.json" <<OCEOF
 {
   "\$schema": "https://opencode.ai/config.json",
-  "model": "${OPENCODE_MODEL:-anthropic/claude-sonnet-4-20250514}"
+  "model": "${_OC_MODEL}",
+  "provider": {
+    "_placeholder": null${_OC_NVIDIA_BLOCK}
+  }
 }
 OCEOF
+        # Remove the placeholder key (keeps JSON valid during generation)
+        sed -i '/"_placeholder": null,\?/d' "${HOME}/.config/opencode/opencode.json"
+    else
+        # No API keys found — generate minimal config; OpenCode will prompt.
+        cat > "${HOME}/.config/opencode/opencode.json" <<OCEOF
+{
+  "\$schema": "https://opencode.ai/config.json"
+}
+OCEOF
+        echo "[el-equipo-ai] WARNING: No API keys detected (ANTHROPIC_API_KEY, OPENAI_API_KEY, NVIDIA_API_KEY)."
+        echo "               OpenCode will start but may not be able to connect to a model."
+        echo "               Set at least one key in your .env file and restart."
+    fi
 fi
 
 # ---- Superpowers ----
@@ -30,7 +80,10 @@ fi
 # Otherwise, run whatever command was passed (e.g. docker compose run --rm ... bash).
 if [ "$1" = "__tmux_workspace" ]; then
     # Configure tmux status bar with navigation hints
-    tmux new-session -d -s main -x "$(tput cols)" -y "$(tput lines)"
+    # tput may fail without a TTY (e.g. docker compose up -d), so fallback to sane defaults.
+    _COLS=$(tput cols 2>/dev/null || echo 200)
+    _ROWS=$(tput lines 2>/dev/null || echo 50)
+    tmux new-session -d -s main -x "${_COLS}" -y "${_ROWS}"
 
     # Status bar: always-visible navigation help
     tmux set-option -g status on

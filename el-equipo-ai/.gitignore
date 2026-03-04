@@ -14,6 +14,7 @@ build/
 *.log
 *.log.*
 el-equipo-ai-state.json
+.el-equipo-ai-state.json
 
 # OS
 .DS_Store

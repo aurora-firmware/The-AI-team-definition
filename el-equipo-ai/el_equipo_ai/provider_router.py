@@ -240,7 +240,6 @@ class ProviderRouter:
 
         # ---- Quota exhaustion ----
         if self._is_quota_error(status_code, exc_str):
-            from datetime import timedelta
             reset_at = self._extract_reset_at(exc)
             if reset_at:
                 self.mark_cooldown(provider.name, reset_at)
@@ -285,8 +284,11 @@ class ProviderRouter:
 
     @staticmethod
     def _extract_reset_at(exc: Exception) -> datetime | None:
-        """Try to extract a quota reset timestamp from the exception."""
-        from datetime import timedelta
+        """Try to extract a quota reset timestamp from the exception.
+
+        Returns None when no reset information is available — the caller
+        should treat this as a permanent exhaustion (not a timed cooldown).
+        """
         response = getattr(exc, "response", None)
         if response is not None:
             headers = getattr(response, "headers", {}) or {}
@@ -300,8 +302,7 @@ class ProviderRouter:
                     return datetime.fromtimestamp(float(reset), tz=timezone.utc)
                 except (ValueError, TypeError):
                     pass
-        # Default: 1 hour cooldown if we can't determine reset time
-        return datetime.now(timezone.utc) + timedelta(hours=1)
+        return None
 
     @staticmethod
     def _is_quota_error(status_code: int | None, exc_str: str) -> bool:
