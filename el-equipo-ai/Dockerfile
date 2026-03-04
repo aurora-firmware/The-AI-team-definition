@@ -68,6 +68,7 @@ COPY el-equipo-ai.yaml /app/el-equipo-ai.yaml
 
 # ---- Shell profile (aliases for the utility pane) ----
 COPY shell-profile.sh /app/shell-profile.sh
+RUN echo 'source /app/shell-profile.sh' >> /root/.zshrc
 
 # ---- Entrypoint ----
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh

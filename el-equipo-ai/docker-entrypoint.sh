@@ -8,24 +8,16 @@ set -e
 if command -v opencode &>/dev/null; then
     mkdir -p "${HOME}/.config/opencode"
 
-    # Generate OpenCode config if not already present.
-    # Manual edits are preserved across container restarts.
-    if [ ! -f "${HOME}/.config/opencode/opencode.json" ]; then
-        cat > "${HOME}/.config/opencode/opencode.json" <<'OCEOF'
+    # Always regenerate config to avoid stale keys from previous versions.
+    # To customise, set OPENCODE_MODEL env var or mount a volume at
+    # ~/.config/opencode/opencode.json.
+    rm -f "${HOME}/.config/opencode/config.toml"
+    cat > "${HOME}/.config/opencode/opencode.json" <<OCEOF
 {
-  "$schema": "https://opencode.ai/config.json",
-  "model": "anthropic/claude-sonnet-4-20250514"
+  "\$schema": "https://opencode.ai/config.json",
+  "model": "${OPENCODE_MODEL:-anthropic/claude-sonnet-4-20250514}"
 }
 OCEOF
-        # NOTE: Edit the model to match your API keys. Examples:
-        #   "anthropic/claude-sonnet-4-20250514"
-        #   "openai/gpt-4o"
-        #   "nvidia/z-ai/glm5"
-        # See: https://opencode.ai/docs/config/
-    fi
-
-    # Clean up stale TOML config from previous versions
-    rm -f "${HOME}/.config/opencode/config.toml"
 fi
 
 # ---- Superpowers ----
@@ -57,9 +49,9 @@ if [ "$1" = "__tmux_workspace" ]; then
     tmux send-keys "opencode" Enter
 
     # Right pane: zsh shell with aliases and welcome banner
+    # shell-profile.sh is auto-sourced via /root/.zshrc (see Dockerfile)
     tmux split-window -h -p 35
     tmux select-pane -T "Shell — type 'help' for commands"
-    tmux send-keys "source /app/shell-profile.sh" Enter
 
     # Focus the OpenCode pane
     tmux select-pane -t 0
