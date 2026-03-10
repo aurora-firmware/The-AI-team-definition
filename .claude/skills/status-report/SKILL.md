@@ -1,0 +1,46 @@
+---
+name: status-report
+description: Generate a project status report by scanning task and bug directories
+disable-model-invocation: true
+allowed-tools: Read, Glob, Grep
+---
+
+Generate a project status report.
+
+1. Scan the following directories and count files (excluding TEMPLATE files and .gitkeep):
+   - `tasks/pending/` — pending tasks
+   - `tasks/in-progress/` — tasks in progress
+   - `tasks/completed/` — completed tasks
+   - `tasks/blocked/` — blocked tasks
+   - `bugs/open/` — open bugs
+   - `bugs/resolved/` — resolved bugs
+
+2. For each task in `tasks/in-progress/`, read the frontmatter and list: ID, title, assigned role.
+
+3. For each task in `tasks/blocked/`, read the frontmatter and list: ID, title, and check the Notes section for blocking reason.
+
+4. For each bug in `bugs/open/` with severity "critical" or "high", list: ID, title, severity.
+
+5. Present the report in this format:
+
+```
+## Status Report — [today's date]
+
+### Summary
+- Pending tasks: N
+- In progress: N
+- Completed: N
+- Blocked: N
+- Open bugs: N (X critical/high)
+
+### In Progress
+[list of in-progress tasks with ID, title, role]
+
+### Blocked
+[list of blocked tasks with ID, title, blocking reason]
+
+### Critical/High Bugs
+[list of critical and high severity open bugs]
+```
+
+6. If there are blocked tasks or critical bugs, add a "Recommended Actions" section suggesting next steps.

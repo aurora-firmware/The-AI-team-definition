@@ -1,0 +1,55 @@
+---
+title: "Component Map"
+status: approved
+created: 2026-03-10
+---
+
+# Component Map
+
+This document maps every component in the AI team framework: what it is, what it interacts with, and where it is defined.
+
+## Agents
+
+| Agent | Purpose | Skills Used | Receives From | Hands Off To | Definition |
+|---|---|---|---|---|---|
+| Planner | Breaks features into specs and tasks | brainstorm, write-plan | Human | Human (approval), Implementer (tasks) | `.claude/agents/planner.md` |
+| Architect | Advises on design and failure recovery | — (advisory role) | Any blocked agent | Requesting agent, or Human (escalation) | `.claude/agents/architect.md` |
+| Implementer | Writes production code | tdd, debug | Task directory | Reviewer | `.claude/agents/implementer.md` |
+| Reviewer | Reviews code for spec compliance and quality | code-review | Implementer | Implementer (feedback) or Integrator (approval) | `.claude/agents/reviewer.md` |
+| Tester | Writes and runs tests | tdd | Works alongside Implementer | Feeds results to Implementer | `.claude/agents/tester.md` |
+| Integrator | Merges branches and runs integration tests | conflict-resolution | Reviewer (approved tasks) | Human (final approval) | `.claude/agents/integrator.md` |
+
+## Skills
+
+| Skill | Purpose | Used By | Definition |
+|---|---|---|---|
+| brainstorm | Explore solution space, evaluate trade-offs | Planner | `.claude/skills/brainstorm/SKILL.md` |
+| write-plan | Decompose feature into atomic tasks | Planner | `.claude/skills/write-plan/SKILL.md` |
+| code-review | Two-stage review (spec + quality) | Reviewer | `.claude/skills/code-review/SKILL.md` |
+| tdd | Test-driven development cycle | Implementer, Tester | `.claude/skills/tdd/SKILL.md` |
+| debug | Reproduce, isolate, fix, verify | Implementer | `.claude/skills/debug/SKILL.md` |
+| conflict-resolution | Resolve git merge conflicts | Integrator | `.claude/skills/conflict-resolution/SKILL.md` |
+
+## Documents and Directories
+
+| Component | Type | Purpose | Location |
+|---|---|---|---|
+| Specifications | Directory | Feature and system specs | `specifications/` |
+| Task Board | Directory tree | Task lifecycle tracking | `tasks/{pending,in-progress,completed,blocked}/` |
+| Bug Tracker | Directory tree | Bug lifecycle tracking | `bugs/{open,resolved}/` |
+| Decision Log | Directory | Architecture decision records | `decisions/` |
+| Templates | Directory | Reusable document formats | `templates/` |
+| Process Docs | Directory | Workflow and procedure definitions | `docs/processes/` |
+| Guidelines | Directory | Standards and checklists | `docs/guidelines/` |
+| Architecture Docs | Directory | System design documentation | `docs/architecture/` |
+| Action Skills | Directory | Automation for document creation | `.claude/skills/` (with `disable-model-invocation: true`) |
+
+## Interaction Diagram
+
+```
+Human ←──→ Planner ──→ Task Directory ──→ Implementer ──→ Reviewer ──→ Integrator ──→ Human
+              ↑                              ↑    ↑           ↑             ↑
+              │                              │    │           │             │
+              └──────── Architect ───────────┴────┴───────────┴─────────────┘
+                      (consulted on demand by any agent)
+```

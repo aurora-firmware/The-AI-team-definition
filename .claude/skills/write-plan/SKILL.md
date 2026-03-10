@@ -1,0 +1,64 @@
+---
+name: write-plan
+description: Decompose an approved specification into atomic, parallelizable tasks. Use when a spec needs to be broken into executable work units.
+allowed-tools: Read, Grep, Glob, Write
+---
+
+# Write Plan
+
+## Input Requirements
+
+- **Approved specification** — the spec that passed Gate 1 (Spec Approval).
+- **Project structure** — the existing codebase layout to determine file paths.
+- **Existing tasks** — current tasks in `tasks/` to avoid conflicts or duplication.
+
+## Procedure
+
+### Step 1: Identify Components
+Read the specification and list every distinct unit of work.
+A unit of work is something that produces a single testable outcome.
+
+### Step 2: Define Dependencies
+For each unit, determine what must exist before it can start.
+Draw a dependency graph.
+Look for opportunities to parallelize — units that touch different files can run simultaneously.
+
+### Step 3: Write Task Files
+For each unit, create a task file following `tasks/TEMPLATE-task.md`:
+- **ID**: Sequential within the plan (T-001, T-002, ...).
+- **Title**: Clear, descriptive, starts with a verb (Implement, Add, Create, Fix).
+- **Description**: Enough context to start without asking questions.
+- **Acceptance criteria**: Specific, measurable, checkable outcomes.
+- **Dependencies**: List of task IDs that must complete first.
+- **Files to touch**: Exact file paths that will be created or modified.
+- **Verification command**: Shell command that proves the task is done.
+
+### Step 4: Validate the Plan
+Verify completeness: does the full set of tasks cover the entire specification?
+Verify isolation: do any two tasks modify the same file? If yes, add a dependency between them.
+Verify atomicity: can each task be completed in a single agent pass? If a task feels too large, split it.
+
+### Step 5: Place Tasks
+Save all task files to `tasks/pending/`.
+
+## Output Format
+
+- A set of task files in `tasks/pending/`, each following the template.
+- The task set is ready for human review at Gate 2 (Task Plan Review).
+
+## Quality Criteria
+
+- Every task is **atomic** — one clear outcome.
+- Every task is **one-shottable** — completable in a single agent pass.
+- Every task is **verifiable** — has a test or command that proves it works.
+- Every task is **self-contained** — the description provides enough context to start.
+- No two tasks modify the same file without an explicit dependency between them.
+- The full set of tasks covers 100% of the specification.
+
+## Common Pitfalls
+
+- **Tasks too large** — if a task description is longer than ~20 lines, it probably needs splitting.
+- **Missing dependencies** — trace the data flow: if Task B reads a file that Task A creates, Task B depends on Task A.
+- **Vague acceptance criteria** — "it works" is not a criterion. "The function returns an empty list when given no input" is.
+- **Forgetting verification commands** — every task must have a way to prove it is done. If you cannot write a verification command, the acceptance criteria are not specific enough.
+- **File conflicts** — two tasks creating the same file will cause merge conflicts. Restructure so one task creates the file and the other modifies it (with a dependency).
