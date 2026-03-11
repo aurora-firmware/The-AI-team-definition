@@ -30,9 +30,8 @@ mkdir -p bugs/open bugs/resolved
 mkdir -p decisions
 mkdir -p templates
 mkdir -p docs/architecture docs/guidelines docs/processes docs/guides
-mkdir -p agents
-mkdir -p skills
-mkdir -p .claude/commands
+mkdir -p .claude/agents
+mkdir -p .claude/skills
 ```
 
 Add `.gitkeep` files to keep empty directories in git:
@@ -47,34 +46,28 @@ done
 
 Copy the following files from this repository into your new project, preserving the directory structure:
 
-**Templates (copy as-is):**
-- `specifications/TEMPLATE-specification.md`
-- `tasks/TEMPLATE-task.md`
-- `bugs/TEMPLATE-bug.md`
-- `decisions/TEMPLATE-adr.md`
-- `templates/roadmap.md`
-- `templates/test-plan.md`
-- `templates/test-report.md`
+**Templates (bundled as skill assets):**
+- `.claude/skills/new-spec/assets/TEMPLATE-specification.md`
+- `.claude/skills/new-task/assets/TEMPLATE-task.md`
+- `.claude/skills/new-bug/assets/TEMPLATE-bug.md`
+- `.claude/skills/new-adr/assets/TEMPLATE-adr.md`
+- `.claude/skills/write-plan/assets/roadmap.md`
+- `.claude/skills/tdd/assets/test-plan.md`
+- `.claude/skills/tdd/assets/test-report.md`
 - `templates/handoff-note.md`
-- `templates/progress-report.md`
+- `.claude/skills/status-report/assets/progress-report.md`
 
-**Agent definitions (copy as-is):**
-- `agents/TEMPLATE-agent.md`
-- `agents/planner.md`
-- `agents/architect.md`
-- `agents/implementer.md`
-- `agents/reviewer.md`
-- `agents/tester.md`
-- `agents/integrator.md`
+**Agent definitions (copy to `.claude/agents/`):**
+- `TEMPLATE-agent.md`
+- `planner.md`
+- `architect.md`
+- `implementer.md`
+- `reviewer.md`
+- `integrator.md`
 
-**Skill definitions (copy as-is):**
-- `skills/TEMPLATE-skill.md`
-- `skills/brainstorm.md`
-- `skills/write-plan.md`
-- `skills/code-review.md`
-- `skills/tdd.md`
-- `skills/debug.md`
-- `skills/conflict-resolution.md`
+**Skill definitions (copy to `.claude/skills/<name>/SKILL.md`):**
+- `brainstorm`, `write-plan`, `code-review`, `tdd`, `debug`, `conflict-resolution`
+- `new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`, `bootstrap-project`
 
 **Process and guidelines docs (copy as-is):**
 - `docs/processes/workflow-overview.md`
@@ -85,13 +78,6 @@ Copy the following files from this repository into your new project, preserving 
 - `docs/guidelines/markdown-conventions.md`
 - `docs/architecture/system-overview.md`
 - `docs/architecture/component-map.md`
-
-**Slash commands (copy as-is):**
-- `.claude/commands/new-spec.md`
-- `.claude/commands/new-task.md`
-- `.claude/commands/new-bug.md`
-- `.claude/commands/new-adr.md`
-- `.claude/commands/status-report.md`
 
 ### Step 3: Create Your Project's CLAUDE.md
 
@@ -114,8 +100,8 @@ Create a `CLAUDE.md` in your project root. Start with this structure and customi
 | `decisions/` | Architecture Decision Records (ADRs) |
 | `templates/` | Reusable document formats |
 | `docs/` | Architecture, guidelines, and process documentation |
-| `agents/` | Agent role definitions |
-| `skills/` | Reusable skill definitions |
+| `.claude/agents/` | Agent role definitions |
+| `.claude/skills/` | Reusable skill definitions (each as `<name>/SKILL.md`) |
 | `src/` | Source code (adjust to your project layout) |
 | `tests/` | Test files (adjust to your project layout) |
 
@@ -169,10 +155,10 @@ Run these checks to confirm everything is in place:
 
 1. **Directory structure**: All folders exist with templates in place.
    ```bash
-   ls specifications/TEMPLATE-specification.md
-   ls tasks/TEMPLATE-task.md
-   ls bugs/TEMPLATE-bug.md
-   ls decisions/TEMPLATE-adr.md
+   ls .claude/skills/new-spec/assets/TEMPLATE-specification.md
+   ls .claude/skills/new-task/assets/TEMPLATE-task.md
+   ls .claude/skills/new-bug/assets/TEMPLATE-bug.md
+   ls .claude/skills/new-adr/assets/TEMPLATE-adr.md
    ```
 
 2. **Slash commands work**: Run `/status-report` — it should produce an empty report with zero counts.
@@ -190,9 +176,9 @@ Your project is ready. The typical workflow is:
 3. **Approve the spec** — human reviews and approves (Gate 1).
 4. **Break into tasks** — the planner decomposes the spec into atomic tasks.
 5. **Approve the task plan** — human reviews tasks (Gate 2).
-6. **Execute** — implementer and tester agents work through tasks in parallel.
-7. **Review** — reviewer agent checks each completed task.
-8. **Integrate** — integrator agent merges and runs integration tests.
-9. **Final approval** — human approves the merged result (Gate 3).
+6. **Execute** — the implementer agent works through tasks sequentially using TDD.
+7. **Review** — reviewer agent checks each completed task (Gate 3).
+8. **Integrate** — integrator agent merges and runs integration tests (Gate 4).
+9. **Final approval** — human approves the merged result (Gate 5).
 
 For the full workflow details, see `docs/processes/workflow-overview.md`.

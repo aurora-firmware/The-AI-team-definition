@@ -14,14 +14,14 @@ These files are generic and work for any project without modification:
 
 | Category | Files |
 |---|---|
-| **Agent definitions** | All files in `agents/` — roles are universal |
-| **Skill definitions** | All files in `skills/` — procedures are language-agnostic |
+| **Agent definitions** | All files in `.claude/agents/` — roles are universal |
+| **Skill definitions** | All files in `.claude/skills/` — procedures are language-agnostic |
 | **Process docs** | `docs/processes/workflow-overview.md`, `quality-gates.md`, `escalation-procedure.md` |
 | **Review checklist** | `docs/guidelines/review-checklist.md` |
 | **Markdown conventions** | `docs/guidelines/markdown-conventions.md` |
 | **Architecture docs** | `docs/architecture/system-overview.md`, `component-map.md` |
-| **All templates** | `TEMPLATE-*.md` files and everything in `templates/` |
-| **Slash commands** | All files in `.claude/commands/` |
+| **All templates** | `TEMPLATE-*.md` files in `.claude/skills/*/assets/` and `templates/` |
+| **Action skills** | Action skills in `.claude/skills/` (with `disable-model-invocation: true`) |
 
 ## What to Customize
 
@@ -47,16 +47,16 @@ These files are generic and work for any project without modification:
 
 ### Optional Customization
 
-**Agent subset** — Not every project needs all 6 agents:
+**Agent subset** — Not every project needs all 5 agents:
 
 | Team Size | Recommended Agents |
 |---|---|
 | Solo (1 agent) | Implementer (combines all roles) |
 | Small (2-3 agents) | Planner + Implementer + Reviewer |
-| Standard (4-5 agents) | Planner + Implementer + Reviewer + Tester + Integrator |
-| Full (6 agents) | All agents including Architect |
+| Standard (4 agents) | Planner + Implementer + Reviewer + Integrator |
+| Full (5 agents) | All agents including Architect |
 
-To reduce the team: keep only the agent files you need. The workflow still works — agents whose roles are absent have their responsibilities absorbed by adjacent agents (e.g., without a separate tester, the implementer writes tests).
+To reduce the team: keep only the agent files you need. The workflow still works — agents whose roles are absent have their responsibilities absorbed by adjacent agents (e.g., without an integrator, the implementer handles merges).
 
 **Quality gate criteria** — Adjust `docs/processes/quality-gates.md`:
 - For prototypes or MVPs: relax coverage requirements, reduce review stages.
@@ -77,21 +77,21 @@ To reduce the team: keep only the agent files you need. The workflow still works
 
 ### Adding New Agent Roles
 
-Use `agents/TEMPLATE-agent.md`. Common additions:
+Use `.claude/agents/TEMPLATE-agent.md`. Common additions:
 - **DevOps agent** — manages CI/CD, deployment, infrastructure.
 - **Documentation agent** — writes user-facing docs, API references.
 - **Security agent** — dedicated security review, dependency auditing.
 
 ### Adding New Skills
 
-Use `skills/TEMPLATE-skill.md`. Common additions:
+Create a new directory under `.claude/skills/<name>/` with a `SKILL.md` file. Common additions:
 - **Database migration** — schema changes with rollback procedures.
 - **API design** — REST/GraphQL endpoint design following project conventions.
 - **Performance profiling** — identify and fix performance bottlenecks.
 
-### Adding New Slash Commands
+### Adding New Action Skills
 
-Create a new `.md` file in `.claude/commands/`. Each command is a set of instructions that Claude follows. Reference existing commands as examples.
+Create a new directory under `.claude/skills/<name>/` with a `SKILL.md` file. Add the `disable-model-invocation: true` frontmatter field if the skill should be user-invocable only (not triggered by the model). Reference existing skills as examples.
 
 ## Retrofitting Into an Existing Project
 

@@ -39,6 +39,12 @@ Review the code against the checklist in `docs/guidelines/review-checklist.md`:
 If all checks pass: **Pass**. Hand off to integrator.
 If any check fails: **Fail**. Return to implementer with specific, actionable feedback.
 
+### Step 5: Record Rejection (on fail only)
+Append feedback to the task file's **Notes** section under a `### Review Feedback — [date]` heading.
+The task stays in `tasks/in-progress/`.
+The implementer fixes the issues and re-submits.
+Maximum two review cycles per task — if the task fails a third time, escalate to architect.
+
 ## Output Format
 
 ### On Pass
@@ -49,6 +55,8 @@ For each failed check:
 - **File and location** — which file, which section or line.
 - **What is wrong** — specific description of the issue.
 - **What should change** — actionable guidance on how to fix it.
+
+The feedback is also appended to the task file's Notes section (see Step 5).
 
 ## Quality Criteria
 

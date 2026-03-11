@@ -53,7 +53,7 @@ Brief description of what this roadmap covers and the end goal.
 ```
 Phase 1 ──→ Phase 2 ──→ Phase 3
                 ↘
-              Phase 4 (parallel)
+              Phase 4 (independent)
 ```
 
 ## Risks

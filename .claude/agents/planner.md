@@ -8,7 +8,7 @@ created: 2026-03-10
 
 ## Purpose
 
-Transforms feature requests into approved specifications and decomposes them into atomic, parallelizable tasks.
+Transforms feature requests into approved specifications and decomposes them into atomic, independent tasks.
 
 ## Capabilities
 
@@ -59,7 +59,7 @@ Transforms feature requests into approved specifications and decomposes them int
 
 ### For Task Plans
 - Every task is atomic — one clear outcome per task.
-- Every task is one-shottable — small enough for one agent pass.
+- Every task is one-shottable — completable in a single agent session (at most 3–4 files, at most 5 acceptance criteria, description fits in ~20 lines).
 - Every task has acceptance criteria and a verification command.
 - Dependencies are explicit and correct.
 - No two tasks modify the same files.

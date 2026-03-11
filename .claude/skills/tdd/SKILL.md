@@ -59,7 +59,8 @@ Continue until all criteria have tests and passing implementations.
 
 - Every acceptance criterion has at least one test.
 - Tests cover both success and failure paths.
-- Tests are independent and deterministic.
+- Tests are independent (no shared mutable state) and deterministic (same result every run, no flakiness).
+- Test names describe the expected behavior, not the implementation (e.g., `test_returns_empty_list_when_no_items` not `test_get_items`).
 - The implementation is minimal — no code exists that is not required by a test.
 - All tests pass when run together.
 

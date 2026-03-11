@@ -34,7 +34,7 @@ Identify which approach best balances the trade-offs.
 Document why the rejected approaches were not chosen.
 
 ### Step 4: Produce the Design Document
-Write a specification following `specifications/TEMPLATE-specification.md`.
+Write a specification following `.claude/skills/new-spec/assets/TEMPLATE-specification.md`.
 Include the recommended approach, the alternatives considered, and the rationale.
 Clearly state what is excluded from scope.
 

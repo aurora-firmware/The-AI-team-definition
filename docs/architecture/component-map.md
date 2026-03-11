@@ -14,9 +14,8 @@ This document maps every component in the AI team framework: what it is, what it
 |---|---|---|---|---|---|
 | Planner | Breaks features into specs and tasks | brainstorm, write-plan | Human | Human (approval), Implementer (tasks) | `.claude/agents/planner.md` |
 | Architect | Advises on design and failure recovery | — (advisory role) | Any blocked agent | Requesting agent, or Human (escalation) | `.claude/agents/architect.md` |
-| Implementer | Writes production code | tdd, debug | Task directory | Reviewer | `.claude/agents/implementer.md` |
+| Implementer | Writes tests and production code using TDD | tdd, debug | Task directory | Reviewer | `.claude/agents/implementer.md` |
 | Reviewer | Reviews code for spec compliance and quality | code-review | Implementer | Implementer (feedback) or Integrator (approval) | `.claude/agents/reviewer.md` |
-| Tester | Writes and runs tests | tdd | Works alongside Implementer | Feeds results to Implementer | `.claude/agents/tester.md` |
 | Integrator | Merges branches and runs integration tests | conflict-resolution | Reviewer (approved tasks) | Human (final approval) | `.claude/agents/integrator.md` |
 
 ## Skills
@@ -26,7 +25,7 @@ This document maps every component in the AI team framework: what it is, what it
 | brainstorm | Explore solution space, evaluate trade-offs | Planner | `.claude/skills/brainstorm/SKILL.md` |
 | write-plan | Decompose feature into atomic tasks | Planner | `.claude/skills/write-plan/SKILL.md` |
 | code-review | Two-stage review (spec + quality) | Reviewer | `.claude/skills/code-review/SKILL.md` |
-| tdd | Test-driven development cycle | Implementer, Tester | `.claude/skills/tdd/SKILL.md` |
+| tdd | Test-driven development cycle | Implementer | `.claude/skills/tdd/SKILL.md` |
 | debug | Reproduce, isolate, fix, verify | Implementer | `.claude/skills/debug/SKILL.md` |
 | conflict-resolution | Resolve git merge conflicts | Integrator | `.claude/skills/conflict-resolution/SKILL.md` |
 
@@ -36,9 +35,9 @@ This document maps every component in the AI team framework: what it is, what it
 |---|---|---|---|
 | Specifications | Directory | Feature and system specs | `specifications/` |
 | Task Board | Directory tree | Task lifecycle tracking | `tasks/{pending,in-progress,completed,blocked}/` |
-| Bug Tracker | Directory tree | Bug lifecycle tracking | `bugs/{open,resolved}/` |
+| Bug Tracker | Directory tree | Bug lifecycle tracking | `bugs/{open,in-progress,resolved}/` |
 | Decision Log | Directory | Architecture decision records | `decisions/` |
-| Templates | Directory | Reusable document formats | `templates/` |
+| Templates | Skill assets | Reusable document formats | `.claude/skills/*/assets/` and `templates/` |
 | Process Docs | Directory | Workflow and procedure definitions | `docs/processes/` |
 | Guidelines | Directory | Standards and checklists | `docs/guidelines/` |
 | Architecture Docs | Directory | System design documentation | `docs/architecture/` |

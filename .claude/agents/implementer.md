@@ -36,17 +36,20 @@ Writes production code that fulfills a single task's acceptance criteria, follow
 
 ## Escalation Triggers
 
-- Three consecutive failed attempts to make tests pass.
+The implementer's self-recovery threshold is **three consecutive failed attempts** to make tests pass.
+After three failures, stop retrying and enter the escalation chain (see `docs/processes/escalation-procedure.md`).
+
+Other immediate escalation triggers (no retry needed):
 - Discovery of a dependency on another task that is not listed in the task's dependencies.
 - The acceptance criteria cannot be met without changing the specification.
 
 ## Interaction Pattern
 
 ### Receives Work From
-- **Task directory** — picks up a task file from `tasks/pending/`, moves it to `tasks/in-progress/`.
+- **Task directory** — picks up the next task from `tasks/pending/`, selected by priority (critical > high > medium > low), then by dependency readiness (all dependencies in `completed/`), then by creation date (oldest first). Moves the selected task to `tasks/in-progress/`.
 
 ### Hands Off To
-- **Reviewer** — completed code with passing tests, ready for code review.
+- **Reviewer** — completed code with passing tests, plus a handoff note (`templates/handoff-note.md`) summarizing decisions made, trade-offs considered, and anything the reviewer should pay attention to.
 - **Architect** — escalation request if blocked.
 
 ## Quality Bar

@@ -20,7 +20,7 @@ These artifacts are designed to be copied into any project repository and adapte
 ├── tasks/                   Task tracking (pending/ → in-progress/ → completed/ | blocked/)
 ├── bugs/                    Bug reports (open/ → resolved/)
 ├── decisions/               Architecture Decision Records (ADRs)
-├── templates/               Roadmap, test plan/report, handoff notes, progress reports
+├── templates/               Reusable document formats not tied to a specific skill
 ├── docs/
 │   ├── architecture/        System architecture of the AI team itself
 │   ├── guidelines/          Coding standards, review checklists, markdown conventions
@@ -48,11 +48,10 @@ For detailed manual setup, see `docs/guides/setup-guide.md`.
 
 | Agent | Responsibility |
 |---|---|
-| **Planner** | Breaks features into atomic, parallelizable tasks |
+| **Planner** | Breaks features into atomic, independent tasks |
 | **Architect** | Designs systems, reviews failures, advises on structural issues |
-| **Implementer** | Writes production code following assigned skills |
+| **Implementer** | Writes tests and production code using TDD |
 | **Reviewer** | Two-stage code review: spec compliance, then code quality |
-| **Tester** | Writes tests, runs suites, reports results and coverage |
 | **Integrator** | Merges branches, resolves conflicts, runs integration tests |
 
 ## Skills

@@ -19,13 +19,13 @@ To adopt this framework for your own project:
 |---|---|
 | `specifications/` | Technical specifications for features and systems |
 | `tasks/` | Task tracking with status directories: `pending/`, `in-progress/`, `completed/`, `blocked/` |
-| `bugs/` | Bug reports with status directories: `open/`, `resolved/` |
+| `bugs/` | Bug reports with status directories: `open/`, `in-progress/`, `resolved/` |
 | `decisions/` | Architecture Decision Records (ADRs) |
-| `templates/` | Reusable document formats (roadmap, test plan/report, handoff notes, progress reports) |
+| `templates/` | Reusable document formats: handoff notes (used when implementer hands off to reviewer) |
 | `docs/architecture/` | System architecture documentation |
 | `docs/guidelines/` | Coding standards, review checklists, markdown conventions |
 | `docs/processes/` | Workflow definitions, quality gates, escalation procedures |
-| `.claude/agents/` | Agent role definitions (planner, architect, implementer, reviewer, tester, integrator) |
+| `.claude/agents/` | Agent role definitions (planner, architect, implementer, reviewer, integrator) |
 | `.claude/skills/` | Skills: procedures (brainstorm, tdd, code-review, debug, conflict-resolution, write-plan) and actions (/new-spec, /new-task, /new-bug, /new-adr, /status-report, /bootstrap-project) |
 
 ---
@@ -38,12 +38,45 @@ To adopt this framework for your own project:
 - Use skills for convenience: `/new-spec`, `/new-task`, `/new-bug`, `/new-adr`, `/status-report`.
 
 ### Task Lifecycle
-Tasks move between directories to reflect their status:
-```
-tasks/pending/ → tasks/in-progress/ → tasks/completed/
-                                    → tasks/blocked/
-```
-Move the file (not copy) when status changes. Update the `status` field in the frontmatter to match.
+
+Tasks move between directories to reflect their status.
+Move the file (not copy) when status changes.
+Update the `status` field in the frontmatter to match.
+
+| Transition | Trigger | Moved by |
+|-----------|---------|----------|
+| `pending/ → in-progress/` | Agent starts work on the task | Implementer |
+| `in-progress/ → blocked/` | Cannot proceed (missing dependency, ambiguous requirement, repeated failure) | Implementer |
+| `blocked/ → in-progress/` | Blocker is resolved | Implementer |
+| `in-progress/ → completed/` | Code review passed (Gate 3) AND integration tests passed (Gate 4) | Integrator |
+
+A task is **not** completed when the implementer finishes coding — it is completed when it survives review and integration.
+The integrator is the only agent that moves tasks to `completed/`.
+
+### Bug Lifecycle
+
+Bugs move between directories to reflect their status.
+Move the file (not copy) when status changes.
+Update the `status` field in the frontmatter to match.
+
+| Transition | Trigger | Moved by |
+|-----------|---------|----------|
+| `open/ → in-progress/` | Agent starts working on the fix | Implementer |
+| `in-progress/ → resolved/` | Fix verified (verification command passes) | Implementer |
+| `in-progress/ → open/` | Fix attempt failed, needs a different approach | Implementer |
+
+### Specification Lifecycle
+
+Specifications track their status in the `status` frontmatter field.
+Move specifications to `specifications/archive/` only when superseded and no in-flight tasks reference them.
+
+| Transition | Trigger | Changed by |
+|-----------|---------|------------|
+| `draft → review` | Planner finishes the brainstorm skill output | Planner |
+| `review → approved` | Human passes Gate 1 (Spec Approval) | Human |
+| `review → draft` | Human rejects at Gate 1 with feedback | Planner (after revision) |
+| `approved → superseded` | A new specification replaces this one | Planner (new spec must reference the old one) |
+| Move to `archive/` | Spec is `superseded` AND no tasks in `pending/` or `in-progress/` reference it | Planner |
 
 ### Decision Records
 Any decision that affects the project structure, workflow, or conventions **must** be recorded as an ADR in `decisions/`. Use the template and number sequentially (`001-`, `002-`, etc.).

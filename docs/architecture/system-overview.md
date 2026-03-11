@@ -52,9 +52,9 @@ This document describes the architecture of an AI agent team — how agents are 
 
 ### Execution Layer
 
-**Agents:** Implementer, Tester, Reviewer.
+**Agents:** Implementer, Reviewer.
 **Purpose:** Produce working, tested, reviewed code for each task.
-**Key principle:** Tasks are atomic and parallelizable. No two agents modify the same file simultaneously.
+**Key principle:** Tasks are atomic and independent. The implementer writes both tests and production code using the TDD skill.
 
 ### Integration Layer
 

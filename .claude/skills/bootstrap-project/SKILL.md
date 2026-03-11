@@ -13,7 +13,7 @@ This skill sets up the full directory structure and copies framework templates i
    ```
    specifications/archive
    tasks/pending tasks/in-progress tasks/completed tasks/blocked
-   bugs/open bugs/resolved
+   bugs/open bugs/in-progress bugs/resolved
    decisions
    templates
    docs/architecture docs/guidelines docs/processes docs/guides
@@ -24,25 +24,26 @@ This skill sets up the full directory structure and copies framework templates i
 2. Add `.gitkeep` files to empty status directories:
    - `specifications/archive/`
    - `tasks/pending/`, `tasks/in-progress/`, `tasks/completed/`, `tasks/blocked/`
-   - `bugs/open/`, `bugs/resolved/`
+   - `bugs/open/`, `bugs/in-progress/`, `bugs/resolved/`
 
-3. Check if template files already exist before copying. For each file that does NOT already exist, create it from the framework's template content. The required template files are:
-   - `specifications/TEMPLATE-specification.md`
-   - `tasks/TEMPLATE-task.md`
-   - `bugs/TEMPLATE-bug.md`
-   - `decisions/TEMPLATE-adr.md`
-   - `templates/roadmap.md`
-   - `templates/test-plan.md`
-   - `templates/test-report.md`
+3. Check if template files already exist before copying. For each file that does NOT already exist, create it from the framework's skill assets. The template sources are:
+   - `.claude/skills/new-spec/assets/TEMPLATE-specification.md`
+   - `.claude/skills/new-task/assets/TEMPLATE-task.md`
+   - `.claude/skills/new-bug/assets/TEMPLATE-bug.md`
+   - `.claude/skills/new-adr/assets/TEMPLATE-adr.md`
+   - `.claude/skills/write-plan/assets/roadmap.md`
+   - `.claude/skills/tdd/assets/test-plan.md`
+   - `.claude/skills/tdd/assets/test-report.md`
    - `templates/handoff-note.md`
-   - `templates/progress-report.md`
+   - `.claude/skills/status-report/assets/progress-report.md`
 
 4. Copy all agent definitions to `.claude/agents/` if they do not already exist:
-   - planner.md, architect.md, implementer.md, reviewer.md, tester.md, integrator.md
+   - planner.md, architect.md, implementer.md, reviewer.md, integrator.md
 
 5. Copy all skill definitions to `.claude/skills/<name>/SKILL.md` if they do not already exist:
    - brainstorm, write-plan, code-review, tdd, debug, conflict-resolution
    - new-spec, new-task, new-bug, new-adr, status-report
+   - **Note:** `bootstrap-project` is intentionally excluded. This skill belongs to the meta-framework, not to bootstrapped projects. A bootstrapped project's purpose is to build software, not to bootstrap other projects.
 
 6. Copy all process and guideline docs to `docs/` if they do not already exist:
    - `docs/processes/workflow-overview.md`

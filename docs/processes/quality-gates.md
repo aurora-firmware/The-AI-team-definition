@@ -29,7 +29,7 @@ Quality gates are checkpoints where work must meet defined criteria before proce
 - Every task is atomic (one clear outcome).
 - Every task has acceptance criteria and a verification command.
 - Dependencies between tasks are correct and complete.
-- No two tasks modify the same files (enables parallel execution).
+- No two tasks modify the same files (prevents merge conflicts during integration).
 - The full set of tasks covers the entire specification.
 
 **On failure:** Return to planner with feedback for revision.

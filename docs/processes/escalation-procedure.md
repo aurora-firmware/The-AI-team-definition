@@ -6,42 +6,51 @@ created: 2026-03-10
 
 # Escalation Procedure
 
-## When to Escalate
+## Overview
 
-An agent should escalate when it **cannot complete its assigned task** after a reasonable attempt. Specific triggers:
-
-- **Implementer:** Tests fail repeatedly after multiple fix attempts. Requirements are ambiguous. Conflicting constraints make the task impossible as specified.
-- **Reviewer:** Code has fundamental design issues that cannot be fixed without changing the specification.
-- **Tester:** Cannot create a meaningful test due to unclear requirements or untestable architecture.
-- **Integrator:** Merge conflicts that cannot be resolved without understanding both sides' intent. Integration tests fail and bisect points to multiple interacting causes.
-
-## Escalation Chain
+Escalation is a two-stage safety net that prevents agents from spinning indefinitely on unsolvable problems.
+It separates **agent-level retries** (the agent tries to fix the problem itself) from **escalation** (asking for outside help).
 
 ```
 Agent encounters problem
     ↓
-Step 1: Architect Consultation (automatic, one attempt)
-    ↓
-    ├── Resolved → Agent continues with architect's guidance
-    ↓
-    └── Not resolved
-            ↓
-        Step 2: Human Escalation
-            ↓
-            Human decides next action
+Phase 1: Agent Self-Recovery (agent retries within its own threshold)
+    ↓ threshold exceeded
+Phase 2: Escalation Chain
+    ├── Step 1: Architect Consultation (one attempt)
+    │       ├── Resolved → Agent continues
+    │       └── Not resolved ↓
+    └── Step 2: Human Escalation
+                Human decides next action
 ```
+
+## Phase 1: Agent Self-Recovery
+
+Before escalating, every agent must make a reasonable effort to solve the problem on its own.
+Each agent definition specifies its own retry threshold (see the agent's Escalation Triggers section).
+These retries happen **before** entering the escalation chain.
+
+| Agent | Self-recovery threshold |
+|-------|------------------------|
+| Implementer | Three consecutive failed attempts to make tests pass |
+| Reviewer | One review cycle — if fundamental design issues exist, escalate immediately |
+| Integrator | One bisect cycle — if the root cause spans multiple tasks, escalate immediately |
+
+Once the agent exceeds its threshold, it stops retrying and enters Phase 2.
+
+## Phase 2: Escalation Chain
 
 ### Step 1: Architect Consultation
 
 - **Who:** The architect agent.
 - **How:** The blocked agent sends a structured request describing the problem, what was attempted, and why it failed.
 - **Scope:** The architect provides advice only — it does not modify code or make implementation decisions.
-- **Limit:** One automatic consultation per issue. If the architect's guidance does not resolve the problem, proceed to Step 2.
+- **Limit:** One consultation attempt per issue. The agent applies the architect's guidance and tries once more. If it still fails, proceed to Step 2.
 
 **Architect request format:**
 ```
 Problem: [What went wrong]
-Attempted: [What the agent tried]
+Attempted: [What the agent tried, including number of retries]
 Failed because: [Why it did not work]
 Question: [Specific question for the architect]
 ```
@@ -49,12 +58,20 @@ Question: [Specific question for the architect]
 ### Step 2: Human Escalation
 
 - **Who:** A human operator.
-- **How:** A notification is sent with the full context (original task, agent's work, architect's advice, and why it was insufficient).
+- **How:** A notification is sent with the full context (original task, agent's self-recovery attempts, architect's advice, and why it was insufficient).
 - **Outcome:** The human may revise the specification, modify the task, provide direct guidance, or decide to defer the work.
+
+## When to Escalate
+
+An agent enters the escalation chain when it **cannot complete its assigned task** after exhausting its self-recovery threshold. Specific triggers:
+
+- **Implementer:** Tests fail repeatedly (3 attempts). Requirements are ambiguous or untestable. Conflicting constraints make the task impossible as specified.
+- **Reviewer:** Code has fundamental design issues that cannot be fixed without changing the specification.
+- **Integrator:** Merge conflicts that cannot be resolved without understanding both sides' intent. Integration tests fail and bisect points to multiple interacting causes.
 
 ## Rules
 
-1. **Maximum one automatic retry** — do not loop. If the architect's advice does not work, escalate immediately to human.
+1. **Retry first, then escalate** — agents must exhaust their self-recovery threshold before entering the escalation chain. Once in the chain, the architect gets one consultation attempt. If that fails, escalate to human immediately. Do not loop.
 2. **Always include context** — every escalation must carry the full chain of what was attempted. The receiving party should never need to ask "what did you try?"
 3. **Do not skip steps** — always consult the architect before escalating to human, unless the architect agent is the one that is stuck.
 4. **No silent failures** — if an agent is stuck, it must escalate. Doing nothing is not acceptable.

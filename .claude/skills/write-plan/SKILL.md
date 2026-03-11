@@ -1,6 +1,6 @@
 ---
 name: write-plan
-description: Decompose an approved specification into atomic, parallelizable tasks. Use when a spec needs to be broken into executable work units.
+description: Decompose an approved specification into atomic, independent tasks. Use when a spec needs to be broken into executable work units.
 allowed-tools: Read, Grep, Glob, Write
 ---
 
@@ -21,10 +21,10 @@ A unit of work is something that produces a single testable outcome.
 ### Step 2: Define Dependencies
 For each unit, determine what must exist before it can start.
 Draw a dependency graph.
-Look for opportunities to parallelize — units that touch different files can run simultaneously.
+Maximize independence — units that touch different files should not depend on each other.
 
 ### Step 3: Write Task Files
-For each unit, create a task file following `tasks/TEMPLATE-task.md`:
+For each unit, create a task file following `.claude/skills/new-task/assets/TEMPLATE-task.md`:
 - **ID**: Sequential within the plan (T-001, T-002, ...).
 - **Title**: Clear, descriptive, starts with a verb (Implement, Add, Create, Fix).
 - **Description**: Enough context to start without asking questions.
@@ -49,7 +49,7 @@ Save all task files to `tasks/pending/`.
 ## Quality Criteria
 
 - Every task is **atomic** — one clear outcome.
-- Every task is **one-shottable** — completable in a single agent pass.
+- Every task is **one-shottable** — completable in a single agent session without running out of context. Rules of thumb: touches at most 3–4 files, has at most 5 acceptance criteria, and the description fits in ~20 lines. If a task exceeds any of these, split it.
 - Every task is **verifiable** — has a test or command that proves it works.
 - Every task is **self-contained** — the description provides enough context to start.
 - No two tasks modify the same file without an explicit dependency between them.

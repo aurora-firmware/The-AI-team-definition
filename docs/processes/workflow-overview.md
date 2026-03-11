@@ -17,7 +17,7 @@ Feature Request (human)
 │  Produce design doc  │
 └─────────┬───────────┘
           ↓
-   ★ HUMAN GATE: Spec Approval ★
+   ★ GATE 1: Spec Approval (human) ★
           ↓
 ┌─────────────────────────┐
 │  PLANNER: Task Breakdown │  ← write-plan skill, structured mode
@@ -26,31 +26,32 @@ Feature Request (human)
 │  Verification defined    │
 └─────────┬───────────────┘
           ↓
-   ★ HUMAN GATE: Task Plan Review ★
+   ★ GATE 2: Task Plan Review (human) ★
           ↓
-┌────────────────────────────────────────────┐
-│  PARALLEL EXECUTION                         │
-│                                             │
-│  ┌─────────────┐  ┌─────────────┐          │
-│  │ IMPLEMENTER │  │ IMPLEMENTER │  ...     │
-│  │ + TESTER    │  │ + TESTER    │          │
-│  │ (Task A)    │  │ (Task B)    │          │
-│  └──────┬──────┘  └──────┬──────┘          │
-│         ↓                ↓                  │
-│  ┌─────────────┐  ┌─────────────┐          │
-│  │  REVIEWER   │  │  REVIEWER   │          │
-│  │  (Task A)   │  │  (Task B)   │          │
-│  └──────┬──────┘  └──────┬──────┘          │
-└─────────┼────────────────┼─────────────────┘
-          ↓                ↓
+┌───────────────────────────────────┐
+│  SEQUENTIAL EXECUTION (per task)  │
+│                                   │
+│  ┌─────────────┐                  │
+│  │ IMPLEMENTER │  ← tdd, debug   │
+│  │ (one task)  │                  │
+│  └──────┬──────┘                  │
+│         ↓                         │
+│  ★ GATE 3: Code Review ★         │
+│  ┌─────────────┐                  │
+│  │  REVIEWER   │  ← code-review  │
+│  └──────┬──────┘                  │
+│         ↓                         │
+│  Repeat for next task             │
+└─────────┬─────────────────────────┘
+          ↓
 ┌─────────────────────────────────────┐
 │  INTEGRATOR                          │
 │  Merge in dependency order           │
-│  Run integration tests               │
+│  ★ GATE 4: Integration Tests ★      │
 │  Bisect on failure                   │
 └─────────┬───────────────────────────┘
           ↓
-   ★ HUMAN GATE: Final Merge Approval ★
+   ★ GATE 5: Final Merge Approval (human) ★
           ↓
        ✓ DONE
 ```
@@ -70,29 +71,44 @@ Feature Request (human)
 **Agent:** Planner (structured mode).
 **Skill:** write-plan.
 **Input:** Approved specification.
-**Output:** Set of task files in `tasks/pending/`, each following `TEMPLATE-task.md`.
+**Output:** Set of task files in `tasks/pending/`, each following `.claude/skills/new-task/assets/TEMPLATE-task.md`.
 **Ends when:** Human approves the task plan.
 
-### 3. Parallel Execution
+### 3. Implementation
 
-**Agents:** Implementer + Tester (per task).
+**Agents:** One implementer agent processes tasks sequentially.
 **Skills:** tdd, debug.
-**Input:** A single task file moved to `tasks/in-progress/`.
+**Input:** A single task file moved to `tasks/in-progress/` by the implementer.
 **Output:** Working code with passing tests.
-**Constraint:** No two agents modify the same file simultaneously.
-**Ends when:** All acceptance criteria in the task are met.
+**Ends when:** All acceptance criteria in the task are met and the task is handed off to the reviewer.
+
+**Task pickup order:** The implementer selects the next task from `tasks/pending/` using:
+1. Highest priority first (`critical > high > medium > low`).
+2. Among equal priority, tasks whose dependencies are all in `completed/` first.
+3. Among remaining ties, the task with the earliest `created` date.
+
+**Task state transitions during this phase:**
+- Implementer moves the task from `tasks/pending/` to `tasks/in-progress/`.
+- If blocked, implementer moves it to `tasks/blocked/` and escalates.
+- When the blocker is resolved, implementer moves it back to `tasks/in-progress/`.
 
 ### 4. Code Review
 
 **Agent:** Reviewer.
 **Skill:** code-review.
-**Input:** Completed task with code changes.
+**Input:** Completed task with code changes and a handoff note from the implementer (see `templates/handoff-note.md`).
 **Output:** Pass/fail verdict with notes.
 **Two stages:**
 1. Spec compliance — does the code do what the task requires?
 2. Code quality — is it clean, secure, and maintainable?
 
 **Ends when:** Reviewer passes both stages, or task returns to implementer for fixes.
+
+**On review failure:**
+1. The task stays in `tasks/in-progress/` (it does not move).
+2. The reviewer appends feedback to the task file's **Notes** section, prefixed with `### Review Feedback — [date]`.
+3. The implementer reads the feedback, makes fixes on the same task branch, and re-submits for review.
+4. Maximum two review cycles per task. If the task still fails after two rejections, escalate to architect.
 
 ### 5. Integration
 
@@ -105,8 +121,25 @@ Feature Request (human)
 2. Run full test suite.
 3. If tests fail, bisect to identify the breaking change.
 4. Create a fix task or escalate.
+5. Move each successfully integrated task from `tasks/in-progress/` to `tasks/completed/`.
 
-**Ends when:** Human approves the final merge.
+**Ends when:** Human approves the final merge (Gate 5).
+
+The integrator is the only agent that moves tasks to `completed/`.
+A task reaches `completed/` only after passing both code review (Gate 3) and integration tests (Gate 4).
+
+## Git Branching Strategy
+
+<!-- TODO: Define the full branching strategy. This section needs:
+     - Base branch convention (e.g., main)
+     - Task branch naming convention (e.g., task/T-003-implement-auth-flow)
+     - When branches are created (at task pickup) and by whom (implementer)
+     - When branches are deleted (after successful integration)
+     - How the integrator merges task branches into the base branch
+     - What happens to branches when a task is blocked or rejected at review
+     See report.md issue 2.6 for full context. -->
+
+This section is pending definition. The branching model must be defined before the integrator and conflict-resolution skill can operate.
 
 ## Escalation
 
@@ -116,11 +149,17 @@ At any point, if an agent cannot complete its work:
 
 See `docs/processes/escalation-procedure.md` for details.
 
-## Human Gates
+## Quality Gates
 
-Three mandatory approval points:
-1. **Spec approval** — after brainstorm, before task breakdown.
-2. **Task plan review** — after task breakdown, before execution.
-3. **Final merge approval** — after integration tests pass, before merging to main.
+Five checkpoints control the workflow (see `docs/processes/quality-gates.md` for full criteria):
 
-These gates exist to keep humans in the loop on high-impact decisions. See `docs/processes/quality-gates.md`.
+| Gate | Checkpoint | Evaluator | Phase boundary |
+|------|-----------|-----------|----------------|
+| 1 | Spec Approval | Human | Brainstorm → Task Breakdown |
+| 2 | Task Plan Review | Human | Task Breakdown → Parallel Execution |
+| 3 | Code Review | Reviewer agent | Execution → Integration |
+| 4 | Integration Tests | Automated suite | Integration → Final Review |
+| 5 | Final Merge Approval | Human | Integration → Done |
+
+Gates 1, 2, and 5 are human approval points — they keep humans in the loop on high-impact decisions.
+Gates 3 and 4 are agent-evaluated — they catch defects before human review.

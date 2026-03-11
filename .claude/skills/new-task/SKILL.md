@@ -8,7 +8,7 @@ allowed-tools: Read, Glob, Write
 
 Create a new task.
 
-1. Read the template at `tasks/TEMPLATE-task.md`.
+1. Read the template at `.claude/skills/new-task/assets/TEMPLATE-task.md`.
 2. Ask for: task title, description, priority (critical/high/medium/low), and assigned role (or unassigned). Use `$ARGUMENTS` as the title if provided.
 3. Determine the next task ID by scanning existing files in `tasks/` (all subdirectories) for the highest `T-NNN` ID, then increment.
 4. Generate a filename: lowercase, hyphenated, based on the title (e.g., `implement-auth-flow.md`).
