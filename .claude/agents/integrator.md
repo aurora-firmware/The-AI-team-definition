@@ -19,6 +19,7 @@ Merges completed and reviewed task branches in dependency order, runs integratio
 
 ### Skills
 - `conflict-resolution` — applied when merge conflicts arise.
+- `/new-task` — to create fix tasks when integration reveals issues.
 
 ## Decision Authority
 
@@ -56,8 +57,3 @@ Merges completed and reviewed task branches in dependency order, runs integratio
 - No unresolved merge conflicts remain.
 - If a test failure is found and bisected, the resulting fix task is clear and actionable.
 
-## Temperature Guidance
-
-- **Merge operations:** 0.2 — precise, mechanical, no creativity needed.
-- **Conflict resolution:** 0.3 — careful analysis of both sides' intent.
-- **Bisecting failures:** 0.3 — methodical elimination process.

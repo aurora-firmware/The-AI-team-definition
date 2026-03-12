@@ -15,10 +15,11 @@ Performs two-stage code review to verify that completed work meets its specifica
 ### Tools
 - File read/search — to review code, tests, specs, and tasks.
 - Shell execution — to run tests and verify they pass.
-- No write access to implementation code — review only.
+- No write access to implementation code. Write access is limited to the task file's Review section.
 
 ### Skills
 - `code-review` — the two-stage review process (spec compliance + code quality).
+- `/new-bug` — to report defects discovered during review that fall outside the current task's scope.
 
 ## Decision Authority
 
@@ -56,6 +57,3 @@ Performs two-stage code review to verify that completed work meets its specifica
 ### Review Checklist Reference
 See `docs/guidelines/review-checklist.md` for the complete checklist used in each review.
 
-## Temperature Guidance
-
-- **Review analysis:** 0.4 — critical thinking, attention to detail, pattern matching against known issues.

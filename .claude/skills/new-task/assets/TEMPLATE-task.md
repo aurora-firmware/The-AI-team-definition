@@ -39,3 +39,14 @@ Include enough context that an agent can start working without asking questions.
 ## Notes
 
 Any additional context, constraints, or decisions relevant to this task.
+
+## Review
+
+<!-- Reviewer: append verdict here after each review cycle.
+
+### Review 1 — PASS|FAIL
+**Date:** YYYY-MM-DD
+**Reviewer notes:**
+- [For FAIL: file, location, what is wrong, what should change]
+- [For PASS: brief confirmation that both stages passed]
+-->

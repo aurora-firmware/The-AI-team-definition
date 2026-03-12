@@ -6,7 +6,10 @@ created: 2026-03-10
 
 # Coding Standards
 
-These standards apply to any implementation code produced by AI agents using this framework. They are language-agnostic; project-specific overrides should be documented in the project's own guidelines.
+These standards apply to any implementation code produced by AI agents using this framework.
+They are intentionally language-agnostic.
+When bootstrapping a new project, extend them with language-specific conventions, examples, and tooling rules relevant to your stack.
+Project-specific overrides should be documented in the project's own guidelines.
 
 ## General Principles
 

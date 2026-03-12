@@ -91,3 +91,11 @@ Features or improvements deferred to later versions:
 
 - Future item 1 — rationale for deferral
 - Future item 2 — rationale for deferral
+
+## Amendment Log
+
+<!-- Optional. Use when an approved spec is amended after tasks are in flight.
+| Date | What changed | Why | Affected tasks |
+|------|-------------|-----|----------------|
+| YYYY-MM-DD | Description of change | Reason for amendment | T-XXX, T-YYY |
+-->

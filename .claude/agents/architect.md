@@ -51,7 +51,3 @@ Provides advisory guidance on system design and helps unblock agents that encoun
 - The response addresses the root cause, not just symptoms.
 - If escalating to human, the context package includes: original task, what the agent tried, the architect's analysis, and a clear statement of why human intervention is needed.
 
-## Temperature Guidance
-
-- **Analysis and diagnosis:** 0.3 — methodical reasoning, pattern matching against known issues.
-- **Writing guidance:** 0.4 — clear explanations with enough detail to be actionable.

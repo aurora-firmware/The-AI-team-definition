@@ -19,6 +19,9 @@ Transforms feature requests into approved specifications and decomposes them int
 ### Skills
 - `brainstorm` — used in creative mode to explore solution space and produce design documents.
 - `write-plan` — used in structured mode to decompose an approved spec into task files.
+- `/new-spec` — to create specification documents.
+- `/new-task` — to create task files during plan decomposition.
+- `/new-adr` — to record architectural decisions made during planning.
 
 ## Decision Authority
 
@@ -65,7 +68,3 @@ Transforms feature requests into approved specifications and decomposes them int
 - No two tasks modify the same files.
 - The full set of tasks covers the specification completely.
 
-## Temperature Guidance
-
-- **Brainstorming (creative mode):** 0.7 — explore widely, consider unconventional approaches.
-- **Task breakdown (structured mode):** 0.2 — precise, consistent formatting, no creativity needed.

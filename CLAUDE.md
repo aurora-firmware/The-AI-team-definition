@@ -33,9 +33,9 @@ To adopt this framework for your own project:
 ## How to Work Here
 
 ### Creating Documents
-- **Always use the TEMPLATE file** in the target directory when creating a new document.
+- **Use the corresponding skill** to create new documents: `/new-spec`, `/new-task`, `/new-bug`, `/new-adr`.
+- Templates live in `.claude/skills/<skill-name>/assets/` — skills apply them automatically.
 - All documents must be **Markdown with YAML frontmatter** (at minimum: `title`, `status`, `created`).
-- Use skills for convenience: `/new-spec`, `/new-task`, `/new-bug`, `/new-adr`, `/status-report`.
 
 ### Task Lifecycle
 
@@ -43,12 +43,12 @@ Tasks move between directories to reflect their status.
 Move the file (not copy) when status changes.
 Update the `status` field in the frontmatter to match.
 
-| Transition | Trigger | Moved by |
-|-----------|---------|----------|
-| `pending/ → in-progress/` | Agent starts work on the task | Implementer |
-| `in-progress/ → blocked/` | Cannot proceed (missing dependency, ambiguous requirement, repeated failure) | Implementer |
-| `blocked/ → in-progress/` | Blocker is resolved | Implementer |
-| `in-progress/ → completed/` | Code review passed (Gate 3) AND integration tests passed (Gate 4) | Integrator |
+| Transition | Moved by | Receives (precondition) | Delivers (postcondition) |
+|-----------|----------|------------------------|--------------------------|
+| `pending/ → in-progress/` | Implementer | Task file with all dependencies in `completed/` | Task file moved, branch created as `task/<slug>` |
+| `in-progress/ → blocked/` | Implementer | Blocker identified (missing dep, ambiguous req, 3 failed attempts) | Task file moved, blocker described in Notes section |
+| `blocked/ → in-progress/` | Implementer | Blocker resolved (architect guidance or human input received) | Task file moved, resolution noted in Notes section |
+| `in-progress/ → completed/` | Integrator | Gate 3 passed (code review) AND Gate 4 passed (integration tests) | Task file moved, branch merged to main |
 
 A task is **not** completed when the implementer finishes coding — it is completed when it survives review and integration.
 The integrator is the only agent that moves tasks to `completed/`.
@@ -59,24 +59,24 @@ Bugs move between directories to reflect their status.
 Move the file (not copy) when status changes.
 Update the `status` field in the frontmatter to match.
 
-| Transition | Trigger | Moved by |
-|-----------|---------|----------|
-| `open/ → in-progress/` | Agent starts working on the fix | Implementer |
-| `in-progress/ → resolved/` | Fix verified (verification command passes) | Implementer |
-| `in-progress/ → open/` | Fix attempt failed, needs a different approach | Implementer |
+| Transition | Moved by | Receives (precondition) | Delivers (postcondition) |
+|-----------|----------|------------------------|--------------------------|
+| `open/ → in-progress/` | Implementer | Bug file with reproduction steps verified | Bug file moved, fix branch created |
+| `in-progress/ → resolved/` | Implementer | Fix verification command passes | Bug file moved, fix committed |
+| `in-progress/ → open/` | Implementer | Fix attempt failed | Bug file moved, failed approach noted in bug file |
 
 ### Specification Lifecycle
 
 Specifications track their status in the `status` frontmatter field.
 Move specifications to `specifications/archive/` only when superseded and no in-flight tasks reference them.
 
-| Transition | Trigger | Changed by |
-|-----------|---------|------------|
-| `draft → review` | Planner finishes the brainstorm skill output | Planner |
-| `review → approved` | Human passes Gate 1 (Spec Approval) | Human |
-| `review → draft` | Human rejects at Gate 1 with feedback | Planner (after revision) |
-| `approved → superseded` | A new specification replaces this one | Planner (new spec must reference the old one) |
-| Move to `archive/` | Spec is `superseded` AND no tasks in `pending/` or `in-progress/` reference it | Planner |
+| Transition | Changed by | Receives (precondition) | Delivers (postcondition) |
+|-----------|------------|------------------------|--------------------------|
+| `draft → review` | Planner | Completed brainstorm output | Spec with all sections filled, status updated |
+| `review → approved` | Human | Spec passes Gate 1 (Spec Approval) | Spec status updated to `approved` |
+| `review → draft` | Planner | Human rejects at Gate 1 with feedback | Spec revised per feedback, status back to `draft` |
+| `approved → superseded` | Planner | New spec created that replaces this one | Old spec references new one, status updated |
+| Move to `archive/` | Planner | Spec is `superseded` AND no tasks in `pending/` or `in-progress/` reference it | Spec moved to `specifications/archive/` |
 
 ### Decision Records
 Any decision that affects the project structure, workflow, or conventions **must** be recorded as an ADR in `decisions/`. Use the template and number sequentially (`001-`, `002-`, etc.).

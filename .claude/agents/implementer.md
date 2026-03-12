@@ -20,6 +20,7 @@ Writes production code that fulfills a single task's acceptance criteria, follow
 ### Skills
 - `tdd` — primary workflow for all implementation work.
 - `debug` — applied when tests fail unexpectedly or code does not behave as expected.
+- `/new-bug` — to report pre-existing defects discovered outside the current task's scope.
 
 ## Decision Authority
 
@@ -60,7 +61,3 @@ Other immediate escalation triggers (no retry needed):
 - Only the files listed in the task are modified (unless justified and noted).
 - No debugging artifacts, commented-out code, or placeholder implementations remain.
 
-## Temperature Guidance
-
-- **Writing code:** 0.3 — precise, correct, following established patterns.
-- **Debugging:** 0.3 — methodical analysis, not creative guessing.

@@ -59,7 +59,14 @@ Question: [Specific question for the architect]
 
 - **Who:** A human operator.
 - **How:** A notification is sent with the full context (original task, agent's self-recovery attempts, architect's advice, and why it was insufficient).
-- **Outcome:** The human may revise the specification, modify the task, provide direct guidance, or decide to defer the work.
+- **Outcome:** The human chooses one of the following actions:
+
+| Human decision | What happens next | Agent responsible |
+|---------------|-------------------|-------------------|
+| Revise the spec | Planner edits spec in-place, adds entry to the spec's Amendment Log section, identifies affected tasks, adds a note to each affected `in-progress/` task referencing the amendment. | Planner |
+| Modify the task | Task file is updated directly with new or changed requirements. Implementer re-reads the task and continues. | Human or Planner |
+| Provide guidance | The blocked agent applies the guidance and continues. No document changes needed. | Blocked agent |
+| Defer the work | Task moves to `blocked/` with the reason noted. The spec issue is not addressed now. | Implementer |
 
 ## When to Escalate
 
