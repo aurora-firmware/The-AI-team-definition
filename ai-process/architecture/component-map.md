@@ -33,14 +33,14 @@ This document maps every component in the AI team framework: what it is, what it
 
 | Component | Type | Purpose | Location |
 |---|---|---|---|
-| Specifications | Directory | Feature and system specs | `specifications/` |
-| Task Board | Directory tree | Task lifecycle tracking | `tasks/{pending,in-progress,completed,blocked}/` |
-| Bug Tracker | Directory tree | Bug lifecycle tracking | `bugs/{open,in-progress,resolved}/` |
-| Decision Log | Directory | Architecture decision records | `decisions/` |
-| Templates | Skill assets | Reusable document formats | `.claude/skills/*/assets/` and `templates/` |
-| Process Docs | Directory | Workflow and procedure definitions | `docs/processes/` |
-| Guidelines | Directory | Standards and checklists | `docs/guidelines/` |
-| Architecture Docs | Directory | System design documentation | `docs/architecture/` |
+| Specifications | Directory | Feature and system specs | `project/specifications/` |
+| Task Board | Directory tree | Task lifecycle tracking | `project/tasks/{pending,in-progress,completed,blocked}/` |
+| Bug Tracker | Directory tree | Bug lifecycle tracking | `project/bugs/{open,in-progress,resolved}/` |
+| Decision Log | Directory | Architecture decision records | `project/decisions/` |
+| Templates | Skill assets | Reusable document formats | `.claude/skills/*/assets/` and `ai-process/templates/` |
+| Process Docs | Directory | Workflow and procedure definitions | `ai-process/processes/` |
+| Guidelines | Directory | Standards and checklists | `ai-process/guidelines/` |
+| Architecture Docs | Directory | System design documentation | `ai-process/architecture/` |
 | Action Skills | Directory | Automation for document creation | `.claude/skills/` (with `disable-model-invocation: true`) |
 
 ## Interaction Diagram

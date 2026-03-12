@@ -74,7 +74,7 @@ This document describes the architecture of an AI agent team — how agents are 
 |---|---|---|
 | Human | Planner | Feature request or problem description |
 | Planner | Human | Specification for approval |
-| Planner | Task directory | Task files in `tasks/pending/` |
+| Planner | Task directory | Task files in `project/tasks/pending/` |
 | Task directory | Implementer | Individual task assignment |
 | Implementer | Reviewer | Completed code for review |
 | Reviewer | Implementer | Feedback (if review fails) |

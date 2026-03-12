@@ -46,7 +46,7 @@ Merges completed and reviewed task branches in dependency order, runs integratio
 
 ### Hands Off To
 - **Human** — the fully merged and tested codebase for final approval (Gate 5).
-- **Task directory** — new fix tasks in `tasks/pending/` if integration reveals issues.
+- **Task directory** — new fix tasks in `project/tasks/pending/` if integration reveals issues.
 - **Architect** — escalation if conflicts or failures cannot be resolved.
 
 ## Quality Bar

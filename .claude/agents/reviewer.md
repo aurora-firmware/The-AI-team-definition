@@ -55,5 +55,5 @@ Performs two-stage code review to verify that completed work meets its specifica
 - The reviewer checks the task's acceptance criteria, not personal preferences.
 
 ### Review Checklist Reference
-See `docs/guidelines/review-checklist.md` for the complete checklist used in each review.
+See `ai-process/guidelines/review-checklist.md` for the complete checklist used in each review.
 

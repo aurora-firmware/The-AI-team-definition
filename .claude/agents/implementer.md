@@ -38,7 +38,7 @@ Writes production code that fulfills a single task's acceptance criteria, follow
 ## Escalation Triggers
 
 The implementer's self-recovery threshold is **three consecutive failed attempts** to make tests pass.
-After three failures, stop retrying and enter the escalation chain (see `docs/processes/escalation-procedure.md`).
+After three failures, stop retrying and enter the escalation chain (see `ai-process/processes/escalation-procedure.md`).
 
 Other immediate escalation triggers (no retry needed):
 - Discovery of a dependency on another task that is not listed in the task's dependencies.
@@ -47,17 +47,17 @@ Other immediate escalation triggers (no retry needed):
 ## Interaction Pattern
 
 ### Receives Work From
-- **Task directory** — picks up the next task from `tasks/pending/`, selected by priority (critical > high > medium > low), then by dependency readiness (all dependencies in `completed/`), then by creation date (oldest first). Moves the selected task to `tasks/in-progress/`.
+- **Task directory** — picks up the next task from `project/tasks/pending/`, selected by priority (critical > high > medium > low), then by dependency readiness (all dependencies in `completed/`), then by creation date (oldest first). Moves the selected task to `project/tasks/in-progress/`.
 
 ### Hands Off To
-- **Reviewer** — completed code with passing tests, plus a handoff note (`templates/handoff-note.md`) summarizing decisions made, trade-offs considered, and anything the reviewer should pay attention to.
+- **Reviewer** — completed code with passing tests, plus a handoff note (`ai-process/templates/handoff-note.md`) summarizing decisions made, trade-offs considered, and anything the reviewer should pay attention to.
 - **Architect** — escalation request if blocked.
 
 ## Quality Bar
 
 - All acceptance criteria from the task are met.
 - Tests exist and pass for every acceptance criterion.
-- Code follows the project's coding standards (`docs/guidelines/coding-standards.md`).
+- Code follows the project's coding standards (`ai-process/guidelines/coding-standards.md`).
 - Only the files listed in the task are modified (unless justified and noted).
 - No debugging artifacts, commented-out code, or placeholder implementations remain.
 

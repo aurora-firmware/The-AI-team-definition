@@ -49,7 +49,7 @@ Transforms feature requests into approved specifications and decomposes them int
 ### Hands Off To
 - **Human** — a specification document for approval (Gate 1).
 - **Human** — a set of task files for approval (Gate 2).
-- **Task directory** — approved task files placed in `tasks/pending/`.
+- **Task directory** — approved task files placed in `project/tasks/pending/`.
 
 ## Quality Bar
 

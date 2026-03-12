@@ -10,7 +10,7 @@ allowed-tools: Read, Grep, Glob, Write, Edit, Bash
 
 - **Task file** — with acceptance criteria and verification command.
 - **Project test setup** — test framework, directory structure, how to run tests.
-- **Coding standards** — `docs/guidelines/coding-standards.md` for naming and structure.
+- **Coding standards** — `ai-process/guidelines/coding-standards.md` for naming and structure.
 
 ## Procedure
 

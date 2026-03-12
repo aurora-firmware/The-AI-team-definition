@@ -10,7 +10,7 @@ allowed-tools: Read, Grep, Glob, Write
 
 - **Approved specification** — the spec that passed Gate 1 (Spec Approval).
 - **Project structure** — the existing codebase layout to determine file paths.
-- **Existing tasks** — current tasks in `tasks/` to avoid conflicts or duplication.
+- **Existing tasks** — current tasks in `project/tasks/` to avoid conflicts or duplication.
 
 ## Procedure
 
@@ -39,11 +39,11 @@ Verify isolation: do any two tasks modify the same file? If yes, add a dependenc
 Verify atomicity: can each task be completed in a single agent pass? If a task feels too large, split it.
 
 ### Step 5: Place Tasks
-Save all task files to `tasks/pending/`.
+Save all task files to `project/tasks/pending/`.
 
 ## Output Format
 
-- A set of task files in `tasks/pending/`, each following the template.
+- A set of task files in `project/tasks/pending/`, each following the template.
 - The task set is ready for human review at Gate 2 (Task Plan Review).
 
 ## Quality Criteria

@@ -24,12 +24,12 @@ If you have Claude Code available, run `/bootstrap-project` inside your new repo
 In your new project root, create these directories:
 
 ```bash
-mkdir -p specifications/archive
-mkdir -p tasks/pending tasks/in-progress tasks/completed tasks/blocked
-mkdir -p bugs/open bugs/resolved
-mkdir -p decisions
-mkdir -p templates
-mkdir -p docs/architecture docs/guidelines docs/processes docs/guides
+mkdir -p project/specifications/archive
+mkdir -p project/tasks/pending project/tasks/in-progress project/tasks/completed project/tasks/blocked
+mkdir -p project/bugs/open project/bugs/resolved
+mkdir -p project/decisions
+mkdir -p ai-process/templates
+mkdir -p ai-process/architecture ai-process/guidelines ai-process/processes ai-process/guides
 mkdir -p .claude/agents
 mkdir -p .claude/skills
 ```
@@ -37,7 +37,7 @@ mkdir -p .claude/skills
 Add `.gitkeep` files to keep empty directories in git:
 
 ```bash
-for dir in specifications/archive tasks/pending tasks/in-progress tasks/completed tasks/blocked bugs/open bugs/resolved; do
+for dir in project/specifications/archive project/tasks/pending project/tasks/in-progress project/tasks/completed project/tasks/blocked project/bugs/open project/bugs/resolved; do
   touch "$dir/.gitkeep"
 done
 ```
@@ -54,7 +54,7 @@ Copy the following files from this repository into your new project, preserving 
 - `.claude/skills/write-plan/assets/roadmap.md`
 - `.claude/skills/tdd/assets/test-plan.md`
 - `.claude/skills/tdd/assets/test-report.md`
-- `templates/handoff-note.md`
+- `ai-process/templates/handoff-note.md`
 - `.claude/skills/status-report/assets/progress-report.md`
 
 **Agent definitions (copy to `.claude/agents/`):**
@@ -70,14 +70,14 @@ Copy the following files from this repository into your new project, preserving 
 - `new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`, `bootstrap-project`
 
 **Process and guidelines docs (copy as-is):**
-- `docs/processes/workflow-overview.md`
-- `docs/processes/quality-gates.md`
-- `docs/processes/escalation-procedure.md`
-- `docs/guidelines/coding-standards.md`
-- `docs/guidelines/review-checklist.md`
-- `docs/guidelines/markdown-conventions.md`
-- `docs/architecture/system-overview.md`
-- `docs/architecture/component-map.md`
+- `ai-process/processes/workflow-overview.md`
+- `ai-process/processes/quality-gates.md`
+- `ai-process/processes/escalation-procedure.md`
+- `ai-process/guidelines/coding-standards.md`
+- `ai-process/guidelines/review-checklist.md`
+- `ai-process/guidelines/markdown-conventions.md`
+- `ai-process/architecture/system-overview.md`
+- `ai-process/architecture/component-map.md`
 
 ### Step 3: Create Your Project's CLAUDE.md
 
@@ -94,12 +94,12 @@ Create a `CLAUDE.md` in your project root. Start with this structure and customi
 
 | Folder | Purpose |
 |---|---|
-| `specifications/` | Technical specifications for features and systems |
-| `tasks/` | Task tracking: `pending/`, `in-progress/`, `completed/`, `blocked/` |
-| `bugs/` | Bug reports: `open/`, `resolved/` |
-| `decisions/` | Architecture Decision Records (ADRs) |
-| `templates/` | Reusable document formats |
-| `docs/` | Architecture, guidelines, and process documentation |
+| `project/specifications/` | Technical specifications for features and systems |
+| `project/tasks/` | Task tracking: `pending/`, `in-progress/`, `completed/`, `blocked/` |
+| `project/bugs/` | Bug reports: `open/`, `resolved/` |
+| `project/decisions/` | Architecture Decision Records (ADRs) |
+| `ai-process/templates/` | Reusable document formats |
+| `ai-process/` | Architecture, guidelines, and process documentation |
 | `.claude/agents/` | Agent role definitions |
 | `.claude/skills/` | Reusable skill definitions (each as `<name>/SKILL.md`) |
 | `src/` | Source code (adjust to your project layout) |
@@ -112,7 +112,7 @@ Create a `CLAUDE.md` in your project root. Start with this structure and customi
 - Use TEMPLATE files when creating new documents.
 - All documents use Markdown with YAML frontmatter.
 - Tasks move between directories: `pending/` → `in-progress/` → `completed/` or `blocked/`.
-- Architecture decisions require ADRs in `decisions/`.
+- Architecture decisions require ADRs in `project/decisions/`.
 - Documents must be self-contained and readable on their own.
 
 ## Tech Stack
@@ -129,12 +129,12 @@ Create a `CLAUDE.md` in your project root. Start with this structure and customi
 - Filenames: lowercase with hyphens.
 - ADRs: numbered sequentially (`NNN-short-title.md`).
 - All docs: YAML frontmatter with `title`, `status`, `created`.
-- Follow coding standards in `docs/guidelines/coding-standards.md`.
+- Follow coding standards in `ai-process/guidelines/coding-standards.md`.
 ```
 
 ### Step 4: Customize for Your Stack
 
-**`docs/guidelines/coding-standards.md`** — Add language-specific sections:
+**`ai-process/guidelines/coding-standards.md`** — Add language-specific sections:
 - For Python: add sections on type hints, import ordering, docstring style.
 - For TypeScript: add sections on strict mode, interface vs. type, module resolution.
 - For any language: specify your formatter, linter, and their configuration.
@@ -163,7 +163,7 @@ Run these checks to confirm everything is in place:
 
 2. **Slash commands work**: Run `/status-report` — it should produce an empty report with zero counts.
 
-3. **Create a test task**: Run `/new-task` and verify a file appears in `tasks/pending/`.
+3. **Create a test task**: Run `/new-task` and verify a file appears in `project/tasks/pending/`.
 
 4. **Delete the test task**: Remove the test file you just created.
 
@@ -181,4 +181,4 @@ Your project is ready. The typical workflow is:
 8. **Integrate** — integrator agent merges and runs integration tests (Gate 4).
 9. **Final approval** — human approves the merged result (Gate 5).
 
-For the full workflow details, see `docs/processes/workflow-overview.md`.
+For the full workflow details, see `ai-process/processes/workflow-overview.md`.

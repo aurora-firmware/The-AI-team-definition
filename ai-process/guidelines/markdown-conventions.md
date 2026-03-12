@@ -67,7 +67,7 @@ Additional fields depend on document type. See each `TEMPLATE-*.md` for the requ
 
 ## Links and References
 
-- Use relative paths for cross-references within the repo: `[Quality Gates](docs/processes/quality-gates.md)`.
+- Use relative paths for cross-references within the repo: `[Quality Gates](ai-process/processes/quality-gates.md)`.
 - Use descriptive link text — not "click here" or bare URLs.
 
 ## Diagrams

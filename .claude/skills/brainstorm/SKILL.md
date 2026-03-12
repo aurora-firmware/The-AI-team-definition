@@ -9,7 +9,7 @@ allowed-tools: Read, Grep, Glob, Write
 ## Input Requirements
 
 - **Feature request or problem description** — what needs to be solved and why.
-- **Existing specifications and decisions** — context from `specifications/` and `decisions/` to avoid contradictions.
+- **Existing specifications and decisions** — context from `project/specifications/` and `project/decisions/` to avoid contradictions.
 - **Constraints** — any technical, time, or scope constraints stated by the human.
 
 ## Procedure
@@ -40,7 +40,7 @@ Clearly state what is excluded from scope.
 
 ## Output Format
 
-- A specification document in `specifications/` following the template.
+- A specification document in `project/specifications/` following the template.
 - The document is ready for human review at Gate 1 (Spec Approval).
 
 ## Quality Criteria
@@ -55,4 +55,4 @@ Clearly state what is excluded from scope.
 - **Anchoring on the first idea** — force yourself to generate at least one meaningfully different alternative before committing.
 - **Solving the wrong problem** — re-read the feature request after generating alternatives to verify you are addressing the actual need.
 - **Scope creep** — if an alternative requires significantly more work than the others, flag it as a future roadmap item rather than including it in the current spec.
-- **Missing constraints** — check existing decision records in `decisions/` before proposing something that contradicts a prior decision.
+- **Missing constraints** — check existing decision records in `project/decisions/` before proposing something that contradicts a prior decision.

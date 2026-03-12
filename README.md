@@ -16,14 +16,15 @@ These artifacts are designed to be copied into any project repository and adapte
 ## Repository Structure
 
 ```
-├── specifications/          Technical specs (with archive/ for superseded versions)
-├── tasks/                   Task tracking (pending/ → in-progress/ → completed/ | blocked/)
-├── bugs/                    Bug reports (open/ → resolved/)
-├── decisions/               Architecture Decision Records (ADRs)
-├── templates/               Reusable document formats not tied to a specific skill
-├── docs/
+├── project/specifications/          Technical specs (with archive/ for superseded versions)
+├── project/tasks/                   Task tracking (pending/ → in-progress/ → completed/ | blocked/)
+├── project/bugs/                    Bug reports (open/ → resolved/)
+├── project/decisions/               Architecture Decision Records (ADRs)
+├── ai-process/
+│   ├── templates/           Reusable document formats not tied to a specific skill
 │   ├── architecture/        System architecture of the AI team itself
 │   ├── guidelines/          Coding standards, review checklists, markdown conventions
+│   ├── guides/              Setup and customization guides
 │   └── processes/           Workflow definitions, quality gates, escalation procedures
 └── .claude/
     ├── agents/              Agent role definitions (6 roles)
@@ -33,10 +34,41 @@ These artifacts are designed to be copied into any project repository and adapte
 ## Quick Start — Using This in Your Project
 
 1. **Bootstrap**: In your new project repo, run `/bootstrap-project` to set up the full framework automatically.
-2. **Customize**: Edit `CLAUDE.md` with your project name, tech stack, and conventions. See `docs/guides/customization-guide.md`.
-3. **Start building**: Use `/new-spec` to write your first specification, then follow the workflow in `docs/processes/workflow-overview.md`.
+2. **Customize**: Edit `CLAUDE.md` with your project name, tech stack, and conventions. See `ai-process/guides/customization-guide.md`.
+3. **Start building**: Use `/new-spec` to write your first specification, then follow the workflow in `ai-process/processes/workflow-overview.md`.
 
-For detailed manual setup, see `docs/guides/setup-guide.md`.
+For detailed manual setup, see `ai-process/guides/setup-guide.md`.
+
+## Understanding the Layout
+
+This repository has two distinct areas, each with a clear purpose:
+
+### `ai-process/` — Framework (Generic, Read-Only)
+
+These are the **reusable framework artifacts** that define how AI teams work. They are meant to be copied into any project and adapted minimally.
+
+- **`processes/`** — Workflow definitions, quality gates, escalation procedures (applies to all projects)
+- **`guidelines/`** — Coding standards, review checklists, markdown conventions (framework defaults)
+- **`architecture/`** — System architecture diagrams and component maps (describes the AI team structure)
+- **`guides/`** — Setup instructions and customization guidance for adopting the framework
+- **`templates/`** — Reusable document formats (handoff notes, etc.)
+
+**When adopting this framework in a new project**: Copy everything in `ai-process/` as-is. Only modify if you need language-specific conventions (edit `ai-process/guidelines/coding-standards.md`) or project-specific processes (document in `project/decisions/`).
+
+### `project/` — Project Work (Project-Specific)
+
+These directories hold the actual work artifacts for the project. This is where specifications, tasks, bugs, and decisions about your specific project live.
+
+- **`tasks/`** — Feature work organized by status (pending → in-progress → completed)
+- **`bugs/`** — Bug reports organized by status (open → in-progress → resolved)
+- **`specifications/`** — Feature specifications, with `archive/` for superseded versions
+- **`decisions/`** — Architecture Decision Records (ADRs) specific to your project
+
+**When working on a project**: All your work happens here. Create tasks, track bugs, write specs, and record decisions.
+
+### `.claude/` — Agent Configuration (Framework)
+
+Agent role definitions and skills live here (Claude Code requirement). Do not modify unless you're extending the framework with new agent types or skills.
 
 ## Quick Start — Working Within This Repo
 
@@ -67,4 +99,4 @@ For detailed manual setup, see `docs/guides/setup-guide.md`.
 
 ## Contributing
 
-All contributions must follow the templates and conventions defined in `CLAUDE.md`. Architecture-affecting changes require an ADR in `decisions/`.
+All contributions must follow the templates and conventions defined in `CLAUDE.md`. Architecture-affecting changes require an ADR in `project/decisions/`.

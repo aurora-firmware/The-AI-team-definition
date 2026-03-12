@@ -11,7 +11,7 @@ allowed-tools: Read, Grep, Glob, Bash(git diff *)
 - **Task file** — the task definition with acceptance criteria.
 - **Code changes** — the diff or set of modified files.
 - **Test results** — confirmation that all tests pass.
-- **Review checklist** — `docs/guidelines/review-checklist.md`.
+- **Review checklist** — `ai-process/guidelines/review-checklist.md`.
 
 ## Procedure
 
@@ -28,7 +28,7 @@ Check each acceptance criterion against the code:
 If any criterion is not met, stop and return feedback. Do not proceed to Stage 2.
 
 ### Step 3: Stage 2 — Code Quality
-Review the code against the checklist in `docs/guidelines/review-checklist.md`:
+Review the code against the checklist in `ai-process/guidelines/review-checklist.md`:
 - **Correctness**: Logic handles expected inputs and edge cases.
 - **Tests**: Tests exist, cover success and failure paths, are independent.
 - **Security**: No hardcoded secrets, input is validated, queries are parameterized.
@@ -41,7 +41,7 @@ If any check fails: **Fail**. Return to implementer with specific, actionable fe
 
 ### Step 5: Record Rejection (on fail only)
 Append feedback to the task file's **Notes** section under a `### Review Feedback — [date]` heading.
-The task stays in `tasks/in-progress/`.
+The task stays in `project/tasks/in-progress/`.
 The implementer fixes the issues and re-submits.
 Maximum two review cycles per task — if the task fails a third time, escalate to architect.
 

@@ -8,8 +8,8 @@
 
 To adopt this framework for your own project:
 1. **Quick setup**: Run `/bootstrap-project` in your new repo — it creates the full structure automatically.
-2. **Manual setup**: Follow `docs/guides/setup-guide.md` for step-by-step instructions.
-3. **Customization**: See `docs/guides/customization-guide.md` for what to adapt vs. keep as-is.
+2. **Manual setup**: Follow `ai-process/guides/setup-guide.md` for step-by-step instructions.
+3. **Customization**: See `ai-process/guides/customization-guide.md` for what to adapt vs. keep as-is.
 
 ---
 
@@ -17,14 +17,15 @@ To adopt this framework for your own project:
 
 | Folder | Purpose |
 |---|---|
-| `specifications/` | Technical specifications for features and systems |
-| `tasks/` | Task tracking with status directories: `pending/`, `in-progress/`, `completed/`, `blocked/` |
-| `bugs/` | Bug reports with status directories: `open/`, `in-progress/`, `resolved/` |
-| `decisions/` | Architecture Decision Records (ADRs) |
-| `templates/` | Reusable document formats: handoff notes (used when implementer hands off to reviewer) |
-| `docs/architecture/` | System architecture documentation |
-| `docs/guidelines/` | Coding standards, review checklists, markdown conventions |
-| `docs/processes/` | Workflow definitions, quality gates, escalation procedures |
+| `project/specifications/` | Technical specifications for features and systems |
+| `project/tasks/` | Task tracking with status directories: `pending/`, `in-progress/`, `completed/`, `blocked/` |
+| `project/bugs/` | Bug reports with status directories: `open/`, `in-progress/`, `resolved/` |
+| `project/decisions/` | Architecture Decision Records (ADRs) |
+| `ai-process/templates/` | Reusable document formats: handoff notes (used when implementer hands off to reviewer) |
+| `ai-process/architecture/` | System architecture documentation |
+| `ai-process/guidelines/` | Coding standards, review checklists, markdown conventions |
+| `ai-process/processes/` | Workflow definitions, quality gates, escalation procedures |
+| `ai-process/guides/` | Setup and customization guides |
 | `.claude/agents/` | Agent role definitions (planner, architect, implementer, reviewer, integrator) |
 | `.claude/skills/` | Skills: procedures (brainstorm, tdd, code-review, debug, conflict-resolution, write-plan) and actions (/new-spec, /new-task, /new-bug, /new-adr, /status-report, /bootstrap-project) |
 
@@ -68,7 +69,7 @@ Update the `status` field in the frontmatter to match.
 ### Specification Lifecycle
 
 Specifications track their status in the `status` frontmatter field.
-Move specifications to `specifications/archive/` only when superseded and no in-flight tasks reference them.
+Move specifications to `project/specifications/archive/` only when superseded and no in-flight tasks reference them.
 
 | Transition | Changed by | Receives (precondition) | Delivers (postcondition) |
 |-----------|------------|------------------------|--------------------------|
@@ -76,10 +77,10 @@ Move specifications to `specifications/archive/` only when superseded and no in-
 | `review → approved` | Human | Spec passes Gate 1 (Spec Approval) | Spec status updated to `approved` |
 | `review → draft` | Planner | Human rejects at Gate 1 with feedback | Spec revised per feedback, status back to `draft` |
 | `approved → superseded` | Planner | New spec created that replaces this one | Old spec references new one, status updated |
-| Move to `archive/` | Planner | Spec is `superseded` AND no tasks in `pending/` or `in-progress/` reference it | Spec moved to `specifications/archive/` |
+| Move to `archive/` | Planner | Spec is `superseded` AND no tasks in `pending/` or `in-progress/` reference it | Spec moved to `project/specifications/archive/` |
 
 ### Decision Records
-Any decision that affects the project structure, workflow, or conventions **must** be recorded as an ADR in `decisions/`. Use the template and number sequentially (`001-`, `002-`, etc.).
+Any decision that affects the project structure, workflow, or conventions **must** be recorded as an ADR in `project/decisions/`. Use the template and number sequentially (`001-`, `002-`, etc.).
 
 ### Self-Contained Documents
 Every document must be **readable on its own** without requiring the reader to open other files. Include enough context inline. Use relative file paths for cross-references when additional detail exists elsewhere.
@@ -123,7 +124,7 @@ created: YYYY-MM-DD
 Additional fields depend on the document type (see each TEMPLATE file).
 
 ### Markdown Style
-- Follow the conventions in `docs/guidelines/markdown-conventions.md`.
+- Follow the conventions in `ai-process/guidelines/markdown-conventions.md`.
 - Use ATX headings (`#`, `##`, `###`). Do not skip heading levels.
 - Use fenced code blocks with language identifiers.
 - One sentence per line in source (for cleaner diffs).

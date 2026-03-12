@@ -16,11 +16,11 @@ These files are generic and work for any project without modification:
 |---|---|
 | **Agent definitions** | All files in `.claude/agents/` — roles are universal |
 | **Skill definitions** | All files in `.claude/skills/` — procedures are language-agnostic |
-| **Process docs** | `docs/processes/workflow-overview.md`, `quality-gates.md`, `escalation-procedure.md` |
-| **Review checklist** | `docs/guidelines/review-checklist.md` |
-| **Markdown conventions** | `docs/guidelines/markdown-conventions.md` |
-| **Architecture docs** | `docs/architecture/system-overview.md`, `component-map.md` |
-| **All templates** | `TEMPLATE-*.md` files in `.claude/skills/*/assets/` and `templates/` |
+| **Process docs** | `ai-process/processes/workflow-overview.md`, `quality-gates.md`, `escalation-procedure.md` |
+| **Review checklist** | `ai-process/guidelines/review-checklist.md` |
+| **Markdown conventions** | `ai-process/guidelines/markdown-conventions.md` |
+| **Architecture docs** | `ai-process/architecture/system-overview.md`, `component-map.md` |
+| **All templates** | `TEMPLATE-*.md` files in `.claude/skills/*/assets/` and `ai-process/templates/` |
 | **Action skills** | Action skills in `.claude/skills/` (with `disable-model-invocation: true`) |
 
 ## What to Customize
@@ -37,7 +37,7 @@ These files are generic and work for any project without modification:
 - Write a new README describing your actual project, not the framework.
 - Reference the framework workflow in a "Development Process" section.
 
-**`docs/guidelines/coding-standards.md`** — Language-specific rules:
+**`ai-process/guidelines/coding-standards.md`** — Language-specific rules:
 - The existing file covers universal principles (clarity, naming, functions, error handling, testing, security).
 - Add sections specific to your language and framework. Examples:
   - Python: type hints, import ordering (isort), docstring format (Google/NumPy), Black formatting.
@@ -58,7 +58,7 @@ These files are generic and work for any project without modification:
 
 To reduce the team: keep only the agent files you need. The workflow still works — agents whose roles are absent have their responsibilities absorbed by adjacent agents (e.g., without an integrator, the implementer handles merges).
 
-**Quality gate criteria** — Adjust `docs/processes/quality-gates.md`:
+**Quality gate criteria** — Adjust `ai-process/processes/quality-gates.md`:
 - For prototypes or MVPs: relax coverage requirements, reduce review stages.
 - For production systems: add security review stage, require performance benchmarks.
 - For regulated domains: add compliance checks, audit trail requirements.
@@ -68,7 +68,7 @@ To reduce the team: keep only the agent files you need. The workflow still works
 - Lower temperatures for safety-critical code.
 - Higher temperatures for creative or design-heavy work.
 
-**Escalation thresholds** — In `docs/processes/escalation-procedure.md`:
+**Escalation thresholds** — In `ai-process/processes/escalation-procedure.md`:
 - Default: architect consultation after failure, then human escalation.
 - For faster iteration: skip architect, escalate directly to human.
 - For more autonomy: allow two architect consultations before human escalation.
@@ -99,6 +99,6 @@ If you have an existing codebase:
 
 1. Follow the setup guide to create the directory structure alongside your existing code.
 2. Your existing source code stays where it is — the framework directories are additive.
-3. Migrate existing issues/tasks by creating task files in `tasks/pending/` for each open item.
-4. Write a specification for the current system state in `specifications/` — this becomes the baseline.
-5. Create an ADR in `decisions/` documenting the decision to adopt this framework.
+3. Migrate existing issues/tasks by creating task files in `project/tasks/pending/` for each open item.
+4. Write a specification for the current system state in `project/specifications/` — this becomes the baseline.
+5. Create an ADR in `project/decisions/` documenting the decision to adopt this framework.
