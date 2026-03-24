@@ -1,15 +1,6 @@
 # The AI Team Definition
 
-> **This is a META-PROJECT.** Its output is processes, templates, agent definitions, and workflow structures — not software. Deliverables from this repo serve as the operating framework for projects built entirely by AI agent teams.
-
----
-
-## Using This Framework in a New Project
-
-To adopt this framework for your own project:
-1. **Quick setup**: Run `/bootstrap-project` in your new repo — it creates the full structure automatically.
-2. **Manual setup**: Follow `ai-process/guides/setup-guide.md` for step-by-step instructions.
-3. **Customization**: See `ai-process/guides/customization-guide.md` for what to adapt vs. keep as-is.
+> **This is a META-PROJECT.** Its output is processes, templates, agent definitions, and workflow structures — not software.
 
 ---
 
@@ -87,23 +78,6 @@ Every document must be **readable on its own** without requiring the reader to o
 
 ---
 
-## Quality Standards
-
-### Templates
-- Practical, not bureaucratic — include only fields that provide real value.
-- Every field must have a clear purpose. If you cannot explain why a field exists, remove it.
-
-### Agent Definitions
-Must specify: purpose, capabilities (tools and skills), decision authority, escalation triggers, interaction patterns (receives from / hands off to), and quality bar.
-
-### Skill Definitions
-Must include: trigger conditions, input requirements, step-by-step procedure, output format, quality criteria, and common pitfalls.
-
-### Specifications
-Must include: purpose, architecture (with diagrams where helpful), components, workflow, configuration, implementation order, and explicit exclusions (what we do not build).
-
----
-
 ## Conventions
 
 ### File Naming
@@ -129,17 +103,3 @@ Additional fields depend on the document type (see each TEMPLATE file).
 - Use fenced code blocks with language identifiers.
 - One sentence per line in source (for cleaner diffs).
 
----
-
-## Boundaries
-
-### Do
-- Create documents using the established templates and folder structure.
-- Record architectural decisions as ADRs.
-- Keep documents self-contained and up to date.
-
-### Do Not
-- Place implementation code in this repo — this repo defines processes, not software.
-- Create documents outside the defined folder structure.
-- Modify templates without first recording the change as an ADR.
-- Delete completed tasks or resolved bugs — they serve as reference history.

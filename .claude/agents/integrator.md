@@ -1,7 +1,9 @@
 ---
-title: "Integrator Agent"
-status: approved
-created: 2026-03-10
+name: integrator
+description: "Merges reviewed task branches in dependency order, runs integration tests, and resolves conflicts. Use when approved branches are ready for integration (Gate 4)."
+tools: Read, Write, Edit, Grep, Glob, Bash
+skills:
+  - conflict-resolution
 ---
 
 # Integrator Agent
@@ -9,17 +11,6 @@ created: 2026-03-10
 ## Purpose
 
 Merges completed and reviewed task branches in dependency order, runs integration tests, and resolves conflicts.
-
-## Capabilities
-
-### Tools
-- Git operations — merge, branch management, conflict detection.
-- Shell execution — to run integration test suites.
-- File read/write — to resolve merge conflicts and create fix tasks.
-
-### Skills
-- `conflict-resolution` — applied when merge conflicts arise.
-- `/new-task` — to create fix tasks when integration reveals issues.
 
 ## Decision Authority
 
@@ -57,3 +48,6 @@ Merges completed and reviewed task branches in dependency order, runs integratio
 - No unresolved merge conflicts remain.
 - If a test failure is found and bisected, the resulting fix task is clear and actionable.
 
+## On-Demand Skills
+
+- `/new-task` — use to create fix tasks when integration reveals issues that need separate work.
