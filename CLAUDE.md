@@ -16,7 +16,7 @@
 | `ai-process/architecture/` | System architecture documentation |
 | `ai-process/guidelines/` | Coding standards, review checklists, markdown conventions |
 | `ai-process/processes/` | Workflow definitions, quality gates, escalation procedures |
-| `ai-process/guides/` | Setup and customization guides |
+| `guides/` | Human-facing guides for setup and customization (not part of the ai-process itself) |
 | `.claude/agents/` | Agent role definitions (planner, architect, implementer, reviewer, integrator) |
 | `.claude/skills/` | Skills: procedures (brainstorm, tdd, code-review, debug, conflict-resolution, write-plan) and actions (/new-spec, /new-task, /new-bug, /new-adr, /status-report, /bootstrap-project) |
 

@@ -50,11 +50,17 @@ This document describes the architecture of an AI agent team — how agents are 
 **Purpose:** Transform a feature request into an approved specification and a set of executable tasks.
 **Key principle:** Separate creative exploration (brainstorming) from structured decomposition (task breakdown).
 
+### Orchestration Layer
+
+**Skill:** `/dev-loop`.
+**Purpose:** Drive the full Implementer → Reviewer loop autonomously across all pending tasks.
+**Key principle:** The human triggers the loop once after Gate 2; the loop runs until the queue is empty or a hard stop is hit (blocked task, escalation). No human input is required between tasks.
+
 ### Execution Layer
 
 **Agents:** Implementer, Reviewer.
 **Purpose:** Produce working, tested, reviewed code for each task.
-**Key principle:** Tasks are atomic and independent. The implementer writes both tests and production code using the TDD skill.
+**Key principle:** Tasks are atomic and independent. The implementer writes both tests and production code using the TDD skill. The reviewer evaluates spec compliance and code quality. Both are spawned and sequenced by `/dev-loop`.
 
 ### Integration Layer
 
@@ -70,15 +76,21 @@ This document describes the architecture of an AI agent team — how agents are 
 
 ## Information Flow
 
+> Note: `/dev-loop` is an orchestration skill (workflow subprocess), not an agent role. The table tracks control/data flow between humans, agents, and the orchestrator.
+
 | From | To | What |
 |---|---|---|
 | Human | Planner | Feature request or problem description |
 | Planner | Human | Specification for approval |
 | Planner | Task directory | Task files in `project/tasks/pending/` |
-| Task directory | Implementer | Individual task assignment |
-| Implementer | Reviewer | Completed code for review |
-| Reviewer | Implementer | Feedback (if review fails) |
-| Reviewer | Integrator | Approved code (if review passes) |
+| Human | `/dev-loop` | Invocation after Gate 2 approval |
+| `/dev-loop` | Implementer | Task assignment (spawned per task) |
+| Implementer | `/dev-loop` | Completion signal; handoff note in task file |
+| `/dev-loop` | Reviewer | Review request (spawned per task) |
+| Reviewer | `/dev-loop` | Verdict in task file (`PASS`/`FAIL`/`ESCALATE`) |
+| `/dev-loop` | Implementer | Feedback routing (on `FAIL`) |
+| `/dev-loop` | Task directory | State transitions (`in-progress` → `completed`/`blocked`) |
+| `/dev-loop` | Human | Stop notification (queue empty, blocked, or escalation) |
 | Any agent | Architect | Escalation request |
 | Architect | Requesting agent | Advisory guidance |
 | Architect | Human | Escalation (if architect cannot resolve) |
@@ -90,3 +102,4 @@ This document describes the architecture of an AI agent team — how agents are 
 2. **Filesystem state machine** — task status is represented by which directory the file lives in, making it visible and auditable.
 3. **Separation of agents and skills** — agents are roles (who), skills are procedures (how). Skills can be composed and reused across agent roles.
 4. **Three human gates** — enough oversight to catch major issues, few enough to avoid bottlenecking the team.
+5. **Orchestration via skill, not agent** — the Implementer → Reviewer loop is driven by the `/dev-loop` skill rather than a dedicated orchestrator agent. A skill is the right primitive when the control flow is deterministic and human-invoked. An orchestrator agent would add value only if it needed to be spawned programmatically by other agents or required its own decision authority beyond following the loop procedure.

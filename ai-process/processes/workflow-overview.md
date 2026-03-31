@@ -28,21 +28,28 @@ Feature Request (human)
           ↓
    ★ GATE 2: Task Plan Review (human) ★
           ↓
-┌───────────────────────────────────┐
-│  SEQUENTIAL EXECUTION (per task)  │
-│                                   │
-│  ┌─────────────┐                  │
-│  │ IMPLEMENTER │  ← tdd, debug   │
-│  │ (one task)  │                  │
-│  └──────┬──────┘                  │
-│         ↓                         │
-│  ★ GATE 3: Code Review ★         │
-│  ┌─────────────┐                  │
-│  │  REVIEWER   │  ← code-review  │
-│  └──────┬──────┘                  │
-│         ↓                         │
-│  Repeat for next task             │
-└─────────┬─────────────────────────┘
+┌────────────────────────────────────────────────┐
+│  /dev-loop  (human-invoked, runs autonomously)  │
+│                                                 │
+│  ┌──────────────────────────────────────────┐  │
+│  │  SEQUENTIAL EXECUTION (per task)         │  │
+│  │                                          │  │
+│  │  ┌─────────────┐                         │  │
+│  │  │ IMPLEMENTER │  ← tdd, debug           │  │
+│  │  │ (one task)  │                         │  │
+│  │  └──────┬──────┘                         │  │
+│  │         ↓  (max 2 cycles)                │  │
+│  │  ┌─────────────┐  FAIL ──────────────┐   │  │
+│  │  │  REVIEWER   │  ← code-review      │   │  │
+│  │  └──────┬──────┘                     │   │  │
+│  │         │ PASS                       │   │  │
+│  │         ↓                            ↑   │  │
+│  │  git commit + move to completed/     │   │  │
+│  │  Repeat for next task ───────────────┘   │  │
+│  └──────────────────────────────────────────┘  │
+│                                                 │
+│  Stops on: empty queue │ blocked task │ escalate│
+└─────────┬──────────────────────────────────────┘
           ↓
 ┌─────────────────────────────────────┐
 │  INTEGRATOR                          │
@@ -74,41 +81,61 @@ Feature Request (human)
 **Output:** Set of task files in `project/tasks/pending/`, each following `.claude/skills/new-task/assets/TEMPLATE-task.md`.
 **Ends when:** Human approves the task plan.
 
-### 3. Implementation
+### 3 & 4. Implementation + Code Review (automated via `/dev-loop`)
 
-**Agents:** One implementer agent processes tasks sequentially.
+These two phases run as a tightly coupled loop driven by the `/dev-loop` skill.
+After Gate 2 is approved, a human invokes:
+
+```
+/dev-loop
+```
+
+From that point the loop runs autonomously — no human intervention until the queue is empty, a task is blocked, or escalation is required.
+
+#### What `/dev-loop` does
+
+1. Picks the next task from `pending/` (priority → dependency readiness → creation date).
+2. Moves it to `in-progress/`, creates the task branch, commits the state change on `dev`.
+3. Spawns the **Implementer** agent (skills: tdd, debug) — waits for completion.
+4. Spawns the **Reviewer** agent (skill: code-review) — waits for verdict.
+5. Reads the verdict (`PASS` / `FAIL` / `ESCALATE`) from the task file.
+6. On **PASS**: moves task to `completed/`, commits on `dev`, picks the next task.
+7. On **FAIL** (cycles 1–2): sends task back to the Implementer with the reviewer's feedback.
+8. On **FAIL** (cycle 3) or **ESCALATE**: moves task to `blocked/`, commits on `dev`, stops.
+
+See `.claude/skills/dev-loop/SKILL.md` for the full procedure.
+
+#### Implementer details
+
+**Agent:** Implementer.
 **Skills:** tdd, debug.
-**Input:** A single task file moved to `project/tasks/in-progress/` by the implementer.
-**Output:** Working code with passing tests.
-**Ends when:** All acceptance criteria in the task are met and the task is handed off to the reviewer.
+**Input:** Task file in `project/tasks/in-progress/`.
+**Output:** Working code with passing tests, handoff note appended to the task file.
 
-**Task pickup order:** The implementer selects the next task from `project/tasks/pending/` using:
-1. Highest priority first (`critical > high > medium > low`).
-2. Among equal priority, tasks whose dependencies are all in `completed/` first.
-3. Among remaining ties, the task with the earliest `created` date.
-
-**Task state transitions during this phase:**
-- Implementer moves the task from `project/tasks/pending/` to `project/tasks/in-progress/`.
-- If blocked, implementer moves it to `project/tasks/blocked/` and escalates.
-- When the blocker is resolved, implementer moves it back to `project/tasks/in-progress/`.
-
-### 4. Code Review
+#### Reviewer details
 
 **Agent:** Reviewer.
 **Skill:** code-review.
-**Input:** Completed task with code changes and a handoff note from the implementer (see `ai-process/templates/handoff-note.md`).
-**Output:** Pass/fail verdict with notes.
+**Input:** Completed task with code changes and implementer handoff note.
+**Output:** Verdict appended to the task file under `### Review Verdict — [date]`.
 **Two stages:**
 1. Spec compliance — does the code do what the task requires?
 2. Code quality — is it clean, secure, and maintainable?
 
-**Ends when:** Reviewer passes both stages, or task returns to implementer for fixes.
-
 **On review failure:**
-1. The task stays in `project/tasks/in-progress/` (it does not move).
-2. The reviewer appends feedback to the task file's **Notes** section, prefixed with `### Review Feedback — [date]`.
-3. The implementer reads the feedback, makes fixes on the same task branch, and re-submits for review.
-4. Maximum two review cycles per task. If the task still fails after two rejections, escalate to architect.
+1. The task stays in `project/tasks/in-progress/`.
+2. Reviewer appends specific, actionable feedback under `### Review Feedback — [date]`.
+3. `/dev-loop` routes the task back to the Implementer for fixes on the same branch.
+4. Maximum two review cycles. On a third failure, `/dev-loop` escalates to architect.
+
+#### When `/dev-loop` stops
+
+| Condition | Task state | Action required |
+|---|---|---|
+| Queue empty | All in `completed/` | Run the integrator (Gate 4) |
+| Task blocked | Moved to `blocked/` | Human resolves blocker, re-runs `/dev-loop` |
+| Escalation | Moved to `blocked/` | Human adjusts spec or task, re-runs `/dev-loop` |
+| `in-progress/` not empty at startup | Unchanged | Human decides whether to resume or abandon |
 
 ### 5. Integration
 
@@ -121,25 +148,27 @@ Feature Request (human)
 2. Run full test suite.
 3. If tests fail, bisect to identify the breaking change.
 4. Create a fix task or escalate.
-5. Move each successfully integrated task from `project/tasks/in-progress/` to `project/tasks/completed/`.
+5. Confirm all integrated task branches are now merged and their task files are in `completed/`.
 
 **Ends when:** Human approves the final merge (Gate 5).
 
-The integrator is the only agent that moves tasks to `completed/`.
-A task reaches `completed/` only after passing both code review (Gate 3) and integration tests (Gate 4).
+Note: tasks are moved to `completed/` by `/dev-loop` immediately after the reviewer passes (Gate 3).
+The integrator confirms that state, merges the code branches, and runs integration tests (Gate 4).
 
 ## Git Branching Strategy
 
-<!-- TODO: Define the full branching strategy. This section needs:
-     - Base branch convention (e.g., main)
-     - Task branch naming convention (e.g., task/T-003-implement-auth-flow)
-     - When branches are created (at task pickup) and by whom (implementer)
-     - When branches are deleted (after successful integration)
-     - How the integrator merges task branches into the base branch
-     - What happens to branches when a task is blocked or rejected at review
-     See report.md issue 2.6 for full context. -->
+Full rules and commit format: `ai-process/guidelines/git-conventions.md`.
 
-This section is pending definition. The branching model must be defined before the integrator and conflict-resolution skill can operate.
+**Branches:**
+- `main` — human-only, production releases.
+- `dev` — integration target. The integrator merges task branches here; planners, reviewers, and architects commit docs/specs directly here.
+- `task/T-NNN-short-description` — created by the implementer at task pickup, deleted after successful integration.
+
+**Key constraints:**
+- No agent ever commits to `main`.
+- The implementer never commits to `dev`.
+- The integrator is the only agent that merges task branches into `dev`.
+- Branches blocked at review stay open on their task branch until the blocker is resolved.
 
 ## Escalation
 

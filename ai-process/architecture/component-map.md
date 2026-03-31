@@ -24,6 +24,7 @@ This document maps every component in the AI team framework: what it is, what it
 |---|---|---|---|
 | brainstorm | Explore solution space, evaluate trade-offs | Planner | `.claude/skills/brainstorm/SKILL.md` |
 | write-plan | Decompose feature into atomic tasks | Planner | `.claude/skills/write-plan/SKILL.md` |
+| dev-loop | Autonomous Implementer → Reviewer loop across all pending tasks | Orchestrator (human-invoked) | `.claude/skills/dev-loop/SKILL.md` |
 | code-review | Two-stage review (spec + quality) | Reviewer | `.claude/skills/code-review/SKILL.md` |
 | tdd | Test-driven development cycle | Implementer | `.claude/skills/tdd/SKILL.md` |
 | debug | Reproduce, isolate, fix, verify | Implementer | `.claude/skills/debug/SKILL.md` |

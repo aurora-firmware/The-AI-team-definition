@@ -47,7 +47,7 @@ Quality gates are checkpoints where work must meet defined criteria before proce
 
 ### Stage 2: Code Quality
 **Pass criteria:**
-- Code follows the project's coding standards (`ai-process/guidelines/coding-standards.md`).
+- Code follows the coding standards: `ai-process/guidelines/coding-standards.md` (general) and `project/docs/coding_guidelines.md` (project-specific tech-stack rules).
 - Tests exist and pass.
 - No security vulnerabilities introduced.
 - No performance regressions.
