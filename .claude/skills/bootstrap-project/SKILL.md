@@ -15,6 +15,7 @@ This skill sets up the full directory structure and copies framework templates i
    project/tasks/pending project/tasks/in-progress project/tasks/completed project/tasks/blocked
    project/bugs/open project/bugs/in-progress project/bugs/resolved
    project/decisions
+   project/docs/reports
    ai-process/templates
    ai-process/architecture ai-process/guidelines ai-process/processes ai-process/guides
    .claude/agents

@@ -48,5 +48,5 @@ Generate a project status report.
 6. If there are blocked tasks or critical bugs, add a "Recommended Actions" section suggesting next steps.
 
 7. After displaying the inline summary above, generate a full written report using the template at `.claude/skills/status-report/assets/progress-report.md`.
-   Save it to `ai-process/progress-report-[today's date].md`.
+   Save it to `project/docs/reports/progress-report-[today's date].md`.
    The full report includes: completed tasks table, in-progress details, blocked items with action needed, bug listing, next actions, and risks/concerns.
