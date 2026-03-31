@@ -6,14 +6,15 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 
 ## Purpose
 
-Merges completed and reviewed task branches in dependency order, runs integration tests, and resolves conflicts.
+Resolves merge conflicts and performs manual merges of task and bug branches into `dev` or `main`.
+In the automated `/dev-loop` flow, the `integrate` skill handles per-task merging and invokes the Integrator agent when conflicts require resolution.
 
 ## Capabilities
 
 ### Tools
 - Git operations — merge, branch management, conflict detection.
 - Shell execution — to run integration test suites.
-- File read/write — to resolve merge conflicts and create fix tasks.
+- File read/write — to resolve merge conflicts, update task files, and create fix tasks.
 
 ### Skills
 - `conflict-resolution` — applied when merge conflicts arise.
@@ -40,10 +41,12 @@ Merges completed and reviewed task branches in dependency order, runs integratio
 ## Interaction Pattern
 
 ### Receives Work From
-- **Reviewer** — approved task branches ready for integration.
+- **`integrate` skill** — invoked for conflict resolution during automated per-task integration.
+- **Human** — manual merge requests for task or bug branches into `dev` or `main`.
 
 ### Hands Off To
-- **Human** — the fully merged and tested codebase for final approval (Gate 5).
+- **`integrate` skill** — resolved conflicts, allowing the merge to proceed.
+- **Human** — the merged and tested branch for final approval.
 - **Task directory** — new fix tasks in `project/tasks/pending/` if integration reveals issues.
 - **Architect** — escalation if conflicts or failures cannot be resolved.
 

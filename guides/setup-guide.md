@@ -29,7 +29,7 @@ mkdir -p project/tasks/pending project/tasks/in-progress project/tasks/completed
 mkdir -p project/bugs/open project/bugs/resolved
 mkdir -p project/decisions
 mkdir -p ai-process/templates
-mkdir -p ai-process/architecture ai-process/guidelines ai-process/processes ai-process/guides
+mkdir -p ai-process/architecture ai-process/guidelines ai-process/processes
 mkdir -p .claude/agents
 mkdir -p .claude/skills
 ```
@@ -67,7 +67,8 @@ Copy the following files from this repository into your new project, preserving 
 
 **Skill definitions (copy to `.claude/skills/<name>/SKILL.md`):**
 - `brainstorm`, `write-plan`, `code-review`, `tdd`, `debug`, `conflict-resolution`
-- `new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`, `bootstrap-project`
+- `dev-loop`, `integrate`, `bug-loop`
+- `new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`
 
 **Process and guidelines docs (copy as-is):**
 - `ai-process/processes/workflow-overview.md`
@@ -76,6 +77,7 @@ Copy the following files from this repository into your new project, preserving 
 - `ai-process/guidelines/coding-standards.md`
 - `ai-process/guidelines/review-checklist.md`
 - `ai-process/guidelines/markdown-conventions.md`
+- `ai-process/guidelines/git-conventions.md`
 - `ai-process/architecture/system-overview.md`
 - `ai-process/architecture/component-map.md`
 
@@ -176,9 +178,7 @@ Your project is ready. The typical workflow is:
 3. **Approve the spec** — human reviews and approves (Gate 1).
 4. **Break into tasks** — the planner decomposes the spec into atomic tasks.
 5. **Approve the task plan** — human reviews tasks (Gate 2).
-6. **Execute** — the implementer agent works through tasks sequentially using TDD.
-7. **Review** — reviewer agent checks each completed task (Gate 3).
-8. **Integrate** — integrator agent merges and runs integration tests (Gate 4).
-9. **Final approval** — human approves the merged result (Gate 5).
+6. **Run `/dev-loop`** — autonomously implements, reviews, and integrates each task (Gates 3 & 4).
+7. **Final approval** — human approves the merge from `dev` to `main` (Gate 5).
 
 For the full workflow details, see `ai-process/processes/workflow-overview.md`.

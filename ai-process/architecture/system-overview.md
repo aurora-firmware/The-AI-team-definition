@@ -29,7 +29,7 @@ This document describes the architecture of an AI agent team — how agents are 
 │  │                                          │               │
 │  │  ┌─────────────┐  ┌─────────────┐       │               │
 │  │  │ IMPLEMENTER │  │ IMPLEMENTER │  ...  │               │
-│  │  │ + TESTER    │  │ + TESTER    │       │               │
+│  │  │   (TDD)    │  │   (TDD)    │       │               │
 │  │  └──────┬──────┘  └──────┬──────┘       │               │
 │  │         ↓                ↓              │               │
 │  │  ┌─────────────┐  ┌─────────────┐       │               │
@@ -64,9 +64,10 @@ This document describes the architecture of an AI agent team — how agents are 
 
 ### Integration Layer
 
-**Agents:** Integrator.
+**Skill:** `integrate` (invoked per-task by `/dev-loop`).
+**Agent:** Integrator (conflict resolution and manual merges into `dev`/`main`).
 **Purpose:** Merge completed work, run integration tests, and resolve conflicts.
-**Key principle:** Merge in dependency order. Test once (optimistic). Bisect on failure.
+**Key principle:** Merge in dependency order. Test once (optimistic). Revert and file bugs on failure.
 
 ### Oversight Layer
 
@@ -89,12 +90,14 @@ This document describes the architecture of an AI agent team — how agents are 
 | `/dev-loop` | Reviewer | Review request (spawned per task) |
 | Reviewer | `/dev-loop` | Verdict in task file (`PASS`/`FAIL`/`ESCALATE`) |
 | `/dev-loop` | Implementer | Feedback routing (on `FAIL`) |
-| `/dev-loop` | Task directory | State transitions (`in-progress` → `completed`/`blocked`) |
+| `/dev-loop` | `integrate` skill | Merge request (on `PASS`) |
+| `integrate` skill | Task directory | State transitions (`in-progress` → `completed`) |
+| `/dev-loop` | Task directory | State transitions (`in-progress` → `blocked`) |
 | `/dev-loop` | Human | Stop notification (queue empty, blocked, or escalation) |
 | Any agent | Architect | Escalation request |
 | Architect | Requesting agent | Advisory guidance |
 | Architect | Human | Escalation (if architect cannot resolve) |
-| Integrator | Human | Merged code for final approval |
+| Human | `main` | Final merge from `dev` after Gate 5 approval |
 
 ## Design Decisions
 

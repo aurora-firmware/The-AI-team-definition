@@ -40,10 +40,10 @@ Update the `status` field in the frontmatter to match.
 | `pending/ → in-progress/` | Implementer | Task file with all dependencies in `completed/` | Task file moved, branch created as `task/<slug>` |
 | `in-progress/ → blocked/` | Implementer | Blocker identified (missing dep, ambiguous req, 3 failed attempts) | Task file moved, blocker described in Notes section |
 | `blocked/ → in-progress/` | Implementer | Blocker resolved (architect guidance or human input received) | Task file moved, resolution noted in Notes section |
-| `in-progress/ → completed/` | Integrator | Gate 3 passed (code review) AND Gate 4 passed (integration tests) | Task file moved, branch merged to main |
+| `in-progress/ → completed/` | Integrator (via `integrate` skill) | Gate 3 passed (code review) AND Gate 4 passed (integration tests) | Task file moved, branch merged to `dev` |
 
 A task is **not** completed when the implementer finishes coding — it is completed when it survives review and integration.
-The integrator is the only agent that moves tasks to `completed/`.
+The `integrate` skill is the only component that moves tasks to `completed/`.
 
 ### Bug Lifecycle
 

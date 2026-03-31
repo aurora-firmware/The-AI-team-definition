@@ -47,7 +47,7 @@ Quality gates are checkpoints where work must meet defined criteria before proce
 
 ### Stage 2: Code Quality
 **Pass criteria:**
-- Code follows the coding standards: `ai-process/guidelines/coding-standards.md` (general) and `project/docs/coding_guidelines.md` (project-specific tech-stack rules).
+- Code follows the coding standards: `ai-process/guidelines/coding-standards.md` (general) and `project/docs/coding-guidelines.md` (project-specific tech-stack rules, if present).
 - Tests exist and pass.
 - No security vulnerabilities introduced.
 - No performance regressions.
@@ -57,18 +57,18 @@ Quality gates are checkpoints where work must meet defined criteria before proce
 
 ## Gate 4: Integration Tests
 
-**When:** After all tasks are reviewed and approved, during integration.
-**Evaluator:** Automated test suite, managed by the integrator agent.
+**When:** After each task passes code review (Gate 3), during per-task integration within `/dev-loop`.
+**Evaluator:** Automated test suite, run by the `integrate` skill.
 **Pass criteria:**
-- All unit tests pass.
-- All integration tests pass.
-- No merge conflicts remain.
+- All unit tests pass on the feature branch (pre-merge).
+- All unit and integration tests pass on `dev` after the merge (regression check).
+- No unresolved merge conflicts remain.
 
-**On failure:** Integrator bisects to identify the breaking change, then creates a fix task or escalates.
+**On failure:** The `integrate` skill reverts the merge commit, files a bug for each regression via `/new-bug`, and stops the `/dev-loop`. The feature branch is preserved for fixing.
 
 ## Gate 5: Final Merge Approval
 
-**When:** After integration tests pass.
+**When:** After the task queue is empty and all tasks are in `completed/`.
 **Evaluator:** Human.
 **Pass criteria:**
 - Integration tests are green.

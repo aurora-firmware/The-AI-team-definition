@@ -44,19 +44,12 @@ Feature Request (human)
 │  │  └──────┬──────┘                     │   │  │
 │  │         │ PASS                       │   │  │
 │  │         ↓                            ↑   │  │
-│  │  git commit + move to completed/     │   │  │
+│  │  /integrate → merge + test + done    │   │  │
 │  │  Repeat for next task ───────────────┘   │  │
 │  └──────────────────────────────────────────┘  │
 │                                                 │
 │  Stops on: empty queue │ blocked task │ escalate│
 └─────────┬──────────────────────────────────────┘
-          ↓
-┌─────────────────────────────────────┐
-│  INTEGRATOR                          │
-│  Merge in dependency order           │
-│  ★ GATE 4: Integration Tests ★      │
-│  Bisect on failure                   │
-└─────────┬───────────────────────────┘
           ↓
    ★ GATE 5: Final Merge Approval (human) ★
           ↓
@@ -99,7 +92,7 @@ From that point the loop runs autonomously — no human intervention until the q
 3. Spawns the **Implementer** agent (skills: tdd, debug) — waits for completion.
 4. Spawns the **Reviewer** agent (skill: code-review) — waits for verdict.
 5. Reads the verdict (`PASS` / `FAIL` / `ESCALATE`) from the task file.
-6. On **PASS**: moves task to `completed/`, commits on `dev`, picks the next task.
+6. On **PASS**: invokes the `integrate` skill to merge the task branch into `dev`, run tests, and move the task to `completed/`. Picks the next task.
 7. On **FAIL** (cycles 1–2): sends task back to the Implementer with the reviewer's feedback.
 8. On **FAIL** (cycle 3) or **ESCALATE**: moves task to `blocked/`, commits on `dev`, stops.
 
@@ -132,28 +125,19 @@ See `.claude/skills/dev-loop/SKILL.md` for the full procedure.
 
 | Condition | Task state | Action required |
 |---|---|---|
-| Queue empty | All in `completed/` | Run the integrator (Gate 4) |
+| Queue empty | All in `completed/` | Human approves final merge to `main` (Gate 5) |
 | Task blocked | Moved to `blocked/` | Human resolves blocker, re-runs `/dev-loop` |
 | Escalation | Moved to `blocked/` | Human adjusts spec or task, re-runs `/dev-loop` |
 | `in-progress/` not empty at startup | Unchanged | Human decides whether to resume or abandon |
 
-### 5. Integration
+### 5. Final Merge
 
-**Agent:** Integrator.
-**Skill:** conflict-resolution (if needed).
-**Input:** All reviewed and approved task branches.
-**Output:** Merged codebase with passing integration tests.
-**Process:**
-1. Merge branches in dependency order.
-2. Run full test suite.
-3. If tests fail, bisect to identify the breaking change.
-4. Create a fix task or escalate.
-5. Confirm all integrated task branches are now merged and their task files are in `completed/`.
+Integration happens per-task inside the `/dev-loop` cycle: after each reviewer PASS, the `integrate` skill merges the task branch into `dev`, runs the full test suite, and moves the task to `completed/` (Gate 4).
+If integration fails, `/dev-loop` stops and files a bug — the task branch is not deleted and `dev` is left clean.
 
-**Ends when:** Human approves the final merge (Gate 5).
+Once the queue is empty and all tasks are in `completed/`, the human reviews the final state of `dev` and approves the merge to `main` (Gate 5).
 
-Note: tasks are moved to `completed/` by `/dev-loop` immediately after the reviewer passes (Gate 3).
-The integrator confirms that state, merges the code branches, and runs integration tests (Gate 4).
+**Ends when:** Human approves the merge from `dev` to `main` (Gate 5).
 
 ## Git Branching Strategy
 
@@ -161,13 +145,13 @@ Full rules and commit format: `ai-process/guidelines/git-conventions.md`.
 
 **Branches:**
 - `main` — human-only, production releases.
-- `dev` — integration target. The integrator merges task branches here; planners, reviewers, and architects commit docs/specs directly here.
+- `dev` — integration target. The `integrate` skill merges task branches here (invoked by `/dev-loop`); the Integrator agent handles manual merges and conflict resolution. Planners, reviewers, and architects commit docs/specs directly here.
 - `task/T-NNN-short-description` — created by the implementer at task pickup, deleted after successful integration.
 
 **Key constraints:**
 - No agent ever commits to `main`.
 - The implementer never commits to `dev`.
-- The integrator is the only agent that merges task branches into `dev`.
+- The `integrate` skill (invoked by `/dev-loop`) is the standard path for merging task branches into `dev`. The Integrator agent handles manual merges and conflict resolution.
 - Branches blocked at review stay open on their task branch until the blocker is resolved.
 
 ## Escalation
@@ -186,9 +170,9 @@ Five checkpoints control the workflow (see `ai-process/processes/quality-gates.m
 |------|-----------|-----------|----------------|
 | 1 | Spec Approval | Human | Brainstorm → Task Breakdown |
 | 2 | Task Plan Review | Human | Task Breakdown → Parallel Execution |
-| 3 | Code Review | Reviewer agent | Execution → Integration |
-| 4 | Integration Tests | Automated suite | Integration → Final Review |
-| 5 | Final Merge Approval | Human | Integration → Done |
+| 3 | Code Review | Reviewer agent | Implementation → Integration (per-task, inside `/dev-loop`) |
+| 4 | Integration Tests | `integrate` skill | Review → Completed (per-task, inside `/dev-loop`) |
+| 5 | Final Merge Approval | Human | `dev` → `main` |
 
 Gates 1, 2, and 5 are human approval points — they keep humans in the loop on high-impact decisions.
 Gates 3 and 4 are agent-evaluated — they catch defects before human review.

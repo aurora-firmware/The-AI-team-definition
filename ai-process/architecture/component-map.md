@@ -12,11 +12,11 @@ This document maps every component in the AI team framework: what it is, what it
 
 | Agent | Purpose | Skills Used | Receives From | Hands Off To | Definition |
 |---|---|---|---|---|---|
-| Planner | Breaks features into specs and tasks | brainstorm, write-plan | Human | Human (approval), Implementer (tasks) | `.claude/agents/planner.md` |
+| Planner | Breaks features into specs and tasks | brainstorm, write-plan | Human | Human (approval), Task directory (`pending/`) | `.claude/agents/planner.md` |
 | Architect | Advises on design and failure recovery | — (advisory role) | Any blocked agent | Requesting agent, or Human (escalation) | `.claude/agents/architect.md` |
 | Implementer | Writes tests and production code using TDD | tdd, debug | Task directory | Reviewer | `.claude/agents/implementer.md` |
-| Reviewer | Reviews code for spec compliance and quality | code-review | Implementer | Implementer (feedback) or Integrator (approval) | `.claude/agents/reviewer.md` |
-| Integrator | Merges branches and runs integration tests | conflict-resolution | Reviewer (approved tasks) | Human (final approval) | `.claude/agents/integrator.md` |
+| Reviewer | Reviews code for spec compliance and quality | code-review | Implementer (via `/dev-loop`) | `/dev-loop` (verdict in task file) | `.claude/agents/reviewer.md` |
+| Integrator | Resolves merge conflicts; manual merges into `dev`/`main` | conflict-resolution | `integrate` skill (conflicts), Human (manual merges) | `dev` or `main` branch | `.claude/agents/integrator.md` |
 
 ## Skills
 
@@ -28,6 +28,8 @@ This document maps every component in the AI team framework: what it is, what it
 | code-review | Two-stage review (spec + quality) | Reviewer | `.claude/skills/code-review/SKILL.md` |
 | tdd | Test-driven development cycle | Implementer | `.claude/skills/tdd/SKILL.md` |
 | debug | Reproduce, isolate, fix, verify | Implementer | `.claude/skills/debug/SKILL.md` |
+| integrate | Merge task branch, run tests, promote task to completed | `/dev-loop` (per-task) | `.claude/skills/integrate/SKILL.md` |
+| bug-loop | Autonomous bug-fix loop across open bugs | Orchestrator (human-invoked) | `.claude/skills/bug-loop/SKILL.md` |
 | conflict-resolution | Resolve git merge conflicts | Integrator | `.claude/skills/conflict-resolution/SKILL.md` |
 
 ## Documents and Directories

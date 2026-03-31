@@ -1,7 +1,7 @@
 ---
 name: reviewer
 description: Two-stage code review verifying spec compliance and code quality standards.
-tools: Read, Glob, Grep, Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 ## Purpose
@@ -12,8 +12,9 @@ Performs two-stage code review to verify that completed work meets its specifica
 
 ### Tools
 - File read/search — to review code, tests, specs, and tasks.
+- File write/edit — restricted to task files and bug reports (see Folder Scope).
 - Shell execution — to run tests and verify they pass.
-- No write access to implementation code. Write access is limited to the task file's Review section.
+- Never touch implementation code (`src/`, `tests/`). Write access is limited to task files and bug reports.
 
 ### Skills
 - `code-review` — the two-stage review process (spec compliance + code quality).

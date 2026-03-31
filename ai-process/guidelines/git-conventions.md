@@ -14,12 +14,12 @@ Project-specific commit scopes and any overrides belong in the project's own `CL
 | Branch | Purpose | Who touches it |
 |---|---|---|
 | `main` | Production-ready releases | Human only — never agents |
-| `dev` | Integration target | Integrator merges here; planners, reviewers, and architects commit docs here |
+| `dev` | Integration target | `integrate` skill merges task branches here; Integrator agent handles manual merges and conflicts; planners, reviewers, and architects commit docs here |
 | `task/T-NNN-short-description` | Single task implementation | Implementer only |
 
 **Rules:**
 - No agent ever commits to `main`.
-- `dev` receives only merge commits from the integrator (code) or direct commits from non-implementer agents (docs/specs/task files — no source code).
+- `dev` receives merge commits from the `integrate` skill or the Integrator agent (code), and direct commits from non-implementer agents (docs/specs/task files — no source code).
 - Implementer always works on a task branch, never on `dev`.
 - Task branches are created when the implementer picks up a task and deleted after successful integration into `dev`.
 

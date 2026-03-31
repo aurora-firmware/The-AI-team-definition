@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: Two-stage code review checking spec compliance then code quality. Use when an implementer has completed a task and submitted code for review.
-allowed-tools: Read, Grep, Glob, Bash(git diff *)
+allowed-tools: Read, Edit, Grep, Glob, Bash(git diff *)
 ---
 
 # Code Review

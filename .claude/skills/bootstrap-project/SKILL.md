@@ -17,7 +17,7 @@ This skill sets up the full directory structure and copies framework templates i
    project/decisions
    project/docs/reports
    ai-process/templates
-   ai-process/architecture ai-process/guidelines ai-process/processes ai-process/guides
+   ai-process/architecture ai-process/guidelines ai-process/processes
    .claude/agents
    .claude/skills
    ```
@@ -43,6 +43,7 @@ This skill sets up the full directory structure and copies framework templates i
 
 5. Copy all skill definitions to `.claude/skills/<name>/SKILL.md` if they do not already exist:
    - brainstorm, write-plan, code-review, tdd, debug, conflict-resolution
+   - dev-loop, integrate, bug-loop
    - new-spec, new-task, new-bug, new-adr, status-report
    - **Note:** `bootstrap-project` is intentionally excluded. This skill belongs to the meta-framework, not to bootstrapped projects. A bootstrapped project's purpose is to build software, not to bootstrap other projects.
 
@@ -53,12 +54,13 @@ This skill sets up the full directory structure and copies framework templates i
    - `ai-process/guidelines/coding-standards.md`
    - `ai-process/guidelines/review-checklist.md`
    - `ai-process/guidelines/markdown-conventions.md`
+   - `ai-process/guidelines/git-conventions.md`
    - `ai-process/architecture/system-overview.md`
    - `ai-process/architecture/component-map.md`
 
-7. If `CLAUDE.md` does not exist, ask the user for the project name, a one-sentence purpose, and the tech stack (language, framework, test command, build command). Then generate a starter CLAUDE.md following the template in `ai-process/guides/setup-guide.md` Step 3.
+7. If `CLAUDE.md` does not exist, ask the user for the project name, a one-sentence purpose, and the tech stack (language, framework, test command, build command). Then generate a starter CLAUDE.md following the template in `guides/setup-guide.md` Step 3.
 
-8. If `CLAUDE.md` already exists, do not overwrite it. Inform the user that they should review `ai-process/guides/customization-guide.md` to adapt the framework to their project.
+8. If `CLAUDE.md` already exists, do not overwrite it. Inform the user that they should review `guides/customization-guide.md` to adapt the framework to their project.
 
 9. Print a summary of what was created and what already existed (skipped). Remind the user to:
     - Customize `CLAUDE.md` if it was just generated
