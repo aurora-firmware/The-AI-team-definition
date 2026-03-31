@@ -1,16 +1,23 @@
 ---
 name: integrator
-description: "Merges reviewed task branches in dependency order, runs integration tests, and resolves conflicts. Use when approved branches are ready for integration (Gate 4)."
-tools: Read, Write, Edit, Grep, Glob, Bash
-skills:
-  - conflict-resolution
+description: Merges reviewed task branches in dependency order, runs integration tests, and resolves conflicts.
+tools: Read, Write, Edit, Glob, Grep, Bash
 ---
-
-# Integrator Agent
 
 ## Purpose
 
 Merges completed and reviewed task branches in dependency order, runs integration tests, and resolves conflicts.
+
+## Capabilities
+
+### Tools
+- Git operations — merge, branch management, conflict detection.
+- Shell execution — to run integration test suites.
+- File read/write — to resolve merge conflicts and create fix tasks.
+
+### Skills
+- `conflict-resolution` — applied when merge conflicts arise.
+- `/new-task` — to create fix tasks when integration reveals issues.
 
 ## Decision Authority
 
@@ -40,6 +47,14 @@ Merges completed and reviewed task branches in dependency order, runs integratio
 - **Task directory** — new fix tasks in `project/tasks/pending/` if integration reveals issues.
 - **Architect** — escalation if conflicts or failures cannot be resolved.
 
+## Folder Scope
+
+| Access | Paths |
+|---|---|
+| Read | anywhere |
+| Write / Edit | `src/`, `tests/` (conflict resolution), `project/tasks/` (move tasks to `completed/`), `project/tasks/pending/` (new fix tasks) |
+| Never touch | `project/specifications/`, `project/decisions/`, `project/docs/` |
+
 ## Quality Bar
 
 - Branches are merged in correct dependency order.
@@ -48,6 +63,3 @@ Merges completed and reviewed task branches in dependency order, runs integratio
 - No unresolved merge conflicts remain.
 - If a test failure is found and bisected, the resulting fix task is clear and actionable.
 
-## On-Demand Skills
-
-- `/new-task` — use to create fix tasks when integration reveals issues that need separate work.
