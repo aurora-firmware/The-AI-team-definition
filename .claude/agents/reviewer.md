@@ -53,7 +53,7 @@ Performs two-stage code review to verify that completed work meets its specifica
 |---|---|
 | Read | anywhere |
 | Write / Edit | task file in `project/tasks/in-progress/` (verdict and feedback), `project/bugs/` (to file bug reports via `/new-bug`) |
-| Never touch | `src/`, `tests/`, `project/specifications/`, `project/decisions/`, `project/docs/` |
+| Never touch | `src/`, `tests/`, `project/specs/`, `project/decisions/`, `project/docs/` |
 
 ## Quality Bar
 

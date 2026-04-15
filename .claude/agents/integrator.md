@@ -58,7 +58,7 @@ In the automated `/dev-loop` flow, the `integrate` skill handles per-task mergin
 |---|---|
 | Read | anywhere |
 | Write / Edit | `src/`, `tests/` (conflict resolution), `project/tasks/` (move tasks to `completed/`), `project/tasks/pending/` (new fix tasks) |
-| Never touch | `project/specifications/`, `project/decisions/`, `project/docs/` |
+| Never touch | `project/specs/`, `project/decisions/`, `project/docs/` |
 
 ## Quality Bar
 

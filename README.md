@@ -16,7 +16,7 @@ These artifacts are designed to be copied into any project repository and adapte
 ## Repository Structure
 
 ```
-├── project/specifications/          Technical specs (with archive/ for superseded versions)
+├── project/specs/                   Technical specs (with archive/ for superseded versions)
 ├── project/tasks/                   Task tracking (pending/ → in-progress/ → completed/ | blocked/)
 ├── project/bugs/                    Bug reports (open/ → resolved/)
 ├── project/decisions/               Architecture Decision Records (ADRs)
@@ -61,7 +61,7 @@ These directories hold the actual work artifacts for the project. This is where 
 
 - **`tasks/`** — Feature work organized by status (pending → in-progress → completed)
 - **`bugs/`** — Bug reports organized by status (open → in-progress → resolved)
-- **`specifications/`** — Feature specifications, with `archive/` for superseded versions
+- **`specs/`** — Feature specifications, with `archive/` for superseded versions
 - **`decisions/`** — Architecture Decision Records (ADRs) specific to your project
 
 **When working on a project**: All your work happens here. Create tasks, track bugs, write specs, and record decisions.

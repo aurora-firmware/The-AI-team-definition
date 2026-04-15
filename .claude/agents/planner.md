@@ -56,7 +56,7 @@ Transforms feature requests into approved specifications and decomposes them int
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | `project/specifications/`, `project/tasks/`, `project/decisions/` |
+| Write / Edit | `project/specs/`, `project/tasks/`, `project/decisions/` |
 | Never touch | `src/`, `tests/` |
 
 ## Quality Bar

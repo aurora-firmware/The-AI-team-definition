@@ -11,7 +11,7 @@ This skill sets up the full directory structure and copies framework templates i
 
 1. Create the directory structure:
    ```
-   project/specifications/archive
+   project/specs/archive
    project/tasks/pending project/tasks/in-progress project/tasks/completed project/tasks/blocked
    project/bugs/open project/bugs/in-progress project/bugs/resolved
    project/decisions
@@ -23,7 +23,7 @@ This skill sets up the full directory structure and copies framework templates i
    ```
 
 2. Add `.gitkeep` files to empty status directories:
-   - `project/specifications/archive/`
+   - `project/specs/archive/`
    - `project/tasks/pending/`, `project/tasks/in-progress/`, `project/tasks/completed/`, `project/tasks/blocked/`
    - `project/bugs/open/`, `project/bugs/in-progress/`, `project/bugs/resolved/`
 

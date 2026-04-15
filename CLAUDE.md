@@ -8,7 +8,7 @@
 
 | Folder | Purpose |
 |---|---|
-| `project/specifications/` | Technical specifications for features and systems |
+| `project/specs/` | Technical specifications for features and systems |
 | `project/tasks/` | Task tracking with status directories: `pending/`, `in-progress/`, `completed/`, `blocked/` |
 | `project/bugs/` | Bug reports with status directories: `open/`, `in-progress/`, `resolved/` |
 | `project/decisions/` | Architecture Decision Records (ADRs) |
@@ -60,7 +60,7 @@ Update the `status` field in the frontmatter to match.
 ### Specification Lifecycle
 
 Specifications track their status in the `status` frontmatter field.
-Move specifications to `project/specifications/archive/` only when superseded and no in-flight tasks reference them.
+Move specifications to `project/specs/archive/` only when superseded and no in-flight tasks reference them.
 
 | Transition | Changed by | Receives (precondition) | Delivers (postcondition) |
 |-----------|------------|------------------------|--------------------------|
@@ -68,7 +68,7 @@ Move specifications to `project/specifications/archive/` only when superseded an
 | `review → approved` | Human | Spec passes Gate 1 (Spec Approval) | Spec status updated to `approved` |
 | `review → draft` | Planner | Human rejects at Gate 1 with feedback | Spec revised per feedback, status back to `draft` |
 | `approved → superseded` | Planner | New spec created that replaces this one | Old spec references new one, status updated |
-| Move to `archive/` | Planner | Spec is `superseded` AND no tasks in `pending/` or `in-progress/` reference it | Spec moved to `project/specifications/archive/` |
+| Move to `archive/` | Planner | Spec is `superseded` AND no tasks in `pending/` or `in-progress/` reference it | Spec moved to `project/specs/archive/` |
 
 ### Decision Records
 Any decision that affects the project structure, workflow, or conventions **must** be recorded as an ADR in `project/decisions/`. Use the template and number sequentially (`001-`, `002-`, etc.).

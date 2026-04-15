@@ -100,5 +100,5 @@ If you have an existing codebase:
 1. Follow the setup guide to create the directory structure alongside your existing code.
 2. Your existing source code stays where it is — the framework directories are additive.
 3. Migrate existing issues/tasks by creating task files in `project/tasks/pending/` for each open item.
-4. Write a specification for the current system state in `project/specifications/` — this becomes the baseline.
+4. Write a specification for the current system state in `project/specs/` — this becomes the baseline.
 5. Create an ADR in `project/decisions/` documenting the decision to adopt this framework.

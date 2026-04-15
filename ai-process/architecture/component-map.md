@@ -36,7 +36,7 @@ This document maps every component in the AI team framework: what it is, what it
 
 | Component | Type | Purpose | Location |
 |---|---|---|---|
-| Specifications | Directory | Feature and system specs | `project/specifications/` |
+| Specifications | Directory | Feature and system specs | `project/specs/` |
 | Task Board | Directory tree | Task lifecycle tracking | `project/tasks/{pending,in-progress,completed,blocked}/` |
 | Bug Tracker | Directory tree | Bug lifecycle tracking | `project/bugs/{open,in-progress,resolved}/` |
 | Decision Log | Directory | Architecture decision records | `project/decisions/` |

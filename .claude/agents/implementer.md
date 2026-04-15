@@ -59,7 +59,7 @@ Other immediate escalation triggers (no retry needed):
 |---|---|
 | Read | anywhere |
 | Write / Edit | `src/`, `tests/`, `project/tasks/` (to move task files between states), `project/bugs/` (to file bug reports via `/new-bug`) |
-| Never touch | `project/specifications/`, `project/decisions/`, `project/docs/` |
+| Never touch | `project/specs/`, `project/decisions/`, `project/docs/` |
 
 ## Quality Bar
 
