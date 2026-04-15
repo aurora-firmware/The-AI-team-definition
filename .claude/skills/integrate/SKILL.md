@@ -2,7 +2,6 @@
 name: integrate
 description: Integrate a feature branch into a destination branch. Verifies changes match the task spec, runs tests on the feature branch, merges, re-runs tests for regressions, files bugs on failure, and deletes the branch on success.
 argument-hint: "<branch-or-task-id> [destination-branch]"
-disable-model-invocation: true
 ---
 
 # Integrate

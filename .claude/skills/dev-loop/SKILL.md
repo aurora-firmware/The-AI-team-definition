@@ -1,7 +1,7 @@
 ---
 name: dev-loop
 description: Fully autonomous implementation loop. Picks pending tasks one at a time, drives each through Implementer → Reviewer cycles until the reviewer passes, commits, then moves to the next task. Stops only when the queue is empty, a task is blocked, or escalation is required.
-allowed-tools: Read, Glob, Grep, Bash, Agent
+allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate)
 disable-model-invocation: true
 ---
 
