@@ -1,6 +1,7 @@
 ---
 name: dev-loop
 description: Fully autonomous implementation loop. Picks pending tasks one at a time, drives each through Implementer → Reviewer cycles until the reviewer passes, commits, then moves to the next task. Stops only when the queue is empty, a task is blocked, or escalation is required.
+argument-hint: "[task-id | task-branch] — optional single task to process (e.g., T-012 or task/T-012-my-feature). If omitted, processes the full pending queue."
 allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate)
 disable-model-invocation: true
 ---
@@ -12,7 +13,10 @@ Stops only at hard gates: empty queue, blocked task, or escalation.
 
 ## Inputs
 
-No arguments required.
+Optional: a single task ID or branch name as `$ARGUMENTS` (e.g., `T-012` or `task/T-012-my-feature`).
+- If provided, the loop processes only that task — it does not continue to the next task after completion or failure.
+- If omitted, the loop processes the full pending queue until empty, blocked, or escalated.
+
 The orchestrator reads state directly from the filesystem:
 - `project/tasks/pending/` — work queue
 - `project/tasks/in-progress/` — active task slot
@@ -22,7 +26,13 @@ The orchestrator reads state directly from the filesystem:
 
 ### Step 1: Check the Queue
 
-List all files in `project/tasks/pending/`.
+If `$ARGUMENTS` is non-empty:
+- Parse it as a task ID (e.g., `T-012`) or branch name (e.g., `task/T-012-my-feature`). Extract the task ID either way.
+- Locate the matching file: `project/tasks/pending/<task-id>-*.md`.
+- If not found in `pending/`, stop with: "Task <task-id> not found in project/tasks/pending/. Check the task ID and its current status."
+- Use this single task as the queue. After it completes (success, blocked, or escalated), stop — do not continue to other tasks.
+
+If `$ARGUMENTS` is empty, list all files in `project/tasks/pending/`.
 If the queue is empty, stop and report: "Queue is empty. All pending tasks have been processed."
 
 ### Step 2: Pick the Next Task
