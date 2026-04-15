@@ -37,27 +37,37 @@ Review the code against the checklist in `ai-process/guidelines/review-checklist
 - **Performance**: No unnecessary loops, blocking calls, or resource leaks.
 
 ### Step 4: Produce Verdict
-If all checks pass: **Pass**. Hand off to integrator.
-If any check fails: **Fail**. Return to implementer with specific, actionable feedback.
+If all checks pass: **PASS**. Hand off to integrator.
+If any check fails: **FAIL**. Return to implementer with specific, actionable feedback.
+If a fundamental design issue makes the task impossible as specified: **ESCALATE**.
 
-### Step 5: Record Rejection (on fail only)
-Append feedback to the task file's **Notes** section under a `### Review Feedback — [date]` heading.
-The task stays in `project/tasks/in-progress/`.
-The implementer fixes the issues and re-submits.
-Maximum two review cycles per task — if the task fails a third time, escalate to architect.
+### Step 5: Record the Verdict
+Append to the task file's **Notes** section under a `### Review Verdict — [date]` heading.
+The first line of the section must be one of: `PASS`, `FAIL`, or `ESCALATE`.
+
+**On PASS:** Record the verdict with a brief confirmation that both stages passed. Note any minor observations (non-blocking).
+
+**On FAIL:** Record the verdict and list each failed check with the location, what is wrong, and what should change. The task stays in `project/tasks/in-progress/`. The implementer fixes the issues and re-submits. Up to two retries per task (three total review attempts). If the task fails a third time, escalate to architect.
 
 ## Output Format
 
-### On Pass
+Both PASS and FAIL append a `### Review Verdict — [date]` section to the task file's Notes.
+The first line of the section is always one of: `PASS`, `FAIL`, or `ESCALATE`.
+
+### On PASS
+Verdict: `PASS`
 A brief confirmation that both stages passed, noting any minor observations (non-blocking).
 
-### On Fail
+### On FAIL
+Verdict: `FAIL`
 For each failed check:
 - **File and location** — which file, which section or line.
 - **What is wrong** — specific description of the issue.
 - **What should change** — actionable guidance on how to fix it.
 
-The feedback is also appended to the task file's Notes section (see Step 5).
+### On ESCALATE
+Verdict: `ESCALATE`
+Describe the fundamental design issue and why it cannot be resolved without changing the specification.
 
 ## Quality Criteria
 

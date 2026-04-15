@@ -60,7 +60,8 @@ Capture stdout and stderr. Evaluate the result:
 - **Tests fail** → stop integration. Report:
   - Which tests failed and what the error output says.
   - This is a pre-merge failure — the branch should not be merged in this state.
-  - Instruct the implementer to fix the failing tests before re-submitting for integration.
+  - The task file stays in `project/tasks/in-progress/` and the feature branch stays open.
+  - Instruct the implementer to fix the failing tests on the same branch and re-submit for integration.
 
 ### Step 5: Merge the Feature Branch into Destination
 
@@ -143,7 +144,7 @@ Reached only when both Step 4 and Step 6 tests pass.
 | Destination branch not found | Stop, report |
 | Diff is empty | Stop — nothing to do |
 | Acceptance criteria not met by diff | Stop — return to implementer |
-| Pre-merge tests fail (Step 4) | Stop — return to implementer |
+| Pre-merge tests fail (Step 4) | Stop — task stays `in-progress/`, branch stays open, return to implementer |
 | Merge conflict that conflict-resolution cannot solve | Stop — escalate to architect |
 | Regressions found post-merge (Step 6) | File bugs, revert merge, stop |
 

@@ -48,7 +48,8 @@ If no task has all dependencies satisfied, stop and report which tasks are waiti
 
 > "Pick up the task at `project/tasks/in-progress/<task-file>` and implement it using the tdd skill.
 > You are on branch `task/T-NNN-...`. Commit after each red→green→refactor cycle.
-> When done, write a handoff note following `ai-process/templates/handoff-note.md` appended to the task file's Notes section."
+> When done, append a handoff note to the task file's Notes section under a `### Handoff Note — [date]` heading.
+> Use the section structure from `ai-process/templates/handoff-note.md` (What Was Done, What Remains, Current State of Files, Known Issues, Context for the Next Agent) — do not include the template's YAML frontmatter."
 
 Wait for the implementer to complete before continuing.
 
