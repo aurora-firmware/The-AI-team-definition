@@ -2,6 +2,7 @@
 name: bug-loop
 description: Fully autonomous bug-fix loop. Picks open bugs one at a time, creates a dedicated branch from dev for each, drives each through Implementer → Reviewer cycles until the reviewer passes, then moves to the next bug. Stops only when the queue is empty or a bug cannot be resolved after full escalation. Use this whenever there are open bugs to fix.
 allowed-tools: Read, Glob, Grep, Bash, Agent
+disable-model-invocation: true
 ---
 
 # Bug Loop

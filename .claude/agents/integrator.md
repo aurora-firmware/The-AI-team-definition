@@ -2,6 +2,8 @@
 name: integrator
 description: Merges reviewed task branches in dependency order, runs integration tests, and resolves conflicts.
 tools: Read, Write, Edit, Glob, Grep, Bash
+model: claude-sonnet-4-6
+skills: conflict-resolution new-task
 ---
 
 ## Purpose

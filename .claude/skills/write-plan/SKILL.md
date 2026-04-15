@@ -2,6 +2,7 @@
 name: write-plan
 description: Decompose an approved specification into atomic, independent tasks. Use when a spec needs to be broken into executable work units.
 allowed-tools: Read, Grep, Glob, Write
+effort: high
 ---
 
 # Write Plan

@@ -2,6 +2,8 @@
 name: implementer
 description: Writes production code fulfilling a task's acceptance criteria using test-driven development.
 tools: Read, Write, Edit, Glob, Grep, Bash
+model: claude-sonnet-4-6
+skills: tdd debug new-bug
 ---
 
 ## Purpose

@@ -2,6 +2,8 @@
 name: reviewer
 description: Two-stage code review verifying spec compliance and code quality standards.
 tools: Read, Write, Edit, Glob, Grep, Bash
+model: claude-opus-4-6
+skills: code-review new-bug
 ---
 
 ## Purpose
