@@ -2,6 +2,7 @@
 name: architect
 description: Advisory agent for system design guidance — helps unblock agents that encounter structural problems.
 tools: Read, Write, Edit, Glob, Grep, Bash
+model: claude-opus-4-6
 ---
 
 ## Purpose

@@ -1,7 +1,9 @@
 ---
 name: bug-loop
 description: Fully autonomous bug-fix loop. Picks open bugs one at a time, creates a dedicated branch from dev for each, drives each through Implementer → Reviewer cycles until the reviewer passes, then moves to the next bug. Stops only when the queue is empty or a bug cannot be resolved after full escalation. Use this whenever there are open bugs to fix.
-allowed-tools: Read, Glob, Grep, Bash, Agent
+argument-hint: "[bug-id ...] — optional space-separated bug IDs (e.g., B-001 B-003). If omitted, processes all open bugs."
+allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate)
+disable-model-invocation: true
 ---
 
 # Bug Loop
@@ -12,7 +14,10 @@ Stops only when the queue is empty or when a bug requires human resolution after
 
 ## Inputs
 
-No arguments required.
+Optional: one or more bug IDs as `$ARGUMENTS` (e.g., `B-001 B-003`).
+- If bug IDs are provided, the loop processes only those bugs — skipping all others in the queue.
+- If omitted, the loop processes all files in `project/bugs/open/`.
+
 The orchestrator reads state directly from the filesystem:
 - `project/bugs/open/` — work queue
 - `project/bugs/in-progress/` — active bug slot
@@ -22,8 +27,15 @@ The orchestrator reads state directly from the filesystem:
 
 ### Step 1: Check the Queue
 
-List all files in `project/bugs/open/` (ignore `.gitkeep`).
-If the queue is empty, stop and report: "Queue is empty. All open bugs have been processed."
+If `$ARGUMENTS` is non-empty:
+- Parse it as a space-separated list of bug IDs (e.g., `B-001 B-003`).
+- For each ID, locate the matching file in `project/bugs/open/<id>-*.md`.
+- If any ID has no matching file in `open/`, stop with: "Bug <id> not found in project/bugs/open/. Verify the ID and status."
+- Use this filtered list as the queue for the entire run.
+
+If `$ARGUMENTS` is empty, list all files in `project/bugs/open/` (ignore `.gitkeep`) as the queue.
+
+If the queue is empty, stop and report: "Queue is empty. No open bugs to process."
 
 ### Step 2: Pick the Next Bug
 

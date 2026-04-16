@@ -50,11 +50,15 @@ What "done" looks like for this agent's work:
 - Criterion 1
 - Criterion 2
 
-## Temperature Guidance
+## Model and Effort
 
-- **Creative tasks:** 0.7 (brainstorming, exploring alternatives)
-- **Structured tasks:** 0.2 (JSON output, precise formatting)
-- **Execution tasks:** 0.3 (writing code, following procedures)
-- **Review tasks:** 0.4 (critical analysis, finding issues)
+Specify model and effort in frontmatter — these are the supported Claude Code fields:
 
-Select the appropriate temperature based on the current activity.
+```yaml
+model: claude-opus-4-6   # heavier reasoning: architect, reviewer
+model: claude-sonnet-4-6 # code execution, structured tasks: implementer, integrator, planner
+effort: high             # analytical/review agents that benefit from deeper reasoning
+effort: max              # Opus 4.6 only — reserved for highest-stakes decisions
+```
+
+Do NOT add a "temperature" field; temperature is not configurable in Claude Code agent definitions.

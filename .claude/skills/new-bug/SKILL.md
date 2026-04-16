@@ -8,7 +8,7 @@ allowed-tools: Read, Glob, Write
 
 Create a new bug report.
 
-1. Read the template at `.claude/skills/new-bug/assets/TEMPLATE-bug.md`.
+1. Read the template at `${CLAUDE_SKILL_DIR}/assets/TEMPLATE-bug.md`.
 2. Ask for: bug title, severity (critical/high/medium/low), and a summary of the issue. Use `$ARGUMENTS` as the title if provided.
 3. Determine the next bug ID by scanning existing files in `project/bugs/` (all subdirectories) for the highest `B-NNN` ID, then increment.
 4. Generate a filename: lowercase, hyphenated, based on the title (e.g., `crash-on-empty-input.md`).

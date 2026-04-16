@@ -2,6 +2,7 @@
 name: brainstorm
 description: Explore solution space for a feature request or problem. Use when a new feature needs a design before implementation, or when an existing approach was rejected and alternatives need exploration.
 allowed-tools: Read, Grep, Glob, Write
+effort: high
 ---
 
 # Brainstorm
@@ -9,7 +10,7 @@ allowed-tools: Read, Grep, Glob, Write
 ## Input Requirements
 
 - **Feature request or problem description** — what needs to be solved and why.
-- **Existing specifications and decisions** — context from `project/specifications/` and `project/decisions/` to avoid contradictions.
+- **Existing specifications and decisions** — context from `project/specs/` and `project/decisions/` to avoid contradictions.
 - **Constraints** — any technical, time, or scope constraints stated by the human.
 
 ## Procedure
@@ -40,7 +41,7 @@ Clearly state what is excluded from scope.
 
 ## Output Format
 
-- A specification document in `project/specifications/` following the template.
+- A specification document in `project/specs/` following the template.
 - The document is ready for human review at Gate 1 (Spec Approval).
 
 ## Quality Criteria

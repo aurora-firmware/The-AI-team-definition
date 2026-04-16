@@ -2,6 +2,8 @@
 name: planner
 description: Transforms feature requests into approved specifications and decomposes them into atomic tasks.
 tools: Read, Write, Edit, Glob, Grep, Bash
+model: claude-sonnet-4-6
+skills: brainstorm write-plan new-spec new-task new-adr
 ---
 
 ## Purpose
@@ -54,7 +56,7 @@ Transforms feature requests into approved specifications and decomposes them int
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | `project/specifications/`, `project/tasks/`, `project/decisions/` |
+| Write / Edit | `project/specs/`, `project/tasks/`, `project/decisions/` |
 | Never touch | `src/`, `tests/` |
 
 ## Quality Bar

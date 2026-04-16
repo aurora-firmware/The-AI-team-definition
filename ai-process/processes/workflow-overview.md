@@ -38,7 +38,7 @@ Feature Request (human)
 │  │  │ IMPLEMENTER │  ← tdd, debug           │  │
 │  │  │ (one task)  │                         │  │
 │  │  └──────┬──────┘                         │  │
-│  │         ↓  (max 2 cycles)                │  │
+│  │         ↓  (max 2 retries)               │  │
 │  │  ┌─────────────┐  FAIL ──────────────┐   │  │
 │  │  │  REVIEWER   │  ← code-review      │   │  │
 │  │  └──────┬──────┘                     │   │  │
@@ -117,9 +117,9 @@ See `.claude/skills/dev-loop/SKILL.md` for the full procedure.
 
 **On review failure:**
 1. The task stays in `project/tasks/in-progress/`.
-2. Reviewer appends specific, actionable feedback under `### Review Feedback — [date]`.
+2. Reviewer appends verdict and specific, actionable feedback under `### Review Verdict — [date]`.
 3. `/dev-loop` routes the task back to the Implementer for fixes on the same branch.
-4. Maximum two review cycles. On a third failure, `/dev-loop` escalates to architect.
+4. Up to two retries (three total review attempts). On a third failure, `/dev-loop` escalates to architect.
 
 #### When `/dev-loop` stops
 

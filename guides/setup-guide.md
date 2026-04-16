@@ -24,7 +24,7 @@ If you have Claude Code available, run `/bootstrap-project` inside your new repo
 In your new project root, create these directories:
 
 ```bash
-mkdir -p project/specifications/archive
+mkdir -p project/specs/archive
 mkdir -p project/tasks/pending project/tasks/in-progress project/tasks/completed project/tasks/blocked
 mkdir -p project/bugs/open project/bugs/resolved
 mkdir -p project/decisions
@@ -37,7 +37,7 @@ mkdir -p .claude/skills
 Add `.gitkeep` files to keep empty directories in git:
 
 ```bash
-for dir in project/specifications/archive project/tasks/pending project/tasks/in-progress project/tasks/completed project/tasks/blocked project/bugs/open project/bugs/resolved; do
+for dir in project/specs/archive project/tasks/pending project/tasks/in-progress project/tasks/completed project/tasks/blocked project/bugs/open project/bugs/resolved; do
   touch "$dir/.gitkeep"
 done
 ```
@@ -96,7 +96,7 @@ Create a `CLAUDE.md` in your project root. Start with this structure and customi
 
 | Folder | Purpose |
 |---|---|
-| `project/specifications/` | Technical specifications for features and systems |
+| `project/specs/` | Technical specifications for features and systems |
 | `project/tasks/` | Task tracking: `pending/`, `in-progress/`, `completed/`, `blocked/` |
 | `project/bugs/` | Bug reports: `open/`, `resolved/` |
 | `project/decisions/` | Architecture Decision Records (ADRs) |
