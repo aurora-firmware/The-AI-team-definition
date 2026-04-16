@@ -97,12 +97,12 @@ This document describes the architecture of an AI agent team — how agents are 
 | Any agent | Architect | Escalation request |
 | Architect | Requesting agent | Advisory guidance |
 | Architect | Human | Escalation (if architect cannot resolve) |
-| Human | `main` | Final merge from `dev` after Gate 5 approval |
+| Human | `main` | Final merge from `dev` after Gate 4 sign-off |
 
 ## Design Decisions
 
 1. **File-based task tracking** — agents read and write Markdown files natively. No external databases or issue trackers required.
 2. **Filesystem state machine** — task status is represented by which directory the file lives in, making it visible and auditable.
 3. **Separation of agents and skills** — agents are roles (who), skills are procedures (how). Skills can be composed and reused across agent roles.
-4. **Three human gates** — enough oversight to catch major issues, few enough to avoid bottlenecking the team.
+4. **Two human gates** — Gate 1 (spec approval, where design decisions are made) and Gate 4 (final merge sign-off, where outcomes are confirmed). Everything between is agent-driven. The Architect preflight replaces the former Gate 2 (task plan review) with an automated structural check, removing a human bottleneck without losing the quality check.
 5. **Orchestration via skill, not agent** — the Implementer → Reviewer loop is driven by the `/dev-loop` skill rather than a dedicated orchestrator agent. A skill is the right primitive when the control flow is deterministic and human-invoked. An orchestrator agent would add value only if it needed to be spawned programmatically by other agents or required its own decision authority beyond following the loop procedure.

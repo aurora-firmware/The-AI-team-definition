@@ -21,20 +21,19 @@ Quality gates are checkpoints where work must meet defined criteria before proce
 
 **On failure:** Return to planner with feedback for revision.
 
-## Gate 2: Task Plan Review
+---
 
-**When:** After the planner breaks the spec into tasks.
-**Evaluator:** Human.
-**Pass criteria:**
-- Every task is atomic (one clear outcome).
-- Every task has acceptance criteria and a verification command.
-- Dependencies between tasks are correct and complete.
-- No two tasks modify the same files (prevents merge conflicts during integration).
-- The full set of tasks covers the entire specification.
+> **Architect Preflight (automated — not a human gate)**
+>
+> After the planner writes the task plan, the Architect reviews it before dev-loop starts.
+> The Architect checks: dependency correctness, file conflict risks, architectural consistency with existing decisions, and task atomicity.
+> If issues are found, the Architect creates corrective tasks or flags problems back to the Planner for revision.
+> No human approval is required — this is an agent-to-agent quality step.
+> See `ai-process/processes/workflow-overview.md` and `.claude/agents/architect.md` for details.
 
-**On failure:** Return to planner with feedback for revision.
+---
 
-## Gate 3: Code Review
+## Gate 2: Code Review
 
 **When:** After an implementer completes a task.
 **Evaluator:** Reviewer agent (two stages).
@@ -55,9 +54,9 @@ Quality gates are checkpoints where work must meet defined criteria before proce
 
 **On failure:** Task returns to implementer with specific feedback. The reviewer must provide actionable notes, not vague criticism.
 
-## Gate 4: Integration Tests
+## Gate 3: Integration Tests
 
-**When:** After each task passes code review (Gate 3), during per-task integration within `/dev-loop`.
+**When:** After each task passes code review (Gate 2), during per-task integration within `/dev-loop`.
 **Evaluator:** Automated test suite, run by the `integrate` skill.
 **Pass criteria:**
 - All unit tests pass on the feature branch (pre-merge).
@@ -66,13 +65,16 @@ Quality gates are checkpoints where work must meet defined criteria before proce
 
 **On failure:** The `integrate` skill reverts the merge commit, files a bug for each regression via `/new-bug`, and stops the `/dev-loop`. The feature branch is preserved for fixing.
 
-## Gate 5: Final Merge Approval
+## Gate 4: Final Merge Sign-off
 
 **When:** After the task queue is empty and all tasks are in `completed/`.
 **Evaluator:** Human.
 **Pass criteria:**
 - Integration tests are green.
 - No open bugs with severity `critical` or `high`.
-- The merged code matches the approved specification.
+- The `/status-report` summary matches the approved specification.
 
 **On failure:** Human provides feedback. New tasks are created to address issues.
+
+> This is a sign-off, not a code review. The human reviews the status summary and confirms the outcome matches the spec intent — not individual diffs. Detailed code quality was already verified at Gates 2 and 3.
+

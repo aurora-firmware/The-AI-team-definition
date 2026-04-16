@@ -42,10 +42,22 @@ Verify atomicity: can each task be completed in a single agent pass? If a task f
 ### Step 5: Place Tasks
 Save all task files to `project/tasks/pending/`.
 
+### Step 6: Architect Preflight
+Spawn the **Architect agent** with this prompt:
+
+> "Review the task plan just placed in `project/tasks/pending/` for the spec at `project/specs/<spec-file>`.
+> Check: (1) dependency correctness — are all declared dependencies real and sufficient? (2) file conflict risk — do any two tasks modify the same file without a dependency between them? (3) architectural consistency — does the plan contradict any existing decision records in `project/decisions/`? (4) atomicity — does any task exceed the one-shottable threshold (>3–4 files, >5 acceptance criteria)?
+> If all is sound, state that the plan is approved and ready for /dev-loop.
+> If issues are found: for structural problems (file conflicts, missing dependencies) create corrective task files in `project/tasks/pending/`; for decomposition problems flag them back to the Planner with specific guidance for revision.
+> Do not surface this to the human unless a problem requires a spec change."
+
+Wait for the Architect to complete.
+If the Architect requests Planner revisions, address them and re-trigger the preflight.
+
 ## Output Format
 
-- A set of task files in `project/tasks/pending/`, each following the template.
-- The task set is ready for human review at Gate 2 (Task Plan Review).
+- A set of validated task files in `project/tasks/pending/`, approved by the Architect preflight.
+- The plan is ready for the human to invoke `/dev-loop` — no further human review of the task plan is required.
 
 ## Quality Criteria
 
