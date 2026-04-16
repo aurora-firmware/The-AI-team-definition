@@ -67,8 +67,20 @@ Feature Request (human)
 **Agent:** Planner (creative mode).
 **Skill:** brainstorm.
 **Input:** Feature request or problem description from a human.
-**Output:** Design document with explored alternatives and a recommended approach.
-**Ends when:** Human approves the specification.
+**Output:** Specification document in `project/specs/`, written after the human has confirmed the direction.
+
+This phase is **interactive**. The Planner does not produce a finished document for cold review — it works with the human through a dialogue:
+
+1. Reads the request and checks for ambiguities.
+2. Asks focused clarifying questions (batched, max five) if material unknowns exist. Stops and waits for answers.
+3. Generates at least two solution alternatives and presents them briefly.
+4. Asks the human to pick a direction (or provide the deciding constraint). Stops and waits.
+5. Asks follow-up questions on scope or behaviour if the chosen direction still has gaps. One round maximum.
+6. Confirms the approach in 2–3 sentences and gets explicit human sign-off before writing.
+7. Writes the specification.
+
+**Ends when:** Human approves the specification at Gate 1.
+Because the human shaped the spec throughout the dialogue, Gate 1 approval should be quick.
 
 ### 2. Task Breakdown
 
