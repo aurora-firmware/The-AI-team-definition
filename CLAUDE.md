@@ -12,7 +12,6 @@
 | `project/tasks/` | Task tracking with status directories: `pending/`, `in-progress/`, `completed/`, `blocked/` |
 | `project/bugs/` | Bug reports with status directories: `open/`, `in-progress/`, `resolved/` |
 | `project/decisions/` | Architecture Decision Records (ADRs) |
-| `ai-process/templates/` | Reusable document formats: handoff notes (used when implementer hands off to reviewer) |
 | `ai-process/architecture/` | System architecture documentation |
 | `ai-process/guidelines/` | Coding standards, review checklists, markdown conventions |
 | `ai-process/processes/` | Workflow definitions, quality gates, escalation procedures |
@@ -102,4 +101,3 @@ Additional fields depend on the document type (see each TEMPLATE file).
 - Use ATX headings (`#`, `##`, `###`). Do not skip heading levels.
 - Use fenced code blocks with language identifiers.
 - One sentence per line in source (for cleaner diffs).
-
