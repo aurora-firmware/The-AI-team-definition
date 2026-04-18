@@ -34,6 +34,9 @@ Before exploring solutions, resolve the unknowns that would materially change th
 Formulate focused questions — batch them all together, maximum five.
 Ask the human and **stop**. Do not continue until answers are received.
 
+Include this named prompt as a standalone question:
+- **Explicit exclusions:** What is explicitly NOT included in this feature?
+
 **Ask about:**
 - Core requirements that are genuinely ambiguous (not inferable from context)
 - Scope boundaries — what is explicitly out of scope?
