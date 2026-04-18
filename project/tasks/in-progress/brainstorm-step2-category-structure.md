@@ -71,6 +71,41 @@ grep -n 'Ask about' .claude/agents/planner.md || true
 Reference: spec 8.2, Components 1–3.
 Depends on T-002 being merged first. Both specs 8.3 and 8.2 modify `brainstorm/SKILL.md` Step 2; sequencing is load-bearing.
 
+### Handoff Note — 2026-04-18
+
+## What Was Done
+
+- Restructured `.claude/skills/brainstorm/SKILL.md` Step 2 around the six required internal categories.
+- Preserved the exclusions question as the prominent Scope & Requirements item and included it in the flat example question pool.
+- Added a flat 14-question example pool with no category grouping or `[Category]` labels.
+- Replaced the old "Ask about" / "Do not ask about" guidance with rules for recommended question count, six-category coverage, silent skip, and multi-round clarification.
+- Cross-checked `.claude/agents/planner.md`; updated the stale hard "max five" reference to match the new recommended-count and coverage-first rule. No old "Ask about:" list remained there.
+- Committed the implementation cycle as `ab48433` (`Update brainstorm clarification structure`).
+
+## What Remains
+
+- [ ] Reviewer pass for T-004.
+- [ ] Integrate after review approval.
+
+## Current State of Files
+
+| File | State | Notes |
+|---|---|---|
+| `.claude/skills/brainstorm/SKILL.md` | modified | Step 2 now has six internal categories, a flat 14-question example pool, and coverage-first rules. |
+| `.claude/agents/planner.md` | modified | Planner guidance no longer treats five questions as a hard cap. |
+| `project/tasks/in-progress/brainstorm-step2-category-structure.md` | modified | Added this handoff note under Notes. |
+
+## Known Issues
+
+- No known implementation issues.
+- The task verification command's bullet-count check counts bullets across the whole skill file, so I also ran a stricter local check that counted exactly 14 bullets inside the example question pool.
+
+## Context for the Next Agent
+
+- Categories are internal scaffolding only; Planner output should remain plain prose.
+- Coverage of the six categories is the binding rule, but silent skip is acceptable when a category has no material unknown.
+- The unrelated untracked `.codex/skills` path was present before this work and was not touched.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
