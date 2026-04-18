@@ -110,6 +110,14 @@ This task precedes T-007 (spec 8.7 replaces the Notes section with Work Log in t
 - The template change intentionally leaves all non-Acceptance Criteria top-level sections unchanged.
 - T-007 is expected to update the same template's Notes section later, so this task avoided touching that section.
 
+### Review Verdict — 2026-04-18
+
+PASS
+
+Stage 1 passed: AC-1 through AC-5 are satisfied. The template Acceptance Criteria section now uses `AC-N` placeholders, contains the EARS pattern reference with all five patterns, includes Event-driven, Unwanted-behaviour, and Ubiquitous examples, and `/new-task` reads this template directly.
+
+Stage 2 passed: visual diff inspection shows the template change is confined to the Acceptance Criteria section. Command-line checks confirmed the old checkbox criteria are absent and the required EARS markers and `AC-N` placeholders are present. No executable tests apply for this Markdown/process-only change.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
