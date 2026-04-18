@@ -44,6 +44,34 @@ grep -n "Exclusions section is present" ai-process/guidelines/review-checklist.m
 Reference: spec 8.3, Component 3.
 T-013 (spec 8.7) will later reword a different line in this same file (handoff-note → Work Log). T-013 depends on this task to avoid conflicts.
 
+### Handoff Note — 2026-04-18
+
+#### What Was Done
+
+- Added the Stage 1 advisory checklist item for Exclusions presence and human-confirmed content.
+- Kept the existing Stage 1 checklist lines unchanged.
+- Verified the requested grep check and inspected the Stage 1 block manually.
+
+#### What Remains
+
+- [ ] Reviewer should perform the normal task review.
+
+#### Current State of Files
+
+| File | State | Notes |
+|---|---|---|
+| `ai-process/guidelines/review-checklist.md` | modified | Added one advisory Stage 1 Exclusions soft-flag checklist line. |
+| `project/tasks/in-progress/review-checklist-exclusions-soft-flag.md` | modified | Added this handoff note under Notes. |
+
+#### Known Issues
+
+- None.
+
+#### Context for the Next Agent
+
+- The new checklist line is intentionally advisory and says not to fail Stage 1 solely for the missing or empty Exclusions section.
+- The existing Stage 1 checklist lines were not removed or reworded.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
