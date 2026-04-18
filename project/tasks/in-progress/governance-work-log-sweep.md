@@ -74,3 +74,14 @@ What remains is reviewer validation and T-016's planned deletion of `ai-process/
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
+
+### Review Verdict — 2026-04-18
+
+PASS
+
+Stage 1 passed: all acceptance criteria were checked against the scoped document changes.
+`CLAUDE.md` no longer describes handoff notes in the repository map, the lifecycle blocker rows now point to the Work Log, `README.md` no longer describes handoff notes in the templates section, and `guides/setup-guide.md` no longer instructs copying `handoff-note.md`.
+The only extra touched file is this task file for Work Log and review documentation.
+
+Stage 2 passed for this Markdown/process change: visual diff inspection found coherent prose and no dangling bullets or orphan references.
+Command-line checks passed: `git diff --check dev...HEAD`, residual handoff-reference grep across the three scoped files, and the lifecycle Work Log grep.
