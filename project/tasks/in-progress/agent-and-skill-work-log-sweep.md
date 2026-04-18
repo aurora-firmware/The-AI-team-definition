@@ -58,6 +58,12 @@ grep -n 'Work Log' .claude/skills/status-report/SKILL.md
 
 Reference: spec 8.7, Component 5 (partial).
 
+### Session 1 — 2026-04-18
+
+Updated the implementer handoff wording to use the final Work Log entry as the reviewer handoff artifact and removed the obsolete `ai-process/templates/handoff-note.md` reference. Removed the same obsolete asset from the bootstrap project template-source list. Reworded the integrate skill so it reads the Work Log section of the task file and explicitly preserves that log as-is on merge. Reworded the status-report skill so blocked-task reasons are read from the Work Log section instead of Notes.
+
+Used command-line inspections as the red/green verification because this repository has no executable test suite. The initial greps found the expected stale handoff-note and Notes/Handoff references. After each narrow edit, the targeted greps passed and the slice was committed. The final task verification command also passed. No alternate implementation was needed beyond wording the integrate preservation rule directly; nothing remains except reviewer validation.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
