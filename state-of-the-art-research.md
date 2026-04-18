@@ -347,16 +347,171 @@ This is where the field is heading — specs becoming "the new source code."
 
 ---
 
-## 8. Actionable Improvements for This Process
+## 8. Improvements to Apply to This Process
 
-Based on the research, the highest-leverage changes to apply to this framework:
+The following changes are derived directly from the research findings.
+Each item identifies the exact file to modify, the specific change, the source insight behind it, and the failure mode it prevents.
+Items are ordered by impact.
 
-| Improvement | What to change | Impact |
+---
+
+### 8.1 EARS Acceptance Criteria in the Task Template
+
+**File:** `.claude/skills/new-task/assets/TEMPLATE-task.md`
+**Also affects:** `.claude/skills/write-plan/SKILL.md` (Step 3 instructions)
+
+**Change:** Replace the free-form acceptance criteria bullet list with EARS-format criteria:
+```
+WHEN [precondition or trigger] THE SYSTEM SHALL [observable outcome]
+IF [fault condition] THEN THE SYSTEM SHALL [error behaviour]
+```
+
+**Why:** Free-form criteria like "the login should work" are ambiguous — the agent interprets them, the reviewer interprets them, and they often mean different things. EARS criteria are independently testable by construction. The agent can self-verify. The reviewer can objectively pass or fail each one. Adopted by Amazon Kiro as the standard for AI-readable requirements.
+
+**Failure modes prevented:** wrong abstraction, spec drift, silent failures (agent cannot self-check against vague criteria).
+
+---
+
+### 8.2 Structured Question Categories in Brainstorm
+
+**File:** `.claude/skills/brainstorm/SKILL.md` — Step 2 (Clarification Round)
+
+**Change:** Replace the current general guidance ("ask about ambiguities") with the seven structured question categories from Section 1.3 of this document. The Planner should work through each category and ask only the questions with material unknowns.
+
+Categories to cover:
+- Scope & requirements (triggers, explicit exclusions, success definition)
+- Technical constraints (volume, integrations, approved stack)
+- Users & surfaces (primary/secondary users, failure experience)
+- Edge cases & error handling (null inputs, downstream failures, rollback)
+- Prior decisions (settled architectural choices, patterns to follow)
+- Verification (test command, acceptance test pseudocode, benchmarks)
+
+**Why:** Left without structure, agents ask about what comes to mind and skip whole categories. Practitioners using structured interviews surfaced 40+ requirements they would not have captured upfront. The categories mirror the exact inputs the Implementer needs to avoid guessing.
+
+**Failure modes prevented:** scope expansion (missed exclusions), context poisoning (wrong assumptions baked in early), cascading errors (missed edge cases).
+
+---
+
+### 8.3 Explicit Out-of-Scope Section in the Spec Template
+
+**File:** `.claude/skills/new-spec/assets/TEMPLATE-specification.md`
+**Also affects:** `.claude/skills/brainstorm/SKILL.md` — Step 2 and Step 6 confirmation
+
+**Change:** Promote out-of-scope to a mandatory first-class section in the spec template, not a sub-bullet under scope. During the brainstorm Step 2 clarification round, add an explicit question: *"What is explicitly NOT included in this feature?"* During Step 6 confirmation, require that the approach summary includes at least one exclusion.
+
+**Why:** Agents fill spec gaps with plausible assumptions. An agent implementing authentication will add OAuth because most apps have it — unless the spec explicitly says otherwise. Multiple independent research sources identified this as one of the most underestimated spec gaps. Out-of-scope lists prevent gold-plating as reliably as in-scope lists prevent omissions.
+
+**Failure modes prevented:** scope expansion (gold-plating), wrong abstraction (agent adds adjacent features).
+
+---
+
+### 8.4 Inline Test Cases in the Spec Template
+
+**File:** `.claude/skills/new-spec/assets/TEMPLATE-specification.md`
+**Also affects:** `.claude/skills/write-plan/SKILL.md` — quality criteria
+
+**Change:** Add a **Verification Examples** section to the spec template. For each acceptance criterion, include a concrete example with specific inputs and expected outputs:
+
+```
+### Verification Examples
+
+| Scenario | Input | Expected output |
 |---|---|---|
-| **EARS acceptance criteria** | Update task template to require EARS-format criteria | High — makes every task directly machine-verifiable |
-| **Out-of-scope as first-class** | Add explicit "What is NOT included?" prompt in brainstorm Step 2 | High — prevents scope expansion |
-| **Inline test cases in specs** | Add spec template section: example inputs + expected outputs per criterion | High — agents pass on first attempt |
-| **Project constitution** | Add `project/docs/constitution.md` to bootstrap-project | Medium — formalises three-tier constraint system |
-| **Structured question categories** | Add the seven question categories to brainstorm/SKILL.md Step 2 | Medium — ensures nothing is missed in clarification |
-| **claude-progress.txt pattern** | Add to implementation guidelines for multi-session tasks | Medium — solves context-loss failure mode |
-| **HOTL model formalisation** | Classify decisions by risk level before each dev-loop run | Low — formalises what agents already do implicitly |
+| Valid login | email: user@example.com, password: correct | Redirect to /dashboard, session cookie set |
+| Invalid password | email: user@example.com, password: wrong | 401 response, error message displayed |
+| Empty email | email: "", password: any | Form validation error, no server request |
+```
+
+**Why:** Empirical finding — specs with concrete inline test cases cause agents to write passing code on the first implementation attempt rather than requiring correction rounds. The agent has a direct target to verify against rather than interpreting vague criteria. This is the single highest-leverage spec improvement identified across research sources.
+
+**Failure modes prevented:** wrong abstraction, silent failures, spec drift (concrete examples anchor interpretation).
+
+---
+
+### 8.5 Project Constitution
+
+**New file:** `project/docs/constitution.md` (created per-project, not part of the framework templates)
+**Also affects:** `.claude/skills/bootstrap-project/SKILL.md` — add constitution generation to the setup step; `CLAUDE.md` — reference it
+
+**Change:** Add a constitution generation step to `bootstrap-project`. The human provides the project's immutable rules; the skill writes `project/docs/constitution.md` with three tiers:
+
+```markdown
+## Always Do
+- Write tests before committing production code
+- Use parameterised queries for all database access
+- [project-specific invariants]
+
+## Ask First
+- Modifying database schemas
+- Changing public API contracts
+- Adding new third-party dependencies
+- Infrastructure changes
+
+## Never Do
+- Commit secrets or API keys
+- Push directly to `main`
+- Modify files outside the current task's scope
+- Skip the integration test suite
+```
+
+Load the constitution into every agent's context at session start (via `CLAUDE.md` reference or agent `skills:` frontmatter).
+
+**Why:** The Constitution pattern (from GitHub spec-kit) establishes project-wide invariants that override all other instructions. The three-tier structure formalises the "ask first" behaviour that currently exists implicitly — agents either act or don't; there is no middle tier. Making "ask first" explicit prevents high-risk actions from proceeding silently.
+
+**Failure modes prevented:** scope expansion, cascading errors (agent asks before touching infrastructure), prompt injection (constitution takes precedence over retrieved content).
+
+---
+
+### 8.6 Structured Question Categories in the Task Template
+
+**File:** `.claude/skills/new-task/assets/TEMPLATE-task.md`
+
+**Change:** Add a **Verification Command** field (already present) and a **Verification Examples** field (new) to the task template, mirroring the spec template change in 8.4. Also add an explicit **Out of Scope** field at the task level for task-specific exclusions that supplement the spec-level exclusions.
+
+**Why:** A task file is the Implementer's primary input. If it omits verification examples and explicit exclusions, the Implementer must infer them from the spec — introducing interpretation risk at every task. Grounding each task independently removes this dependency chain.
+
+**Failure modes prevented:** scope expansion per task, silent failures (implementer has no concrete target to self-verify against).
+
+---
+
+### 8.7 claude-progress.txt for Multi-Session Tasks
+
+**File:** `.claude/skills/tdd/SKILL.md` — add a multi-session state management note
+**Also affects:** `ai-process/guidelines/coding-standards.md` — add cross-session guidance; `ai-process/templates/` — add `progress.md` template
+
+**Change:** When a task is expected to span multiple agent sessions (flag in task frontmatter: `multi-session: true`), the Implementer creates a `claude-progress.txt` in the task branch root at the start of the first session. At the start of each subsequent session the Implementer reads this file before doing anything else.
+
+Format:
+```
+## Completed
+- [date] Implemented X (commit abc1234)
+- [date] Added tests for Y (commit def5678)
+
+## In Progress
+- Working on Z — got stuck at [specific point]
+
+## Next
+- [ ] Remaining item 1
+- [ ] Remaining item 2
+
+## Decisions Made
+- Chose approach A over B because [reason]
+```
+
+**Why:** Anthropic's own engineering team uses this pattern for long-running agent tasks. Without it, each new session reconstructs state from git history alone, which is incomplete and error-prone. The progress file is the external memory that survives context limits — the agent's equivalent of a developer's notebook.
+
+**Failure modes prevented:** context loss, spec drift (completed decisions are recorded, not re-litigated).
+
+---
+
+### 8.8 Summary Table
+
+| # | What | File(s) to change | Impact | Failure modes prevented |
+|---|---|---|---|---|
+| 8.1 | EARS acceptance criteria | `TEMPLATE-task.md`, `write-plan/SKILL.md` | **High** | Wrong abstraction, spec drift, silent failures |
+| 8.2 | Structured question categories | `brainstorm/SKILL.md` Step 2 | **High** | Scope expansion, context poisoning, cascading errors |
+| 8.3 | Out-of-scope as first-class | `TEMPLATE-specification.md`, `brainstorm/SKILL.md` | **High** | Scope expansion, gold-plating |
+| 8.4 | Inline test cases in spec | `TEMPLATE-specification.md`, `write-plan/SKILL.md` | **High** | Wrong abstraction, silent failures, spec drift |
+| 8.5 | Project constitution | `bootstrap-project/SKILL.md`, `CLAUDE.md`, new `constitution.md` | **Medium** | Scope expansion, cascading errors, prompt injection |
+| 8.6 | Verification fields in task template | `TEMPLATE-task.md` | **Medium** | Scope expansion per task, silent failures |
+| 8.7 | claude-progress.txt pattern | `tdd/SKILL.md`, `coding-standards.md`, new `progress.md` template | **Medium** | Context loss, spec drift |
