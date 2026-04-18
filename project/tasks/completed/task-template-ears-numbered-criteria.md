@@ -1,7 +1,7 @@
 ---
 id: "T-005"
 title: "Task template — numbered EARS acceptance criteria with pattern reference"
-status: pending
+status: completed
 priority: high
 assigned-role: implementer
 created: 2026-04-18
