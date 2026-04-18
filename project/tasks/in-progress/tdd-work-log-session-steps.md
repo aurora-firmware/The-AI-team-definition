@@ -60,6 +60,38 @@ grep -n 'without reading the Work Log' .claude/skills/tdd/SKILL.md
 
 Reference: spec 8.7, Component 3.
 
+### Handoff Note — 2026-04-18
+
+#### What Was Done
+
+Added Step 0 to `.claude/skills/tdd/SKILL.md` requiring the implementer to read every existing Work Log entry before reading acceptance criteria or starting other work, including first sessions where the log is empty.
+
+Added Step 8 requiring a dated Work Log entry before handing control back, using `### Session N — YYYY-MM-DD`, a free-prose body, and monotonically increasing session numbers per task or bug.
+
+Updated Quality Criteria with the one-entry-per-session-boundary requirement and added the Common Pitfall for starting work without reading the Work Log.
+
+Verified the existing red → green → refactor intermediate steps, Step 2 through Step 7, remained unmodified.
+
+#### What Remains
+
+- [ ] Reviewer should review the committed TDD skill update against AC-1 through AC-8.
+
+#### Current State of Files
+
+| File | State | Notes |
+|---|---|---|
+| `.claude/skills/tdd/SKILL.md` | modified, committed | Added only the requested Work Log procedure, quality criterion, and pitfall. |
+| `project/tasks/in-progress/tdd-work-log-session-steps.md` | modified | Added this handoff note under Notes. |
+
+#### Known Issues
+
+- No known implementation issues.
+- This Markdown/process repository has no executable test suite, so verification used the task's grep commands and direct command-line inspection of the preserved Step 2 through Step 7 text.
+
+#### Context for the Next Agent
+
+The implementation commit is `4944921` (`Update TDD skill work log steps`). The worktree also contained an unrelated untracked `.codex/skills` path before this task started; it was left untouched.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
