@@ -14,6 +14,10 @@ allowed-tools: Read, Grep, Glob, Write, Edit, Bash
 
 ## Procedure
 
+### Step 0: Read the Work Log
+Before reading the acceptance criteria or starting any other work, read every existing entry in the task or bug Work Log.
+This step is mandatory even on the first session, when the Work Log is empty and the read is a cheap no-op.
+
 ### Step 1: Read the Acceptance Criteria
 For each criterion, identify the testable behavior.
 Translate each criterion into one or more test cases with:
@@ -49,6 +53,11 @@ Run all tests again to confirm nothing broke.
 Go back to Step 2 for the next acceptance criterion.
 Continue until all criteria have tests and passing implementations.
 
+### Step 8: Append a Work Log Entry
+After refactor and before handing back to the orchestrator, append a dated Work Log entry using the heading `### Session N — YYYY-MM-DD`.
+Use a free-prose body that summarizes what was done, what was tried and rejected, and what remains.
+The session number increments monotonically across all sessions on the same task or bug.
+
 ## Output Format
 
 - **Test files** — one or more test files covering all acceptance criteria.
@@ -63,9 +72,11 @@ Continue until all criteria have tests and passing implementations.
 - Test names describe the expected behavior, not the implementation (e.g., `test_returns_empty_list_when_no_items` not `test_get_items`).
 - The implementation is minimal — no code exists that is not required by a test.
 - All tests pass when run together.
+- The Work Log contains one entry per session boundary.
 
 ## Common Pitfalls
 
+- **Starting work without reading the Work Log** — always read every existing Work Log entry before the acceptance criteria or any other work.
 - **Writing implementation first** — this defeats the purpose of TDD. Always write the test first.
 - **Tests that test implementation** — test what the code does (behavior), not how it does it (implementation details). If you refactor internals, tests should still pass.
 - **Skipping the "verify it fails" step** — a test that passes before implementation is not testing anything. It gives false confidence.
