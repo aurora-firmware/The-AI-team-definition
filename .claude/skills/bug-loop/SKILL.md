@@ -58,7 +58,7 @@ Select the highest-severity unblocked bug:
 > "Fix the bug described at `project/bugs/in-progress/<bug-file>`.
 > You are on branch `bug/B-NNN-...`. Use the tdd skill where applicable.
 > Commit after each red→green→refactor cycle.
-> When done, append a handoff note to the bug file's Notes section (or add a `## Notes` section if absent) following the format in `ai-process/templates/handoff-note.md`."
+> Append a Work Log entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The final entry serves as the handoff to the reviewer."
 
 Wait for the implementer to complete before continuing.
 
