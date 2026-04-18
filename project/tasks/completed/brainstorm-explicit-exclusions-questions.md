@@ -1,7 +1,7 @@
 ---
 id: "T-002"
 title: "Brainstorm skill — explicit exclusions question in Step 2 and Step 6"
-status: pending
+status: completed
 priority: high
 assigned-role: implementer
 created: 2026-04-18
