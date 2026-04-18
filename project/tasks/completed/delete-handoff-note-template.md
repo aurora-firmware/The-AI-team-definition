@@ -1,7 +1,7 @@
 ---
 id: "T-016"
 title: "Delete handoff-note template"
-status: pending
+status: completed
 priority: low
 assigned-role: implementer
 created: 2026-04-18
