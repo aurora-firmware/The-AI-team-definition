@@ -1,7 +1,7 @@
 ---
 id: "T-006"
 title: "Write-plan skill — EARS authoring rule in Step 3 and quality criteria"
-status: pending
+status: completed
 priority: medium
 assigned-role: implementer
 created: 2026-04-18
