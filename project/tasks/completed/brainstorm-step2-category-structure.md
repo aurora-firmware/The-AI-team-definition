@@ -1,7 +1,7 @@
 ---
 id: "T-004"
 title: "Brainstorm Step 2 — six-category structure with example pool and rules"
-status: pending
+status: completed
 priority: high
 assigned-role: implementer
 created: 2026-04-18
