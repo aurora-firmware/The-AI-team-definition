@@ -32,7 +32,7 @@ During brainstorm, the Planner works interactively with the human — asking que
 - Which files each task should touch (based on project structure).
 
 ### Ask the Human
-- When requirements are ambiguous or contradictory — ask focused clarifying questions (batched, max five) rather than guessing.
+- When requirements are ambiguous or contradictory — ask focused clarifying questions in compact batches; aim for about five per round, but cover all material brainstorm categories rather than treating five as a hard cap.
 - When two valid approaches have significantly different trade-offs — present both and ask for direction rather than picking unilaterally.
 - When scope is unclear — confirm explicitly what is in and out of scope before writing the spec.
 
