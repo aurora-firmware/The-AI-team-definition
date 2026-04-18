@@ -31,22 +31,38 @@ Read `project/specs/` and `project/decisions/` to surface any existing decisions
 
 Before exploring solutions, resolve the unknowns that would materially change the solution space.
 
-Formulate focused questions — batch them all together, maximum five.
-Ask the human and **stop**. Do not continue until answers are received.
+Use these internal categories to plan coverage. Do not expose category names or `[Category]` labels in the questions you ask the human.
 
-Include this named prompt as a standalone question:
-- **Explicit exclusions:** What is explicitly NOT included in this feature?
+**Internal categories:**
+- **Scope & Requirements** — clarify required outcomes, boundaries, and the prominent exclusions question: "What is explicitly NOT included in this feature?"
+- **Technical Constraints** — identify constraints such as performance targets, backwards compatibility, integrations, rollout strategy, security, or operational limits.
+- **Users & Surfaces** — clarify who is affected, which interfaces or workflows change, and what each user type must experience.
+- **Edge Cases & Error Handling** — surface failure modes, unusual inputs, partial states, rollback needs, and expected handling.
+- **Prior Decisions** — check existing specifications, decision records, and project conventions for constraints or contradictions.
+- **Verification** — clarify how success will be observed, tested, reviewed, or accepted.
 
-**Ask about:**
-- Core requirements that are genuinely ambiguous (not inferable from context)
-- Scope boundaries — what is explicitly out of scope?
-- Constraints not yet stated (performance targets, backwards compatibility, rollout strategy)
-- Priority trade-offs if requirements conflict
+**Example question pool:**
+- What outcome must this feature guarantee for the user?
+- What is explicitly NOT included in this feature?
+- Which existing behavior must remain unchanged?
+- Are there performance, compatibility, rollout, or operational constraints I should account for?
+- Which user types or workflows are affected first?
+- Are there surfaces where this should not appear, even if they seem related?
+- What should happen when the required data is missing, stale, or contradictory?
+- What failure mode would be most damaging if we handled it poorly?
+- Are there prior specs, decisions, or conventions this must follow?
+- Has any approach already been rejected or ruled out?
+- What would make the first version acceptable enough to ship?
+- How should we verify that the change works as intended?
+- What evidence should reviewers look for before approving the spec or implementation?
+- If requirements conflict, which priority should decide the trade-off?
 
-**Do not ask about:**
-- Details that belong in the implementation phase (exact naming, file structure)
-- Anything that can be reasonably inferred from the request or existing specs
-- More than five questions in one round — prioritise the most impactful unknowns
+**Rules:**
+- Aim for about five focused questions per round as a recommendation, not a hard cap.
+- Coverage of all six internal categories is the binding constraint. If one round cannot cover the material unknowns clearly, ask another round before moving on.
+- Silent skip is acceptable when a category has no material unknown for this request. Do not ask filler questions.
+- Avoid details that belong in the implementation phase, such as exact naming or file structure, unless they materially change the solution space.
+- Ask the human and **stop**. Do not continue until answers are received.
 
 If there are no material unknowns, skip this step and proceed.
 
