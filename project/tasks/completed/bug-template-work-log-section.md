@@ -1,7 +1,7 @@
 ---
 id: "T-008"
 title: "Bug template — add Work Log section"
-status: pending
+status: completed
 priority: high
 assigned-role: implementer
 created: 2026-04-18
