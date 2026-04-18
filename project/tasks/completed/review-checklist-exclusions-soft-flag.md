@@ -1,7 +1,7 @@
 ---
 id: "T-003"
 title: "Review checklist — soft flag when Exclusions section missing"
-status: pending
+status: completed
 priority: medium
 assigned-role: implementer
 created: 2026-04-18
