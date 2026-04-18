@@ -13,6 +13,7 @@ This checklist is used by the reviewer agent during the two-stage code review pr
 - [ ] All acceptance criteria from the task are met.
 - [ ] No functionality is missing compared to what the task specifies.
 - [ ] No unspecified behavior or features were added.
+- [ ] Soft flag only; do not fail Stage 1 solely for this: Exclusions section is present and contains at least the human-confirmed answer (either concrete exclusions or an explicit 'no exclusions apply').
 - [ ] Files modified match the "Files to Touch" list in the task. Any file created or modified that is not listed there must be explicitly justified in the handoff note — otherwise this is a **Fail**.
 
 ## Stage 2: Code Quality
