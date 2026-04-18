@@ -1,0 +1,62 @@
+---
+id: "T-015"
+title: "Governance surface — CLAUDE.md + README + setup-guide sweep"
+status: pending
+priority: medium
+assigned-role: implementer
+created: 2026-04-18
+spec: project/specs/handoff-progress-unification.md
+---
+
+# Governance surface — CLAUDE.md + README + setup-guide sweep
+
+## Description
+
+Per spec `handoff-progress-unification.md` (8.7), reword handoff-note references in three governance-surface documents:
+
+1. `CLAUDE.md` — the repository-map row that currently reads "Reusable document formats: handoff notes (used when implementer hands off to reviewer)" must be reworded. Since the handoff-note template is being deleted by T-016, the `ai-process/templates/` row should either be removed (if `templates/` ends up empty after the deletion) or reworded to describe what remains. Verify whether `ai-process/templates/` retains any files after T-016 before choosing wording.
+2. `CLAUDE.md` Task Lifecycle table — the rows for `in-progress/ → blocked/` and `blocked/ → in-progress/` currently describe the blocker and the resolution as being "described in Notes section" / "resolution noted in Notes section." After the Work Log sweep, the task-file vocabulary is Description / Acceptance Criteria / Dependencies / Files to Touch / Verification / Work Log / Review. Reword these two rows so the blocker description and the resolution are recorded in the Work Log, not the Notes section.
+3. `README.md` — the bullet under the `templates/` section that mentions handoff notes must be reworded or removed based on the same verification.
+4. `guides/setup-guide.md` — the copy-list for new projects must omit `handoff-note.md` and any instruction to copy it.
+
+## Acceptance Criteria
+
+AC-1: The `CLAUDE.md` repository-map row for `ai-process/templates/` shall no longer describe handoff notes.
+AC-2: IF `ai-process/templates/` will be empty after T-016 THEN `CLAUDE.md` shall either remove the row or reword it to reflect the empty-folder status.
+AC-3: The `README.md` file shall no longer describe handoff notes in its templates section.
+AC-4: The `guides/setup-guide.md` file shall not instruct the reader to copy `handoff-note.md` or any similar handoff-note artifact.
+AC-5: Every file touched shall retain coherent prose after the removal or reword — no dangling bullets, broken sentences, or orphan references.
+AC-6: No reference to `handoff-note.md` shall remain in any of these three files.
+AC-7: The Task Lifecycle table in `CLAUDE.md` shall reference the Work Log, not the Notes section, when describing where blocker descriptions and blocker resolutions are recorded (rows `in-progress/ → blocked/` and `blocked/ → in-progress/`).
+
+## Dependencies
+
+- `T-007` — task template must carry Work Log to give the governance docs a coherent story
+- `T-008` — bug template must carry Work Log for the same reason
+
+## Files to Touch
+
+- `CLAUDE.md` — repository-map row for `ai-process/templates/`
+- `README.md` — `templates/` bullet
+- `guides/setup-guide.md` — copy-list for new projects
+
+## Verification
+
+```bash
+for f in CLAUDE.md README.md guides/setup-guide.md; do
+  if grep -nE 'handoff-note\.md|handoff note|handoff notes' "$f"; then
+    echo "FAIL: residual reference in $f"; exit 1
+  fi
+done
+# Lifecycle table rows point at the Work Log, not the Notes section
+! grep -n 'Notes section' CLAUDE.md
+grep -nE 'blocker .*Work Log|Work Log.*blocker|resolution .*Work Log|Work Log.*resolution' CLAUDE.md
+```
+
+## Notes
+
+Reference: spec 8.7, Component 5 (partial).
+
+## Review
+
+<!-- Reviewer appends verdict here after each review cycle. -->
