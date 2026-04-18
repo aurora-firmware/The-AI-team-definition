@@ -34,6 +34,9 @@ Before exploring solutions, resolve the unknowns that would materially change th
 Formulate focused questions — batch them all together, maximum five.
 Ask the human and **stop**. Do not continue until answers are received.
 
+Include this named prompt as a standalone question:
+- **Explicit exclusions:** What is explicitly NOT included in this feature?
+
 **Ask about:**
 - Core requirements that are genuinely ambiguous (not inferable from context)
 - Scope boundaries — what is explicitly out of scope?
@@ -80,7 +83,7 @@ Skip this step if the direction is clear enough to write the spec.
 
 Before writing the full specification, state the chosen approach in two or three sentences:
 - What it does
-- What it does not do (explicit exclusions)
+- An exclusions line with one or more concrete exclusions, or the exact statement "no exclusions apply" when the human confirms there are none
 - Any constraints it assumes
 
 Ask the human: "Does this match your intent? I'll write the spec based on this."

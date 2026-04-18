@@ -50,6 +50,44 @@ grep -nE 'exclusions (line|apply)' .claude/skills/brainstorm/SKILL.md
 Reference: spec 8.3, Component 2.
 This task precedes T-004 (spec 8.2 restructures Step 2 into a six-category block that absorbs this exclusions question).
 
+### Handoff Note — 2026-04-18
+
+## What Was Done
+
+- Updated `.claude/skills/brainstorm/SKILL.md` Step 2 to include a standalone named prompt: "What is explicitly NOT included in this feature?"
+- Kept the Step 2 exclusions prompt outside the existing "Ask about" list so it is presented as its own prompt.
+- Updated Step 6 to require an exclusions line with concrete exclusions or the exact statement "no exclusions apply" when the human confirms there are none.
+- Verified the task acceptance checks with command-line inspections.
+
+## What Remains
+
+- [ ] Reviewer should review the two brainstorm skill edits against AC-1 through AC-5.
+- [ ] Integrator should move the task file according to the project workflow after review approval.
+
+## Current State of Files
+
+| File | State | Notes |
+|---|---|---|
+| `.claude/skills/brainstorm/SKILL.md` | modified | Step 2 now actively elicits explicit exclusions; Step 6 now requires an exclusions line and accepts "no exclusions apply" verbatim. |
+| `project/tasks/in-progress/brainstorm-explicit-exclusions-questions.md` | modified | Added this handoff note under Notes. |
+
+## Known Issues
+
+- None known.
+
+## Context for the Next Agent
+
+- This task intentionally makes the minimal T-002 update only; T-004 is expected to restructure Step 2 later and should preserve this exclusions prompt.
+- There is an unrelated untracked `.codex/skills` path in the working tree that was not touched.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
+
+### Review Verdict — 2026-04-18
+
+PASS
+
+Stage 1 passed: AC-1 through AC-5 are satisfied by `.claude/skills/brainstorm/SKILL.md`. The Step 2 exclusions prompt is named and standalone, Step 6 requires an exclusions line, and the exact statement "no exclusions apply" is accepted when confirmed by the human.
+
+Stage 2 passed: the Markdown changes are minimal, scoped, readable, and introduce no executable behavior, security surface, or performance concerns. Verification used visual diff inspection and the requested grep checks.
