@@ -54,7 +54,6 @@ Copy the following files from this repository into your new project, preserving 
 - `.claude/skills/write-plan/assets/roadmap.md`
 - `.claude/skills/tdd/assets/test-plan.md`
 - `.claude/skills/tdd/assets/test-report.md`
-- `ai-process/templates/handoff-note.md`
 - `.claude/skills/status-report/assets/progress-report.md`
 
 **Agent definitions (copy to `.claude/agents/`):**

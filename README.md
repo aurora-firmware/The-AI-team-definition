@@ -51,7 +51,7 @@ These are the **reusable framework artifacts** that define how AI teams work. Th
 - **`guidelines/`** — Coding standards, review checklists, markdown conventions (framework defaults)
 - **`architecture/`** — System architecture diagrams and component maps (describes the AI team structure)
 - **`guides/`** — Setup instructions and customization guidance for adopting the framework
-- **`templates/`** — Reusable document formats (handoff notes, etc.)
+- **`templates/`** — Reserved for reusable document formats that are not tied to a specific skill.
 
 **When adopting this framework in a new project**: Copy everything in `ai-process/` as-is. Only modify if you need language-specific conventions (edit `ai-process/guidelines/coding-standards.md`) or project-specific processes (document in `project/decisions/`).
 

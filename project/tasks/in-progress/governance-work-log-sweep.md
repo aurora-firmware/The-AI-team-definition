@@ -57,6 +57,31 @@ grep -nE 'blocker .*Work Log|Work Log.*blocker|resolution .*Work Log|Work Log.*r
 
 Reference: spec 8.7, Component 5 (partial).
 
+### Session 1 — 2026-04-18
+
+Implemented the governance sweep for the three scoped documents.
+I first verified the existing Work Log state, the acceptance criteria, and the current `ai-process/templates/` contents.
+`ai-process/templates/` currently contains only `handoff-note.md`, and T-016 is expected to delete that file next, so I removed the `CLAUDE.md` repository-map row instead of rewording it as an active templates surface.
+I also removed the handoff-note copy-list item from `guides/setup-guide.md` and reworded the `README.md` templates bullet to describe the directory as reserved for reusable formats not tied to a skill.
+
+For the lifecycle criterion, I changed the `CLAUDE.md` `in-progress/ -> blocked/` and `blocked/ -> in-progress/` rows so blocker descriptions and resolutions are recorded in the Work Log rather than the Notes section.
+I used command-line inspections as the red/green checks: the handoff-note grep failed before the first edit and passed after it; the lifecycle grep failed while the rows still referenced Notes and passed after the Work Log wording.
+The final verification command from the task passes.
+
+Two implementation commits were created: `12ff6d9` for removing handoff-note references from the governance docs, and `39ed098` for pointing the blocker lifecycle rows to the Work Log.
+What remains is reviewer validation and T-016's planned deletion of `ai-process/templates/handoff-note.md`.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
+
+### Review Verdict — 2026-04-18
+
+PASS
+
+Stage 1 passed: all acceptance criteria were checked against the scoped document changes.
+`CLAUDE.md` no longer describes handoff notes in the repository map, the lifecycle blocker rows now point to the Work Log, `README.md` no longer describes handoff notes in the templates section, and `guides/setup-guide.md` no longer instructs copying `handoff-note.md`.
+The only extra touched file is this task file for Work Log and review documentation.
+
+Stage 2 passed for this Markdown/process change: visual diff inspection found coherent prose and no dangling bullets or orphan references.
+Command-line checks passed: `git diff --check dev...HEAD`, residual handoff-reference grep across the three scoped files, and the lifecycle Work Log grep.
