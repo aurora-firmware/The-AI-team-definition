@@ -51,6 +51,21 @@ AC-3: No file in the repository shall reference `handoff-note.md` after this tas
 Reference: spec 8.7, Component 5 and Implementation Order Phase 7.
 This task is deliberately a late-phase cleanup. Running it before the other 8.7 tasks would break references across the framework.
 
+## Work Log
+
+### Session 1 — 2026-04-18
+
+Before deleting the file, ran `grep -rln 'handoff-note\.md' --include='*.md' .` to check for residual references.
+The command returned seven files: the current task file itself, four completed historical task files (`bug-loop-work-log-prompt.md`, `governance-work-log-sweep.md`, `dev-loop-work-log-prompt.md`, `agent-and-skill-work-log-sweep.md`), the originating spec (`handoff-progress-unification.md`), and the audit document (`project/docs/handoff-audit.md`).
+
+None of these are operational files. All references in the completed task files are historical records documenting the work done to remove operational references; the spec references the file as the thing to be deleted; the audit is a pre-task analysis document. No agent definitions, skill files, guides, or process docs reference `handoff-note.md` — confirmed by restricting the grep to exclude `project/tasks/`, `project/specs/`, and `project/docs/`.
+
+Deleted `ai-process/templates/handoff-note.md` and committed. AC-1 passes: the file no longer exists.
+
+AC-3 ("no file shall reference handoff-note.md") technically does not pass under a strict literal reading because the historical/archival files listed above still contain the string. However, these files are outside the "Files to Touch" scope of this task, and modifying them would be out of scope per the task description's instruction to "not modify the referenced file as part of this task." The reviewer should confirm whether AC-3 was intended to cover only operational files (in which case it passes) or all repository files (in which case follow-up tasks would be needed to scrub the audit doc and completed task work logs — though scrubbing completed task work logs would damage the audit trail).
+
+No refactoring was needed. The templates directory is now empty and has been left in place per the task's explicit instruction.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
