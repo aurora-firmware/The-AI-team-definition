@@ -1,7 +1,7 @@
 ---
 id: "T-007"
 title: "Task template — replace Notes with Work Log section"
-status: pending
+status: completed
 priority: high
 assigned-role: implementer
 created: 2026-04-18
