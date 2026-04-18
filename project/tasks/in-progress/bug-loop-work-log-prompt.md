@@ -49,6 +49,14 @@ grep -n 'Work Log' .claude/skills/bug-loop/SKILL.md
 
 Reference: spec 8.7, Component 4.
 
+### Session 1 — 2026-04-18
+
+Updated `.claude/skills/bug-loop/SKILL.md` Step 4 so the implementer prompt now requires a session-end Work Log entry with the `### Session N — YYYY-MM-DD` heading format, free-prose coverage of what was done, what was tried and rejected, and what remains, and an explicit statement that the final entry serves as the handoff to the reviewer.
+
+Used command-line grep checks as the TDD red/green verification because this repository has no executable test suite. The red check confirmed the old prompt still lacked `Work Log` and still referenced both `ai-process/templates/handoff-note.md` and the `handoff note` artifact phrase. After the scoped prompt replacement, the green checks confirmed `Work Log` is present and both forbidden references are absent. No broader refactor was needed or attempted.
+
+What remains: reviewer verification of the prompt wording against the task acceptance criteria.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
