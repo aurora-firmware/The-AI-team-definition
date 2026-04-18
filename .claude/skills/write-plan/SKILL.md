@@ -29,7 +29,7 @@ For each unit, create a task file following `.claude/skills/new-task/assets/TEMP
 - **ID**: Sequential within the plan (T-001, T-002, ...).
 - **Title**: Clear, descriptive, starts with a verb (Implement, Add, Create, Fix).
 - **Description**: Enough context to start without asking questions.
-- **Acceptance criteria**: Specific, measurable, checkable outcomes.
+- **Acceptance criteria**: Author every criterion using one of the five EARS patterns; use `.claude/skills/new-task/assets/TEMPLATE-task.md` as the pattern reference.
 - **Dependencies**: List of task IDs that must complete first.
 - **Files to touch**: Exact file paths that will be created or modified.
 - **Verification command**: Shell command that proves the task is done.
@@ -65,6 +65,7 @@ If the Architect requests Planner revisions, address them and re-trigger the pre
 - Every task is **one-shottable** — completable in a single agent session without running out of context. Rules of thumb: touches at most 3–4 files, has at most 5 acceptance criteria, and the description fits in ~20 lines. If a task exceeds any of these, split it.
 - Every task is **verifiable** — has a test or command that proves it works.
 - Every task is **self-contained** — the description provides enough context to start.
+- Every AC uses one of the five EARS patterns.
 - No two tasks modify the same file without an explicit dependency between them.
 - The full set of tasks covers 100% of the specification.
 
@@ -72,6 +73,6 @@ If the Architect requests Planner revisions, address them and re-trigger the pre
 
 - **Tasks too large** — if a task description is longer than ~20 lines, it probably needs splitting.
 - **Missing dependencies** — trace the data flow: if Task B reads a file that Task A creates, Task B depends on Task A.
-- **Vague acceptance criteria** — "it works" is not a criterion. "The function returns an empty list when given no input" is.
+- **Criteria that do not match an EARS pattern** — if a criterion resists EARS, the task is probably not atomic.
 - **Forgetting verification commands** — every task must have a way to prove it is done. If you cannot write a verification command, the acceptance criteria are not specific enough.
 - **File conflicts** — two tasks creating the same file will cause merge conflicts. Restructure so one task creates the file and the other modifies it (with a dependency).
