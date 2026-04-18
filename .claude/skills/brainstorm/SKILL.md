@@ -135,8 +135,8 @@ Because the human shaped the spec interactively, Gate 1 should be a quick confir
 ## Common Pitfalls
 
 - **Writing the spec before aligning** — producing a full document, then waiting for approval, is the old pattern. The goal is to arrive at the spec *together*.
-- **Asking too many questions upfront** — five maximum. Prioritise. Unanswered low-priority questions can be `[TODO]` in the spec.
+- **Asking too many questions in one round** — aim for about five per round. If the six internal categories cannot be covered materially within that budget, run a second round rather than stretching a single round indefinitely.
 - **Anchoring on the first idea** — always generate at least one meaningfully different alternative before committing to a direction.
 - **Solving the wrong problem** — re-read the original request after generating alternatives to verify you are addressing the actual need.
-- **Scope creep** — if an alternative requires significantly more work, flag it as a future roadmap item rather than including it in the current spec.
+- **Scope creep** — if an alternative requires significantly more work, record it as an explicit exclusion in the spec's Exclusions section rather than folding it into the current scope.
 - **Missing constraints** — check `project/decisions/` before proposing anything that contradicts a prior decision.

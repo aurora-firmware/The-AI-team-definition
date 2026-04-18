@@ -72,7 +72,7 @@ Feature Request (human)
 This phase is **interactive**. The Planner does not produce a finished document for cold review — it works with the human through a dialogue:
 
 1. Reads the request and checks for ambiguities.
-2. Asks focused clarifying questions (batched, max five) if material unknowns exist. Stops and waits for answers.
+2. Asks focused clarifying questions (batched, about five per round as a recommendation) if material unknowns exist, covering the six internal brainstorm categories. Runs a second round if coverage requires it. Stops and waits for answers.
 3. Generates at least two solution alternatives and presents them briefly.
 4. Asks the human to pick a direction (or provide the deciding constraint). Stops and waits.
 5. Asks follow-up questions on scope or behaviour if the chosen direction still has gaps. One round maximum.
