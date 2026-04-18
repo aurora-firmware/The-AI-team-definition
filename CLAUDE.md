@@ -37,8 +37,8 @@ Update the `status` field in the frontmatter to match.
 | Transition | Moved by | Receives (precondition) | Delivers (postcondition) |
 |-----------|----------|------------------------|--------------------------|
 | `pending/ → in-progress/` | Implementer | Task file with all dependencies in `completed/` | Task file moved, branch created as `task/<slug>` |
-| `in-progress/ → blocked/` | Implementer | Blocker identified (missing dep, ambiguous req, 3 failed attempts) | Task file moved, blocker described in Notes section |
-| `blocked/ → in-progress/` | Implementer | Blocker resolved (architect guidance or human input received) | Task file moved, resolution noted in Notes section |
+| `in-progress/ → blocked/` | Implementer | Blocker identified (missing dep, ambiguous req, 3 failed attempts) | Task file moved, blocker described in Work Log |
+| `blocked/ → in-progress/` | Implementer | Blocker resolved (architect guidance or human input received) | Task file moved, resolution noted in Work Log |
 | `in-progress/ → completed/` | Integrator (via `integrate` skill) | Gate 2 passed (code review) AND Gate 3 passed (integration tests) | Task file moved, branch merged to `dev` |
 
 A task is **not** completed when the implementer finishes coding — it is completed when it survives review and integration.
