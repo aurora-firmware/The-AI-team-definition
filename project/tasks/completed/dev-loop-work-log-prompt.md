@@ -1,7 +1,7 @@
 ---
 id: "T-010"
 title: "Dev-loop skill — reword implementer prompt to reference Work Log"
-status: pending
+status: completed
 priority: medium
 assigned-role: implementer
 created: 2026-04-18
