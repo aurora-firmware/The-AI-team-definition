@@ -78,6 +78,46 @@ grep -nE '^AC-[0-9]+:' .claude/skills/new-task/assets/TEMPLATE-task.md
 Reference: spec 8.1, Component 1.
 This task precedes T-007 (spec 8.7 replaces the Notes section with Work Log in the same file). T-007 depends on this task.
 
+### Handoff Note — 2026-04-18
+
+#### What Was Done
+
+- Updated `.claude/skills/new-task/assets/TEMPLATE-task.md` so the Acceptance Criteria section uses numbered `AC-N` placeholders instead of checkbox criteria.
+- Added the EARS pattern reference comment with all five required patterns and examples.
+- Verified the change with the task's command-line checks and confirmed the template diff is confined to the Acceptance Criteria section.
+- Committed the template update in `1f33a6c`.
+
+#### What Remains
+
+- [ ] Reviewer should inspect the committed template change against AC-1 through AC-5.
+- [ ] Reviewer should confirm this task can move to completed after review.
+
+#### Current State of Files
+
+| File | State | Notes |
+|---|---|---|
+| `.claude/skills/new-task/assets/TEMPLATE-task.md` | modified / committed | Acceptance Criteria section now contains the EARS comment and `AC-1` through `AC-3` placeholders. |
+| `project/tasks/in-progress/task-template-ears-numbered-criteria.md` | modified | Handoff note appended under Notes as requested. |
+
+#### Known Issues
+
+- No known implementation issues.
+- No executable test suite exists for this Markdown/process repository; verification used command-line inspections and acceptance-criteria checks.
+
+#### Context for the Next Agent
+
+- Existing unrelated untracked path `.codex/skills` was present before this work and was left untouched.
+- The template change intentionally leaves all non-Acceptance Criteria top-level sections unchanged.
+- T-007 is expected to update the same template's Notes section later, so this task avoided touching that section.
+
+### Review Verdict — 2026-04-18
+
+PASS
+
+Stage 1 passed: AC-1 through AC-5 are satisfied. The template Acceptance Criteria section now uses `AC-N` placeholders, contains the EARS pattern reference with all five patterns, includes Event-driven, Unwanted-behaviour, and Ubiquitous examples, and `/new-task` reads this template directly.
+
+Stage 2 passed: visual diff inspection shows the template change is confined to the Acceptance Criteria section. Command-line checks confirmed the old checkbox criteria are absent and the required EARS markers and `AC-N` placeholders are present. No executable tests apply for this Markdown/process-only change.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
