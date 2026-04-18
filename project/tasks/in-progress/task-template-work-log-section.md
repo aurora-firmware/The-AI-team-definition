@@ -65,6 +65,38 @@ grep -q '^## Review' .claude/skills/new-task/assets/TEMPLATE-task.md
 Reference: spec 8.7, Component 1.
 Blocks T-009, T-012, T-015 (all consume the Work Log section shape).
 
+### Handoff Note — 2026-04-18
+
+#### What Was Done
+
+- Updated `.claude/skills/new-task/assets/TEMPLATE-task.md` so the former `## Notes` section is now `## Work Log`.
+- Added the mandatory HTML comment describing one entry per session boundary, `### Session N — YYYY-MM-DD`, free-prose body expectations, read-before-starting guidance, and final-entry-as-handoff guidance.
+- Preserved the existing EARS Acceptance Criteria guidance and left the `## Review` section structure unchanged.
+- Verified the Markdown template with command-line inspections because this repository has no executable test suite for this process-only change.
+- Committed the template update in `972ff93` (`T-007 update task template work log`).
+
+#### What Remains
+
+- [ ] Reviewer should confirm the template diff is limited to the Work Log replacement and guidance comment.
+- [ ] Reviewer should confirm downstream tasks T-009, T-012, and T-015 can consume the new Work Log section shape.
+
+#### Current State of Files
+
+| File | State | Notes |
+|---|---|---|
+| `.claude/skills/new-task/assets/TEMPLATE-task.md` | modified | `## Notes` replaced with `## Work Log`; mandatory session-entry guidance comment added. |
+| `project/tasks/in-progress/task-template-work-log-section.md` | modified | This handoff note was appended under `## Notes`. |
+
+#### Known Issues
+
+- None known.
+
+#### Context for the Next Agent
+
+- The TDD red check was `set -e` plus the task verification grep commands; it failed before implementation because `## Work Log` was absent.
+- The green check used the same grep commands and an `rg -n '^(#|##) '` heading inspection to confirm the section order stayed intact.
+- The repository had a pre-existing untracked `.codex/skills` path; it was left untouched.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
