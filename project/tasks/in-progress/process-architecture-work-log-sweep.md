@@ -49,6 +49,10 @@ grep -n 'Work Log' ai-process/architecture/system-overview.md
 
 Reference: spec 8.7, Component 5 (partial).
 
+### Session 1 — 2026-04-18
+
+Updated the two requested documentation files so the process and architecture docs consistently name the implementer handoff artifact as a Work Log entry. Used command-line greps as the red/green checks: the initial checks found `handoff note` in both target files and no `Work Log` references, then the post-edit checks confirmed `handoff note` is absent and the expected `Work Log` lines are present. I kept the implementation to direct wording substitutions only and rejected broader surrounding copy changes because AC-4 requires unrelated lines to remain untouched. Nothing remains for implementation; reviewer should verify the committed docs diff and the grep outputs.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
