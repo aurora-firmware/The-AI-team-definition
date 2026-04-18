@@ -48,6 +48,44 @@ grep -q '^- \*\*' .claude/skills/new-spec/assets/TEMPLATE-specification.md
 
 Reference: spec 8.3, Component 1.
 
+### Handoff Note — 2026-04-18
+
+## What Was Done
+
+- Moved `## Exclusions` in `.claude/skills/new-spec/assets/TEMPLATE-specification.md` to immediately after `## Purpose`.
+- Deleted the `## Future Roadmap` section from the spec template.
+- Rewrote the Exclusions example bullets in the `- **title.** Body.` style so each example includes a prose reason.
+- Verified the section order, Future Roadmap removal, example bullet format, and unchanged relative order of Architecture through Amendment Log.
+
+## What Remains
+
+- [ ] Reviewer pass for T-001.
+
+## Current State of Files
+
+| File | State | Notes |
+|---|---|---|
+| `.claude/skills/new-spec/assets/TEMPLATE-specification.md` | modified / committed | Exclusions is now the second top-level section; Future Roadmap is removed. |
+| `project/tasks/in-progress/restructure-spec-template-exclusions-first.md` | modified | Handoff note appended under Notes. |
+
+## Known Issues
+
+- None found.
+
+## Context for the Next Agent
+
+- The implementation used shell assertions as the TDD tests because this task only changes a Markdown template.
+- Commit `cc93fe3` contains the completed template red-green cycle.
+- Existing untracked `.codex/skills` content was present before this work and was left untouched.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
+
+### Review Verdict — 2026-04-18
+
+PASS
+
+Stage 1 passed: all acceptance criteria are met. `## Exclusions` is the second top-level section, directly between `## Purpose` and `## Architecture`; `## Future Roadmap` is removed; Exclusions examples use bold titled prose bullets with reasons; and the required section ordering from Architecture through Amendment Log is unchanged. The only extra modified file is this task file, justified by the handoff/review workflow.
+
+Stage 2 passed: the documentation-only change is minimal, readable, and introduces no security, performance, or runtime correctness concerns. Verification commands for section order, Future Roadmap removal, and bold Exclusions bullets pass.
