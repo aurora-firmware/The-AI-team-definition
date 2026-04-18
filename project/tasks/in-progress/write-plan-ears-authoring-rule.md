@@ -60,6 +60,38 @@ count=$(grep -cE 'Ubiquitous|Event-driven|Unwanted-behaviour|State-driven|Option
 Reference: spec 8.1, Component 2.
 Soft dependency on T-005 — the skill links out to the template, so the template must exist in its EARS form first.
 
+### Handoff Note — 2026-04-18
+
+## What Was Done
+
+- Updated `.claude/skills/write-plan/SKILL.md` Step 3 so the Planner must author every acceptance criterion using one of the five EARS patterns.
+- Pointed the Step 3 instruction to `.claude/skills/new-task/assets/TEMPLATE-task.md` as the pattern reference without duplicating the five patterns inline.
+- Added the Quality Criteria bullet requiring every AC to use one of the five EARS patterns.
+- Replaced the old "Vague acceptance criteria" pitfall with the required EARS-pattern atomicity pitfall.
+- Ran the task's command-line acceptance checks as the adapted red/green verification for this Markdown/process repository.
+
+## What Remains
+
+- [ ] Reviewer should confirm the wording satisfies spec 8.1, Component 2.
+- [ ] Reviewer should rerun the verification commands if desired.
+
+## Current State of Files
+
+| File | State | Notes |
+|---|---|---|
+| `.claude/skills/write-plan/SKILL.md` | modified | Step 3, Quality Criteria, and Common Pitfalls now enforce EARS authoring through the task template reference. |
+| `project/tasks/in-progress/write-plan-ears-authoring-rule.md` | modified | Added this handoff note under Notes. |
+
+## Known Issues
+
+- None found.
+
+## Context for the Next Agent
+
+- The skill intentionally references `.claude/skills/new-task/assets/TEMPLATE-task.md` instead of listing the five EARS patterns inline.
+- The task file's verification command for pattern duplication is a rough keyword check; it returns zero matches for the updated skill.
+- Existing untracked `.codex/skills` content was present before this work and was left untouched.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
