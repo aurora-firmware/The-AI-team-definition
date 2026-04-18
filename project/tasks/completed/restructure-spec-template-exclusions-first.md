@@ -1,7 +1,7 @@
 ---
 id: "T-001"
 title: "Restructure spec template — Exclusions first, delete Future Roadmap"
-status: pending
+status: completed
 priority: high
 assigned-role: implementer
 created: 2026-04-18
