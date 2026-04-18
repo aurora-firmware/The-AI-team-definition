@@ -49,7 +49,7 @@ chore(tasks): move T-004 to completed
 | Agent | Commits when | Branch |
 |---|---|---|
 | **Planner** | Each spec or task file is finalized | `dev` |
-| **Implementer** | After each TDD red→green→refactor cycle; once more before handoff | `task/T-NNN-…` |
+| **Implementer** | After each TDD red→green→refactor cycle; once more before the final Work Log entry | `task/T-NNN-…` |
 | **Reviewer** | After writing review verdict (task file only) | `dev` |
 | **Architect** | After producing an ADR or amendment | `dev` |
 | **Integrator** | One merge commit per task branch merged into `dev` | `dev` |
