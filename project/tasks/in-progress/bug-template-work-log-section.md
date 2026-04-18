@@ -58,6 +58,36 @@ awk '/^## /{print NR": "$0}' .claude/skills/new-bug/assets/TEMPLATE-bug.md
 
 Reference: spec 8.7, Component 2.
 
+### Handoff Note — 2026-04-18
+
+## What Was Done
+
+- Added `## Work Log` to `.claude/skills/new-bug/assets/TEMPLATE-bug.md`.
+- Placed the new section immediately after `## Fix Verification`.
+- Reused the same mandatory session-boundary guidance comment from the task template, covering dated `### Session N — YYYY-MM-DD` entries, free-prose body expectations, read-before-starting guidance, and final-entry-as-handoff guidance.
+- Verified the requested command-line checks pass and committed the template change in `79151aa`.
+
+## What Remains
+
+- [ ] Reviewer should confirm the additive template change satisfies AC-1 through AC-5.
+- [ ] Reviewer should confirm `/new-bug` generation inherits the updated template as expected.
+
+## Current State of Files
+
+| File | State | Notes |
+|---|---|---|
+| `.claude/skills/new-bug/assets/TEMPLATE-bug.md` | modified | Work Log section added after Fix Verification and committed in `79151aa`. |
+| `project/tasks/in-progress/bug-template-work-log-section.md` | modified | Handoff note appended under Notes for this implementation session. |
+
+## Known Issues
+
+- None.
+
+## Context for the Next Agent
+
+- This repository has no executable test suite for this Markdown/process task, so verification used the task's grep and awk inspections as the red/green checks.
+- The pre-existing untracked `.codex/skills` path was not touched.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
