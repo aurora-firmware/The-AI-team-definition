@@ -50,7 +50,7 @@ Other immediate escalation triggers (no retry needed):
 - **Task directory** — picks up the next task from `project/tasks/pending/`, selected by priority (critical > high > medium > low), then by dependency readiness (all dependencies in `completed/`), then by creation date (oldest first). Moves the selected task to `project/tasks/in-progress/`.
 
 ### Hands Off To
-- **Reviewer** — completed code with passing tests, plus a handoff note (`ai-process/templates/handoff-note.md`) summarizing decisions made, trade-offs considered, and anything the reviewer should pay attention to.
+- **Reviewer** — completed code with passing tests, plus a final Work Log entry summarizing decisions made, trade-offs considered, and anything the reviewer should pay attention to.
 - **Architect** — escalation request if blocked.
 
 ## Folder Scope

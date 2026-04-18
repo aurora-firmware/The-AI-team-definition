@@ -35,7 +35,6 @@ This skill sets up the full directory structure and copies framework templates i
    - `.claude/skills/write-plan/assets/roadmap.md`
    - `.claude/skills/tdd/assets/test-plan.md`
    - `.claude/skills/tdd/assets/test-report.md`
-   - `ai-process/templates/handoff-note.md`
    - `.claude/skills/status-report/assets/progress-report.md`
 
 4. Copy all agent definitions to `.claude/agents/` if they do not already exist:
