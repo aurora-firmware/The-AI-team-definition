@@ -1,7 +1,7 @@
 ---
 id: "T-012"
 title: "Agent + bootstrap + integrate — Work Log reference sweep"
-status: pending
+status: completed
 priority: medium
 assigned-role: implementer
 created: 2026-04-18
