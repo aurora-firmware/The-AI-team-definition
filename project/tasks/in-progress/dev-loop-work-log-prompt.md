@@ -58,6 +58,43 @@ grep -n "task file's Review section" .claude/skills/dev-loop/SKILL.md
 
 Reference: spec 8.7, Component 4.
 
+### Handoff Note — 2026-04-18
+
+#### What Was Done
+
+Updated `.claude/skills/dev-loop/SKILL.md` so the Step 4 implementer prompt now requires a Work Log entry at session end, specifies the `### Session N — YYYY-MM-DD` heading, and states that the final Work Log entry serves as the handoff to the reviewer.
+
+Updated the Step 5 reviewer prompt so verdicts go to the task file's Review section instead of the Notes section.
+
+Removed the dev-loop prompt's reference to `ai-process/templates/handoff-note.md` and removed handoff-note artifact wording from the dev-loop skill.
+
+#### What Remains
+
+Nothing remains for this implementation cycle.
+
+#### Current State of Files
+
+| File | State | Notes |
+|---|---|---|
+| `.claude/skills/dev-loop/SKILL.md` | modified | Step 4 and Step 5 prompts reworded for Work Log and Review section vocabulary. |
+| `project/tasks/in-progress/dev-loop-work-log-prompt.md` | modified | Added this required handoff note under Notes. |
+
+#### Known Issues
+
+- No known issues.
+
+#### Context for the Next Agent
+
+This Markdown/process repository has no executable test suite for this task. Verification uses the grep commands in the task file as acceptance checks.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
+
+### Review Verdict — 2026-04-18
+
+PASS
+
+Stage 1 passed: all acceptance criteria are met in `.claude/skills/dev-loop/SKILL.md`. The implementer prompt now requires a Work Log entry at session end, specifies `### Session N — YYYY-MM-DD`, states that the final entry serves as the handoff to the reviewer, removes the deleted handoff-note template reference, and avoids "handoff note" as an artifact name. The reviewer prompt now targets the task file's Review section.
+
+Stage 2 passed by visual diff inspection and command-line checks. This Markdown/process change has no executable test suite; the task's grep verification commands were run, with the expected matches and non-matches.

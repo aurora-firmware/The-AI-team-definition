@@ -58,8 +58,7 @@ If no task has all dependencies satisfied, stop and report which tasks are waiti
 
 > "Pick up the task at `project/tasks/in-progress/<task-file>` and implement it using the tdd skill.
 > You are on branch `task/T-NNN-...`. Commit after each red→green→refactor cycle.
-> When done, append a handoff note to the task file's Notes section under a `### Handoff Note — [date]` heading.
-> Use the section structure from `ai-process/templates/handoff-note.md` (What Was Done, What Remains, Current State of Files, Known Issues, Context for the Next Agent) — do not include the template's YAML frontmatter."
+> Append a Work Log entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The final entry serves as the handoff to the reviewer."
 
 Wait for the implementer to complete before continuing.
 
@@ -69,7 +68,7 @@ Wait for the implementer to complete before continuing.
 
 > "Review the task at `project/tasks/in-progress/<task-file>` using the code-review skill.
 > The implementer has completed their work on branch `task/T-NNN-...`.
-> Append your verdict to the task file's Notes section under `### Review Verdict — YYYY-MM-DD`.
+> Append your verdict to the task file's Review section under `### Review Verdict — YYYY-MM-DD`.
 > Verdict must be one of: PASS, FAIL, or ESCALATE."
 
 Wait for the reviewer to complete before continuing.
