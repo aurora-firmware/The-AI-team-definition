@@ -53,6 +53,22 @@ grep -n "Exclusions section is present" ai-process/guidelines/review-checklist.m
 
 Reference: spec 8.7, Component 5 (partial).
 
+### Session 1 — 2026-04-18
+
+Updated the review checklist Stage 1 out-of-list file rule to require justification in the Work Log while preserving the Fail outcome for unjustified files outside the Files to Touch list. Updated the git conventions implementer cadence row so the final extra commit is described as happening before the final Work Log entry.
+
+Used command-line grep inspections as the red/green checks because this repository has no executable suite for these Markdown process files. The initial checks confirmed the stale review-checklist handoff-note wording and the stale git-conventions "before handoff" wording before each edit. I rejected broader cleanup or status-field edits because the task explicitly limits the guideline changes to handoff/Work Log wording and only requires this progress entry in the task file.
+
+What remains: reviewer verification of the scoped diffs and acceptance criteria. The T-003 Exclusions soft-flag line remained present during verification.
+
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
+
+### Review Verdict — 2026-04-18
+
+PASS
+
+Stage 1 passed: all acceptance criteria are met. The review-checklist out-of-list file rule now references the Work Log while preserving the Fail condition, git-conventions now references the final Work Log entry, neither target file retains "handoff note", unrelated guideline lines were not modified, and the T-003 Exclusions soft-flag line remains present.
+
+Stage 2 passed for this Markdown/process change. Visual diff inspection and command-line grep checks found no correctness, scope, or documentation-quality issues.
