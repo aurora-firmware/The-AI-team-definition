@@ -1,7 +1,7 @@
 ---
 id: "T-013"
 title: "Guidelines sweep — review-checklist + git-conventions reference update"
-status: pending
+status: completed
 priority: medium
 assigned-role: implementer
 created: 2026-04-18
