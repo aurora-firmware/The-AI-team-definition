@@ -83,7 +83,7 @@ Skip this step if the direction is clear enough to write the spec.
 
 Before writing the full specification, state the chosen approach in two or three sentences:
 - What it does
-- What it does not do (explicit exclusions)
+- An exclusions line with one or more concrete exclusions, or the exact statement "no exclusions apply" when the human confirms there are none
 - Any constraints it assumes
 
 Ask the human: "Does this match your intent? I'll write the spec based on this."
