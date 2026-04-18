@@ -14,6 +14,13 @@ What problem does this solve?
 Why is it being built?
 What is the expected outcome?
 
+## Exclusions
+
+What this specification explicitly does NOT cover:
+
+- **Exclusion title.** This specification excludes the work because it belongs in a separate follow-up decision.
+- **Another exclusion.** This specification excludes the behavior because it is outside the approved scope.
+
 ## Architecture
 
 ### Design Principles
@@ -77,20 +84,6 @@ setting_b:
 | 1 | First deliverable | Nothing |
 | 2 | Second deliverable | Phase 1 |
 | 3 | Third deliverable | Phase 1 |
-
-## Exclusions
-
-What this specification explicitly does NOT cover:
-
-- Exclusion 1 — reason
-- Exclusion 2 — reason
-
-## Future Roadmap
-
-Features or improvements deferred to later versions:
-
-- Future item 1 — rationale for deferral
-- Future item 2 — rationale for deferral
 
 ## Amendment Log
 
