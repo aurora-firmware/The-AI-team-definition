@@ -86,7 +86,7 @@ This document describes the architecture of an AI agent team — how agents are 
 | Planner | Task directory | Task files in `project/tasks/pending/` |
 | Human | `/dev-loop` | Invocation after Gate 2 approval |
 | `/dev-loop` | Implementer | Task assignment (spawned per task) |
-| Implementer | `/dev-loop` | Completion signal; handoff note in task file |
+| Implementer | `/dev-loop` | Completion signal; Work Log entry in task file |
 | `/dev-loop` | Reviewer | Review request (spawned per task) |
 | Reviewer | `/dev-loop` | Verdict in task file (`PASS`/`FAIL`/`ESCALATE`) |
 | `/dev-loop` | Implementer | Feedback routing (on `FAIL`) |

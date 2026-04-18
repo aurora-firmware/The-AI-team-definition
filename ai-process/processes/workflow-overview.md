@@ -134,13 +134,13 @@ See `.claude/skills/dev-loop/SKILL.md` for the full procedure.
 **Agent:** Implementer.
 **Skills:** tdd, debug.
 **Input:** Task file in `project/tasks/in-progress/`.
-**Output:** Working code with passing tests, handoff note appended to the task file.
+**Output:** Working code with passing tests, Work Log entry appended to the task file.
 
 #### Reviewer details
 
 **Agent:** Reviewer.
 **Skill:** code-review.
-**Input:** Completed task with code changes and implementer handoff note.
+**Input:** Completed task with code changes and implementer Work Log entry.
 **Output:** Verdict appended to the task file under `### Review Verdict — [date]`.
 **Two stages:**
 1. Spec compliance — does the code do what the task requires?
