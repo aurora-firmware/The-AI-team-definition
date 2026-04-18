@@ -95,3 +95,11 @@ Soft dependency on T-005 — the skill links out to the template, so the templat
 ## Review
 
 <!-- Reviewer appends verdict here after each review cycle. -->
+
+### Review Verdict — 2026-04-18
+
+PASS
+
+Stage 1 passed: all six acceptance criteria are satisfied in `.claude/skills/write-plan/SKILL.md`, with Step 3 directing EARS authoring through `TEMPLATE-task.md`, the Quality Criteria bullet added, the Common Pitfalls entry replaced, and no inline enumeration of all five EARS patterns.
+
+Stage 2 passed for this Markdown/process change using visual diff inspection and command-line checks. No blocking findings.
