@@ -1,7 +1,7 @@
 ---
 id: "T-009"
 title: "TDD skill — add Step 0 (read Work Log) and Step 8 (append entry)"
-status: pending
+status: completed
 priority: high
 assigned-role: implementer
 created: 2026-04-18
