@@ -20,7 +20,7 @@ This document describes the architecture of an AI agent team — how agents are 
 │  │ PLANNER  │  │  ARCHITECT   │  │    INTEGRATOR      │    │
 │  │          │  │              │  │                    │    │
 │  │ creative │  │ advisory     │  │ merge + test       │    │
-│  │ + struct │  │ + escalation │  │ + conflict resolve │    │
+│  │ + struct │  │ + preflight  │  │ + conflict resolve │    │
 │  └────┬─────┘  └──────┬───────┘  └─────────┬──────────┘    │
 │       │               │                     │               │
 │       ↓               ↓ (on demand)         ↑               │
@@ -38,7 +38,7 @@ This document describes the architecture of an AI agent team — how agents are 
 │  │         └────────────────┴───────────────┘               │
 │  └──────────────────────────────────────────────────────────┘
 │                                                              │
-│  ★ HUMAN GATES: Spec approval, Task plan review, Final merge │
+│  ★ HUMAN GATES: Spec approval, Final merge sign-off          │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -54,7 +54,7 @@ This document describes the architecture of an AI agent team — how agents are 
 
 **Skill:** `/dev-loop`.
 **Purpose:** Drive the full Implementer → Reviewer loop autonomously across all pending tasks.
-**Key principle:** The human triggers the loop once after Gate 2; the loop runs until the queue is empty or a hard stop is hit (blocked task, escalation). No human input is required between tasks.
+**Key principle:** The human invokes the loop once after the Architect preflight; the loop runs until the queue is empty or a hard stop is hit (blocked task, escalation). No human input is required between tasks.
 
 ### Execution Layer
 
@@ -72,8 +72,8 @@ This document describes the architecture of an AI agent team — how agents are 
 ### Oversight Layer
 
 **Actors:** Humans.
-**Purpose:** Approve high-impact decisions at three gates.
-**Key principle:** Humans stay in the loop without becoming bottlenecks. Only three mandatory gates.
+**Purpose:** Approve high-impact decisions at two gates.
+**Key principle:** Humans stay in the loop without becoming bottlenecks. Only two mandatory gates.
 
 ## Information Flow
 
@@ -84,7 +84,9 @@ This document describes the architecture of an AI agent team — how agents are 
 | Human | Planner | Feature request or problem description |
 | Planner | Human | Specification for approval |
 | Planner | Task directory | Task files in `project/tasks/pending/` |
-| Human | `/dev-loop` | Invocation after Gate 2 approval |
+| Planner | Architect | Task plan preflight request |
+| Architect | `/dev-loop` | Validated task plan — ready to run |
+| Human | `/dev-loop` | Invocation after Architect preflight |
 | `/dev-loop` | Implementer | Task assignment (spawned per task) |
 | Implementer | `/dev-loop` | Completion signal; Work Log entry in task file |
 | `/dev-loop` | Reviewer | Review request (spawned per task) |
