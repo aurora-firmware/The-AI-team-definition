@@ -51,38 +51,27 @@ Each skill implements a workflow or action defined in the ai-process:
 | **debug** | Reproduce → isolate → fix → verify loop |
 | **conflict-resolution** | Git conflict resolution preserving both sides' intent |
 | **integrate** | Branch merge with test verification and task completion |
+| **/dev-loop** | Autonomous Implementer → Reviewer → Integrator loop across the pending task queue |
+| **/bug-loop** | Autonomous Implementer → Reviewer loop across the open bug queue |
 | **/new-spec** | Creates a new specification document from the template |
 | **/new-task** | Creates a new task document from the template |
 | **/new-bug** | Creates a new bug report from the template |
 | **/new-adr** | Creates a new Architecture Decision Record |
 | **/status-report** | Summarizes current project state across all work items |
-| **/bootstrap-project** | Sets up the full framework in a new project repository |
 
 ## Using This Framework in Your Project
 
-### Option A — Bootstrap (recommended)
+Adopting the framework means copying its files into your new project repository and customizing them for your stack.
+The full walkthrough is in `guides/setup-guide.md`.
+The short version:
 
-In your new project repository, run:
+1. **Create the directory structure** — `project/specs/`, `project/tasks/`, `project/bugs/`, `project/decisions/`, `ai-process/`, `.claude/agents/`, `.claude/skills/`.
+2. **Copy the framework files** — all agent definitions from `.claude/agents/`, all skill definitions from `.claude/skills/` (each as `<name>/SKILL.md`), and the process and guideline docs from `ai-process/`.
+3. **Write your project's `CLAUDE.md`** — start from the template in `guides/setup-guide.md`, fill in your project name, purpose, and tech stack.
+4. **Customize for your stack** — edit `ai-process/guidelines/coding-standards.md` for language-specific rules.
+5. **Verify** — run `/status-report` (should produce an empty report) and `/new-task` (should create a file in `project/tasks/pending/`).
 
-```
-/bootstrap-project
-```
-
-This copies the framework structure and prompts you to configure it for your project.
-
-### Option B — Manual setup
-
-See `guides/setup-guide.md` for step-by-step instructions.
-
-### Customizing
-
-After bootstrapping:
-
-1. Edit `CLAUDE.md` with your project name, tech stack, and any project-specific conventions.
-2. Edit `ai-process/guidelines/coding-standards.md` for language-specific rules.
-3. Record any structural decisions in `project/decisions/` as ADRs.
-
-See `guides/customization-guide.md` for details.
+See `guides/setup-guide.md` for the complete file list, CLAUDE.md starter template, and verification steps.
 
 ## Repository Structure
 

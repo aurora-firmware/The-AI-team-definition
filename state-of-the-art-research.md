@@ -431,9 +431,11 @@ Categories to cover:
 ### 8.5 Project Constitution
 
 **New file:** `project/docs/constitution.md` (created per-project, not part of the framework templates)
-**Also affects:** `.claude/skills/bootstrap-project/SKILL.md` — add constitution generation to the setup step; `CLAUDE.md` — reference it
+**Also affects:** `guides/setup-guide.md` — add a constitution-generation step to the manual setup flow; `CLAUDE.md` — reference it
 
-**Change:** Add a constitution generation step to `bootstrap-project`. The human provides the project's immutable rules; the skill writes `project/docs/constitution.md` with three tiers:
+> **Note:** This proposal originally targeted a `bootstrap-project` skill that has since been removed from the framework. The equivalent integration point today is the manual setup guide (`guides/setup-guide.md`); a future revival of a bootstrap skill would also be a valid target.
+
+**Change:** Add a constitution generation step to the project setup. The human provides the project's immutable rules; the step writes `project/docs/constitution.md` with three tiers:
 
 ```markdown
 ## Always Do
@@ -512,6 +514,6 @@ Format:
 | 8.2 | Structured question categories | `brainstorm/SKILL.md` Step 2 | **High** | Scope expansion, context poisoning, cascading errors |
 | 8.3 | Out-of-scope as first-class | `TEMPLATE-specification.md`, `brainstorm/SKILL.md` | **High** | Scope expansion, gold-plating |
 | 8.4 | Inline test cases in spec | `TEMPLATE-specification.md`, `write-plan/SKILL.md` | **High** | Wrong abstraction, silent failures, spec drift |
-| 8.5 | Project constitution | `bootstrap-project/SKILL.md`, `CLAUDE.md`, new `constitution.md` | **Medium** | Scope expansion, cascading errors, prompt injection |
+| 8.5 | Project constitution | `guides/setup-guide.md`, `CLAUDE.md`, new `constitution.md` (original `bootstrap-project` target has been removed) | **Medium** | Scope expansion, cascading errors, prompt injection |
 | 8.6 | Verification fields in task template | `TEMPLATE-task.md` | **Medium** | Scope expansion per task, silent failures |
 | 8.7 | claude-progress.txt pattern | `tdd/SKILL.md`, `coding-standards.md`, new `progress.md` template | **Medium** | Context loss, spec drift |
