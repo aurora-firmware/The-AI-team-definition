@@ -22,6 +22,7 @@ When they conflict, the ai-process wins.
 | `guides/` | Human-facing guides for setup and customization (not part of the ai-process itself) |
 | `.claude/agents/` | Agent role definitions (planner, architect, implementer, reviewer, integrator) |
 | `.claude/skills/` | Skills: procedures (brainstorm, write-plan, tdd, code-review, debug, conflict-resolution, integrate), orchestrators (/dev-loop, /bug-loop), and actions (/new-spec, /new-task, /new-bug, /new-adr, /status-report) |
+| `.codex/` | Symlinks to `.claude/agents/` and `.claude/skills/` — compatibility layer for the OpenAI Codex agent platform |
 
 ---
 
@@ -58,7 +59,7 @@ Move the file (not copy) when status changes.
 Update the `status` field in the frontmatter to match.
 
 | Transition | Moved by | Receives (precondition) | Delivers (postcondition) |
-|-----------|----------|------------------------|--------------------------|
+|-----------|----------|------------------------|-------------------------|
 | `pending/ → in-progress/` | Implementer | Task file with all dependencies in `completed/` | Task file moved, branch created as `task/<slug>` |
 | `in-progress/ → blocked/` | Implementer | Blocker identified (missing dep, ambiguous req, 3 failed attempts) | Task file moved, blocker described in Work Log |
 | `blocked/ → in-progress/` | Implementer | Blocker resolved (architect guidance or human input received) | Task file moved, resolution noted in Work Log |
@@ -74,7 +75,7 @@ Move the file (not copy) when status changes.
 Update the `status` field in the frontmatter to match.
 
 | Transition | Moved by | Receives (precondition) | Delivers (postcondition) |
-|-----------|----------|------------------------|--------------------------|
+|-----------|----------|------------------------|-------------------------|
 | `open/ → in-progress/` | Implementer | Bug file with reproduction steps verified | Bug file moved, fix branch created |
 | `in-progress/ → resolved/` | Implementer | Fix verification command passes | Bug file moved, fix committed |
 | `in-progress/ → open/` | Implementer | Fix attempt failed | Bug file moved, failed approach noted in bug file |
@@ -85,7 +86,7 @@ Specifications track their status in the `status` frontmatter field.
 Move specifications to `project/specs/archive/` only when superseded and no in-flight tasks reference them.
 
 | Transition | Changed by | Receives (precondition) | Delivers (postcondition) |
-|-----------|------------|------------------------|--------------------------|
+|-----------|------------|------------------------|-------------------------|
 | `draft → review` | Planner | Completed brainstorm output | Spec with all sections filled, status updated |
 | `review → approved` | Human | Spec passes Gate 1 (Spec Approval) | Spec status updated to `approved` |
 | `review → draft` | Planner | Human rejects at Gate 1 with feedback | Spec revised per feedback, status back to `draft` |

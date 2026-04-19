@@ -59,6 +59,12 @@ Each skill implements a workflow or action defined in the ai-process:
 | **/new-adr** | Creates a new Architecture Decision Record |
 | **/status-report** | Summarizes current project state across all work items |
 
+## Agent Platform Compatibility
+
+Agent and skill definitions live in `.claude/` for Claude Code.
+The `.codex/` directory contains symlinks to `.claude/agents/` and `.claude/skills/`, providing the same definitions to the OpenAI Codex agent platform without duplication.
+Both platforms read from the same source files.
+
 ## Using This Framework in Your Project
 
 Adopting the framework means copying its files into your new project repository and customizing them for your stack.
@@ -86,9 +92,10 @@ See `guides/setup-guide.md` for the complete file list, CLAUDE.md starter templa
 │   ├── bugs/            Bug reports (open/ → in-progress/ → resolved/)
 │   └── decisions/       Architecture Decision Records
 ├── guides/              Human-facing setup and customization guides
-└── .claude/
-    ├── agents/          Agent role definitions (5 roles)
-    └── skills/          Skill procedures and action commands
+├── .claude/
+│   ├── agents/          Agent role definitions (5 roles)
+│   └── skills/          Skill procedures and action commands
+└── .codex/              Symlinks to .claude/agents/ and .claude/skills/ (Codex compatibility)
 ```
 
 ## Contributing to This Project
