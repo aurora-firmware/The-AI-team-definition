@@ -18,7 +18,7 @@ Generate a project status report.
 
 2. For each task in `project/tasks/in-progress/`, read the frontmatter and list: ID, title, assigned role.
 
-3. For each task in `project/tasks/blocked/`, read the frontmatter and list: ID, title, and check the Notes section for blocking reason.
+3. For each task in `project/tasks/blocked/`, read the frontmatter and list: ID, title, and check the Work Log section for the blocking reason.
 
 4. For each bug in `project/bugs/open/` with severity "critical" or "high", list: ID, title, severity.
 

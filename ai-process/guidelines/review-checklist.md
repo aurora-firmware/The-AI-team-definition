@@ -13,7 +13,8 @@ This checklist is used by the reviewer agent during the two-stage code review pr
 - [ ] All acceptance criteria from the task are met.
 - [ ] No functionality is missing compared to what the task specifies.
 - [ ] No unspecified behavior or features were added.
-- [ ] Files modified match the "Files to Touch" list in the task. Any file created or modified that is not listed there must be explicitly justified in the handoff note — otherwise this is a **Fail**.
+- [ ] Exclusions section is present and not empty. If no exclusions are defined, it must say so.
+- [ ] Files modified match the "Files to Touch" list in the task. Any file created or modified that is not listed there must be explicitly justified in the Work Log — otherwise this is a **Fail**.
 
 ## Stage 2: Code Quality
 

@@ -33,7 +33,8 @@ Provided as `$ARGUMENTS`:
    find project/tasks/ -name "<task-id>-*.md"
    ```
 3. If no task file is found, continue without spec verification but note the absence in the final report.
-4. If found, read the task file completely — focus on the **Description**, **Acceptance Criteria**, and any **Notes/Handoff** sections.
+4. If found, read the task file completely — focus on the **Description**, **Acceptance Criteria**, and the **Work Log** section.
+5. Preserve the Work Log as-is on merge. Do not strip it, rewrite it, or summarize it.
 
 ### Step 3: Verify Branch Contains Expected Changes
 

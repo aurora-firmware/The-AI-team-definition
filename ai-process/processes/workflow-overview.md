@@ -26,7 +26,11 @@ Feature Request (human)
 │  Verification defined    │
 └─────────┬───────────────┘
           ↓
-   ★ GATE 2: Task Plan Review (human) ★
+┌─────────────────────────┐
+│  ARCHITECT: Preflight    │  ← automated, no human gate
+│  Validate decomposition  │
+│  Catch conflicts early   │
+└─────────┬───────────────┘
           ↓
 ┌────────────────────────────────────────────────┐
 │  /dev-loop  (human-invoked, runs autonomously)  │
@@ -51,7 +55,7 @@ Feature Request (human)
 │  Stops on: empty queue │ blocked task │ escalate│
 └─────────┬──────────────────────────────────────┘
           ↓
-   ★ GATE 5: Final Merge Approval (human) ★
+   ★ GATE 4: Final Merge Sign-off (human) ★
           ↓
        ✓ DONE
 ```
@@ -63,8 +67,20 @@ Feature Request (human)
 **Agent:** Planner (creative mode).
 **Skill:** brainstorm.
 **Input:** Feature request or problem description from a human.
-**Output:** Design document with explored alternatives and a recommended approach.
-**Ends when:** Human approves the specification.
+**Output:** Specification document in `project/specs/`, written after the human has confirmed the direction.
+
+This phase is **interactive**. The Planner does not produce a finished document for cold review — it works with the human through a dialogue:
+
+1. Reads the request and checks for ambiguities.
+2. Asks focused clarifying questions (batched, about five per round as a recommendation) if material unknowns exist, covering the six internal brainstorm categories. Runs a second round if coverage requires it. Stops and waits for answers.
+3. Generates at least two solution alternatives and presents them briefly.
+4. Asks the human to pick a direction (or provide the deciding constraint). Stops and waits.
+5. Asks follow-up questions on scope or behaviour if the chosen direction still has gaps. One round maximum.
+6. Confirms the approach in 2–3 sentences and gets explicit human sign-off before writing.
+7. Writes the specification.
+
+**Ends when:** Human approves the specification at Gate 1.
+Because the human shaped the spec throughout the dialogue, Gate 1 approval should be quick.
 
 ### 2. Task Breakdown
 
@@ -74,10 +90,25 @@ Feature Request (human)
 **Output:** Set of task files in `project/tasks/pending/`, each following `.claude/skills/new-task/assets/TEMPLATE-task.md`.
 **Ends when:** Human approves the task plan.
 
+### 2. Task Breakdown + Architect Preflight
+
+**Agent:** Planner (structured mode), then Architect (preflight).
+**Skills:** write-plan.
+**Input:** Approved specification.
+**Output:** Set of task files in `project/tasks/pending/`, validated by the Architect.
+
+After the Planner writes the task files, the Architect automatically reviews the task plan:
+- Checks dependency correctness and completeness.
+- Identifies any two tasks that modify the same file without a declared dependency (merge conflict risk).
+- Verifies architectural consistency with existing decision records.
+- Creates corrective tasks or flags issues back to the Planner if problems are found.
+
+No human approval is required — the Architect's preflight replaces Gate 2.
+When the Architect signals the plan is sound, the human invokes `/dev-loop`.
+
 ### 3 & 4. Implementation + Code Review (automated via `/dev-loop`)
 
-These two phases run as a tightly coupled loop driven by the `/dev-loop` skill.
-After Gate 2 is approved, a human invokes:
+After the Architect preflight completes, a human invokes:
 
 ```
 /dev-loop
@@ -103,13 +134,13 @@ See `.claude/skills/dev-loop/SKILL.md` for the full procedure.
 **Agent:** Implementer.
 **Skills:** tdd, debug.
 **Input:** Task file in `project/tasks/in-progress/`.
-**Output:** Working code with passing tests, handoff note appended to the task file.
+**Output:** Working code with passing tests, Work Log entry appended to the task file.
 
 #### Reviewer details
 
 **Agent:** Reviewer.
 **Skill:** code-review.
-**Input:** Completed task with code changes and implementer handoff note.
+**Input:** Completed task with code changes and implementer Work Log entry.
 **Output:** Verdict appended to the task file under `### Review Verdict — [date]`.
 **Two stages:**
 1. Spec compliance — does the code do what the task requires?
@@ -119,7 +150,7 @@ See `.claude/skills/dev-loop/SKILL.md` for the full procedure.
 1. The task stays in `project/tasks/in-progress/`.
 2. Reviewer appends verdict and specific, actionable feedback under `### Review Verdict — [date]`.
 3. `/dev-loop` routes the task back to the Implementer for fixes on the same branch.
-4. Up to two retries (three total review attempts). On a third failure, `/dev-loop` escalates to architect.
+4. Up to two retries (three total review attempts). On a third failure, `/dev-loop` escalates to Architect.
 
 #### When `/dev-loop` stops
 
@@ -132,12 +163,13 @@ See `.claude/skills/dev-loop/SKILL.md` for the full procedure.
 
 ### 5. Final Merge
 
-Integration happens per-task inside the `/dev-loop` cycle: after each reviewer PASS, the `integrate` skill merges the task branch into `dev`, runs the full test suite, and moves the task to `completed/` (Gate 4).
+Integration happens per-task inside the `/dev-loop` cycle: after each reviewer PASS, the `integrate` skill merges the task branch into `dev`, runs the full test suite, and moves the task to `completed/` (Gate 3).
 If integration fails, `/dev-loop` stops and files a bug — the task branch is not deleted and `dev` is left clean.
 
-Once the queue is empty and all tasks are in `completed/`, the human reviews the final state of `dev` and approves the merge to `main` (Gate 5).
+Once the queue is empty and all tasks are in `completed/`, the human reviews the `/status-report` summary and approves the merge to `main` (Gate 4).
+This is a sign-off — the human confirms the outcome matches the spec intent, not individual code diffs.
 
-**Ends when:** Human approves the merge from `dev` to `main` (Gate 5).
+**Ends when:** Human approves the merge from `dev` to `main` (Gate 4).
 
 ## Git Branching Strategy
 
@@ -164,15 +196,16 @@ See `ai-process/processes/escalation-procedure.md` for details.
 
 ## Quality Gates
 
-Five checkpoints control the workflow (see `ai-process/processes/quality-gates.md` for full criteria):
+Four checkpoints control the workflow (see `ai-process/processes/quality-gates.md` for full criteria):
 
 | Gate | Checkpoint | Evaluator | Phase boundary |
 |------|-----------|-----------|----------------|
 | 1 | Spec Approval | Human | Brainstorm → Task Breakdown |
-| 2 | Task Plan Review | Human | Task Breakdown → Parallel Execution |
-| 3 | Code Review | Reviewer agent | Implementation → Integration (per-task, inside `/dev-loop`) |
-| 4 | Integration Tests | `integrate` skill | Review → Completed (per-task, inside `/dev-loop`) |
-| 5 | Final Merge Approval | Human | `dev` → `main` |
+| — | Architect Preflight | Architect agent | Task Breakdown → `/dev-loop` |
+| 2 | Code Review | Reviewer agent | Implementation → Integration (per-task, inside `/dev-loop`) |
+| 3 | Integration Tests | `integrate` skill | Review → Completed (per-task, inside `/dev-loop`) |
+| 4 | Final Merge Sign-off | Human | `dev` → `main` |
 
-Gates 1, 2, and 5 are human approval points — they keep humans in the loop on high-impact decisions.
-Gates 3 and 4 are agent-evaluated — they catch defects before human review.
+Gates 1 and 4 are human touchpoints — design approval and final production sign-off.
+The Architect Preflight is automated — it catches structural problems in the task plan before agents start coding.
+Gates 2 and 3 are agent-evaluated — they catch defects during execution.

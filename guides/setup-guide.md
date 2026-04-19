@@ -13,11 +13,7 @@ This guide walks you through bootstrapping a new project using the AI team frame
 - A git repository for your new project.
 - Claude Code (or another AI agent platform that reads `CLAUDE.md`).
 
-## Quick Path
-
-If you have Claude Code available, run `/bootstrap-project` inside your new repo. It will create the directory structure, copy templates, and generate a starter CLAUDE.md. Then skip to Step 5 below.
-
-## Manual Setup
+## Setup Steps
 
 ### Step 1: Create the Directory Structure
 
@@ -54,7 +50,6 @@ Copy the following files from this repository into your new project, preserving 
 - `.claude/skills/write-plan/assets/roadmap.md`
 - `.claude/skills/tdd/assets/test-plan.md`
 - `.claude/skills/tdd/assets/test-report.md`
-- `ai-process/templates/handoff-note.md`
 - `.claude/skills/status-report/assets/progress-report.md`
 
 **Agent definitions (copy to `.claude/agents/`):**
@@ -176,9 +171,8 @@ Your project is ready. The typical workflow is:
 1. **Describe a feature** — write what you want built.
 2. **Brainstorm** — the planner agent explores approaches and produces a specification (`/new-spec`).
 3. **Approve the spec** — human reviews and approves (Gate 1).
-4. **Break into tasks** — the planner decomposes the spec into atomic tasks.
-5. **Approve the task plan** — human reviews tasks (Gate 2).
-6. **Run `/dev-loop`** — autonomously implements, reviews, and integrates each task (Gates 3 & 4).
-7. **Final approval** — human approves the merge from `dev` to `main` (Gate 5).
+4. **Break into tasks** — the planner decomposes the spec into atomic tasks; the architect validates the plan (automated preflight, no human gate).
+5. **Run `/dev-loop`** — autonomously implements, reviews, and integrates each task (Gate 2: code review, Gate 3: integration tests).
+6. **Final approval** — human approves the merge from `dev` to `main` (Gate 4).
 
 For the full workflow details, see `ai-process/processes/workflow-overview.md`.

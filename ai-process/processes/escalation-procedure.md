@@ -44,8 +44,9 @@ Once the agent exceeds its threshold, it stops retrying and enters Phase 2.
 
 - **Who:** The architect agent.
 - **How:** The blocked agent sends a structured request describing the problem, what was attempted, and why it failed.
-- **Scope:** The architect provides advice only — it does not modify code or make implementation decisions.
-- **Limit:** One consultation attempt per issue. The agent applies the architect's guidance and tries once more. If it still fails, proceed to Step 2.
+- **Scope:** The architect advises, analyses, and — within the bounds of the approved spec — can adjust task scope, add clarifying tasks to `pending/`, or amend task descriptions. It does not modify `src/` or `tests/`.
+- **Rounds:** The architect may provide multiple rounds of guidance per issue. It continues until the problem is resolved, or until it determines that resolution requires a spec change or is beyond its authority.
+- **Escalation trigger:** The architect escalates to human only when: (a) the problem requires changing an approved specification, or (b) the architect cannot resolve it after full analysis.
 
 **Architect request format:**
 ```
@@ -58,7 +59,8 @@ Question: [Specific question for the architect]
 ### Step 2: Human Escalation
 
 - **Who:** A human operator.
-- **How:** A notification is sent with the full context (original task, agent's self-recovery attempts, architect's advice, and why it was insufficient).
+- **How:** A notification is sent with the full context (original task, agent's self-recovery attempts, architect's analysis, and a precise statement of why human input is required).
+- **When reached:** Only when a spec change is needed, or the Architect has exhausted its analysis and cannot resolve the issue.
 - **Outcome:** The human chooses one of the following actions:
 
 | Human decision | What happens next | Agent responsible |
