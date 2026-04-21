@@ -13,7 +13,7 @@ This document maps every component in the AI team framework: what it is, what it
 | Agent | Purpose | Skills Used | Receives From | Hands Off To | Definition |
 |---|---|---|---|---|---|
 | Planner | Breaks features into specs and tasks | brainstorm, write-plan | Human | Human (approval), Task directory (`pending/`) | `.claude/agents/planner.md` |
-| Architect | Advises on design and failure recovery | — (advisory role) | Any blocked agent | Requesting agent, or Human (escalation) | `.claude/agents/architect.md` |
+| Architect | Validates task plans, foresees cross-cutting impact, and redirects development when structural problems arise | — (structural authority within spec bounds) | Planner (preflight), Any blocked agent | Planner (revision requests), Requesting agent (directives), Human (escalation) | `.claude/agents/architect.md` |
 | Implementer | Writes tests and production code using TDD | tdd, debug | Task directory | Reviewer | `.claude/agents/implementer.md` |
 | Reviewer | Reviews code for spec compliance and quality | code-review | Implementer (via `/dev-loop`) | `/dev-loop` (verdict in task file) | `.claude/agents/reviewer.md` |
 | Integrator | Resolves merge conflicts; manual merges into `dev`/`main` | conflict-resolution | `integrate` skill (conflicts), Human (manual merges) | `dev` or `main` branch | `.claude/agents/integrator.md` |

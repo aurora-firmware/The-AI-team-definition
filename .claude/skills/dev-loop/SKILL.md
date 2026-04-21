@@ -91,7 +91,7 @@ Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
    - The failure reason (pre-merge test failure, unmet acceptance criteria, or post-merge regression).
    - Which bug IDs were filed (if regressions were found).
    - That the feature branch was NOT deleted and `dev` was left clean (integrate reverts on regression).
-   - Next step for the human: resolve the filed bugs or unblock the task before re-running the loop.
+   - Next step for the human: run `/bug-loop` to autonomously fix the filed regressions, then re-run `/dev-loop`.
 
 #### On FAIL
 

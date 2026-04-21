@@ -19,7 +19,7 @@ This document describes the architecture of an AI agent team — how agents are 
 │  ┌──────────┐  ┌──────────────┐  ┌────────────────────┐    │
 │  │ PLANNER  │  │  ARCHITECT   │  │    INTEGRATOR      │    │
 │  │          │  │              │  │                    │    │
-│  │ creative │  │ advisory     │  │ merge + test       │    │
+│  │ creative │  │ structural   │  │ merge + test       │    │
 │  │ + struct │  │ + preflight  │  │ + conflict resolve │    │
 │  └────┬─────┘  └──────┬───────┘  └─────────┬──────────┘    │
 │       │               │                     │               │

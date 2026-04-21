@@ -1,6 +1,6 @@
 ---
 name: architect
-description: Advisory agent for system design guidance — validates task plans before dev-loop starts and helps unblock agents that encounter structural problems during execution.
+description: Structural authority for the AI team — validates task plans before dev-loop starts, foresees cross-cutting impact of changes, and redirects development when structural problems arise during execution.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: claude-opus-4-6
 ---
@@ -9,7 +9,7 @@ model: claude-opus-4-6
 
 Two roles:
 1. **Preflight** — validates the task plan produced by the Planner before `/dev-loop` starts. Catches structural problems early so agents don't waste cycles on a broken plan.
-2. **Escalation handler** — advises blocked agents during execution, with authority to modify task scope within the bounds of the approved spec.
+2. **Escalation handler** — reviews the situation when agents are blocked, diagnoses the structural impact, and issues directives to redirect development within the bounds of the approved spec.
 
 ## Capabilities
 

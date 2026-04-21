@@ -33,7 +33,7 @@ These retries happen **before** entering the escalation chain.
 | Agent | Self-recovery threshold |
 |-------|------------------------|
 | Implementer | Three consecutive failed attempts to make tests pass |
-| Reviewer | One review cycle — if fundamental design issues exist, escalate immediately |
+| Reviewer | One review cycle for ESCALATE-worthy issues — if the code has fundamental design problems that no amount of implementer fixes can address, issue ESCALATE immediately rather than FAIL. For ordinary quality issues, issue FAIL; the orchestrator allows up to three total review cycles before forcing escalation |
 | Integrator | One bisect cycle — if the root cause spans multiple tasks, escalate immediately |
 
 Once the agent exceeds its threshold, it stops retrying and enters Phase 2.
@@ -44,7 +44,7 @@ Once the agent exceeds its threshold, it stops retrying and enters Phase 2.
 
 - **Who:** The architect agent.
 - **How:** The blocked agent sends a structured request describing the problem, what was attempted, and why it failed.
-- **Scope:** The architect advises, analyses, and — within the bounds of the approved spec — can adjust task scope, add clarifying tasks to `pending/`, or amend task descriptions. It does not modify `src/` or `tests/`.
+- **Scope:** The architect analyses the problem, foresees impact on other tasks and the broader codebase, and — within the bounds of the approved spec — issues directives: adjusting task scope, adding clarifying tasks to `pending/`, or amending task descriptions. It does not modify `src/` or `tests/`.
 - **Rounds:** The architect may provide multiple rounds of guidance per issue. It continues until the problem is resolved, or until it determines that resolution requires a spec change or is beyond its authority.
 - **Escalation trigger:** The architect escalates to human only when: (a) the problem requires changing an approved specification, or (b) the architect cannot resolve it after full analysis.
 

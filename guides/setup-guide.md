@@ -22,7 +22,7 @@ In your new project root, create these directories:
 ```bash
 mkdir -p project/specs/archive
 mkdir -p project/tasks/pending project/tasks/in-progress project/tasks/completed project/tasks/blocked
-mkdir -p project/bugs/open project/bugs/resolved
+mkdir -p project/bugs/open project/bugs/in-progress project/bugs/resolved
 mkdir -p project/decisions
 mkdir -p ai-process/templates
 mkdir -p ai-process/architecture ai-process/guidelines ai-process/processes
@@ -33,7 +33,7 @@ mkdir -p .claude/skills
 Add `.gitkeep` files to keep empty directories in git:
 
 ```bash
-for dir in project/specs/archive project/tasks/pending project/tasks/in-progress project/tasks/completed project/tasks/blocked project/bugs/open project/bugs/resolved; do
+for dir in project/specs/archive project/tasks/pending project/tasks/in-progress project/tasks/completed project/tasks/blocked project/bugs/open project/bugs/in-progress project/bugs/resolved; do
   touch "$dir/.gitkeep"
 done
 ```
@@ -93,7 +93,7 @@ Create a `CLAUDE.md` in your project root. Start with this structure and customi
 |---|---|
 | `project/specs/` | Technical specifications for features and systems |
 | `project/tasks/` | Task tracking: `pending/`, `in-progress/`, `completed/`, `blocked/` |
-| `project/bugs/` | Bug reports: `open/`, `resolved/` |
+| `project/bugs/` | Bug reports: `open/`, `in-progress/`, `resolved/` |
 | `project/decisions/` | Architecture Decision Records (ADRs) |
 | `ai-process/templates/` | Reusable document formats |
 | `ai-process/` | Architecture, guidelines, and process documentation |

@@ -30,12 +30,10 @@ Performs two-stage code review to verify that completed work meets its specifica
 
 ### Must Escalate
 - Fundamental design issues that cannot be fixed without changing the specification — escalate to architect.
-- Code that appears to work but uses a dangerous or insecure approach — escalate to architect with security concern flag.
 
 ## Escalation Triggers
 
 - The code does something fundamentally different from what the specification describes.
-- A security vulnerability is found that requires architectural discussion.
 - The reviewer cannot determine whether the code is correct due to insufficient specification detail.
 
 ## Interaction Pattern
@@ -44,8 +42,8 @@ Performs two-stage code review to verify that completed work meets its specifica
 - **Implementer** — completed code with passing tests, ready for review.
 
 ### Hands Off To
-- **Implementer** — specific, actionable feedback if review fails.
-- **Integrator** — approved code if review passes both stages.
+- **`/dev-loop`** — verdict recorded in the task file. `/dev-loop` reads the verdict and routes accordingly.
+- **Implementer** (via `/dev-loop`) — specific, actionable feedback if review fails.
 
 ## Folder Scope
 

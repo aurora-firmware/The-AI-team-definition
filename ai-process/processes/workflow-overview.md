@@ -82,14 +82,6 @@ This phase is **interactive**. The Planner does not produce a finished document 
 **Ends when:** Human approves the specification at Gate 1.
 Because the human shaped the spec throughout the dialogue, Gate 1 approval should be quick.
 
-### 2. Task Breakdown
-
-**Agent:** Planner (structured mode).
-**Skill:** write-plan.
-**Input:** Approved specification.
-**Output:** Set of task files in `project/tasks/pending/`, each following `.claude/skills/new-task/assets/TEMPLATE-task.md`.
-**Ends when:** Human approves the task plan.
-
 ### 2. Task Breakdown + Architect Preflight
 
 **Agent:** Planner (structured mode), then Architect (preflight).
@@ -156,7 +148,7 @@ See `.claude/skills/dev-loop/SKILL.md` for the full procedure.
 
 | Condition | Task state | Action required |
 |---|---|---|
-| Queue empty | All in `completed/` | Human approves final merge to `main` (Gate 5) |
+| Queue empty | All in `completed/` | Human approves final merge to `main` (Gate 4) |
 | Task blocked | Moved to `blocked/` | Human resolves blocker, re-runs `/dev-loop` |
 | Escalation | Moved to `blocked/` | Human adjusts spec or task, re-runs `/dev-loop` |
 | `in-progress/` not empty at startup | Unchanged | Human decides whether to resume or abandon |
@@ -170,6 +162,37 @@ Once the queue is empty and all tasks are in `completed/`, the human reviews the
 This is a sign-off — the human confirms the outcome matches the spec intent, not individual code diffs.
 
 **Ends when:** Human approves the merge from `dev` to `main` (Gate 4).
+
+### Bug-Fix Flow (automated via `/bug-loop`)
+
+When `/dev-loop` stops because the `integrate` skill found regressions, bugs are filed automatically via `/new-bug` and the feature branch is preserved.
+To fix these regressions, the human invokes:
+
+```
+/bug-loop
+```
+
+From that point the loop runs autonomously — same structure as `/dev-loop` but operating on `project/bugs/open/` instead of `project/tasks/pending/`.
+
+#### What `/bug-loop` does
+
+1. Picks the highest-severity open bug (critical → high → medium → low, oldest first on ties).
+2. Moves it to `project/bugs/in-progress/`, creates a bug branch from `dev` (`bug/B-NNN-short-description`).
+3. Spawns the **Implementer** agent — waits for completion.
+4. Spawns the **Reviewer** agent — waits for verdict.
+5. On **PASS**: invokes the `integrate` skill to merge the bug branch into `dev`, then moves the bug to `project/bugs/resolved/`.
+6. On **FAIL** (cycles 1–2): sends the bug back to the Implementer with the reviewer's feedback.
+7. On **FAIL** (cycle 3) or **ESCALATE**: consults the Architect first. If the Architect cannot resolve it, stops and escalates to the human.
+
+See `.claude/skills/bug-loop/SKILL.md` for the full procedure.
+
+#### When to invoke `/bug-loop`
+
+- After `/dev-loop` stops due to integration regressions — fix the filed bugs before re-running `/dev-loop`.
+- Independently, whenever open bugs exist in `project/bugs/open/` that need autonomous resolution.
+
+`/dev-loop` and `/bug-loop` do not run concurrently.
+The typical cycle after regressions: `/dev-loop` stops → bugs filed → human invokes `/bug-loop` → bugs resolved → human re-invokes `/dev-loop`.
 
 ## Git Branching Strategy
 
