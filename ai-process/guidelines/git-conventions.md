@@ -14,17 +14,19 @@ Project-specific commit scopes and any overrides belong in the project's own `CL
 | Branch | Purpose | Who touches it |
 |---|---|---|
 | `main` | Production-ready releases | Human only — never automated roles |
-| `dev-agent` | Integration target | The integration procedure merges task branches here; the Integrator handles manual merges and conflicts; Planners, Reviewers, and Architects commit docs here |
-| `task/T-NNN-short-description` | Single task implementation | Developer only |
-| `bug/B-NNN-short-description` | Single bug diagnosis and fix | Developer only |
+| `dev-agent` | Integration target and canonical lifecycle state | The integration procedure merges task branches here; the Integrator handles manual merges and conflicts; Planners, Reviewers, Architects, and active loops commit docs and lifecycle state here |
+| `task/T-NNN-short-description` | Single task implementation branch | Developer only for source, tests, and project artifacts |
+| `bug/B-NNN-short-description` | Single bug diagnosis and fix branch | Developer only for source, tests, and project artifacts |
 
 **Rules:**
 - No automated role ever commits to `main`.
-- `dev-agent` receives merge commits from the integration procedure or the Integrator role (code), and direct commits from non-Developer roles (docs/specs/task files — no source code).
+- `dev-agent` receives merge commits from the integration procedure or the Integrator role (code), and direct commits from non-Developer roles and active loops (docs/specs/task files/bug files — no direct source code).
 - Developer always works on a task branch, never on `dev-agent`.
 - Task branches are created when the Developer picks up a task and deleted after successful integration into `dev-agent`.
 - Bug branches are created when the bug-fix loop picks up a bug.
   Existing-defect bug branches are based on `dev-agent`; task-regression bug branches are based on the bug report's `source_branch`.
+- Task and bug files are canonical on `dev-agent`. Implementation branches may contain copies for context, but lifecycle state is read from and committed to `dev-agent`.
+- Task-regression bug branches may not contain the bug report file because they are based on preserved task branches. The bug-fix loop must pass canonical bug content from `dev-agent` to the Developer and Reviewer, and record their log and verdict entries back on `dev-agent`.
 
 ## Commit Message Format
 
@@ -52,8 +54,9 @@ chore(tasks): move T-004 to completed
 | Role | Commits when | Branch |
 |---|---|---|
 | **Planner** | Each spec or task file is finalized | `dev-agent` |
-| **Developer** | After each TDD red→green→refactor cycle; once more before the final Work Log entry | `task/T-NNN-…` or `bug/B-NNN-…` |
-| **Reviewer** | After writing review verdict (task or bug file only) | `dev-agent` |
+| **Developer** | After each implementation cycle for source, tests, and project artifacts | `task/T-NNN-…` or `bug/B-NNN-…` |
+| **Development Loop / Bug-Fix Loop** | After lifecycle moves and after recording Developer Diagnosis Log or Work Log handoffs | `dev-agent` |
+| **Reviewer** | After writing Review Verdict entries to canonical task or bug files | `dev-agent` |
 | **Architect** | After producing an ADR or amendment | `dev-agent` |
 | **Integrator** | One merge commit per task or bug branch merged into its target branch | target branch |
 

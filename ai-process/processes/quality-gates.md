@@ -37,6 +37,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 **When:** After a Developer completes a task or bug fix.
 **Evaluator:** Reviewer role (two stages).
+**Output:** Review Verdict entry committed to the canonical task or bug file on `dev-agent`.
 
 ### Stage 1: Spec Compliance
 **Pass criteria:**
@@ -46,7 +47,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 ### Stage 2: Code Quality
 **Pass criteria:**
-- Code follows the coding standards: `ai-process/guidelines/coding-standards.md` (general) and `project/docs/coding-guidelines.md` (project-specific tech-stack rules, if present).
+- Code follows the coding standards: `ai-process/guidelines/coding-standards.md` (general) and `project/docs/coding_guidelines.md` (project-specific tech-stack rules, if present).
 - Relevant tests exist for the changed behavior.
 - The Developer's Work Log records local test evidence or explains why a local test run was not possible.
 - No security vulnerabilities introduced.
@@ -60,7 +61,7 @@ For bug fixes, the Reviewer also verifies:
 - A regression test exists when the defect can be tested automatically, or the Work Log explains why only manual verification is possible.
 - The Fix Verification steps from the bug report were run or a clear reason is recorded.
 
-**On failure:** The work item returns to the Developer with specific feedback. The Reviewer must provide actionable notes, not vague criticism.
+**On failure:** The Reviewer records specific feedback in the canonical work item. The active loop returns the work item to the Developer for another implementation cycle. After the third failed review or any `ESCALATE` verdict, the active loop consults the Architect before stopping for human action.
 
 ## Gate 4: Integration Tests
 
@@ -71,7 +72,7 @@ For bug fixes, the Reviewer also verifies:
 - All unit and integration tests pass on the destination branch after the merge (regression check).
 - No unresolved merge conflicts remain.
 
-**On failure:** The integration procedure reverts the merge commit, files a bug report for each regression, and stops the active loop. The source branch is preserved for fixing.
+**On failure:** The integration procedure reverts the merge commit, files a bug report for each regression on `dev-agent`, and stops the active loop. The source branch is preserved for fixing.
 Regression bug reports must record the preserved source branch as `source_branch` so the bug-fix loop can branch from and merge back into that branch before integration is retried.
 
 ## Gate 5: Final Merge Sign-off

@@ -103,37 +103,54 @@ When the Architect passes the task plan at Gate 2, the human starts the developm
 
 After Gate 2 passes, a human starts the development loop. From that point the loop runs autonomously — no human intervention until the queue is empty, a task is blocked, or escalation is required.
 
+#### Work-item state model
+
+Task and bug files are canonical lifecycle state on `dev-agent`.
+Implementation branches are for source, test, and project artifact changes.
+They may contain a copy of the task or bug file for context, but the canonical status, Diagnosis Log, Work Log, and Review Verdict entries are the versions committed on `dev-agent`.
+
+The active loop owns synchronization between role output and canonical lifecycle files:
+
+1. Developers return Diagnosis Log and Work Log entries to the active loop as part of their handoff.
+2. The active loop appends those entries to the canonical task or bug file on `dev-agent` and commits the lifecycle update before review starts.
+3. Reviewers append Review Verdict entries to the canonical task or bug file on `dev-agent` and commit the verdict.
+4. The active loop reads verdicts only from the committed canonical file on `dev-agent`.
+
+This model is required for task-regression bugs, whose bug-fix branch is based on a preserved task branch that may not contain the bug report file.
+The bug report remains available through the canonical bug file on `dev-agent`; the bug-fix loop passes its content to the Developer and Reviewer and records their log and verdict entries back to that canonical file.
+
 #### What the development loop does
 
 1. Picks the next task from `pending/` (priority → dependency readiness → creation date).
 2. Moves it to `in-progress/`, creates the task branch, commits the state change on `dev-agent`.
-3. Assigns the task to the **Developer** for test-driven implementation and debugging — waits for completion.
-4. Assigns the completed task to the **Reviewer** for two-stage code review — waits for verdict.
-5. Reads the verdict (`PASS` / `FAIL` / `ESCALATE`) from the task file.
-6. On **PASS**: runs the integration procedure to merge the task branch into `dev-agent`, run tests, and move the task to `completed/`. Picks the next task.
-7. On **FAIL** (cycles 1–2): sends task back to the Developer with the reviewer's feedback.
-8. On **FAIL** (cycle 3) or **ESCALATE**: moves task to `blocked/`, commits on `dev-agent`, stops.
+3. Assigns the task to the **Developer** for test-driven implementation and debugging — waits for completion and a Work Log handoff.
+4. Appends the Developer's Work Log entry to the canonical task file on `dev-agent` and commits it.
+5. Assigns the completed task to the **Reviewer** for two-stage code review — waits for a committed verdict.
+6. Reads the verdict (`PASS` / `FAIL` / `ESCALATE`) from the canonical task file on `dev-agent`.
+7. On **PASS**: runs the integration procedure to merge the task branch into `dev-agent`, run tests, and move the task to `completed/`. Picks the next task.
+8. On **FAIL** (cycles 1–2): sends task back to the Developer with the reviewer's feedback.
+9. On **FAIL** (cycle 3) or **ESCALATE**: consults the Architect first. If the Architect cannot resolve it, moves the task to `blocked/`, commits on `dev-agent`, and stops for human action.
 
 #### Developer details
 
 **Role:** Developer.
 **Procedure:** Test-driven implementation and debugging.
 **Input:** Task file in `project/tasks/in-progress/`.
-**Output:** Working code with passing tests, Work Log entry appended to the task file.
+**Output:** Working code with passing tests on the task branch, plus a Work Log entry returned to the development loop for the canonical task file.
 
 #### Reviewer details
 
 **Role:** Reviewer.
 **Procedure:** Two-stage code review.
 **Input:** Completed task with code changes and Developer Work Log entry.
-**Output:** Verdict appended to the task file under `### Review Verdict — [date]`.
+**Output:** Verdict appended and committed to the canonical task file on `dev-agent` under `### Review Verdict — [date]`.
 **Two stages:**
 1. Spec compliance — does the code do what the task requires?
 2. Code quality — is it clean, secure, and maintainable?
 
 **On review failure:**
 1. The task stays in `project/tasks/in-progress/`.
-2. Reviewer appends verdict and specific, actionable feedback under `### Review Verdict — [date]`.
+2. Reviewer appends and commits verdict and specific, actionable feedback under `### Review Verdict — [date]`.
 3. The development loop routes the task back to the Developer for fixes on the same branch.
 4. Up to two retries (three total review attempts). On a third failure, the development loop escalates to Architect.
 
@@ -143,7 +160,7 @@ After Gate 2 passes, a human starts the development loop. From that point the lo
 |---|---|---|
 | Queue empty | All in `completed/` | Human approves final merge to `main` (Gate 5) |
 | Task blocked | Moved to `blocked/` | Human resolves blocker, restarts the development loop |
-| Escalation | Moved to `blocked/` | Human adjusts spec or task, restarts the development loop |
+| Human escalation | Moved to `blocked/` after Architect consultation fails | Human adjusts spec or task, restarts the development loop |
 | `in-progress/` not empty at startup | Unchanged | Human decides whether to resume or abandon |
 
 ### 5. Final Merge
@@ -189,15 +206,17 @@ If the issue cannot be reproduced yet, the bug may still be filed, but the repor
 2. Moves it to `project/bugs/in-progress/`, creates a bug branch, and chooses the branch base from the bug type:
    - Existing defect on `dev-agent`: create the bug branch from `dev-agent`.
    - Regression introduced by a task branch: create the bug branch from the bug report's non-empty `source_branch`.
-3. Assigns the bug to the **Developer** for diagnosis — waits for a Diagnosis Log entry before implementation continues.
+3. Assigns the bug to the **Developer** for diagnosis — passes the canonical bug report content and waits for a Diagnosis Log handoff before implementation continues.
 4. The Developer reproduces or confirms the defect, gathers logs, isolates the likely fault, and records the root cause or the reason reproduction is impossible.
-5. The Developer fixes the isolated cause with the smallest change that resolves the defect, preferably by first adding or updating a failing regression test.
-6. Assigns the completed fix to the **Reviewer** — waits for verdict.
-7. On **PASS**: runs the integration procedure to merge the bug branch into its target branch, then moves the bug to `project/bugs/resolved/`.
+5. The bug-fix loop appends the Diagnosis Log entry to the canonical bug file on `dev-agent` and commits it.
+6. The Developer fixes the isolated cause with the smallest change that resolves the defect, preferably by first adding or updating a failing regression test.
+7. The bug-fix loop appends the Developer's Work Log entry to the canonical bug file on `dev-agent` and commits it.
+8. Assigns the completed fix to the **Reviewer** — waits for a committed verdict in the canonical bug file.
+9. On **PASS**: runs the integration procedure to merge the bug branch into its target branch, then moves the bug to `project/bugs/resolved/`.
    - Existing-defect bugs target `dev-agent`.
    - Task-regression bugs target the preserved task branch, after which the human restarts the development loop to retry task integration.
-8. On **FAIL** (cycles 1–2): sends the bug back to the Developer with the reviewer's feedback.
-9. On **FAIL** (cycle 3) or **ESCALATE**: consults the Architect first. If the Architect cannot resolve it, stops and escalates to the human.
+10. On **FAIL** (cycles 1–2): sends the bug back to the Developer with the reviewer's feedback.
+11. On **FAIL** (cycle 3) or **ESCALATE**: consults the Architect first. If the Architect cannot resolve it, stops and escalates to the human.
 
 #### When to start the bug-fix loop
 
@@ -221,9 +240,9 @@ The typical cycle after regressions: development loop stops → bugs filed → h
 | `completed/` | Integration procedure | Merge and tests pass | Task is included in the Gate 5 status summary |
 | `blocked/` | Development loop or Escalation procedure | Max retries, escalation, or unresolved blocker | Human or Planner resolves blocker and returns task to `pending/` or `in-progress/` |
 
-The development loop owns task state transitions.
-The Developer owns code changes on the task branch.
-The Reviewer owns review verdicts.
+The development loop owns task state transitions and records Developer Work Log handoffs in the canonical task file on `dev-agent`.
+The Developer owns source, test, and project artifact changes on the task branch, plus the Work Log content handed to the loop.
+The Reviewer owns review verdict content and commits verdicts to the canonical task file on `dev-agent`.
 The integration procedure owns merge and post-merge validation.
 
 ### Bug Lifecycle
@@ -241,6 +260,8 @@ The integration procedure owns merge and post-merge validation.
 Bug branch base is part of the bug contract.
 Existing-defect bugs use `dev-agent` as both source and target branch.
 Task-regression bugs use the preserved task branch as both source and target branch, then the development loop retries the original task integration.
+The canonical bug report remains on `dev-agent` even when the bug branch is based on another branch.
+The bug-fix loop records Developer Diagnosis Log and Work Log handoffs in that canonical bug file, and the Reviewer commits verdicts there before the loop reads them.
 
 ### Gate Lifecycle
 
@@ -260,15 +281,16 @@ Full rules and commit format: `ai-process/guidelines/git-conventions.md`.
 
 **Branches:**
 - `main` — human-only, production releases.
-- `dev-agent` — integration target. The integration procedure merges task branches here during the development loop; the Integrator handles manual merges and conflict resolution. Planners, Reviewers, and Architects commit docs/specs directly here.
-- `task/T-NNN-short-description` — created by the Developer at task pickup, deleted after successful integration.
-- `bug/B-NNN-short-description` — created by the bug-fix loop from `dev-agent` or the bug report's `source_branch`, deleted after successful integration.
+- `dev-agent` — integration target and canonical lifecycle state branch. The integration procedure merges task branches here during the development loop; the Integrator handles manual merges and conflict resolution. Planners, Reviewers, Architects, and active loops commit docs/specs/task/bug state here.
+- `task/T-NNN-short-description` — implementation branch for a single task, deleted after successful integration.
+- `bug/B-NNN-short-description` — implementation branch for a single bug, created by the bug-fix loop from `dev-agent` or the bug report's `source_branch`, deleted after successful integration.
 
 **Key constraints:**
 - No automated role ever commits to `main`.
 - The Developer never commits to `dev-agent`.
 - The integration procedure is the standard path for merging task branches into `dev-agent`. The Integrator handles manual merges and conflict resolution.
 - The integration procedure is also the standard path for merging bug branches into their target branch.
+- Task and bug lifecycle files are canonical on `dev-agent`; implementation branches are not the source of truth for lifecycle state.
 - Branches blocked at review stay open on their task branch until the blocker is resolved.
 
 ## Escalation
