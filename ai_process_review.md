@@ -1,213 +1,271 @@
 ---
-title: "Review: ai-process"
-date: 2026-04-22
-scope: "ai-process only"
+title: "AI Process Implementation Review"
+status: draft
+created: 2026-04-22
 ---
 
-# Review: ai-process
+# AI Process Implementation Review
 
-This review covers only `ai-process/`.
-It ignores implementation folders and focuses on inconsistencies, contradictions, and unnecessary process complexity in the process specification.
+This review checks whether `.claude/agents/` and `.claude/skills/` consistently implement the authoritative `ai-process/` documents.
 
-## Findings
+## Summary
 
-### 1. Integration failure recovery is internally inconsistent
+The agents are broadly aligned with the intended boundary: agents define roles, while skills define procedures.
+The main inconsistencies are in state handling, branch handling, review verdict formats, and a hardcoded integration test command.
 
-`workflow-overview.md` says integration failure leaves the task branch preserved, keeps `dev-agent` clean, files bugs, then the human starts the bug-fix loop.
-Later, the bug-fix loop says bug branches are created from `dev-agent`.
+## Findings And Suggestions
 
-Relevant locations:
-- `ai-process/processes/workflow-overview.md:151`
-- `ai-process/processes/workflow-overview.md:161`
-- `ai-process/processes/workflow-overview.md:168`
+### 1. Task-regression bug branches can lose the bug report file
 
-Problem: if the regression only appears when the task branch is merged, a bug branch created from clean `dev-agent` may not contain the failing change.
-The process needs to say whether regressions are fixed on the original task branch, on a bug branch based from the task branch, or on `dev-agent` before retrying integration.
+**Severity:** High
 
-### 2. Escalation allows both multiple rounds and one attempt
+`bug-loop` moves the bug file to `project/bugs/in-progress/` and commits that move on `dev-agent`, then creates task-regression bug branches from the bug report's `source_branch`.
+That preserved task branch may not contain the moved bug file, but the Developer prompt expects `project/bugs/in-progress/<bug-file>` to exist on the bug branch.
 
-`escalation-procedure.md` says the Architect may provide multiple rounds of guidance until resolved.
-The same document later says the Architect gets one consultation attempt and then escalation must go to the human immediately.
+Relevant files:
 
-Relevant locations:
-- `ai-process/processes/escalation-procedure.md:48`
-- `ai-process/processes/escalation-procedure.md:83`
+- `.claude/skills/bug-loop/SKILL.md`
+- `ai-process/processes/workflow-overview.md`
 
-Problem: these define different escalation models.
-Pick one: either Architect consultation is a bounded multi-round process, or it is a single attempt.
+**Why this matters:**
 
-### 3. Developer input ownership conflicts across docs
+The ai-process requires task-regression bugs to branch from the preserved source branch, but the bug report is the contract for diagnosis, review, and fix verification.
+If the bug branch does not contain the bug file, the Developer and Reviewer do not have the artifact they are instructed to update.
 
-`system-overview.md` says the Development Loop assigns work to the Developer.
-`component-map.md` says the Developer receives work from the Task directory.
+**Suggestion:**
 
-Relevant locations:
-- `ai-process/architecture/system-overview.md:90`
-- `ai-process/architecture/component-map.md:17`
+Define one explicit ownership model:
 
-Problem: this blurs whether roles pull from directories directly or processes assign work.
-The cleaner model is: the Development Loop reads the Task Board, moves task state, and assigns the Developer.
-The Developer receives a task assignment from the Development Loop, not directly from the Task directory.
+- Option A: bug files are copied or checked into the bug branch after branching from `source_branch`.
+- Option B: bug files remain `dev-agent` state only, and Developer/Reviewer prompts must read/update the bug file on `dev-agent` through a defined state-sync step.
 
-### 4. Gate 2 blurs Planner and Architect ownership
+Option A is simpler for branch-local diagnosis logs.
 
-Gate 2 lets the Architect create corrective tasks or return the task plan to the Planner.
+### 2. Review verdict branch and commit ownership is underspecified
 
-Relevant locations:
-- `ai-process/processes/quality-gates.md:34`
-- `ai-process/processes/workflow-overview.md:97`
+**Severity:** High
 
-Problem: this makes the Architect both evaluator and author of the task plan.
-That weakens the Planner's ownership of structured task decomposition.
+The ai-process says the Reviewer owns review verdicts, and git conventions say the Reviewer commits verdicts on `dev-agent`.
+The current `dev-loop` and `bug-loop` launch the Reviewer after Developer work on the task or bug branch, but they do not specify where verdict edits are made or who commits them.
 
-Recommended model:
-- Planner owns task creation and task edits.
-- Architect evaluates Gate 2.
-- On failure, Architect returns required corrections.
-- Planner updates the task plan.
-- Architect re-evaluates Gate 2.
+Relevant files:
 
-### 5. Testing gates are duplicated
+- `ai-process/processes/workflow-overview.md`
+- `ai-process/guidelines/git-conventions.md`
+- `.claude/skills/dev-loop/SKILL.md`
+- `.claude/skills/bug-loop/SKILL.md`
+- `.claude/skills/code-review/SKILL.md`
 
-Gate 3 requires tests to exist and pass.
-Gate 4 also requires pre-merge unit tests and post-merge tests.
-The review checklist also says all tests must pass and pre-existing failures are not exempt.
+**Why this matters:**
 
-Relevant locations:
-- `ai-process/processes/quality-gates.md:50`
-- `ai-process/processes/quality-gates.md:61`
-- `ai-process/guidelines/review-checklist.md:27`
+Without a defined branch/commit path, verdict entries may land on task or bug branches, while the loop reads task and bug state from `dev-agent`.
+This creates a risk that the loop cannot see the verdict, or that review metadata is committed on the wrong branch.
 
-Problem: test enforcement appears in three places.
-This may be intentional defense-in-depth, but the current wording does not distinguish responsibility clearly.
+**Suggestion:**
 
-Recommended model:
-- Gate 3 verifies that appropriate tests were added and that the Developer reported passing local evidence.
-- Gate 4 owns authoritative test execution before and after merge.
-- The review checklist supports Gate 3, but does not duplicate Gate 4's integration-test authority.
+Update `dev-loop`, `bug-loop`, and `code-review` to state:
 
-### 6. Review checklist assumes task fields not defined by the process
+- Reviewer appends the verdict to the work item file in the canonical state branch.
+- Reviewer commits the verdict according to `git-conventions.md`.
+- The active loop reads the verdict only after that commit exists.
 
-The review checklist requires an Exclusions section and a "Files to Touch" list.
-The process docs say task files exist, but do not define the required task schema.
+If branch-local work item files are preferred, update `git-conventions.md` and the workflow docs to match that model.
 
-Relevant locations:
-- `ai-process/guidelines/review-checklist.md:16`
-- `ai-process/guidelines/review-checklist.md:17`
+### 3. Task review template contradicts the verdict format parsed by the loops
 
-Problem: the Reviewer can fail a task for missing fields that `ai-process` does not define as required.
-Either define the task file contract in the process layer or remove checklist requirements that are not guaranteed.
+**Severity:** Medium
 
-### 7. Final merge sign-off depends on an undefined status summary
+The task template instructs reviewers to append headings like `### Review 1 — PASS|FAIL`.
+The `code-review` skill writes `### Review Verdict — [date]`, and `dev-loop` parses `### Review Verdict`.
 
-Gate 5 requires a status summary, but `ai-process` does not define who produces it, when it is produced, what it contains, or where it lives.
+Relevant files:
 
-Relevant locations:
-- `ai-process/processes/quality-gates.md:75`
-- `ai-process/processes/workflow-overview.md:154`
+- `.claude/skills/new-task/assets/TEMPLATE-task.md`
+- `.claude/skills/code-review/SKILL.md`
+- `.claude/skills/dev-loop/SKILL.md`
+- `ai-process/processes/workflow-overview.md`
 
-Problem: Gate 5 depends on an artifact that has no process owner or required format.
-Add a "Status Summary" procedure or make the Development Loop produce the summary when the queue is empty.
+**Why this matters:**
 
-### 8. Markdown conventions are not followed by ai-process docs
+The loop depends on a stable heading format.
+A task created from the template points the Reviewer toward a different format than the parser expects.
 
-The markdown convention requires one sentence per line.
-Several `ai-process` docs use multiple sentences per source line.
+**Suggestion:**
 
-Relevant locations:
-- `ai-process/guidelines/markdown-conventions.md:34`
-- `ai-process/processes/workflow-overview.md:76`
-- `ai-process/architecture/system-overview.md:11`
+Update `TEMPLATE-task.md` to use the canonical review format:
 
-Problem: the standard is not enforced by the docs that define it.
-Either relax the convention or reformat the docs to match it.
+```markdown
+### Review Verdict — YYYY-MM-DD
+PASS | FAIL | ESCALATE
 
-## Main Simplification
+- Reviewer notes...
+```
 
-The main simplification I would make is to define three explicit state machines and make every role, process, procedure, and gate refer back to them.
-Right now the lifecycle rules are distributed across workflow overview, quality gates, escalation, git conventions, and the component map.
-That distribution is the root cause of the drift: branch recovery, task ownership, bug handling, and gate responsibilities are each described in more than one place.
+### 4. Bug template lacks the review verdict section expected by bug-loop
 
-### 1. Task Lifecycle State Machine
+**Severity:** Medium
 
-Define the task lifecycle once, probably in `workflow-overview.md` or a dedicated `task-lifecycle.md`.
+`new-bug` says to leave “Review Verdicts” instructional comments empty, but the bug template has no review section.
+`bug-loop` later reads the most recent `### Review Verdict` entry.
 
-Suggested states:
+Relevant files:
 
-| State | Owner | Entry condition | Exit condition |
-|---|---|---|---|
-| `pending/` | Planner | Task created from approved spec | Development Loop selects it |
-| `in-progress/` | Development Loop | Task is claimed and branch is created | Reviewer passes, task is blocked, or task is abandoned |
-| task branch | Developer | Developer receives assignment | Developer submits for review |
-| review pending | Reviewer | Developer reports completion | PASS, FAIL, or ESCALATE verdict |
-| integration pending | Integration Procedure | Reviewer returns PASS | Integration succeeds or fails |
-| `completed/` | Integration Procedure | Merge and tests pass | Final summary includes task |
-| `blocked/` | Development Loop or Escalation Procedure | Max retries, escalation, or unresolved blocker | Human/Planner resolves blocker and returns task to `pending/` or `in-progress/` |
+- `.claude/skills/new-bug/SKILL.md`
+- `.claude/skills/new-bug/assets/TEMPLATE-bug.md`
+- `.claude/skills/bug-loop/SKILL.md`
 
-Key rule: the Development Loop owns task state transitions.
-The Developer owns code changes on the task branch.
-The Reviewer owns verdicts.
-The Integration Procedure owns merge and post-merge validation.
+**Why this matters:**
 
-### 2. Bug Lifecycle State Machine
+The bug flow expects review verdicts to be first-class bug artifacts.
+The template should make that state explicit.
 
-Define bug handling separately from task handling.
-The current process says regressions produce bug reports, but it is ambiguous about the branch base and whether the bug fix includes the regressing task changes.
+**Suggestion:**
 
-Suggested states:
+Add a `## Review` or `## Review Verdicts` section to `TEMPLATE-bug.md` using the same canonical heading as task reviews.
 
-| State | Owner | Entry condition | Exit condition |
-|---|---|---|---|
-| `open/` | Integration Procedure or Human | Regression or defect is filed | Bug-Fix Loop selects it |
-| `in-progress/` | Bug-Fix Loop | Bug branch is created | Reviewer passes, bug is blocked, or escalation occurs |
-| bug branch | Developer | Developer receives bug assignment | Developer submits fix for review |
-| review pending | Reviewer | Developer reports completion | PASS, FAIL, or ESCALATE verdict |
-| integration pending | Integration Procedure | Reviewer returns PASS | Integration succeeds or fails |
-| `resolved/` | Integration Procedure or Bug-Fix Loop | Fix is merged and tests pass | Included in status summary |
+### 5. `code-review` routes PASS to Integrator instead of the active loop
 
-The branch-base rule must be explicit:
-- If a bug is an existing defect on `dev-agent`, create the bug branch from `dev-agent`.
-- If a bug is a regression introduced by a task branch that failed integration and was reverted, either fix it on the original task branch or create the bug branch from the preserved task branch.
+**Severity:** Medium
 
-This single rule would remove the biggest ambiguity in the current process.
+The component map says the Reviewer hands verdicts back to the Development Loop or Bug-Fix Loop.
+The loops then invoke integration.
+The `code-review` skill currently says that a PASS should hand off to the integrator.
 
-### 3. Gate Lifecycle State Machine
+Relevant files:
 
-Define gates as transitions between lifecycle states, not as separate narrative checkpoints.
+- `ai-process/architecture/component-map.md`
+- `.claude/skills/code-review/SKILL.md`
 
-Suggested gates:
+**Why this matters:**
 
-| Gate | Controls transition | Evaluator | Output |
-|---|---|---|---|
-| Gate 1: Specification Approval | feature request → approved spec | Human | approved specification |
-| Gate 2: Task Plan Preflight | task plan draft → implementation-ready task queue | Architect | approved task queue or correction request |
-| Gate 3: Code Review | Developer-complete task → integration-ready branch | Reviewer | PASS, FAIL, or ESCALATE |
-| Gate 4: Integration Tests | reviewed branch → completed task/bug | Integration Procedure | merged/completed or regression report |
-| Gate 5: Final Merge Sign-off | completed queue → production merge | Human | approval to merge `dev-agent` to `main` |
+This blurs the process boundary.
+Reviewer should record the verdict; orchestration belongs to the active loop.
 
-Each gate should define:
-- Input artifact.
-- Evaluator.
-- Pass output.
-- Fail output.
-- Who owns the next action.
+**Suggestion:**
 
-That removes repeated prose like "human starts loop," "task returns to Developer," and "bug branch is preserved" from multiple places.
-Each process can then just say which transition it is performing.
+Change the PASS behavior in `code-review` to:
 
-### Resulting Structure
+> Record PASS in the work item. The active loop reads the verdict and routes to integration.
 
-After simplification, the docs could be organized like this:
+### 6. `integrate` hardcodes `npm test`
 
-| Document | Responsibility |
-|---|---|
-| `workflow-overview.md` | High-level flow and references to the three lifecycle state machines |
-| `quality-gates.md` | Gate definitions only: input, evaluator, pass, fail, next owner |
-| `escalation-procedure.md` | Escalation state machine only |
-| `git-conventions.md` | Branch names, commit ownership, hard git rules |
-| `component-map.md` | Roles, processes, procedures, gates, and implementation mapping |
-| `review-checklist.md` | Detailed Gate 3 checklist |
-| `coding-standards.md` | Code quality rules only |
+**Severity:** Medium
 
-This would make the process easier to audit.
-Instead of checking five files to understand what happens after an integration failure, the reader would look at the task lifecycle, bug lifecycle, and Gate 4 definition.
+Gate 4 requires unit and integration tests on the source and destination branch.
+The `integrate` skill currently runs `npm test` for both phases.
+
+Relevant files:
+
+- `ai-process/processes/quality-gates.md`
+- `.claude/skills/integrate/SKILL.md`
+
+**Why this matters:**
+
+This framework is meant to be reusable across projects.
+Hardcoding `npm test` makes the integration procedure Node-specific and may skip project-specific integration checks.
+
+**Suggestion:**
+
+Make the integration test command configurable.
+Recommended lookup order:
+
+1. Work item verification command.
+2. Project-specific docs such as `project/docs/coding_guidelines.md`.
+3. Repository package or build configuration.
+4. Ask the human or stop with `BLOCKED` if no test command can be determined.
+
+### 7. Escalation timing is slightly ambiguous in the ai-process
+
+**Severity:** Low
+
+The workflow overview says that on third review failure or ESCALATE the development loop moves the task to `blocked/` and stops.
+The escalation section says roles should consult the Architect first, then escalate to human if unresolved.
+The current `dev-loop` follows the Architect-first interpretation.
+
+Relevant files:
+
+- `ai-process/processes/workflow-overview.md`
+- `ai-process/processes/escalation-procedure.md`
+- `.claude/skills/dev-loop/SKILL.md`
+
+**Why this matters:**
+
+The implementation may be correct, but the process text can be read two ways.
+This increases the risk of future drift.
+
+**Suggestion:**
+
+Clarify the workflow overview so it says:
+
+> On third review failure or ESCALATE, the development loop consults the Architect. If the Architect cannot resolve the issue, the task moves to `blocked/` and the loop stops for human action.
+
+## Positive Alignment
+
+- The component map and implementation now include first-class Architect procedures: `gate-2-preflight` and `escalation-consultation`.
+- Agents mostly define roles, authority, scope, and handoffs rather than embedding procedure steps.
+- Bug fixing is diagnosis-first, which matches the updated workflow and avoids a weak task-like bug loop.
+- There is no standalone test-runner agent, which avoids hiding diagnostic output from the main workflow.
+- The `debug`, `tdd`, `bug-loop`, and `code-review` skills now reflect bug diagnosis evidence as part of the implementation and review contract.
+
+## Hardcoded Commands And Language-Specific Mentions
+
+This section records a follow-up scan for project-specific commands, stack-specific coding guidance, and mentions of specific programming languages in `ai-process/`, `.claude/skills/`, and `.claude/agents/`.
+
+### 8. `integrate` hardcodes a project-specific test command
+
+**Severity:** Medium
+
+`integrate` runs `npm test` on both the source branch and destination branch.
+This is a Node-specific command and violates the framework boundary documented in `CLAUDE.md`: this repository should not hardcode test commands for consuming projects.
+
+Relevant files:
+
+- `.claude/skills/integrate/SKILL.md`
+
+**Suggestion:**
+
+Replace the hardcoded command with a lookup procedure:
+
+1. Read the work item's verification command.
+2. Read project-local guidance such as the target project's `CLAUDE.md`, project docs, README, or build configuration.
+3. Use the discovered project command for both pre-merge and post-merge verification.
+4. Stop with `BLOCKED` if no command can be found.
+
+### 9. `tdd` contains stack-specific coding guidance
+
+**Severity:** Medium
+
+`tdd` references project-specific technologies in its input requirements: `Next.js`, `Drizzle`, `Claude API`, and component patterns.
+Those are examples from a particular software project, not framework-level rules.
+
+Relevant files:
+
+- `.claude/skills/tdd/SKILL.md`
+
+**Suggestion:**
+
+Replace the stack-specific text with generic project-local discovery language:
+
+> Read `ai-process/guidelines/coding-standards.md` for framework standards and read the target project's coding guidelines, README, package/build configuration, and human-provided instructions for stack-specific rules.
+
+### Scan Notes
+
+The Python fenced-code example in `ai-process/guidelines/markdown-conventions.md` is not treated as an issue.
+It is an illustrative Markdown syntax example, not project-specific guidance.
+
+The scan also found generic shell fences such as ` ```bash ` in templates and skills.
+Those are used as placeholders for project-discovered commands rather than hardcoded project commands.
+They are lower risk than `npm test`, but the project may still choose to standardize on neutral `text` fences for command placeholders if it wants zero shell-specific examples.
+
+Git commands in integration and loop skills were not treated as project-specific command violations.
+They implement the framework's own branch and merge model, which is part of `ai-process/guidelines/git-conventions.md`.
+
+## Validation Performed
+
+Ran:
+
+```bash
+git diff --check -- .claude/skills .claude/agents ai-process
+```
+
+Result: passed.

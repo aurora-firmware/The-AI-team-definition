@@ -56,7 +56,7 @@ Copy the following files from this repository into your new project, preserving 
 - `TEMPLATE-agent.md`
 - `planner.md`
 - `architect.md`
-- `implementer.md`
+- `developer.md`
 - `reviewer.md`
 - `integrator.md`
 

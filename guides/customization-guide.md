@@ -56,7 +56,7 @@ These files are generic and work for any project without modification:
 | Standard (4 agents) | Planner + Developer + Reviewer + Integrator |
 | Full (5 agents) | All agents including Architect |
 
-To reduce the team: keep only the agent files you need. The workflow still works — agents whose roles are absent have their responsibilities absorbed by adjacent agents (e.g., without an integrator, the implementer handles merges).
+To reduce the team: keep only the agent files you need. The workflow still works — agents whose roles are absent have their responsibilities absorbed by adjacent agents (e.g., without an integrator, the developer handles merges).
 
 **Quality gate criteria** — Adjust `ai-process/processes/quality-gates.md`:
 - For prototypes or MVPs: relax coverage requirements, reduce review stages.

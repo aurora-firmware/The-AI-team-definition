@@ -42,6 +42,24 @@ Never update an agent or skill in a way that contradicts the ai-process without 
 
 ---
 
+## Framework vs Project-Specific Details
+
+This repository defines a reusable process framework.
+Its agents and skills must not hardcode details that belong to a consuming software project.
+
+Do **not** put project-specific values in `.claude/agents/`, `.claude/skills/`, or `ai-process/`, including:
+- Specific test commands such as `npm test`, `pytest`, `cargo test`, or project-specific CI commands.
+- Specific build, run, dev-server, deploy, or package-manager commands.
+- Stack-specific coding rules beyond the framework's general standards.
+- Project-specific dependency policies, file layouts, naming conventions, or framework conventions.
+
+Those details must be discovered from the target project when the framework is used there.
+Agents and skills should instruct the model to read project-local sources such as the target project's `CLAUDE.md`, `project/docs/coding_guidelines.md`, README, package/build configuration, task verification commands, or human-provided instructions.
+
+If a required project-specific command or rule cannot be found, the agent or skill should stop and ask for it rather than guessing or hardcoding a default in this repository.
+
+---
+
 ## Agents vs Skills: What Goes Where
 
 Agents are **roles** (who).
