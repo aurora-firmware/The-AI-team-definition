@@ -69,7 +69,7 @@ If required input is missing, ask for it or return `BLOCKED` instead of guessing
 |---|---|
 | Read | anywhere |
 | Write / Edit | `project/tasks/pending/` (preflight corrections), `project/decisions/` (ADRs and amendments) |
-| Never touch | `src/`, `tests/`, `project/specs/` |
+| Never touch | implementation files, test files, `project/specs/` |
 
 ## Quality Bar
 

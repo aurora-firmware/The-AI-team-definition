@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: Two-stage code review for completed tasks and bug fixes. Use when a Developer submits work and the Reviewer must check task acceptance or bug diagnosis criteria before reviewing code quality.
-allowed-tools: Read, Edit, Grep, Glob, Bash(git diff *)
+allowed-tools: Read, Edit, Grep, Glob, Bash(git diff *), Bash(git status *), Bash(git checkout *), Bash(git add *), Bash(git commit *)
 effort: high
 ---
 
@@ -14,10 +14,13 @@ effort: high
 - **Test results** — confirmation that all tests pass.
 - **Review checklist** — `ai-process/guidelines/review-checklist.md`.
 
+The task or bug file is canonical lifecycle state on `dev-agent`.
+Review verdicts are written and committed there, not on the implementation branch.
+
 ## Procedure
 
 ### Step 1: Read the Work Item
-Read the task or bug file completely.
+Switch to `dev-agent` and read the canonical task or bug file completely.
 For tasks, understand what was asked, what the acceptance criteria are, and which files should have been modified.
 For bugs, understand the symptom, reproduction status, diagnostic evidence, isolated fault, root cause or fault hypothesis, and Fix Verification steps.
 
@@ -33,7 +36,7 @@ For bug fixes, check:
 - Were the Fix Verification steps followed?
 - Was unrelated behavior added?
 
-If any task criterion or bug-fix criterion is not met, stop and return feedback. Do not proceed to Stage 2.
+If any task criterion or bug-fix criterion is not met, skip Stage 2 and set the verdict to **FAIL** with specific feedback.
 
 ### Step 3: Stage 2 — Code Quality
 Review the code against the checklist in `ai-process/guidelines/review-checklist.md`:
@@ -46,13 +49,15 @@ Review the code against the checklist in `ai-process/guidelines/review-checklist
 For bug fixes, also run the Bug Fix Review Addendum from the checklist.
 
 ### Step 4: Produce Verdict
-If all checks pass: **PASS**. Hand off to integrator.
+If all checks pass: **PASS**. Record the verdict for the active loop.
 If any check fails: **FAIL**. Return to Developer with specific, actionable feedback.
 If a fundamental design issue makes the task or bug impossible as specified: **ESCALATE**.
 
 ### Step 5: Record the Verdict
-Append to the task or bug file under a `### Review Verdict — [date]` heading.
+Switch to `dev-agent`.
+Append to the canonical task or bug file under a `### Review Verdict — [date]` heading.
 The first line of the section must be one of: `PASS`, `FAIL`, or `ESCALATE`.
+Commit the verdict on `dev-agent` according to `ai-process/guidelines/git-conventions.md`.
 
 **On PASS:** Record the verdict with a brief confirmation that both stages passed. Note any minor observations (non-blocking).
 
@@ -60,12 +65,13 @@ The first line of the section must be one of: `PASS`, `FAIL`, or `ESCALATE`.
 
 ## Output Format
 
-Both PASS and FAIL append a `### Review Verdict — [date]` section to the task or bug file.
+PASS, FAIL, and ESCALATE append a `### Review Verdict — [date]` section to the canonical task or bug file on `dev-agent`.
 The first line of the section is always one of: `PASS`, `FAIL`, or `ESCALATE`.
 
 ### On PASS
 Verdict: `PASS`
 A brief confirmation that both stages passed, noting any minor observations (non-blocking).
+Next owner: active Development Loop or Bug-Fix Loop.
 
 ### On FAIL
 Verdict: `FAIL`
@@ -77,6 +83,7 @@ For each failed check:
 ### On ESCALATE
 Verdict: `ESCALATE`
 Describe the fundamental design issue and why it cannot be resolved without changing the specification.
+Next owner: active loop for Architect consultation.
 
 ## Quality Criteria
 

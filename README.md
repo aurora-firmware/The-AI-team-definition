@@ -46,13 +46,15 @@ Each skill implements a workflow or action defined in the ai-process:
 |---|---|
 | **brainstorm** | Solution-space exploration before a spec is written |
 | **write-plan** | Decomposition of a spec into atomic tasks |
+| **gate-2-preflight** | Architect validation of task plans before development starts |
 | **tdd** | Test-driven development cycle |
-| **code-review** | Two-stage review (spec compliance → code quality) |
-| **debug** | Reproduce → gather evidence → isolate → fix → verify loop |
+| **debug** | Diagnosis-first debugging: reproduce or confirm, gather evidence, isolate, then fix |
+| **code-review** | Two-stage review: task or bug criteria, then code quality |
 | **conflict-resolution** | Git conflict resolution preserving both sides' intent |
-| **integrate** | Branch merge with test verification and task completion |
-| **/dev-loop** | Autonomous Developer → Reviewer → Integrator loop across the pending task queue |
-| **/bug-loop** | Autonomous diagnosis-first Developer → Reviewer loop across the open bug queue |
+| **integrate** | Branch merge with project-discovered verification and task completion |
+| **escalation-consultation** | Architect analysis for blocked work before human escalation |
+| **/dev-loop** | Autonomous Developer → Reviewer → Integration loop across the pending task queue |
+| **/bug-loop** | Autonomous diagnosis-first Developer → Reviewer → Integration loop across the open bug queue |
 | **/new-spec** | Creates a new specification document from the template |
 | **/new-task** | Creates a new task document from the template |
 | **/new-bug** | Creates an evidence-backed bug report from the template |
@@ -67,15 +69,25 @@ Both platforms read from the same source files.
 
 ## Using This Framework in Your Project
 
-Adopting the framework means copying its files into your new project repository and customizing them for your stack.
+Adopting the framework means copying its process, agent, skill, and template files into your project repository, then adding project-local guidance for your stack and commands.
 The full walkthrough is in `guides/setup-guide.md`.
 The short version:
 
-1. **Create the directory structure** — `project/specs/`, `project/tasks/`, `project/bugs/`, `project/decisions/`, `ai-process/`, `.claude/agents/`, `.claude/skills/`.
-2. **Copy the framework files** — all agent definitions from `.claude/agents/`, all skill definitions from `.claude/skills/` (each as `<name>/SKILL.md`), and the process and guideline docs from `ai-process/`.
-3. **Write your project's `CLAUDE.md`** — start from the template in `guides/setup-guide.md`, fill in your project name, purpose, and tech stack.
-4. **Customize for your stack** — edit `ai-process/guidelines/coding-standards.md` for language-specific rules.
-5. **Verify** — run `/status-report` (should produce an empty report) and `/new-task` (should create a file in `project/tasks/pending/`).
+1. **Create the directory structure** — `project/specs/`, `project/tasks/`, `project/bugs/`, `project/decisions/`, `ai-process/`, `.claude/agents/`, `.claude/skills/`, and project-local docs such as `project/docs/`.
+2. **Copy the framework files** — all agent definitions from `.claude/agents/`, all skill definitions from `.claude/skills/`, and the process, guideline, and architecture docs from `ai-process/`.
+3. **Write your project's `CLAUDE.md`** — document project purpose, repository layout, stack, build/run/test/lint commands, and where project-specific rules live.
+4. **Add project-local guidance** — put stack-specific coding rules in `project/docs/coding_guidelines.md` or another project-local document referenced by `CLAUDE.md`; keep the copied framework files generic unless you intentionally fork the process.
+5. **Configure permissions** — create `.claude/settings.json` for the commands and tools agents may use in this project.
+6. **Verify** — run `/status-report` (should produce an empty report) and `/new-task` (should create a file in `project/tasks/pending/`).
+
+The normal workflow is:
+
+1. Human and Planner shape a specification; human approves it at Gate 1.
+2. Planner decomposes the approved spec into tasks.
+3. Architect validates the task plan at Gate 2.
+4. Human starts `/dev-loop`; Gate 3 code review and Gate 4 integration run inside the loop.
+5. Bugs are filed in `project/bugs/open/` and handled through `/bug-loop`.
+6. Human approves the final `dev-agent` → `main` merge at Gate 5.
 
 See `guides/setup-guide.md` for the complete file list, CLAUDE.md starter template, and verification steps.
 
@@ -90,7 +102,8 @@ See `guides/setup-guide.md` for the complete file list, CLAUDE.md starter templa
 │   ├── specs/           Feature specifications (with archive/ for superseded versions)
 │   ├── tasks/           Task tracking (pending/ → in-progress/ → completed/ | blocked/)
 │   ├── bugs/            Bug reports (open/ → in-progress/ → resolved/)
-│   └── decisions/       Architecture Decision Records
+│   ├── decisions/       Architecture Decision Records
+│   └── docs/            Project-specific commands, coding conventions, and operations
 ├── guides/              Human-facing setup and customization guides
 ├── .claude/
 │   ├── agents/          Agent role definitions (5 roles)

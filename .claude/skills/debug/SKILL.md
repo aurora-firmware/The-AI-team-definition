@@ -14,6 +14,9 @@ allowed-tools: Read, Grep, Glob, Edit, Bash
 - **Actual behavior** — what is happening instead.
 - **Available evidence** — reproduction steps, logs, stack traces, environment details, branch context, and prior Work Log or Diagnosis Log entries.
 
+Task and bug files are canonical lifecycle state on `dev-agent`.
+Read their existing Work Log and Diagnosis Log entries, but return new diagnosis content as a handoff to the active loop instead of editing lifecycle files directly.
+
 ## Procedure
 
 ### Step 0: Read Existing Context
@@ -72,9 +75,9 @@ Once isolated, determine WHY it fails:
 Record the root cause.
 If the evidence supports only a fault hypothesis, label it as a hypothesis and explain why it is the best current explanation.
 
-### Step 5: Record the Diagnosis
+### Step 5: Prepare the Diagnosis Handoff
 
-Append or update the bug file's Diagnosis Log before implementing the fix.
+Prepare a bug file Diagnosis Log entry before implementing the fix.
 Include:
 - Reproduction status.
 - Evidence captured.
@@ -82,7 +85,9 @@ Include:
 - Root cause or fault hypothesis.
 - Planned verification.
 
-For task debugging, include the same information in the task Work Log.
+Return this entry to the active loop. The loop appends and commits it to the canonical bug file on `dev-agent`.
+For task debugging, return the same information as part of the task Work Log handoff.
+If the caller requested diagnosis only, stop here and do not change production code.
 
 ### Step 6: Fix with Minimal Change
 
@@ -102,7 +107,7 @@ If something else broke, the fix was too broad or the root cause was misidentifi
 - **Fix applied** — the specific code change.
 - **Root cause** — brief explanation of what was wrong and why.
 - **Verification** — confirmation that the fix resolves the issue and all tests pass.
-- **Diagnosis Log** — for bug fixes, a dated entry in the bug file before the Work Log handoff.
+- **Diagnosis Log handoff** — for bug fixes, a dated entry for the active loop to record before the Work Log handoff.
 
 ## Quality Criteria
 

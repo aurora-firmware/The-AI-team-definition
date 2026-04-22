@@ -23,6 +23,10 @@ The orchestrator reads state directly from the filesystem:
 - `project/bugs/in-progress/` — active bug slot
 - `project/bugs/resolved/` — completed fixes
 
+Bug files are canonical lifecycle state on `dev-agent`.
+Bug branches are for implementation artifacts only; task-regression bug branches may not contain the bug file because they are based on preserved task branches.
+The bug-fix loop passes canonical bug content to Developer and Reviewer, then records Diagnosis Log, Work Log, and Review Verdict state back on `dev-agent`.
+
 ## Procedure
 
 ### Step 1: Check the Queue
@@ -45,47 +49,78 @@ Select the highest-severity unblocked bug:
 
 ### Step 3: Claim the Bug
 
-1. Move the selected bug file from `project/bugs/open/` to `project/bugs/in-progress/`
-2. Update the `status` field in the bug frontmatter to `in-progress`
-3. Switch to `dev-agent` and commit the bug move: `chore(bugs): move B-NNN to in-progress`
-4. Determine the bug branch base and target:
+1. Switch to `dev-agent`.
+2. Move the selected bug file from `project/bugs/open/` to `project/bugs/in-progress/`.
+3. Update the `status` field in the bug frontmatter to `in-progress`.
+4. Commit the bug move: `chore(bugs): move B-NNN to in-progress`.
+5. Read the canonical bug file from `project/bugs/in-progress/<bug-file>`.
+6. Determine the bug branch base and target:
    - If the bug frontmatter has a non-empty `source_branch`, use that branch as both the base and target.
    - Otherwise use `dev-agent` as both the base and target.
-5. Create and check out the bug branch from the selected base: `git checkout -b bug/B-NNN-short-description`
+7. Create and check out the bug branch from the selected base: `git checkout -b bug/B-NNN-short-description`
    - Derive the branch name from the bug filename (e.g., `B-001-system-prompt-exposed` → `bug/B-001-system-prompt-exposed`)
 
-### Step 4: Diagnosis + Implementation Cycle
+### Step 4: Diagnosis Cycle
 
 **Spawn the Developer role** with this prompt:
 
-> "Fix the bug described at `project/bugs/in-progress/<bug-file>`.
+> "Diagnose the bug described in the canonical bug file `project/bugs/in-progress/<bug-file>` on `dev-agent`.
 > You are on branch `bug/B-NNN-...`.
 > Use the debug skill first.
-> Before changing production code, reproduce or confirm the defect, gather relevant logs or command output, isolate the fault, and append a Diagnosis Log entry to the bug file.
+> The bug branch may not contain the bug file; use the canonical bug content provided by the loop.
+> Do not change production code during diagnosis and do not edit the bug lifecycle file on the bug branch.
+> Reproduce or confirm the defect, gather relevant logs or command output, isolate the fault, and return a Diagnosis Log handoff entry.
 > The Diagnosis Log entry must record reproduction status, evidence captured, isolated fault, root cause or fault hypothesis, and planned verification.
-> After diagnosis, use the tdd skill where applicable: add or update a failing regression test when the defect can be tested automatically, verify it fails, implement the minimal fix, and verify it passes.
+> If the bug cannot be reproduced and no evidence-backed fault hypothesis can be formed, return ESCALATE instead of guessing."
+
+Wait for the Developer to complete diagnosis before continuing.
+If the Developer returns `ESCALATE`, go directly to **On ESCALATE**.
+If the Developer does not return a Diagnosis Log handoff entry, stop with `BLOCKED` and report the missing handoff.
+
+Record the Diagnosis Log handoff:
+1. Switch to `dev-agent`.
+2. Append the Developer's Diagnosis Log handoff under `## Diagnosis Log` in `project/bugs/in-progress/<bug-file>`.
+3. Commit the lifecycle update: `chore(bugs): record B-NNN diagnosis`.
+
+### Step 5: Implementation Cycle
+
+Check out the bug branch `bug/B-NNN-...`.
+
+**Spawn the Developer role** with this prompt:
+
+> "Fix the diagnosed bug described in canonical bug file `project/bugs/in-progress/<bug-file>` on `dev-agent`.
+> You are on branch `bug/B-NNN-...`.
+> Use the recorded Diagnosis Log as the implementation contract.
+> Do not edit the bug lifecycle file on the bug branch.
+> Use the tdd skill where applicable: add or update a failing regression test when the defect can be tested automatically, verify it fails, implement the minimal fix, and verify it passes.
 > Commit after each red→green→refactor cycle.
-> Append a Work Log entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The final entry serves as the handoff to the reviewer."
+> Return a Work Log handoff entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The loop will append and commit it on `dev-agent`."
 
 Wait for the Developer to complete before continuing.
+If the Developer does not return a Work Log handoff entry, stop with `BLOCKED` and report the missing handoff.
 
-### Step 5: Review Cycle
+Record the Work Log handoff:
+1. Switch to `dev-agent`.
+2. Append the Developer's Work Log handoff under `## Work Log` in `project/bugs/in-progress/<bug-file>`.
+3. Commit the lifecycle update: `chore(bugs): record B-NNN work log`.
+
+### Step 6: Review Cycle
 
 **Spawn the Reviewer agent** with this prompt:
 
-> "Review the bug fix at `project/bugs/in-progress/<bug-file>` using the code-review skill.
+> "Review the bug fix using the canonical bug file `project/bugs/in-progress/<bug-file>` on `dev-agent` and the code-review skill.
 > The Developer has completed their work on branch `bug/B-NNN-...`.
 > Verify the Diagnosis Log records reproduction status, evidence captured, isolated fault, and root cause or fault hypothesis.
 > Verify the fix addresses the isolated cause and passes the Fix Verification steps in the bug file.
 > Verify a regression test exists when practical, or that the Work Log explains why only manual verification was possible.
-> Append your verdict to the bug file under `### Review Verdict — YYYY-MM-DD`.
+> Append your verdict to the canonical bug file under `### Review Verdict — YYYY-MM-DD` and commit it on `dev-agent`.
 > Verdict must be one of: PASS, FAIL, or ESCALATE."
 
 Wait for the reviewer to complete before continuing.
 
-### Step 6: Read the Verdict
+### Step 7: Read the Verdict
 
-Read the bug file and find the most recent `### Review Verdict` entry.
+Switch to `dev-agent`, then read the canonical bug file and find the most recent `### Review Verdict` entry.
 Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 
 #### On PASS
@@ -110,7 +145,7 @@ Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 
 Increment the review cycle counter.
 
-- If **cycle < 3**: go back to **Step 4** (Developer fixes the issues noted in the Review Verdict)
+- If **cycle < 3**: go back to **Step 5** (Developer fixes the issues noted in the Review Verdict)
 - If **cycle = 3**: treat as ESCALATE (max review cycles exceeded)
 
 #### On ESCALATE
@@ -125,7 +160,7 @@ Spawn the Architect agent with a structured request:
 - Failed because: why the bug still cannot pass.
 - Question: specific guidance needed to continue within the bug report and approved specification.
 
-If the Architect resolves the issue, go back to **Step 4** with the Architect's guidance.
+If the Architect resolves the issue, go back to **Step 5** with the Architect's guidance.
 If the Architect cannot resolve it, proceed to Phase 2.
 
 **Phase 2 — Human Escalation:**
@@ -136,7 +171,7 @@ If the Architect cannot resolve it, proceed to Phase 2.
    - Full chain: reviewer verdict → what the Developer tried → architect's advice and why it was insufficient
    - What the human should do next (revise the bug description, provide guidance, or defer the fix)
 
-### Step 7: Loop Complete
+### Step 8: Loop Complete
 
 When the queue is fully drained (Step 1 finds no open bugs), report a summary:
 - Bugs resolved and merged this run (list with bug IDs and merge commits)
@@ -155,18 +190,22 @@ All orchestrator commits follow the project's git conventions from `ai-process/g
 | What | Branch | Message |
 |---|---|---|
 | Bug moved to in-progress | `dev-agent` | `chore(bugs): move B-NNN to in-progress` |
+| Developer Diagnosis Log recorded | `dev-agent` | `chore(bugs): record B-NNN diagnosis` |
+| Developer Work Log recorded | `dev-agent` | `chore(bugs): record B-NNN work log` |
 | Bug moved to resolved | `dev-agent` | `chore(bugs): move B-NNN to resolved` |
 | Bug escalated | `dev-agent` | `chore(bugs): escalate B-NNN — needs human review` |
 
 The merge commit is produced by the `integrate` skill. The `move B-NNN to resolved` commit is made by bug-loop on `dev-agent` only after integrate confirms a successful merge.
 
-Implementation commits are made by the Developer on the bug branch — the orchestrator does not touch `src/` or `tests/`.
+Implementation commits are made by the Developer on the bug branch.
+Lifecycle state commits are made by the loop and Reviewer on `dev-agent`.
+The orchestrator does not touch implementation or test files.
 
 ## Hard Stops (Do Not Continue)
 
 - A bug reaches human escalation (Phase 2) — stop the loop, notify the human
 - A git operation fails (branch already exists, conflict on `dev-agent`, etc.) — stop and report the git error before attempting anything else
-- `project/bugs/in-progress/` already contains a bug when the loop starts — stop and ask the human whether to resume that bug or treat it as abandoned
+- `project/bugs/in-progress/` already contains a bug on `dev-agent` when the loop starts — stop and ask the human whether to resume that bug or treat it as abandoned
 - The Developer cannot reproduce the bug and cannot form an evidence-backed fault hypothesis — escalate instead of patching by guesswork
 
 ## What This Skill Does NOT Do

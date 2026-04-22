@@ -24,10 +24,13 @@ mkdir -p project/specs/archive
 mkdir -p project/tasks/pending project/tasks/in-progress project/tasks/completed project/tasks/blocked
 mkdir -p project/bugs/open project/bugs/in-progress project/bugs/resolved
 mkdir -p project/decisions
+mkdir -p project/docs
 mkdir -p ai-process/templates
 mkdir -p ai-process/architecture ai-process/guidelines ai-process/processes
 mkdir -p .claude/agents
 mkdir -p .claude/skills
+# Optional for OpenAI Codex compatibility:
+mkdir -p .codex
 ```
 
 Add `.gitkeep` files to keep empty directories in git:
@@ -36,6 +39,7 @@ Add `.gitkeep` files to keep empty directories in git:
 for dir in project/specs/archive project/tasks/pending project/tasks/in-progress project/tasks/completed project/tasks/blocked project/bugs/open project/bugs/in-progress project/bugs/resolved; do
   touch "$dir/.gitkeep"
 done
+touch project/docs/coding_guidelines.md
 ```
 
 ### Step 2: Copy the Framework Files
@@ -61,8 +65,9 @@ Copy the following files from this repository into your new project, preserving 
 - `integrator.md`
 
 **Skill definitions (copy to `.claude/skills/<name>/SKILL.md`):**
-- `brainstorm`, `write-plan`, `code-review`, `tdd`, `debug`, `conflict-resolution`
+- `brainstorm`, `write-plan`, `gate-2-preflight`, `code-review`, `tdd`, `debug`, `conflict-resolution`
 - `dev-loop`, `integrate`, `bug-loop`
+- `escalation-consultation`
 - `new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`
 
 **Process and guidelines docs (copy as-is):**
@@ -75,6 +80,8 @@ Copy the following files from this repository into your new project, preserving 
 - `ai-process/guidelines/git-conventions.md`
 - `ai-process/architecture/system-overview.md`
 - `ai-process/architecture/component-map.md`
+
+If you use OpenAI Codex, either copy the same definitions under `.codex/` according to your platform's expected layout or create symlinks from `.codex/agents` and `.codex/skills` to `.claude/agents` and `.claude/skills`.
 
 ### Step 3: Create Your Project's CLAUDE.md
 
@@ -95,12 +102,13 @@ Create a `CLAUDE.md` in your project root. Start with this structure and customi
 | `project/tasks/` | Task tracking: `pending/`, `in-progress/`, `completed/`, `blocked/` |
 | `project/bugs/` | Bug reports: `open/`, `in-progress/`, `resolved/` |
 | `project/decisions/` | Architecture Decision Records (ADRs) |
+| `project/docs/` | Project-specific guidance for commands, coding conventions, and operations |
 | `ai-process/templates/` | Reusable document formats |
 | `ai-process/` | Architecture, guidelines, and process documentation |
 | `.claude/agents/` | Agent role definitions |
 | `.claude/skills/` | Reusable skill definitions (each as `<name>/SKILL.md`) |
-| `src/` | Source code (adjust to your project layout) |
-| `tests/` | Test files (adjust to your project layout) |
+| `[source path]` | Source code location for this project |
+| `[test path]` | Test file location for this project |
 
 ---
 
@@ -114,12 +122,14 @@ Create a `CLAUDE.md` in your project root. Start with this structure and customi
 
 ## Tech Stack
 
-- **Language:** [e.g., Python 3.11+, TypeScript 5.x]
-- **Framework:** [e.g., FastAPI, Next.js]
-- **Test framework:** [e.g., pytest, vitest]
-- **Build command:** `[e.g., npm run build]`
-- **Test command:** `[e.g., pytest tests/]`
-- **Lint command:** `[e.g., ruff check .]`
+- **Language/runtime:** [project-specific]
+- **Frameworks/libraries:** [project-specific]
+- **Test framework:** [project-specific]
+- **Build command:** `[project-specific command]`
+- **Test command:** `[project-specific command]`
+- **Lint command:** `[project-specific command]`
+- **Run/dev command:** `[project-specific command]`
+- **Additional verification:** [project-specific checks]
 
 ## Conventions
 
@@ -127,14 +137,19 @@ Create a `CLAUDE.md` in your project root. Start with this structure and customi
 - ADRs: numbered sequentially (`NNN-short-title.md`).
 - All docs: YAML frontmatter with `title`, `status`, `created`.
 - Follow coding standards in `ai-process/guidelines/coding-standards.md`.
+- Follow project-specific coding rules in `project/docs/coding_guidelines.md`.
 ```
 
 ### Step 4: Customize for Your Stack
 
-**`ai-process/guidelines/coding-standards.md`** — Add language-specific sections:
-- For Python: add sections on type hints, import ordering, docstring style.
-- For TypeScript: add sections on strict mode, interface vs. type, module resolution.
-- For any language: specify your formatter, linter, and their configuration.
+**`project/docs/coding_guidelines.md`** — Add project-specific rules:
+- Stack and framework conventions.
+- Formatter, linter, and dependency policy.
+- Naming conventions and file layout.
+- Testing conventions and where test fixtures live.
+- Any commands not already listed in `CLAUDE.md`.
+
+Keep `ai-process/guidelines/coding-standards.md` as the framework's general, language-agnostic baseline unless you intentionally fork the process.
 
 **`.claude/settings.json`** — Configure permissions for your project:
 ```json
@@ -164,6 +179,8 @@ Run these checks to confirm everything is in place:
 
 4. **Delete the test task**: Remove the test file you just created.
 
+5. **Project guidance exists**: Confirm `CLAUDE.md` names the project commands and points to `project/docs/coding_guidelines.md` or equivalent project-local guidance.
+
 ### Step 6: Start Working
 
 Your project is ready. The typical workflow is:
@@ -171,8 +188,10 @@ Your project is ready. The typical workflow is:
 1. **Describe a feature** — write what you want built.
 2. **Brainstorm** — the planner agent explores approaches and produces a specification (`/new-spec`).
 3. **Approve the spec** — human reviews and approves (Gate 1).
-4. **Break into tasks** — the planner decomposes the spec into atomic tasks; the architect validates the plan (automated preflight, no human gate).
-5. **Run `/dev-loop`** — autonomously implements, reviews, and integrates each task (Gate 2: code review, Gate 3: integration tests).
-6. **Final approval** — human approves the merge from `dev` to `main` (Gate 4).
+4. **Break into tasks** — the planner decomposes the spec into atomic tasks.
+5. **Run Gate 2 preflight** — the architect validates the task plan before development starts.
+6. **Run `/dev-loop`** — autonomously implements, reviews, and integrates each task. Gate 3 code review and Gate 4 integration verification happen inside the loop.
+7. **Fix bugs with `/bug-loop`** — when open bugs exist, the loop diagnoses first, then fixes, reviews, and integrates.
+8. **Final approval** — human approves the merge from `dev-agent` to `main` (Gate 5).
 
 For the full workflow details, see `ai-process/processes/workflow-overview.md`.

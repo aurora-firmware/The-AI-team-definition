@@ -35,5 +35,5 @@ Create a new bug report.
    - `source_branch`: the provided branch for task-regression bugs, or leave blank for existing-defect bugs
 7. Fill in the Summary, Reproduction Status, Evidence, Reproduction Steps, Expected Behavior, Actual Behavior, Environment, Related, Suspected Area, and Fix Verification sections from the intake details.
 8. If reproduction is not yet confirmed, still create the bug, but explicitly record what evidence exists and the first diagnostic step the Developer should try.
-9. Leave Diagnosis Log, Work Log, and Review Verdicts empty except for their instructional comments.
+9. Leave Diagnosis Log, Work Log, and Review sections empty except for their instructional comments.
 10. Confirm the file was created in `project/bugs/open/`.

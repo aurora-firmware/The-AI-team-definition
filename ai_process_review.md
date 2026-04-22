@@ -11,14 +11,14 @@ This review checks whether `.claude/agents/` and `.claude/skills/` consistently 
 ## Summary
 
 The agents are broadly aligned with the intended boundary: agents define roles, while skills define procedures.
-The main inconsistencies are in state handling, branch handling, review verdict formats, and a hardcoded integration test command.
+The previously identified inconsistencies in state handling, branch handling, review verdict formats, and hardcoded integration verification have been addressed.
 
-Post-fix status:
+Post-implementation status:
 
-- Findings 1, 2, and 7 are now resolved in the authoritative `ai-process` documents.
-- Findings 1 and 2 remain valid for the `.claude/skills` and `.claude/agents` implementation until the loops and role skills adopt the canonical `dev-agent` lifecycle-state model.
-- Finding 7 is no longer valid after the workflow overview clarified Architect-first escalation.
-- Findings 3, 4, 5, 6, 8, and 9 remain valid implementation issues.
+- Findings 1 through 11 are resolved in the relevant `ai-process`, `.claude/skills`, `.claude/agents`, and template files.
+- The implementation now follows the canonical `dev-agent` lifecycle-state model.
+- Integration verification commands are discovered from the work item or target project instead of being hardcoded.
+- Developer log entries are handoffs to the active loop; Review Verdicts are committed by the Reviewer to canonical lifecycle files.
 
 ## Findings And Suggestions
 
@@ -26,7 +26,7 @@ Post-fix status:
 
 **Severity:** High
 
-**Status:** Resolved in `ai-process`; still valid in `.claude/skills/bug-loop/SKILL.md`.
+**Status:** Resolved in `ai-process` and `.claude/skills/bug-loop/SKILL.md`.
 
 `bug-loop` moves the bug file to `project/bugs/in-progress/` and commits that move on `dev-agent`, then creates task-regression bug branches from the bug report's `source_branch`.
 That preserved task branch may not contain the moved bug file, but the Developer prompt expects `project/bugs/in-progress/<bug-file>` to exist on the bug branch.
@@ -47,11 +47,13 @@ The ai-process now defines the ownership model: task and bug files are canonical
 Update `bug-loop` so task-regression bug branches do not need the bug file to exist on the implementation branch.
 The loop must pass canonical bug content to the Developer and Reviewer, collect Diagnosis Log and Work Log handoffs, append them to the canonical bug file on `dev-agent`, and read only committed canonical Review Verdict entries.
 
+**Resolution:** `bug-loop` now treats bug files as canonical on `dev-agent`, splits diagnosis and implementation, records Developer handoffs on `dev-agent`, and does not require task-regression bug branches to contain the bug file.
+
 ### 2. Review verdict branch and commit ownership is underspecified
 
 **Severity:** High
 
-**Status:** Resolved in `ai-process`; still valid in `dev-loop`, `bug-loop`, `code-review`, and Reviewer implementation text.
+**Status:** Resolved in `ai-process`, `dev-loop`, `bug-loop`, `code-review`, and Reviewer implementation text.
 
 The ai-process says the Reviewer owns review verdicts, and git conventions say the Reviewer commits verdicts on `dev-agent`.
 The current `dev-loop` and `bug-loop` launch the Reviewer after Developer work on the task or bug branch, but they do not specify where verdict edits are made or who commits them.
@@ -79,9 +81,13 @@ The ai-process now states:
 
 Update `dev-loop`, `bug-loop`, `code-review`, and `.claude/agents/reviewer.md` to follow that model.
 
-### 3. Task review template contradicts the verdict format parsed by the loops
+**Resolution:** The loops now read committed canonical verdicts from `dev-agent`; `code-review` and the Reviewer agent now write and commit verdicts to canonical task or bug files on `dev-agent`.
+
+### 3. Task review template contradicted the verdict format parsed by the loops
 
 **Severity:** Medium
+
+**Status:** Resolved.
 
 The task template instructs reviewers to append headings like `### Review 1 — PASS|FAIL`.
 The `code-review` skill writes `### Review Verdict — [date]`, and `dev-loop` parses `### Review Verdict`.
@@ -109,9 +115,13 @@ PASS | FAIL | ESCALATE
 - Reviewer notes...
 ```
 
+**Resolution:** The task template now uses `### Review Verdict — YYYY-MM-DD` with `PASS | FAIL | ESCALATE`.
+
 ### 4. Bug template lacks the review verdict section expected by bug-loop
 
 **Severity:** Medium
+
+**Status:** Resolved.
 
 `new-bug` says to leave “Review Verdicts” instructional comments empty, but the bug template has no review section.
 `bug-loop` later reads the most recent `### Review Verdict` entry.
@@ -131,13 +141,17 @@ The template should make that state explicit.
 
 Add a `## Review` or `## Review Verdicts` section to `TEMPLATE-bug.md` using the same canonical heading as task reviews.
 
+**Resolution:** The bug template now includes a `## Review` section with the canonical Review Verdict format.
+
 ### 5. `code-review` routes PASS to Integrator instead of the active loop
 
 **Severity:** Medium
 
+**Status:** Resolved.
+
 The component map says the Reviewer hands verdicts back to the Development Loop or Bug-Fix Loop.
 The loops then invoke integration.
-The `code-review` skill currently says that a PASS should hand off to the integrator.
+The `code-review` skill previously said that a PASS should hand off to the integrator.
 
 Relevant files:
 
@@ -155,12 +169,16 @@ Change the PASS behavior in `code-review` to:
 
 > Record PASS in the work item. The active loop reads the verdict and routes to integration.
 
-### 6. `integrate` hardcodes `npm test`
+**Resolution:** `code-review` now records PASS for the active loop and no longer hands off directly to the Integrator.
+
+### 6. `integrate` hardcoded a project-specific test command
 
 **Severity:** Medium
 
+**Status:** Resolved.
+
 Gate 4 requires unit and integration tests on the source and destination branch.
-The `integrate` skill currently runs `npm test` for both phases.
+The `integrate` skill previously ran a project-specific test command for both phases.
 
 Relevant files:
 
@@ -181,6 +199,8 @@ Recommended lookup order:
 2. Project-specific docs such as `project/docs/coding_guidelines.md`.
 3. Repository package or build configuration.
 4. Ask the human or stop with `BLOCKED` if no test command can be determined.
+
+**Resolution:** `integrate` now discovers verification commands from the work item and target-project guidance, and stops with `BLOCKED` if no automated command can be determined.
 
 ### 7. Escalation timing is slightly ambiguous in the ai-process
 
@@ -221,11 +241,13 @@ Completed. The workflow overview now says:
 
 This section records a follow-up scan for project-specific commands, stack-specific coding guidance, and mentions of specific programming languages in `ai-process/`, `.claude/skills/`, and `.claude/agents/`.
 
-### 8. `integrate` hardcodes a project-specific test command
+### 8. `integrate` hardcoded a project-specific test command
 
 **Severity:** Medium
 
-`integrate` runs `npm test` on both the source branch and destination branch.
+**Status:** Resolved.
+
+`integrate` previously ran a project-specific test command on both the source branch and destination branch.
 This is a Node-specific command and violates the framework boundary documented in `CLAUDE.md`: this repository should not hardcode test commands for consuming projects.
 
 Relevant files:
@@ -241,11 +263,15 @@ Replace the hardcoded command with a lookup procedure:
 3. Use the discovered project command for both pre-merge and post-merge verification.
 4. Stop with `BLOCKED` if no command can be found.
 
+**Resolution:** Same as Finding 6.
+
 ### 9. `tdd` contains stack-specific coding guidance
 
 **Severity:** Medium
 
-`tdd` references project-specific technologies in its input requirements: `Next.js`, `Drizzle`, `Claude API`, and component patterns.
+**Status:** Resolved.
+
+`tdd` previously referenced project-specific technologies in its input requirements.
 Those are examples from a particular software project, not framework-level rules.
 
 Relevant files:
@@ -258,14 +284,18 @@ Replace the stack-specific text with generic project-local discovery language:
 
 > Read `ai-process/guidelines/coding-standards.md` for framework standards and read the target project's coding guidelines, README, package/build configuration, and human-provided instructions for stack-specific rules.
 
+**Resolution:** `tdd` now refers to framework standards plus target-project guidance without naming a specific stack.
+
 ## Additional Findings After Ai-Process Fixes
 
-### 10. Developer log handling still assumes branch-local work-item edits
+### 10. Developer log handling assumed branch-local work-item edits
 
 **Severity:** High
 
-The ai-process now says Developer Diagnosis Log and Work Log entries are handoffs recorded by the active loop in the canonical task or bug file on `dev-agent`.
-Several implementation files still tell the Developer or procedure to append directly to the task or bug file.
+**Status:** Resolved.
+
+After the ai-process fix, Developer Diagnosis Log and Work Log entries became handoffs recorded by the active loop in the canonical task or bug file on `dev-agent`.
+Several implementation files still told the Developer or procedure to append directly to the task or bug file.
 
 Relevant files:
 
@@ -280,11 +310,15 @@ Relevant files:
 Update the Developer-facing skills and agent to return log-entry content to the active loop instead of writing lifecycle files directly.
 Update `dev-loop` and `bug-loop` to append those entries to the canonical work item on `dev-agent` and commit before invoking Reviewer.
 
-### 11. Integration still treats lifecycle logs as source-branch merge content
+**Resolution:** `tdd`, `debug`, and the Developer agent now return log handoffs; `dev-loop` and `bug-loop` record those handoffs on `dev-agent`.
+
+### 11. Integration treated lifecycle logs as source-branch merge content
 
 **Severity:** Medium
 
-The ai-process now makes task and bug files canonical on `dev-agent`, but `integrate` still says to preserve Work Log and Diagnosis Log content "as-is on merge".
+**Status:** Resolved.
+
+After the ai-process fix, task and bug files became canonical on `dev-agent`, but `integrate` still said to preserve Work Log and Diagnosis Log content "as-is on merge".
 That instruction assumes lifecycle logs are part of the source branch merge payload.
 
 Relevant files:
@@ -295,6 +329,8 @@ Relevant files:
 
 Update `integrate` so it reads work-item state from the canonical `dev-agent` file before merge verification.
 It should treat task and bug files as lifecycle state owned by the active loop, not as implementation artifacts to merge from task or bug branches.
+
+**Resolution:** `integrate` now reads canonical work-item state from `dev-agent` and stops if implementation branches contain lifecycle-file edits.
 
 ### Scan Notes
 
@@ -313,10 +349,9 @@ They implement the framework's own branch and merge model, which is part of `ai-
 Ran:
 
 ```bash
-git diff --check -- ai-process ai_process_review.md
-rg -n "coding-guidelines|npm test|Next\\.js|Drizzle|Claude API|component patterns|append a Work Log|append.*Diagnosis Log|Append.*verdict|preserve the Work Log|Hand off to integrator" ai-process .claude/skills .claude/agents ai_process_review.md
+git diff --check -- ai-process .claude/skills .claude/agents ai_process_review.md
+rg -n 'npm test|Next\.js|Drizzle|Claude API|component patterns|Hand off to integrator|Review 1|Review Verdicts empty|append a Diagnosis Log entry|Append a Work Log|append a Work Log|Preserve the Work Log|preserve the Work Log|assigned Work Log|assigned bug file|`src/`|`tests/`' ai-process .claude/skills .claude/agents
 ```
 
 Result: whitespace check passed.
-The targeted scan found no remaining hardcoded project command or stack-specific technology mentions in `ai-process/`.
-Remaining hits are the implementation issues recorded above in `.claude/skills/` and the review document itself.
+The targeted process and implementation scan returned no matches.

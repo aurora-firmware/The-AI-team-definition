@@ -17,7 +17,7 @@ The caller must provide:
 
 - **Work item:** one task file in `project/tasks/in-progress/` or one bug file in `project/bugs/in-progress/`.
 - **Branch or target:** current task or bug branch.
-- **Expected output:** implemented task or bug fix with Work Log handoff; for bugs, Diagnosis Log before production code changes.
+- **Expected output:** implemented task or bug fix with Work Log handoff returned to the active loop; for bugs, Diagnosis Log handoff before production code changes.
 - **Relevant constraints:** acceptance criteria, files to touch, dependencies, fix-verification steps, test command, and any review feedback.
 
 If required input is missing, ask for it or return `BLOCKED` instead of guessing.
@@ -26,7 +26,7 @@ If required input is missing, ask for it or return `BLOCKED` instead of guessing
 
 ### Tools
 - `Read`, `Glob`, `Grep` — inspect assigned work item, existing code, tests, and local patterns.
-- `Write`, `Edit` — modify source, tests, and assigned Work Log or Diagnosis Log only.
+- `Write`, `Edit` — modify implementation files and tests within the assigned scope. Do not edit task or bug lifecycle files on the implementation branch.
 - `Bash` — run tests, linters, builds, and diagnostic commands needed for the assigned work.
 
 ### Skills
@@ -61,11 +61,12 @@ Other immediate escalation triggers (no retry needed):
 ## Interaction Pattern
 
 ### Receives Work From
-- **Development Loop** — receives one task in `project/tasks/in-progress/` and works on the assigned task branch.
-- **Bug-Fix Loop** — receives one bug in `project/bugs/in-progress/` and works on the assigned bug branch.
+- **Development Loop** — receives one canonical task in `project/tasks/in-progress/` on `dev-agent` and works on the assigned task branch.
+- **Bug-Fix Loop** — receives one canonical bug in `project/bugs/in-progress/` on `dev-agent` and works on the assigned bug branch.
 
 ### Hands Off To
-- **Reviewer** — completed code with passing tests, plus a final Work Log entry summarizing decisions made, trade-offs considered, and anything the reviewer should pay attention to.
+- **Development Loop or Bug-Fix Loop** — completed code with passing tests, plus a final Work Log handoff entry summarizing decisions made, trade-offs considered, and anything the reviewer should pay attention to.
+- **Bug-Fix Loop** — Diagnosis Log handoff before bug implementation begins.
 - **Architect** — escalation request if blocked.
 
 ## Folder Scope
@@ -73,13 +74,13 @@ Other immediate escalation triggers (no retry needed):
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | `src/`, `tests/`, assigned task file in `project/tasks/in-progress/` (Work Log only), assigned bug file in `project/bugs/in-progress/` (Diagnosis Log and Work Log), `project/bugs/open/` (to file bug reports via `/new-bug`) |
+| Write / Edit | implementation files and test files within the assigned task or bug scope; `project/bugs/open/` only through `/new-bug` for out-of-scope defects |
 | Never touch | `project/specs/`, `project/decisions/`, `project/docs/` |
 
 ## Quality Bar
 
 - All acceptance criteria from the task are met.
-- For bug fixes, reproduction status, evidence, isolated fault, and root cause or fault hypothesis are recorded before implementation.
+- For bug fixes, reproduction status, evidence, isolated fault, and root cause or fault hypothesis are returned as a Diagnosis Log handoff before implementation.
 - Tests exist and pass for every acceptance criterion.
 - Code follows the coding standards: `ai-process/guidelines/coding-standards.md` (general) and `project/docs/coding_guidelines.md` (project-specific tech-stack rules).
 - Only the files listed in the task are modified (unless justified and noted).
@@ -94,16 +95,16 @@ Summary:
 - <brief statement of implementation or diagnosis outcome>
 
 Artifacts:
-- <source, test, task, or bug files created/updated>
+- <source files, test files, and log handoff entries created/updated>
 
 Evidence:
-- <commands run, failing/passing test evidence, Diagnosis Log or Work Log location, or "not run" with reason>
+- <commands run, failing/passing test evidence, Diagnosis Log or Work Log handoff, or "not run" with reason>
 
 Obstacles Encountered:
 - <setup issue, repro limitation, workaround, special command flag, dependency/import issue, environment quirk, or "none">
 
 Next Owner:
-- <Reviewer | Architect | Human | Loop | none>
+- <Development Loop | Bug-Fix Loop | Architect | Human | none>
 
 Next Action:
 - <specific follow-up required, or "none">

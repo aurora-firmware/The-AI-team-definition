@@ -10,7 +10,10 @@ allowed-tools: Read, Grep, Glob, Write, Edit, Bash
 
 - **Task or bug file** — with acceptance criteria or fix-verification steps.
 - **Project test setup** — test framework, directory structure, how to run tests.
-- **Coding standards** — `ai-process/guidelines/coding-standards.md` (general) and `project/docs/coding_guidelines.md` (project-specific: Next.js, Drizzle, Claude API, component patterns).
+- **Coding standards** — `ai-process/guidelines/coding-standards.md` for framework standards, plus target-project guidance such as the project `CLAUDE.md`, `project/docs/coding_guidelines.md`, README, build configuration, and human-provided instructions.
+
+Task and bug files are canonical lifecycle state on `dev-agent`.
+Read their existing Work Log and Diagnosis Log entries, but return new log content as a handoff to the active loop instead of editing lifecycle files directly.
 
 ## Procedure
 
@@ -57,16 +60,18 @@ Run all tests again to confirm nothing broke.
 Go back to Step 2 for the next acceptance criterion.
 Continue until all criteria have tests and passing implementations.
 
-### Step 8: Append a Work Log Entry
-After refactor and before handing back to the orchestrator, append a dated Work Log entry using the heading `### Session N — YYYY-MM-DD`.
+### Step 8: Prepare a Work Log Handoff
+After refactor and before handing back to the orchestrator, prepare a dated Work Log entry using the heading `### Session N — YYYY-MM-DD`.
 Use a free-prose body that summarizes what was done, what was tried and rejected, and what remains.
 The session number increments monotonically across all sessions on the same task or bug.
+Return this entry to the active loop. The loop appends and commits it to the canonical task or bug file on `dev-agent`.
 
 ## Output Format
 
 - **Test files** — one or more test files covering all acceptance criteria.
 - **Implementation files** — production code that passes all tests.
 - **Verification** — the task's verification command runs successfully.
+- **Work Log handoff** — the complete `### Session N — YYYY-MM-DD` entry for the active loop to record.
 
 ## Quality Criteria
 
@@ -76,11 +81,11 @@ The session number increments monotonically across all sessions on the same task
 - Test names describe the expected behavior, not the implementation (e.g., `test_returns_empty_list_when_no_items` not `test_get_items`).
 - The implementation is minimal — no code exists that is not required by a test.
 - All tests pass when run together.
-- The Work Log contains one entry per session boundary.
+- The Work Log handoff contains one entry for the current session boundary.
 
 ## Common Pitfalls
 
-- **Starting work without reading the Work Log** — always read every existing Work Log entry before the acceptance criteria or any other work.
+- **Starting work without reading the Work Log** — always read every existing canonical Work Log entry before the acceptance criteria or any other work.
 - **Writing implementation first** — this defeats the purpose of TDD. Always write the test first.
 - **Tests that test implementation** — test what the code does (behavior), not how it does it (implementation details). If you refactor internals, tests should still pass.
 - **Skipping the "verify it fails" step** — a test that passes before implementation is not testing anything. It gives false confidence.

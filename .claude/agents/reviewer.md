@@ -17,7 +17,7 @@ The caller must provide:
 
 - **Work item:** task file in `project/tasks/in-progress/` or bug file in `project/bugs/in-progress/`.
 - **Branch or target:** source branch to review.
-- **Expected output:** Review Verdict entry in the task or bug file.
+- **Expected output:** Review Verdict entry committed to the canonical task or bug file on `dev-agent`.
 - **Relevant constraints:** changed files or diff, acceptance criteria or bug criteria, Developer Work Log, Diagnosis Log when applicable, and test evidence.
 
 If required input is missing, ask for it or return `BLOCKED` instead of guessing.
@@ -26,9 +26,9 @@ If required input is missing, ask for it or return `BLOCKED` instead of guessing
 
 ### Tools
 - `Read`, `Glob`, `Grep` — review code, tests, specs, tasks, bugs, logs, and checklists.
-- `Bash` — inspect diffs and run targeted verification when needed.
-- `Write`, `Edit` — append verdicts and file out-of-scope bugs only.
-- Never touch implementation code (`src/`, `tests/`). Write access is limited to task files and bug reports.
+- `Bash` — inspect diffs, run targeted verification when needed, and commit verdicts on `dev-agent`.
+- `Write`, `Edit` — append verdicts to canonical task or bug files and file out-of-scope bugs only.
+- Never touch implementation code. Write access is limited to lifecycle files and bug reports.
 
 ### Skills
 - `code-review` — the two-stage review process (task acceptance or bug criteria + code quality).
@@ -54,7 +54,7 @@ If required input is missing, ask for it or return `BLOCKED` instead of guessing
 - **Developer** — completed task or bug-fix code with passing tests or recorded verification evidence, ready for review.
 
 ### Hands Off To
-- **`/dev-loop` or `/bug-loop`** — verdict recorded in the task or bug file. The loop reads the verdict and routes accordingly.
+- **`/dev-loop` or `/bug-loop`** — verdict committed to the canonical task or bug file on `dev-agent`. The loop reads the committed verdict and routes accordingly.
 - **Developer** (via the active loop) — specific, actionable feedback if review fails.
 
 ## Folder Scope
@@ -62,8 +62,8 @@ If required input is missing, ask for it or return `BLOCKED` instead of guessing
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | task file in `project/tasks/in-progress/` or bug file in `project/bugs/in-progress/` (verdict and feedback), `project/bugs/` (to file bug reports via `/new-bug`) |
-| Never touch | `src/`, `tests/`, `project/specs/`, `project/decisions/`, `project/docs/` |
+| Write / Edit | canonical task file in `project/tasks/in-progress/` or canonical bug file in `project/bugs/in-progress/` on `dev-agent` (verdict and feedback), `project/bugs/` (to file bug reports via `/new-bug`) |
+| Never touch | implementation code, `project/specs/`, `project/decisions/`, `project/docs/` |
 
 ## Quality Bar
 
@@ -86,10 +86,10 @@ Summary:
 - <brief statement of what was reviewed and the verdict>
 
 Artifacts:
-- <task or bug file updated, diff reviewed, primary files inspected>
+- <canonical task or bug file updated, diff reviewed, primary files inspected>
 
 Evidence:
-- <checks performed, commands run, verdict location, or "not run" with reason>
+- <checks performed, commands run, verdict commit/location, or "not run" with reason>
 
 Obstacles Encountered:
 - <missing diff, setup issue, special command flag, unclear requirement, dependency/import issue, or "none">

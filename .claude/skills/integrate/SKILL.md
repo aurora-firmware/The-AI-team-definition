@@ -27,41 +27,50 @@ Provided as `$ARGUMENTS`:
 3. Confirm the source branch exists: `git branch | grep <source-branch>`. If not found, stop with the same message.
 4. Confirm the destination branch exists: `git branch | grep <destination>`. If not found, stop with: "Destination branch '<destination>' not found."
 
-### Step 2: Find the Work Item File
+### Step 2: Find the Canonical Work Item and Verification Command
 
-1. Extract the work item ID from the branch name:
+Task and bug files are canonical lifecycle state on `dev-agent`.
+Do not rely on task or bug file copies from the source branch or destination branch.
+
+1. Switch to `dev-agent`.
+2. Extract the work item ID from the branch name:
    - `task/T-012-settings-api` → `T-012`
    - `bug/B-003-login-crash` → `B-003`
-2. Search for the matching task or bug file:
+3. Search for the matching canonical task or bug file:
    ```
    find project/tasks/ -name "<task-id>-*.md"
    find project/bugs/ -name "<bug-id>-*.md"
    ```
-3. If no work item file is found, continue without work-item verification but note the absence in the final report.
-4. If a task file is found, read it completely — focus on the **Description**, **Acceptance Criteria**, and the **Work Log** section.
-5. If a bug file is found, read it completely — focus on the **Summary**, **Diagnosis Log**, **Fix Verification**, and **Work Log** sections.
-6. Preserve the Work Log and Diagnosis Log as-is on merge. Do not strip them, rewrite them, or summarize them.
+4. If no work item file is found, continue without work-item verification but note the absence in the final report.
+5. If a task file is found, read it completely — focus on the **Description**, **Acceptance Criteria**, **Verification**, **Work Log**, and **Review** sections.
+6. If a bug file is found, read it completely — focus on the **Summary**, **Diagnosis Log**, **Fix Verification**, **Work Log**, and **Review** sections.
+7. Determine the verification command set before checking out the source branch. Lookup order:
+   - The work item's `## Verification` or `## Fix Verification` section, if it contains concrete automated command(s).
+   - Target-project guidance such as the project `CLAUDE.md`, `project/docs/coding_guidelines.md`, README, build configuration, or human-provided instructions.
+   - If no automated verification command can be determined, stop with `BLOCKED` and ask the human for the project verification command.
+8. Use the discovered command set for both pre-merge and post-merge verification unless the work item or project guidance explicitly defines separate source-branch and destination-branch checks.
 
 ### Step 3: Verify Branch Contains Expected Changes
 
 1. Check out the source branch: `git checkout <source-branch>`.
 2. Get the diff against the destination: `git diff <destination>...<source-branch> --stat`
 3. Get the full diff for inspection: `git diff <destination>...<source-branch>`
-4. For task branches, compare the changed files and logic against the task's acceptance criteria:
+4. Confirm the source diff does not modify the canonical task or bug lifecycle file. If it does, stop and ask the active loop to move lifecycle log or verdict content to `dev-agent` before integration.
+5. For task branches, compare the changed files and logic against the task's acceptance criteria:
    - Each acceptance criterion must be traceable to at least one changed file.
    - No acceptance criterion should be entirely absent from the diff.
-5. For bug branches, compare the changed files and logic against the bug's Diagnosis Log and Fix Verification:
+6. For bug branches, compare the changed files and logic against the bug's Diagnosis Log and Fix Verification:
    - The change should address the isolated fault or documented root-cause hypothesis.
    - A regression test should exist when practical, or the Work Log should explain why manual verification is used.
-6. If the diff is empty (branch is already merged or contains no changes vs destination), stop with: "Branch '<source-branch>' has no changes relative to '<destination>'. Nothing to integrate."
-7. If expected behavior is present but the diff does not satisfy it, stop with a gap report listing what appears unaddressed. Do not proceed — return the branch to the Developer.
+7. If the diff is empty (branch is already merged or contains no changes vs destination), stop with: "Branch '<source-branch>' has no changes relative to '<destination>'. Nothing to integrate."
+8. If expected behavior is present but the diff does not satisfy it, stop with a gap report listing what appears unaddressed. Do not proceed — return the branch to the Developer.
 
 ### Step 4: Run Tests on the Source Branch
 
-While still on the source branch, run the full test suite:
+While still on the source branch, run the discovered source-branch verification command set:
 
-```bash
-npm test
+```text
+<source verification command(s)>
 ```
 
 Capture stdout and stderr. Evaluate the result:
@@ -89,10 +98,10 @@ Capture stdout and stderr. Evaluate the result:
 
 ### Step 6: Run Tests on the Destination Branch (Regression Check)
 
-After the merge, on the destination branch, run the full test suite again:
+After the merge, on the destination branch, run the discovered destination-branch verification command set:
 
-```bash
-npm test
+```text
+<destination verification command(s)>
 ```
 
 Evaluate the result:
@@ -104,18 +113,21 @@ Evaluate the result:
 1. Compare the failing tests against the pre-merge results from Step 4.
 2. For each regression (a test that passed in Step 4 but fails now):
    - Determine which file(s) and logic are responsible.
-   - Invoke the `new-bug` skill to file a bug report for each regression:
+   - Switch to `dev-agent`.
+   - Invoke the `new-bug` skill to file a canonical bug report for each regression:
      > `/new-bug <short description of the regression>`
-     - Set severity based on impact: failing API tests → `high`; failing UI unit tests → `medium`; other → `low`.
+     - Set severity based on user impact, data risk, security risk, and how much of the system is blocked.
      - In the bug's Summary and Evidence sections, include: the failing test name, the error message, the merge commit that introduced the regression, the destination branch, and the source branch that was being integrated.
      - Set `source_branch` to the source branch being integrated so the bug-fix loop fixes the regression on that preserved branch before integration is retried.
-3. After filing all regression bugs, **revert the merge commit**:
+   - Commit the filed regression bug report(s) on `dev-agent`: `chore(bugs): file integration regression for <work-item-id>`.
+3. Switch back to the destination branch.
+4. After filing all regression bugs, **revert the merge commit**:
    ```bash
    git revert -m 1 HEAD --no-edit
    ```
    Commit message: `chore(<kind>): revert merge of <source-branch> — regression in <test-names>`
-4. Switch back to the source branch: `git checkout <source-branch>`.
-5. Stop and report:
+5. Switch back to the source branch: `git checkout <source-branch>`.
+6. Stop and report:
    - Which regressions were found.
    - Which bug IDs were created.
    - That the merge was reverted and the source branch was not deleted.
@@ -125,7 +137,7 @@ Evaluate the result:
 
 Reached only when both Step 4 and Step 6 tests pass.
 
-1. **Update the task file** (if found in Step 2):
+1. **Update the canonical task file** (if a task file was found in Step 2):
    - Move the task file from `project/tasks/in-progress/` to `project/tasks/completed/`.
    - Update `status` in the frontmatter to `completed`.
    - Stage and commit this change as a separate commit on the destination branch:
@@ -181,3 +193,4 @@ All integrator commits follow `ai-process/guidelines/git-conventions.md`:
 - Does not modify specifications or ADRs.
 - Does not skip tests or bypass hooks (`--no-verify` is forbidden).
 - Does not merge multiple branches in one invocation — call the skill once per branch.
+- Does not merge task or bug lifecycle-file edits from implementation branches. Lifecycle state is owned by `dev-agent`.

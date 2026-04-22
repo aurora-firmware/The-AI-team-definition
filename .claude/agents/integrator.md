@@ -67,7 +67,7 @@ If required input is missing, ask for it or return `BLOCKED` instead of guessing
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | `src/`, `tests/` (conflict resolution), `project/tasks/` (task state updates when explicitly assigned), `project/bugs/` (bug state updates when explicitly assigned) |
+| Write / Edit | implementation and test files when resolving conflicts, `project/tasks/` (task state updates when explicitly assigned), `project/bugs/` (bug state updates when explicitly assigned) |
 | Never touch | `project/specs/`, `project/decisions/`, `project/docs/` |
 
 ## Quality Bar

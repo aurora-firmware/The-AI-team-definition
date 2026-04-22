@@ -65,7 +65,7 @@ If required input is missing, ask for it or return `BLOCKED` instead of guessing
 |---|---|
 | Read | anywhere |
 | Write / Edit | `project/specs/`, `project/tasks/` |
-| Never touch | `src/`, `tests/` |
+| Never touch | implementation files, test files |
 
 ## Quality Bar
 

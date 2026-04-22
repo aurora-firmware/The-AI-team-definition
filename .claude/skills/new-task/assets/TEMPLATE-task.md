@@ -66,9 +66,10 @@ The final entry serves as the handoff to the reviewer. -->
 
 <!-- Reviewer: append verdict here after each review cycle.
 
-### Review 1 — PASS|FAIL
-**Date:** YYYY-MM-DD
-**Reviewer notes:**
-- [For FAIL: file, location, what is wrong, what should change]
-- [For PASS: brief confirmation that both stages passed]
+### Review Verdict — YYYY-MM-DD
+PASS | FAIL | ESCALATE
+
+- For FAIL: file, location, what is wrong, what should change.
+- For PASS: brief confirmation that both stages passed.
+- For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->

@@ -22,6 +22,9 @@ The orchestrator reads state directly from the filesystem:
 - `project/tasks/in-progress/` — active task slot
 - `project/tasks/blocked/` — escalation output
 
+Task files are canonical lifecycle state on `dev-agent`.
+Developer branches are for implementation artifacts only; the active loop records Developer Work Log handoffs in the canonical task file.
+
 ## Procedure
 
 ### Step 1: Check the Queue
@@ -46,34 +49,45 @@ If no task has all dependencies satisfied, stop and report which tasks are waiti
 
 ### Step 3: Claim the Task
 
-1. Move the selected task file from `project/tasks/pending/` to `project/tasks/in-progress/`
-2. Switch to `dev-agent` and commit the task move: `chore(tasks): move T-NNN to in-progress`
-3. Create and check out the task branch from `dev-agent`: `git checkout -b task/T-NNN-short-description` (derive from task filename)
+1. Switch to `dev-agent`.
+2. Move the selected task file from `project/tasks/pending/` to `project/tasks/in-progress/`.
+3. Commit the task move: `chore(tasks): move T-NNN to in-progress`.
+4. Create and check out the task branch from `dev-agent`: `git checkout -b task/T-NNN-short-description` (derive from task filename).
 
 ### Step 4: Implementation Cycle
 
+Before spawning the Developer, read the latest canonical task file from `dev-agent`.
+Check out the task branch `task/T-NNN-...`.
+
 **Spawn the Developer role** with this prompt:
 
-> "Pick up the task at `project/tasks/in-progress/<task-file>` and implement it using the tdd skill.
+> "Pick up the task from the canonical task file `project/tasks/in-progress/<task-file>` on `dev-agent` and implement it using the tdd skill.
 > You are on branch `task/T-NNN-...`. Commit after each red→green→refactor cycle.
-> Append a Work Log entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The final entry serves as the handoff to the reviewer."
+> Do not edit the task lifecycle file on the task branch.
+> Return a Work Log handoff entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The loop will append and commit it on `dev-agent`."
 
 Wait for the Developer to complete before continuing.
+If the Developer does not return a Work Log handoff entry, stop with `BLOCKED` and report the missing handoff.
+
+Record the Work Log handoff:
+1. Switch to `dev-agent`.
+2. Append the Developer's Work Log handoff under `## Work Log` in `project/tasks/in-progress/<task-file>`.
+3. Commit the lifecycle update: `chore(tasks): record T-NNN work log`.
 
 ### Step 5: Review Cycle
 
 **Spawn the Reviewer agent** with this prompt:
 
-> "Review the task at `project/tasks/in-progress/<task-file>` using the code-review skill.
+> "Review the task using the canonical task file `project/tasks/in-progress/<task-file>` on `dev-agent` and the code-review skill.
 > The Developer has completed their work on branch `task/T-NNN-...`.
-> Append your verdict to the task file's Review section under `### Review Verdict — YYYY-MM-DD`.
+> Append your verdict to the canonical task file's Review section under `### Review Verdict — YYYY-MM-DD` and commit it on `dev-agent`.
 > Verdict must be one of: PASS, FAIL, or ESCALATE."
 
 Wait for the reviewer to complete before continuing.
 
 ### Step 6: Read the Verdict
 
-Read the task file and find the most recent `### Review Verdict` entry.
+Switch to `dev-agent`, then read the canonical task file and find the most recent `### Review Verdict` entry.
 Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 
 #### On PASS
@@ -145,18 +159,21 @@ All orchestrator commits follow the project's git conventions from `ai-process/g
 | What | Branch | Message |
 |---|---|---|
 | Task moved to in-progress | `dev-agent` | `chore(tasks): move T-NNN to in-progress` |
+| Developer Work Log recorded | `dev-agent` | `chore(tasks): record T-NNN work log` |
 | Task moved to blocked | `dev-agent` | `chore(tasks): move T-NNN to blocked` |
 
 The `move T-NNN to completed` commit and merge commit are produced by the `integrate` skill, not by the dev-loop orchestrator.
 
-Implementation commits are made by the Developer on the task branch — the orchestrator does not touch `src/` or `tests/`.
+Implementation commits are made by the Developer on the task branch.
+Lifecycle state commits are made by the loop and Reviewer on `dev-agent`.
+The orchestrator does not touch implementation or test files.
 
 ## Hard Stops (Do Not Continue)
 
 - A task moves to `blocked/` — stop the loop, notify the human
 - Integration fails for any reason (pre-merge test failure, unmet criteria, post-merge regression) — stop the loop, report the failure and any filed bug IDs
 - A git operation fails (branch already exists, merge conflict on `dev-agent`, etc.) — stop and report the git error before attempting anything else
-- `project/tasks/in-progress/` already contains a task when the loop starts — stop and ask the human whether to resume that task or treat it as abandoned
+- `project/tasks/in-progress/` already contains a task on `dev-agent` when the loop starts — stop and ask the human whether to resume that task or treat it as abandoned
 
 ## What This Skill Does NOT Do
 
