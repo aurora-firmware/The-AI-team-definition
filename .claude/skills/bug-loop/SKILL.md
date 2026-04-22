@@ -119,13 +119,14 @@ Follow the two-phase escalation procedure from `ai-process/processes/escalation-
 
 **Phase 1 — Architect Consultation:**
 Spawn the Architect agent with a structured request:
-- Problem: what the reviewer found
-- Attempted: what the Developer tried (and how many cycles)
-- Failed because: why it did not work
-- Question: specific guidance needed
+- Use the `escalation-consultation` skill.
+- Problem: what the reviewer found.
+- Attempted: what the Developer tried, including diagnosis attempts and review cycles.
+- Failed because: why the bug still cannot pass.
+- Question: specific guidance needed to continue within the bug report and approved specification.
 
-If the architect resolves the issue, go back to **Step 4** with the architect's guidance.
-If the architect cannot resolve it, proceed to Phase 2.
+If the Architect resolves the issue, go back to **Step 4** with the Architect's guidance.
+If the Architect cannot resolve it, proceed to Phase 2.
 
 **Phase 2 — Human Escalation:**
 1. Leave the bug file in `project/bugs/in-progress/` — there is no `blocked/` state for bugs

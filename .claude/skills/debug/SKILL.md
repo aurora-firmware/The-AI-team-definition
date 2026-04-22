@@ -1,6 +1,6 @@
 ---
 name: debug
-description: Systematic debugging procedure. Use when a test fails unexpectedly, code misbehaves, or an integration failure has been bisected to a specific task.
+description: Diagnostic debugging procedure for bugs and unexpected failures. Use before fixing any bug, when tests fail unexpectedly, when code misbehaves, or when an integration failure has been bisected to a source branch.
 allowed-tools: Read, Grep, Glob, Edit, Bash
 ---
 

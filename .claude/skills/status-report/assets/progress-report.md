@@ -10,6 +10,18 @@ created: YYYY-MM-DD
 
 One-paragraph overview of current project state.
 
+## Specifications
+
+| Spec | Status | Notes |
+|---|---|---|
+| specification-name.md | approved | Current Gate 5 target |
+
+## Integration Evidence
+
+- Latest integration-test result:
+- Source:
+- Date:
+
 ## Completed
 
 | Task ID | Title | Agent Role |
@@ -31,9 +43,15 @@ One-paragraph overview of current project state.
 
 ## Bugs
 
-| Bug ID | Title | Severity | Status |
-|---|---|---|---|
-| B-001 | Bug title | high | open |
+| Bug ID | Title | Severity | Status | Diagnosis Status |
+|---|---|---|---|---|
+| B-001 | Bug title | high | open | not started |
+
+## Decisions
+
+| ADR | Title | Status |
+|---|---|---|
+| 001 | Decision title | decided |
 
 ## Next Actions
 

@@ -1,7 +1,7 @@
 ---
 name: write-plan
 description: Decompose an approved specification into atomic, independent tasks. Use when a spec needs to be broken into executable work units.
-allowed-tools: Read, Grep, Glob, Write
+allowed-tools: Read, Grep, Glob, Write, Agent
 effort: high
 ---
 
@@ -46,13 +46,14 @@ Save all task files to `project/tasks/pending/`.
 Spawn the **Architect agent** with this prompt:
 
 > "Review the task plan just placed in `project/tasks/pending/` for the spec at `project/specs/<spec-file>`.
-> Check: (1) dependency correctness — are all declared dependencies real and sufficient? (2) file conflict risk — do any two tasks modify the same file without a dependency between them? (3) architectural consistency — does the plan contradict any existing decision records in `project/decisions/`? (4) atomicity — does any task exceed the one-shottable threshold (>3–4 files, >5 acceptance criteria)?
-> If all is sound, state that the plan is approved and ready for /dev-loop.
-> If issues are found: for structural problems (file conflicts, missing dependencies) create corrective task files in `project/tasks/pending/`; for decomposition problems flag them back to the Planner with specific guidance for revision.
-> Do not surface this to the human unless a problem requires a spec change."
+> Use the gate-2-preflight skill.
+> Validate dependency correctness, file conflict risk, architectural consistency with `project/decisions/`, atomicity, and implementation readiness.
+> If all is sound, return `Gate 2 Verdict: PASS` and state that the plan is ready for /dev-loop.
+> If issues are found, return `Gate 2 Verdict: FAIL` with exact Planner corrections, or `Gate 2 Verdict: ESCALATE` only when a problem requires changing the approved specification."
 
 Wait for the Architect to complete.
 If the Architect requests Planner revisions, address them and re-trigger the preflight.
+If the Architect escalates because the approved specification must change, stop and return the escalation to the human.
 
 ## Output Format
 

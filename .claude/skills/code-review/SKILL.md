@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Two-stage code review checking spec compliance then code quality. Use when a Developer has completed a task or bug fix and submitted code for review.
+description: Two-stage code review for completed tasks and bug fixes. Use when a Developer submits work and the Reviewer must check task acceptance or bug diagnosis criteria before reviewing code quality.
 allowed-tools: Read, Edit, Grep, Glob, Bash(git diff *)
 effort: high
 ---
@@ -21,7 +21,7 @@ Read the task or bug file completely.
 For tasks, understand what was asked, what the acceptance criteria are, and which files should have been modified.
 For bugs, understand the symptom, reproduction status, diagnostic evidence, isolated fault, root cause or fault hypothesis, and Fix Verification steps.
 
-### Step 2: Stage 1 — Spec Compliance
+### Step 2: Stage 1 — Acceptance Or Bug Criteria
 For tasks, check each acceptance criterion against the code:
 - Is the criterion met? (yes/no, with evidence)
 - Was any unspecified behavior or functionality added?

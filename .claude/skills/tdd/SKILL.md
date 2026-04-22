@@ -1,6 +1,6 @@
 ---
 name: tdd
-description: Test-driven development cycle. Use when writing code for a task — write test first, verify it fails, implement, verify it passes, refactor.
+description: Test-driven implementation cycle for tasks and diagnosed bug fixes. Use after task assignment, or after a bug has a Diagnosis Log, to write a failing test, verify failure, implement the minimal change, verify pass, and refactor.
 allowed-tools: Read, Grep, Glob, Write, Edit, Bash
 ---
 

@@ -2,6 +2,7 @@
 name: integrate
 description: Integrate a task or bug branch into a destination branch. Verifies expected changes, runs tests on the source branch, merges, re-runs tests for regressions, files bugs on failure, and deletes the branch on success.
 argument-hint: "<branch-or-task-id> [destination-branch]"
+allowed-tools: Read, Grep, Glob, Bash, Skill(conflict-resolution), Skill(new-bug)
 ---
 
 # Integrate

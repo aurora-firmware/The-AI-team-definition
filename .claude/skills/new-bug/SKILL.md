@@ -24,7 +24,7 @@ Create a new bug report.
    - suspected area, or `unknown`
    - fix verification command or manual check
 3. Determine the next bug ID by scanning existing files in `project/bugs/` (all subdirectories) for the highest `B-NNN` ID, then increment.
-4. Generate a filename: lowercase, hyphenated, based on the title (e.g., `crash-on-empty-input.md`).
+4. Generate a filename with the ID prefix: `B-NNN-<lowercase-hyphenated-title>.md` (e.g., `B-001-crash-on-empty-input.md`).
 5. Copy the template to `project/bugs/open/<filename>.md`.
 6. Fill in the frontmatter:
    - `id`: the next sequential ID (e.g., "B-001")

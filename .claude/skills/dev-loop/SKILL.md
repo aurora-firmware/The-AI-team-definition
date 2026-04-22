@@ -47,10 +47,8 @@ If no task has all dependencies satisfied, stop and report which tasks are waiti
 ### Step 3: Claim the Task
 
 1. Move the selected task file from `project/tasks/pending/` to `project/tasks/in-progress/`
-2. Create and check out the task branch: `git checkout -b task/T-NNN-short-description` (derive from task filename)
-3. Commit the task move on `dev-agent` branch first:
-   - Switch to `dev-agent`, commit: `chore(tasks): move T-NNN to in-progress`
-   - Switch back to the task branch to continue
+2. Switch to `dev-agent` and commit the task move: `chore(tasks): move T-NNN to in-progress`
+3. Create and check out the task branch from `dev-agent`: `git checkout -b task/T-NNN-short-description` (derive from task filename)
 
 ### Step 4: Implementation Cycle
 
@@ -102,13 +100,30 @@ Increment the review cycle counter.
 
 #### On ESCALATE
 
+Follow the two-phase escalation procedure from `ai-process/processes/escalation-procedure.md`.
+
+**Phase 1 — Architect Consultation:**
+Spawn the Architect agent with this prompt:
+
+> "Use the escalation-consultation skill for task `project/tasks/in-progress/<task-file>`.
+> Problem: <what the reviewer or loop found>
+> Attempted: <what the Developer tried and how many review cycles occurred>
+> Failed because: <why the task still cannot pass>
+> Question: <specific guidance needed to continue within the approved specification>"
+
+If the Architect resolves the issue, go back to **Step 4** with the Architect's guidance.
+
+**Phase 2 — Human Escalation:**
+If the Architect cannot resolve the issue:
 1. Move the task file from `project/tasks/in-progress/` to `project/tasks/blocked/`
 2. Switch to `dev-agent` and commit: `chore(tasks): move T-NNN to blocked`
 3. Stop the loop entirely.
 4. Report the escalation clearly:
    - Which task is blocked
    - The last reviewer verdict and reason
-   - What the human should do next (revise spec, modify task, provide guidance)
+   - What the Developer tried
+   - The Architect's analysis
+   - What the human should do next (revise spec, modify task, provide guidance, or defer)
 
 ### Step 7: Loop Complete
 

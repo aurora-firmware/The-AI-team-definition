@@ -9,6 +9,8 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 ## Purpose
 
 One-sentence description of this agent's role in the team.
+Agents describe role identity, authority, handoffs, and quality bar.
+Do not put step-by-step procedures here; procedures belong in skills.
 
 ## Capabilities
 
