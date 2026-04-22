@@ -6,11 +6,11 @@ created: 2026-03-10
 
 # Quality Gates
 
-Quality gates are checkpoints where work must meet defined criteria before proceeding. They prevent defects from propagating downstream where they become more expensive to fix.
+Gates are checkpoints where work must meet defined criteria before proceeding. They prevent defects from propagating downstream where they become more expensive to fix.
 
 ## Gate 1: Specification Approval
 
-**When:** After the planner produces a design document from brainstorming.
+**When:** After the Planner produces a design document from interactive brainstorming.
 **Evaluator:** Human.
 **Pass criteria:**
 - The problem is clearly defined.
@@ -19,24 +19,24 @@ Quality gates are checkpoints where work must meet defined criteria before proce
 - Exclusions are explicitly stated.
 - No unresolved open questions.
 
-**On failure:** Return to planner with feedback for revision.
+**On failure:** Return to Planner with feedback for revision.
 
----
+## Gate 2: Task Plan Preflight
 
-> **Architect Preflight (automated — not a human gate)**
->
-> After the planner writes the task plan, the Architect reviews it before dev-loop starts.
-> The Architect checks: dependency correctness, file conflict risks, architectural consistency with existing decisions, and task atomicity.
-> If issues are found, the Architect creates corrective tasks or flags problems back to the Planner for revision.
-> No human approval is required — this is an agent-to-agent quality step.
-> See `ai-process/processes/workflow-overview.md` and `.claude/agents/architect.md` for details.
+**When:** After the Planner writes the task plan, before the development loop starts.
+**Evaluator:** Architect.
+**Pass criteria:**
+- Task dependencies are correct and complete.
+- File conflict risks are identified and resolved through dependencies or task changes.
+- Task plan is architecturally consistent with existing decisions.
+- Tasks are atomic, independently verifiable, and ready for implementation.
 
----
+**On failure:** Architect creates corrective tasks or returns the task plan to the Planner for revision.
 
-## Gate 2: Code Review
+## Gate 3: Code Review
 
-**When:** After an implementer completes a task.
-**Evaluator:** Reviewer agent (two stages).
+**When:** After an Implementer completes a task.
+**Evaluator:** Reviewer role (two stages).
 
 ### Stage 1: Spec Compliance
 **Pass criteria:**
@@ -52,29 +52,28 @@ Quality gates are checkpoints where work must meet defined criteria before proce
 - No performance regressions.
 - Code is readable and maintainable.
 
-**On failure:** Task returns to implementer with specific feedback. The reviewer must provide actionable notes, not vague criticism.
+**On failure:** Task returns to the Implementer with specific feedback. The Reviewer must provide actionable notes, not vague criticism.
 
-## Gate 3: Integration Tests
+## Gate 4: Integration Tests
 
-**When:** After each task passes code review (Gate 2), during per-task integration within `/dev-loop`.
-**Evaluator:** Automated test suite, run by the `integrate` skill.
+**When:** After each task passes code review (Gate 3), during per-task integration within the development loop.
+**Evaluator:** Automated test suite, run by the integration procedure.
 **Pass criteria:**
 - All unit tests pass on the feature branch (pre-merge).
 - All unit and integration tests pass on `dev` after the merge (regression check).
 - No unresolved merge conflicts remain.
 
-**On failure:** The `integrate` skill reverts the merge commit, files a bug for each regression via `/new-bug`, and stops the `/dev-loop`. The feature branch is preserved for fixing.
+**On failure:** The integration procedure reverts the merge commit, files a bug report for each regression, and stops the development loop. The feature branch is preserved for fixing.
 
-## Gate 4: Final Merge Sign-off
+## Gate 5: Final Merge Sign-off
 
 **When:** After the task queue is empty and all tasks are in `completed/`.
 **Evaluator:** Human.
 **Pass criteria:**
 - Integration tests are green.
 - No open bugs with severity `critical` or `high`.
-- The `/status-report` summary matches the approved specification.
+- The status summary matches the approved specification.
 
 **On failure:** Human provides feedback. New tasks are created to address issues.
 
-> This is a sign-off, not a code review. The human reviews the status summary and confirms the outcome matches the spec intent — not individual diffs. Detailed code quality was already verified at Gates 2 and 3.
-
+> This is a sign-off, not a code review. The human reviews the status summary and confirms the outcome matches the spec intent — not individual diffs. Detailed code quality was already verified at Gates 3 and 4.

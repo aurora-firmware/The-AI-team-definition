@@ -11,51 +11,52 @@ created: 2026-03-10
 ```
 Feature Request (human)
     ↓
-┌─────────────────────┐
-│  PLANNER: Brainstorm │  ← brainstorm skill, creative mode
-│  Explore ideas       │
-│  Produce design doc  │
-└─────────┬───────────┘
+┌──────────────────────────┐
+│  PLANNER: Brainstorm      │  ← interactive exploration
+│  Explore ideas            │
+│  Produce design doc       │
+└─────────┬────────────────┘
           ↓
    ★ GATE 1: Spec Approval (human) ★
           ↓
-┌─────────────────────────┐
-│  PLANNER: Task Breakdown │  ← write-plan skill, structured mode
-│  Atomic tasks            │
-│  Dependencies mapped     │
-│  Verification defined    │
-└─────────┬───────────────┘
+┌──────────────────────────┐
+│  PLANNER: Task Breakdown  │  ← structured decomposition
+│  Atomic tasks             │
+│  Dependencies mapped      │
+│  Verification defined     │
+└─────────┬────────────────┘
           ↓
-┌─────────────────────────┐
-│  ARCHITECT: Preflight    │  ← automated, no human gate
-│  Validate decomposition  │
-│  Catch conflicts early   │
-└─────────┬───────────────┘
+┌──────────────────────────┐
+│  GATE 2: Task Plan        │  ← Architect evaluates
+│  Preflight                │
+│  Validate decomposition   │
+│  Catch conflicts early    │
+└─────────┬────────────────┘
           ↓
-┌────────────────────────────────────────────────┐
-│  /dev-loop  (human-invoked, runs autonomously)  │
-│                                                 │
-│  ┌──────────────────────────────────────────┐  │
-│  │  SEQUENTIAL EXECUTION (per task)         │  │
-│  │                                          │  │
-│  │  ┌─────────────┐                         │  │
-│  │  │ IMPLEMENTER │  ← tdd, debug           │  │
-│  │  │ (one task)  │                         │  │
-│  │  └──────┬──────┘                         │  │
-│  │         ↓  (max 2 retries)               │  │
-│  │  ┌─────────────┐  FAIL ──────────────┐   │  │
-│  │  │  REVIEWER   │  ← code-review      │   │  │
-│  │  └──────┬──────┘                     │   │  │
-│  │         │ PASS                       │   │  │
-│  │         ↓                            ↑   │  │
-│  │  /integrate → merge + test + done    │   │  │
-│  │  Repeat for next task ───────────────┘   │  │
-│  └──────────────────────────────────────────┘  │
-│                                                 │
-│  Stops on: empty queue │ blocked task │ escalate│
-└─────────┬──────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│  DEVELOPMENT LOOP (human-invoked, runs autonomously) │
+│                                                      │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  SEQUENTIAL EXECUTION (per task)              │  │
+│  │                                               │  │
+│  │  ┌─────────────┐                              │  │
+│  │  │ IMPLEMENTER │  ← test-driven development   │  │
+│  │  │ (one task)  │                              │  │
+│  │  └──────┬──────┘                              │  │
+│  │         ↓  (max 2 retries)                    │  │
+│  │  ┌─────────────┐  FAIL ──────────────┐        │  │
+│  │  │  REVIEWER   │  ← two-stage review │        │  │
+│  │  └──────┬──────┘                     │        │  │
+│  │         │ PASS                       │        │  │
+│  │         ↓                            ↑        │  │
+│  │  Integration → merge + test + done   │        │  │
+│  │  Repeat for next task ───────────────┘        │  │
+│  └───────────────────────────────────────────────┘  │
+│                                                      │
+│  Stops on: empty queue │ blocked task │ escalation   │
+└─────────┬────────────────────────────────────────────┘
           ↓
-   ★ GATE 4: Final Merge Sign-off (human) ★
+   ★ GATE 5: Final Merge Sign-off (human) ★
           ↓
        ✓ DONE
 ```
@@ -64,8 +65,8 @@ Feature Request (human)
 
 ### 1. Brainstorm
 
-**Agent:** Planner (creative mode).
-**Skill:** brainstorm.
+**Role:** Planner (creative mode).
+**Procedure:** Interactive brainstorming.
 **Input:** Feature request or problem description from a human.
 **Output:** Specification document in `project/specs/`, written after the human has confirmed the direction.
 
@@ -82,10 +83,10 @@ This phase is **interactive**. The Planner does not produce a finished document 
 **Ends when:** Human approves the specification at Gate 1.
 Because the human shaped the spec throughout the dialogue, Gate 1 approval should be quick.
 
-### 2. Task Breakdown + Architect Preflight
+### 2. Task Breakdown + Gate 2
 
-**Agent:** Planner (structured mode), then Architect (preflight).
-**Skills:** write-plan.
+**Role:** Planner (structured mode), then Architect (Gate 2 evaluator).
+**Procedure:** Structured task decomposition.
 **Input:** Approved specification.
 **Output:** Set of task files in `project/tasks/pending/`, validated by the Architect.
 
@@ -95,43 +96,35 @@ After the Planner writes the task files, the Architect automatically reviews the
 - Verifies architectural consistency with existing decision records.
 - Creates corrective tasks or flags issues back to the Planner if problems are found.
 
-No human approval is required — the Architect's preflight replaces Gate 2.
-When the Architect signals the plan is sound, the human invokes `/dev-loop`.
+Gate 2 is automated and does not require human approval.
+When the Architect passes the task plan at Gate 2, the human starts the development loop.
 
-### 3 & 4. Implementation + Code Review (automated via `/dev-loop`)
+### 3 & 4. Implementation + Code Review
 
-After the Architect preflight completes, a human invokes:
+After Gate 2 passes, a human starts the development loop. From that point the loop runs autonomously — no human intervention until the queue is empty, a task is blocked, or escalation is required.
 
-```
-/dev-loop
-```
-
-From that point the loop runs autonomously — no human intervention until the queue is empty, a task is blocked, or escalation is required.
-
-#### What `/dev-loop` does
+#### What the development loop does
 
 1. Picks the next task from `pending/` (priority → dependency readiness → creation date).
 2. Moves it to `in-progress/`, creates the task branch, commits the state change on `dev`.
-3. Spawns the **Implementer** agent (skills: tdd, debug) — waits for completion.
-4. Spawns the **Reviewer** agent (skill: code-review) — waits for verdict.
+3. Assigns the task to the **Implementer** for test-driven implementation and debugging — waits for completion.
+4. Assigns the completed task to the **Reviewer** for two-stage code review — waits for verdict.
 5. Reads the verdict (`PASS` / `FAIL` / `ESCALATE`) from the task file.
-6. On **PASS**: invokes the `integrate` skill to merge the task branch into `dev`, run tests, and move the task to `completed/`. Picks the next task.
+6. On **PASS**: runs the integration procedure to merge the task branch into `dev`, run tests, and move the task to `completed/`. Picks the next task.
 7. On **FAIL** (cycles 1–2): sends task back to the Implementer with the reviewer's feedback.
 8. On **FAIL** (cycle 3) or **ESCALATE**: moves task to `blocked/`, commits on `dev`, stops.
 
-See `.claude/skills/dev-loop/SKILL.md` for the full procedure.
-
 #### Implementer details
 
-**Agent:** Implementer.
-**Skills:** tdd, debug.
+**Role:** Implementer.
+**Procedure:** Test-driven implementation and debugging.
 **Input:** Task file in `project/tasks/in-progress/`.
 **Output:** Working code with passing tests, Work Log entry appended to the task file.
 
 #### Reviewer details
 
-**Agent:** Reviewer.
-**Skill:** code-review.
+**Role:** Reviewer.
+**Procedure:** Two-stage code review.
 **Input:** Completed task with code changes and implementer Work Log entry.
 **Output:** Verdict appended to the task file under `### Review Verdict — [date]`.
 **Two stages:**
@@ -141,58 +134,52 @@ See `.claude/skills/dev-loop/SKILL.md` for the full procedure.
 **On review failure:**
 1. The task stays in `project/tasks/in-progress/`.
 2. Reviewer appends verdict and specific, actionable feedback under `### Review Verdict — [date]`.
-3. `/dev-loop` routes the task back to the Implementer for fixes on the same branch.
-4. Up to two retries (three total review attempts). On a third failure, `/dev-loop` escalates to Architect.
+3. The development loop routes the task back to the Implementer for fixes on the same branch.
+4. Up to two retries (three total review attempts). On a third failure, the development loop escalates to Architect.
 
-#### When `/dev-loop` stops
+#### When the development loop stops
 
 | Condition | Task state | Action required |
 |---|---|---|
-| Queue empty | All in `completed/` | Human approves final merge to `main` (Gate 4) |
-| Task blocked | Moved to `blocked/` | Human resolves blocker, re-runs `/dev-loop` |
-| Escalation | Moved to `blocked/` | Human adjusts spec or task, re-runs `/dev-loop` |
+| Queue empty | All in `completed/` | Human approves final merge to `main` (Gate 5) |
+| Task blocked | Moved to `blocked/` | Human resolves blocker, restarts the development loop |
+| Escalation | Moved to `blocked/` | Human adjusts spec or task, restarts the development loop |
 | `in-progress/` not empty at startup | Unchanged | Human decides whether to resume or abandon |
 
 ### 5. Final Merge
 
-Integration happens per-task inside the `/dev-loop` cycle: after each reviewer PASS, the `integrate` skill merges the task branch into `dev`, runs the full test suite, and moves the task to `completed/` (Gate 3).
-If integration fails, `/dev-loop` stops and files a bug — the task branch is not deleted and `dev` is left clean.
+Integration happens per-task inside the development loop: after each Reviewer PASS, the integration procedure merges the task branch into `dev`, runs the full test suite, and moves the task to `completed/` (Gate 4).
+If integration fails, the development loop stops and files a bug report — the task branch is not deleted and `dev` is left clean.
 
-Once the queue is empty and all tasks are in `completed/`, the human reviews the `/status-report` summary and approves the merge to `main` (Gate 4).
+Once the queue is empty and all tasks are in `completed/`, the human reviews the status summary and approves the merge to `main` (Gate 5).
 This is a sign-off — the human confirms the outcome matches the spec intent, not individual code diffs.
 
-**Ends when:** Human approves the merge from `dev` to `main` (Gate 4).
+**Ends when:** Human approves the merge from `dev` to `main` (Gate 5).
 
-### Bug-Fix Flow (automated via `/bug-loop`)
+### Bug-Fix Flow
 
-When `/dev-loop` stops because the `integrate` skill found regressions, bugs are filed automatically via `/new-bug` and the feature branch is preserved.
-To fix these regressions, the human invokes:
+When the development loop stops because the integration procedure found regressions, bugs are filed automatically as bug reports and the feature branch is preserved.
+To fix these regressions, the human starts the bug-fix loop.
 
-```
-/bug-loop
-```
+From that point the loop runs autonomously — same structure as the development loop but operating on `project/bugs/open/` instead of `project/tasks/pending/`.
 
-From that point the loop runs autonomously — same structure as `/dev-loop` but operating on `project/bugs/open/` instead of `project/tasks/pending/`.
-
-#### What `/bug-loop` does
+#### What the bug-fix loop does
 
 1. Picks the highest-severity open bug (critical → high → medium → low, oldest first on ties).
 2. Moves it to `project/bugs/in-progress/`, creates a bug branch from `dev` (`bug/B-NNN-short-description`).
-3. Spawns the **Implementer** agent — waits for completion.
-4. Spawns the **Reviewer** agent — waits for verdict.
-5. On **PASS**: invokes the `integrate` skill to merge the bug branch into `dev`, then moves the bug to `project/bugs/resolved/`.
+3. Assigns the bug to the **Implementer** — waits for completion.
+4. Assigns the completed fix to the **Reviewer** — waits for verdict.
+5. On **PASS**: runs the integration procedure to merge the bug branch into `dev`, then moves the bug to `project/bugs/resolved/`.
 6. On **FAIL** (cycles 1–2): sends the bug back to the Implementer with the reviewer's feedback.
 7. On **FAIL** (cycle 3) or **ESCALATE**: consults the Architect first. If the Architect cannot resolve it, stops and escalates to the human.
 
-See `.claude/skills/bug-loop/SKILL.md` for the full procedure.
+#### When to start the bug-fix loop
 
-#### When to invoke `/bug-loop`
-
-- After `/dev-loop` stops due to integration regressions — fix the filed bugs before re-running `/dev-loop`.
+- After the development loop stops due to integration regressions — fix the filed bugs before restarting the development loop.
 - Independently, whenever open bugs exist in `project/bugs/open/` that need autonomous resolution.
 
-`/dev-loop` and `/bug-loop` do not run concurrently.
-The typical cycle after regressions: `/dev-loop` stops → bugs filed → human invokes `/bug-loop` → bugs resolved → human re-invokes `/dev-loop`.
+The development loop and bug-fix loop do not run concurrently.
+The typical cycle after regressions: development loop stops → bugs filed → human starts bug-fix loop → bugs resolved → human restarts development loop.
 
 ## Git Branching Strategy
 
@@ -200,35 +187,35 @@ Full rules and commit format: `ai-process/guidelines/git-conventions.md`.
 
 **Branches:**
 - `main` — human-only, production releases.
-- `dev` — integration target. The `integrate` skill merges task branches here (invoked by `/dev-loop`); the Integrator agent handles manual merges and conflict resolution. Planners, reviewers, and architects commit docs/specs directly here.
-- `task/T-NNN-short-description` — created by the implementer at task pickup, deleted after successful integration.
+- `dev` — integration target. The integration procedure merges task branches here during the development loop; the Integrator handles manual merges and conflict resolution. Planners, Reviewers, and Architects commit docs/specs directly here.
+- `task/T-NNN-short-description` — created by the Implementer at task pickup, deleted after successful integration.
 
 **Key constraints:**
-- No agent ever commits to `main`.
-- The implementer never commits to `dev`.
-- The `integrate` skill (invoked by `/dev-loop`) is the standard path for merging task branches into `dev`. The Integrator agent handles manual merges and conflict resolution.
+- No automated role ever commits to `main`.
+- The Implementer never commits to `dev`.
+- The integration procedure is the standard path for merging task branches into `dev`. The Integrator handles manual merges and conflict resolution.
 - Branches blocked at review stay open on their task branch until the blocker is resolved.
 
 ## Escalation
 
-At any point, if an agent cannot complete its work:
-1. **Architect consultation** — the architect agent reviews the situation and advises (one automatic attempt).
-2. **Human escalation** — if the architect cannot resolve it, the issue is surfaced to a human.
+At any point, if a role cannot complete its work:
+1. **Architect consultation** — the Architect reviews the situation and advises (one automatic attempt).
+2. **Human escalation** — if the Architect cannot resolve it, the issue is surfaced to a human.
 
 See `ai-process/processes/escalation-procedure.md` for details.
 
 ## Quality Gates
 
-Four checkpoints control the workflow (see `ai-process/processes/quality-gates.md` for full criteria):
+Five gates control the workflow (see `ai-process/processes/quality-gates.md` for full criteria):
 
 | Gate | Checkpoint | Evaluator | Phase boundary |
 |------|-----------|-----------|----------------|
 | 1 | Spec Approval | Human | Brainstorm → Task Breakdown |
-| — | Architect Preflight | Architect agent | Task Breakdown → `/dev-loop` |
-| 2 | Code Review | Reviewer agent | Implementation → Integration (per-task, inside `/dev-loop`) |
-| 3 | Integration Tests | `integrate` skill | Review → Completed (per-task, inside `/dev-loop`) |
-| 4 | Final Merge Sign-off | Human | `dev` → `main` |
+| 2 | Task Plan Preflight | Architect | Task Breakdown → Development Loop |
+| 3 | Code Review | Reviewer | Implementation → Integration (per-task, inside the development loop) |
+| 4 | Integration Tests | Integration procedure | Review → Completed (per-task, inside the development loop) |
+| 5 | Final Merge Sign-off | Human | `dev` → `main` |
 
-Gates 1 and 4 are human touchpoints — design approval and final production sign-off.
-The Architect Preflight is automated — it catches structural problems in the task plan before agents start coding.
-Gates 2 and 3 are agent-evaluated — they catch defects during execution.
+Gates 1 and 5 are human touchpoints — design approval and final production sign-off.
+Gate 2 is automated — it catches structural problems in the task plan before implementation starts.
+Gates 3 and 4 are automated role and procedure checks — they catch defects during execution.

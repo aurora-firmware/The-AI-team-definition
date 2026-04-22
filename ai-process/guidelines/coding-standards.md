@@ -6,7 +6,7 @@ created: 2026-03-10
 
 # Coding Standards
 
-These standards apply to any implementation code produced by AI agents using this framework.
+These standards apply to any implementation code produced by AI roles using this framework.
 They are intentionally language-agnostic.
 When bootstrapping a new project, extend them with language-specific conventions, examples, and tooling rules relevant to your stack.
 Project-specific overrides should be documented in the project's own guidelines.
@@ -30,7 +30,7 @@ Project-specific overrides should be documented in the project's own guidelines.
 ## Testing
 
 - Every task that produces code must also produce tests.
-- Follow the TDD skill: write the test first, verify it fails, implement, verify it passes.
+- Follow the test-driven implementation procedure: write the test first, verify it fails, implement, verify it passes.
 - Test behavior, not implementation details.
 - Each test should be independent — no shared mutable state between tests.
 - Name tests descriptively: `test_returns_empty_list_when_no_users_match_filter`.

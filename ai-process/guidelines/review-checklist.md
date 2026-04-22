@@ -6,7 +6,7 @@ created: 2026-03-10
 
 # Code Review Checklist
 
-This checklist is used by the reviewer agent during the two-stage code review process.
+This checklist is used by the Reviewer role during the two-stage code review procedure.
 
 ## Stage 1: Spec Compliance
 

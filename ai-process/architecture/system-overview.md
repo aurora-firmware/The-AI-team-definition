@@ -8,19 +8,19 @@ created: 2026-03-10
 
 ## What This Defines
 
-This document describes the architecture of an AI agent team — how agents are organized, how work flows between them, and how quality is maintained. It is not about a specific software product; it is the operating model that any AI-developed project can adopt.
+This document describes the architecture of an AI team — how roles are organized, how work flows between them, and how quality is maintained. It is not about a specific software product; it is the operating model that any AI-developed project can adopt.
 
 ## Architecture Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        AI AGENT TEAM                         │
+│                           AI TEAM                            │
 │                                                              │
 │  ┌──────────┐  ┌──────────────┐  ┌────────────────────┐    │
 │  │ PLANNER  │  │  ARCHITECT   │  │    INTEGRATOR      │    │
 │  │          │  │              │  │                    │    │
 │  │ creative │  │ structural   │  │ merge + test       │    │
-│  │ + struct │  │ + preflight  │  │ + conflict resolve │    │
+│  │ + struct │  │ + gate eval  │  │ + conflict resolve │    │
 │  └────┬─────┘  └──────┬───────┘  └─────────┬──────────┘    │
 │       │               │                     │               │
 │       ↓               ↓ (on demand)         ↑               │
@@ -38,7 +38,7 @@ This document describes the architecture of an AI agent team — how agents are 
 │  │         └────────────────┴───────────────┘               │
 │  └──────────────────────────────────────────────────────────┘
 │                                                              │
-│  ★ HUMAN GATES: Spec approval, Final merge sign-off          │
+│  ★ GATES: spec, task plan, review, integration, final       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -46,65 +46,92 @@ This document describes the architecture of an AI agent team — how agents are 
 
 ### Planning Layer
 
-**Agents:** Planner, Architect.
+**Roles:** Planner, Architect.
 **Purpose:** Transform a feature request into an approved specification and a set of executable tasks.
 **Key principle:** Separate creative exploration (brainstorming) from structured decomposition (task breakdown).
 
-### Orchestration Layer
+### Process Layer
 
-**Skill:** `/dev-loop`.
+**Process:** Development Loop.
 **Purpose:** Drive the full Implementer → Reviewer loop autonomously across all pending tasks.
-**Key principle:** The human invokes the loop once after the Architect preflight; the loop runs until the queue is empty or a hard stop is hit (blocked task, escalation). No human input is required between tasks.
+**Key principle:** The human starts the loop once after Gate 2 passes; the loop runs until the queue is empty or a hard stop is hit (blocked task, escalation). No human input is required between tasks.
 
 ### Execution Layer
 
-**Agents:** Implementer, Reviewer.
+**Roles:** Implementer, Reviewer.
 **Purpose:** Produce working, tested, reviewed code for each task.
-**Key principle:** Tasks are atomic and independent. The implementer writes both tests and production code using the TDD skill. The reviewer evaluates spec compliance and code quality. Both are spawned and sequenced by `/dev-loop`.
+**Key principle:** Tasks are atomic and independent. The Implementer writes both tests and production code using the test-driven implementation procedure. The Reviewer evaluates spec compliance and code quality. Both are assigned and sequenced by the Development Loop process.
 
 ### Integration Layer
 
-**Skill:** `integrate` (invoked per-task by `/dev-loop`).
-**Agent:** Integrator (conflict resolution and manual merges into `dev`/`main`).
+**Procedure:** Integration Procedure.
+**Role:** Integrator (conflict resolution and manual merges into `dev`/`main`).
 **Purpose:** Merge completed work, run integration tests, and resolve conflicts.
 **Key principle:** Merge in dependency order. Test once (optimistic). Revert and file bugs on failure.
 
 ### Oversight Layer
 
-**Actors:** Humans.
-**Purpose:** Approve high-impact decisions at two gates.
-**Key principle:** Humans stay in the loop without becoming bottlenecks. Only two mandatory gates.
+**Role:** Human.
+**Purpose:** Approve high-impact decisions at human-controlled gates.
+**Key principle:** Humans stay in the loop without becoming bottlenecks. Gate 1 and Gate 5 are mandatory human gates.
 
 ## Information Flow
 
-> Note: `/dev-loop` is an orchestration skill (workflow subprocess), not an agent role. The table tracks control/data flow between humans, agents, and the orchestrator.
+> Note: the Development Loop is a process, not a role. The table tracks control/data flow between roles and procedures.
 
 | From | To | What |
 |---|---|---|
 | Human | Planner | Feature request or problem description |
 | Planner | Human | Specification for approval |
 | Planner | Task directory | Task files in `project/tasks/pending/` |
-| Planner | Architect | Task plan preflight request |
-| Architect | `/dev-loop` | Validated task plan — ready to run |
-| Human | `/dev-loop` | Invocation after Architect preflight |
-| `/dev-loop` | Implementer | Task assignment (spawned per task) |
-| Implementer | `/dev-loop` | Completion signal; Work Log entry in task file |
-| `/dev-loop` | Reviewer | Review request (spawned per task) |
-| Reviewer | `/dev-loop` | Verdict in task file (`PASS`/`FAIL`/`ESCALATE`) |
-| `/dev-loop` | Implementer | Feedback routing (on `FAIL`) |
-| `/dev-loop` | `integrate` skill | Merge request (on `PASS`) |
-| `integrate` skill | Task directory | State transitions (`in-progress` → `completed`) |
-| `/dev-loop` | Task directory | State transitions (`in-progress` → `blocked`) |
-| `/dev-loop` | Human | Stop notification (queue empty, blocked, or escalation) |
-| Any agent | Architect | Escalation request |
-| Architect | Requesting agent | Advisory guidance |
+| Planner | Architect | Gate 2 evaluation request |
+| Architect | Development Loop | Validated task plan — ready to run |
+| Human | Development Loop | Start signal after Gate 2 passes |
+| Development Loop | Implementer | Task assignment |
+| Implementer | Development Loop | Completion signal; Work Log entry in task file |
+| Development Loop | Reviewer | Review request |
+| Reviewer | Development Loop | Verdict in task file (`PASS`/`FAIL`/`ESCALATE`) |
+| Development Loop | Implementer | Feedback routing (on `FAIL`) |
+| Development Loop | Integration Procedure | Merge request (on `PASS`) |
+| Integration Procedure | Task directory | State transitions (`in-progress` → `completed`) |
+| Development Loop | Task directory | State transitions (`in-progress` → `blocked`) |
+| Development Loop | Human | Stop notification (queue empty, blocked, or escalation) |
+| Any role | Architect | Escalation request |
+| Architect | Requesting role | Advisory guidance |
 | Architect | Human | Escalation (if architect cannot resolve) |
-| Human | `main` | Final merge from `dev` after Gate 4 sign-off |
+| Human | `main` | Final merge from `dev` after Gate 5 sign-off |
 
 ## Design Decisions
 
-1. **File-based task tracking** — agents read and write Markdown files natively. No external databases or issue trackers required.
+1. **File-based task tracking** — roles read and write Markdown files natively. No external databases or issue trackers required.
 2. **Filesystem state machine** — task status is represented by which directory the file lives in, making it visible and auditable.
-3. **Separation of agents and skills** — agents are roles (who), skills are procedures (how). Skills can be composed and reused across agent roles.
-4. **Two human gates** — Gate 1 (spec approval, where design decisions are made) and Gate 4 (final merge sign-off, where outcomes are confirmed). Everything between is agent-driven. The Architect preflight replaces the former Gate 2 (task plan review) with an automated structural check, removing a human bottleneck without losing the quality check.
-5. **Orchestration via skill, not agent** — the Implementer → Reviewer loop is driven by the `/dev-loop` skill rather than a dedicated orchestrator agent. A skill is the right primitive when the control flow is deterministic and human-invoked. An orchestrator agent would add value only if it needed to be spawned programmatically by other agents or required its own decision authority beyond following the loop procedure.
+3. **Separation of roles and procedures** — roles define who acts; procedures define how repeatable work is performed. Procedures can be composed and reused across roles. Each document type is authoritative for a distinct domain; see "Content Boundaries" below.
+4. **Five gates** — Gate 1 (spec approval), Gate 2 (task plan preflight), Gate 3 (code review), Gate 4 (integration tests), and Gate 5 (final merge sign-off). Gate 1 and Gate 5 are human gates; Gate 2 through Gate 4 are automated role or procedure gates.
+5. **Process-driven orchestration** — the Implementer → Reviewer loop is driven by the Development Loop process. A process is the right primitive when control flow is deterministic and human-started.
+
+## Content Boundaries
+
+Three document types in the AI team framework each have a distinct authority domain. Each type is the source of truth for its domain; placing information in the wrong type causes redundancy and drift.
+
+### Component map (`ai-process/architecture/component-map.md`)
+
+Authoritative for **structure**: which roles, processes, procedures, and gates exist; their purpose; and the high-level data flow between them.
+When a component is added, removed, or reassigned, the component map is updated first.
+
+### Role implementation files (`.claude/agents/`)
+
+Authoritative for **identity and constraints**: who the role is, which procedures it has access to, what it can decide alone, when it must stop and escalate, and what "done" looks like for its output.
+
+**Must not contain** step-by-step procedures, numbered workflows, or conditional branching logic — those belong in a procedure implementation.
+
+A role implementation file may include an "Interaction Pattern" section describing its upstream and downstream neighbours; this should stay consistent with the component map and the procedure implementation files that define the actual routing logic.
+
+### Procedure implementation files (`.claude/skills/*/SKILL.md`)
+
+Authoritative for **procedures**: the exact steps of repeatable work, the input/output contract at each step, which role is assigned when, and what happens on `PASS`/`FAIL`/`ESCALATE` verdicts.
+
+**Must not contain** role identity, decision authority, scope boundaries, or structural mapping — those belong in the role implementation file or component map.
+
+### Keeping them consistent
+
+The three document types cover different domains and should not conflict. When they do conflict, it means one was not updated when a change was made. Resolve by identifying which is correct for its own domain and bringing the others into alignment.

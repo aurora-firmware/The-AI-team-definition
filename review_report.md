@@ -38,17 +38,14 @@ created: 2026-04-21
 |  |   |  atomic tasks        |                                           |   |
 |  |   +----------+-----------+                                           |   |
 |  |              |                                                       |   |
-|  |              |  !! C2: Stale section says "human approves task plan" |   |
-|  |              |       but no human gate exists here anymore           |   |
-|  |              |                                                       |   |
 |  |              |  !! M3: Write-plan spawns Architect inline (tight     |   |
 |  |              |       coupling -- Planner stays alive during preflight)|  |
 |  |              v                                                       |   |
 |  |   +----------------------+                                           |   |
 |  |   |  ARCHITECT: Preflight|  Automated, no human gate                 |   |
 |  |   |  - Dependencies OK?  |                                           |   |
-|  |   |  - File conflicts?   |  !! M2: Called "advisory" in component-map|   |
-|  |   |  - ADR consistency?  |       but actually has decision authority |   |
+|  |   |  - File conflicts?   |                                           |   |
+|  |   |  - ADR consistency?  |                                           |   |
 |  |   |  - Task atomicity?   |                                           |   |
 |  |   +----+---------+-------+  !! M8: "Atomicity" criteria defined in   |   |
 |  |        |         |               skill/agent but NOT in the spec     |   |
@@ -83,17 +80,7 @@ created: 2026-04-21
 |  |   |  |               |  Stage 2: Code quality                   |    |   |
 |  |   |  +---+---+---+---+                                          |    |   |
 |  |   |      |   |   |                                              |    |   |
-|  |   |      |   |   |  !! C5: Agent says "hands off to Integrator" |    |   |
-|  |   |      |   |   |       but should hand verdict to /dev-loop   |    |   |
-|  |   |      |   |   |                                              |    |   |
-|  |   |      |   |   |  !! M5: Agent escalates on security findings |    |   |
-|  |   |      |   |   |       but spec says FAIL + feedback instead  |    |   |
-|  |   |      |   |   |                                              |    |   |
 |  |   |  PASS|   |FAIL   ESCALATE                                   |    |   |
-|  |   |      |   |   |                                              |    |   |
-|  |   |      |   |   |  !! C3: Retry policy unclear --              |    |   |
-|  |   |      |   |   |       spec says "one cycle" for ESCALATE     |    |   |
-|  |   |      |   |   |       loops allow 3 cycles for FAIL          |    |   |
 |  |   |      |   |   |                                              |    |   |
 |  |   |      |   |   +-------> move to blocked/ ---> STOP           |    |   |
 |  |   |      |   |                                    |             |    |   |
@@ -117,9 +104,6 @@ created: 2026-04-21
 |  |   |      |       +--> file bugs via /new-bug      |             |    |   |
 |  |   |      |       +--> STOP                        |             |    |   |
 |  |   |      |              |                         |             |    |   |
-|  |   |      |              |  !! M7: Nobody tells    |             |    |   |
-|  |   |      |              |  human to run /bug-loop |             |    |   |
-|  |   |      |              |                         |             |    |   |
 |  |   |      v              v                         v             |    |   |
 |  |   |  move task    +----------------------------------+          |    |   |
 |  |   |  to completed/|         LOOP STOPS               |          |    |   |
@@ -127,9 +111,6 @@ created: 2026-04-21
 |  |   |      |        | - Task blocked -> human resolves |          |    |   |
 |  |   |      |        | - Escalation -> human decides    |          |    |   |
 |  |   |      |        | - Regression -> bugs filed       |          |    |   |
-|  |   |      |        |                                  |          |    |   |
-|  |   |      |        |  !! C1: Table says "Gate 5" here |          |    |   |
-|  |   |      |        |       but Gate 4 everywhere else |          |    |   |
 |  |   |      |        +----------------------------------+          |    |   |
 |  |   |      |                                                      |    |   |
 |  |   |      +--> pick next task (loop back to top)                 |    |   |
@@ -137,9 +118,7 @@ created: 2026-04-21
 |  +===================================================================== +   |
 |                                                                             |
 |  +======================================================================+   |
-|  |              BUG-FIX PHASE (autonomous, but disconnected)            |   |
-|  |                                                                      |   |
-|  |   !! C4: This entire phase is NOT documented in workflow-overview.md |   |
+|  |                    BUG-FIX PHASE (autonomous)                        |   |
 |  |                                                                      |   |
 |  |   +-------------------------------------------------------------+    |   |
 |  |   |                    /bug-loop                                |    |   |
@@ -152,8 +131,6 @@ created: 2026-04-21
 |  |   |  - No blocked/ state for bugs                               |    |   |
 |  |   |  - Escalation includes inline Architect consultation        |    |   |
 |  |   |                                                             |    |   |
-|  |   |  !! M4: Setup guide omits bugs/in-progress/ directory       |    |   |
-|  |   |        -- bug-loop will fail in new projects                |    |   |
 |  |   +-------------------------------------------------------------+    |   |
 |  +======================================================================+   |
 |                                                                             |
@@ -205,15 +182,15 @@ created: 2026-04-21
 |    * Gate 1 -- approve spec (beginning)                                     |
 |    * Gate 4 -- approve final merge (end)                                    |
 |    + invoke /dev-loop (one command)                                         |
-|    + invoke /bug-loop if regressions (!! M7: not told to do this)           |
+|    + invoke /bug-loop if regressions filed                                  |
 |    + resolve escalations (when agents get stuck)                            |
 +-----------------------------------------------------------------------------+
 ```
 
 Finding clusters:
-- **Planning-to-execution transition** (C2, M3, M8): stale section, tight coupling, undefined criteria.
-- **Reviewer junction** (C3, C5, M5): handoff, retry, and escalation ambiguity.
-- **Dev-loop to bug-loop handoff** (C4, M7): biggest gap for autonomous flow.
+- **Planning-to-execution transition** (M3, M8): write-plan tight coupling, atomicity criteria undefined in spec.
+- **Integration** (M1): Integrator agent write access scope.
+- **Escalation procedure** (L6, M6): one-attempt contradiction, no spec amendment procedure.
 
 ---
 
@@ -310,7 +287,7 @@ There is no section explaining when bug-loop runs, how it relates to dev-loop, o
 
 ---
 
-### C5. No Content Boundary Rules for Agent Definitions vs. Skill Definitions
+### C5. No Content Boundary Rules for Agent Definitions vs. Skill Definitions -- FIXED
 
 **Files:** `ai-process/architecture/system-overview.md` line 108 vs. all `.claude/agents/*.md` vs. all `.claude/skills/*/SKILL.md`.
 
