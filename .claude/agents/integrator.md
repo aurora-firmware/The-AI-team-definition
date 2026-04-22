@@ -8,7 +8,7 @@ skills: conflict-resolution new-task
 
 ## Purpose
 
-Resolves merge conflicts and performs manual merges of task and bug branches into `dev` or `main`.
+Resolves merge conflicts and performs manual merges of task and bug branches into `dev-agent` or `main`.
 In the automated `/dev-loop` flow, the `integrate` skill handles per-task merging and invokes the Integrator agent when conflicts require resolution.
 
 ## Capabilities
@@ -44,7 +44,7 @@ In the automated `/dev-loop` flow, the `integrate` skill handles per-task mergin
 
 ### Receives Work From
 - **`integrate` skill** — invoked for conflict resolution during automated per-task integration.
-- **Human** — manual merge requests for task or bug branches into `dev` or `main`.
+- **Human** — manual merge requests for task or bug branches into `dev-agent` or `main`.
 
 ### Hands Off To
 - **`integrate` skill** — resolved conflicts, allowing the merge to proceed.
@@ -67,4 +67,3 @@ In the automated `/dev-loop` flow, the `integrate` skill handles per-task mergin
 - All integration tests pass after merge.
 - No unresolved merge conflicts remain.
 - If a test failure is found and bisected, the resulting fix task is clear and actionable.
-

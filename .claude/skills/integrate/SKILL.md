@@ -12,7 +12,7 @@ Merge a reviewed feature branch into a destination branch after verifying spec c
 
 Provided as `$ARGUMENTS`:
 - **Required** — feature branch name (e.g., `task/T-012-settings-api`) **or** task ID (e.g., `T-012`). If a task ID is given, derive the branch by scanning `git branch` for a branch containing that ID.
-- **Optional** — destination branch (default: `dev`). If provided as a second argument, use it; otherwise use `dev`.
+- **Optional** — destination branch (default: `dev-agent`). If provided as a second argument, use it; otherwise use `dev-agent`.
 
 ## Procedure
 
@@ -20,7 +20,7 @@ Provided as `$ARGUMENTS`:
 
 1. Parse `$ARGUMENTS`:
    - First token → feature branch or task ID.
-   - Second token (if present) → destination branch; otherwise `destination = dev`.
+   - Second token (if present) → destination branch; otherwise `destination = dev-agent`.
 2. If the input looks like a task ID (`T-NNN` pattern), run `git branch | grep <task-id>` to find the full branch name. If zero matches are found, stop with: "Branch for <task-id> not found. Check that the branch exists locally."
 3. Confirm the feature branch exists: `git branch | grep <feature-branch>`. If not found, stop with the same message.
 4. Confirm the destination branch exists: `git branch | grep <destination>`. If not found, stop with: "Destination branch '<destination>' not found."
@@ -45,7 +45,7 @@ Provided as `$ARGUMENTS`:
    - Each acceptance criterion must be traceable to at least one changed file.
    - No acceptance criterion should be entirely absent from the diff.
 5. If the diff is empty (branch is already merged or contains no changes vs destination), stop with: "Feature branch '<feature-branch>' has no changes relative to '<destination>'. Nothing to integrate."
-6. If acceptance criteria are present but the diff does not satisfy them, stop with a gap report listing which criteria appear unaddressed. Do not proceed — return the branch to the implementer.
+6. If acceptance criteria are present but the diff does not satisfy them, stop with a gap report listing which criteria appear unaddressed. Do not proceed — return the branch to the Developer.
 
 ### Step 4: Run Tests on the Feature Branch
 
@@ -62,7 +62,7 @@ Capture stdout and stderr. Evaluate the result:
   - Which tests failed and what the error output says.
   - This is a pre-merge failure — the branch should not be merged in this state.
   - The task file stays in `project/tasks/in-progress/` and the feature branch stays open.
-  - Instruct the implementer to fix the failing tests on the same branch and re-submit for integration.
+  - Instruct the Developer to fix the failing tests on the same branch and re-submit for integration.
 
 ### Step 5: Merge the Feature Branch into Destination
 
@@ -144,8 +144,8 @@ Reached only when both Step 4 and Step 6 tests pass.
 | Feature branch not found | Stop, report, ask the human to verify the branch name |
 | Destination branch not found | Stop, report |
 | Diff is empty | Stop — nothing to do |
-| Acceptance criteria not met by diff | Stop — return to implementer |
-| Pre-merge tests fail (Step 4) | Stop — task stays `in-progress/`, branch stays open, return to implementer |
+| Acceptance criteria not met by diff | Stop — return to Developer |
+| Pre-merge tests fail (Step 4) | Stop — task stays `in-progress/`, branch stays open, return to Developer |
 | Merge conflict that conflict-resolution cannot solve | Stop — escalate to architect |
 | Regressions found post-merge (Step 6) | File bugs, revert merge, stop |
 

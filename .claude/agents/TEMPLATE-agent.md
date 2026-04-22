@@ -56,7 +56,7 @@ Specify model and effort in frontmatter — these are the supported Claude Code 
 
 ```yaml
 model: claude-opus-4-6   # heavier reasoning: architect, reviewer
-model: claude-sonnet-4-6 # code execution, structured tasks: implementer, integrator, planner
+model: claude-sonnet-4-6 # code execution, structured tasks: developer, integrator, planner
 effort: high             # analytical/review agents that benefit from deeper reasoning
 effort: max              # Opus 4.6 only — reserved for highest-stakes decisions
 ```

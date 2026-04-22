@@ -14,14 +14,14 @@ Project-specific commit scopes and any overrides belong in the project's own `CL
 | Branch | Purpose | Who touches it |
 |---|---|---|
 | `main` | Production-ready releases | Human only — never automated roles |
-| `dev` | Integration target | The integration procedure merges task branches here; the Integrator handles manual merges and conflicts; Planners, Reviewers, and Architects commit docs here |
-| `task/T-NNN-short-description` | Single task implementation | Implementer only |
+| `dev-agent` | Integration target | The integration procedure merges task branches here; the Integrator handles manual merges and conflicts; Planners, Reviewers, and Architects commit docs here |
+| `task/T-NNN-short-description` | Single task implementation | Developer only |
 
 **Rules:**
 - No automated role ever commits to `main`.
-- `dev` receives merge commits from the integration procedure or the Integrator role (code), and direct commits from non-Implementer roles (docs/specs/task files — no source code).
-- Implementer always works on a task branch, never on `dev`.
-- Task branches are created when the implementer picks up a task and deleted after successful integration into `dev`.
+- `dev-agent` receives merge commits from the integration procedure or the Integrator role (code), and direct commits from non-Developer roles (docs/specs/task files — no source code).
+- Developer always works on a task branch, never on `dev-agent`.
+- Task branches are created when the Developer picks up a task and deleted after successful integration into `dev-agent`.
 
 ## Commit Message Format
 
@@ -48,15 +48,15 @@ chore(tasks): move T-004 to completed
 
 | Role | Commits when | Branch |
 |---|---|---|
-| **Planner** | Each spec or task file is finalized | `dev` |
-| **Implementer** | After each TDD red→green→refactor cycle; once more before the final Work Log entry | `task/T-NNN-…` |
-| **Reviewer** | After writing review verdict (task file only) | `dev` |
-| **Architect** | After producing an ADR or amendment | `dev` |
-| **Integrator** | One merge commit per task branch merged into `dev` | `dev` |
+| **Planner** | Each spec or task file is finalized | `dev-agent` |
+| **Developer** | After each TDD red→green→refactor cycle; once more before the final Work Log entry | `task/T-NNN-…` |
+| **Reviewer** | After writing review verdict (task file only) | `dev-agent` |
+| **Architect** | After producing an ADR or amendment | `dev-agent` |
+| **Integrator** | One merge commit per task branch merged into `dev-agent` | `dev-agent` |
 
 ## Hard Rules
 
 - No `--no-verify`. Fix the hook failure instead.
-- No `--force` or `--force-with-lease` on shared branches (`dev`, `main`).
+- No `--force` or `--force-with-lease` on shared branches (`dev-agent`, `main`).
 - No amending commits that have already been pushed.
 - Never commit secrets, `.env` files, or credentials.

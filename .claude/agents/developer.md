@@ -1,5 +1,5 @@
 ---
-name: implementer
+name: developer
 description: Writes production code fulfilling a task's acceptance criteria using test-driven development.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: claude-sonnet-4-6
@@ -37,7 +37,7 @@ Writes production code that fulfills a single task's acceptance criteria, follow
 
 ## Escalation Triggers
 
-The implementer's self-recovery threshold is **three consecutive failed attempts** to make tests pass.
+The Developer's self-recovery threshold is **three consecutive failed attempts** to make tests pass.
 After three failures, stop retrying and enter the escalation chain (see `ai-process/processes/escalation-procedure.md`).
 
 Other immediate escalation triggers (no retry needed):
@@ -68,4 +68,3 @@ Other immediate escalation triggers (no retry needed):
 - Code follows the coding standards: `ai-process/guidelines/coding-standards.md` (general) and `project/docs/coding_guidelines.md` (project-specific tech-stack rules).
 - Only the files listed in the task are modified (unless justified and noted).
 - No debugging artifacts, commented-out code, or placeholder implementations remain.
-

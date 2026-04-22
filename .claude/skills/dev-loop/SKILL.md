@@ -1,6 +1,6 @@
 ---
 name: dev-loop
-description: Fully autonomous implementation loop. Picks pending tasks one at a time, drives each through Implementer → Reviewer cycles until the reviewer passes, commits, then moves to the next task. Stops only when the queue is empty, a task is blocked, or escalation is required.
+description: Fully autonomous implementation loop. Picks pending tasks one at a time, drives each through Developer → Reviewer cycles until the reviewer passes, commits, then moves to the next task. Stops only when the queue is empty, a task is blocked, or escalation is required.
 argument-hint: "[task-id | task-branch] — optional single task to process (e.g., T-012 or task/T-012-my-feature). If omitted, processes the full pending queue."
 allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate)
 disable-model-invocation: true
@@ -48,26 +48,26 @@ If no task has all dependencies satisfied, stop and report which tasks are waiti
 
 1. Move the selected task file from `project/tasks/pending/` to `project/tasks/in-progress/`
 2. Create and check out the task branch: `git checkout -b task/T-NNN-short-description` (derive from task filename)
-3. Commit the task move on `dev` branch first:
-   - Switch to `dev`, commit: `chore(tasks): move T-NNN to in-progress`
+3. Commit the task move on `dev-agent` branch first:
+   - Switch to `dev-agent`, commit: `chore(tasks): move T-NNN to in-progress`
    - Switch back to the task branch to continue
 
 ### Step 4: Implementation Cycle
 
-**Spawn the Implementer agent** with this prompt:
+**Spawn the Developer role** with this prompt:
 
 > "Pick up the task at `project/tasks/in-progress/<task-file>` and implement it using the tdd skill.
 > You are on branch `task/T-NNN-...`. Commit after each red→green→refactor cycle.
 > Append a Work Log entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The final entry serves as the handoff to the reviewer."
 
-Wait for the implementer to complete before continuing.
+Wait for the Developer to complete before continuing.
 
 ### Step 5: Review Cycle
 
 **Spawn the Reviewer agent** with this prompt:
 
 > "Review the task at `project/tasks/in-progress/<task-file>` using the code-review skill.
-> The implementer has completed their work on branch `task/T-NNN-...`.
+> The Developer has completed their work on branch `task/T-NNN-...`.
 > Append your verdict to the task file's Review section under `### Review Verdict — YYYY-MM-DD`.
 > Verdict must be one of: PASS, FAIL, or ESCALATE."
 
@@ -80,8 +80,8 @@ Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 
 #### On PASS
 
-1. Invoke the `integrate` skill to merge the reviewed branch into `dev`:
-   > `/integrate task/T-NNN-... dev`
+1. Invoke the `integrate` skill to merge the reviewed branch into `dev-agent`:
+   > `/integrate task/T-NNN-... dev-agent`
 
    The integrate skill handles test verification, the merge, regression checks, task file promotion to `completed/`, and branch deletion.
 
@@ -90,20 +90,20 @@ Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 3. **If integrate fails** — stop the loop entirely and report:
    - The failure reason (pre-merge test failure, unmet acceptance criteria, or post-merge regression).
    - Which bug IDs were filed (if regressions were found).
-   - That the feature branch was NOT deleted and `dev` was left clean (integrate reverts on regression).
+   - That the feature branch was NOT deleted and `dev-agent` was left clean (integrate reverts on regression).
    - Next step for the human: run `/bug-loop` to autonomously fix the filed regressions, then re-run `/dev-loop`.
 
 #### On FAIL
 
 Increment the review cycle counter.
 
-- If **cycle < 3**: go back to **Step 4** (implementer fixes the issues noted in the Review Verdict)
+- If **cycle < 3**: go back to **Step 4** (Developer fixes the issues noted in the Review Verdict)
 - If **cycle = 3**: treat as ESCALATE (max review cycles exceeded)
 
 #### On ESCALATE
 
 1. Move the task file from `project/tasks/in-progress/` to `project/tasks/blocked/`
-2. Switch to `dev` and commit: `chore(tasks): move T-NNN to blocked`
+2. Switch to `dev-agent` and commit: `chore(tasks): move T-NNN to blocked`
 3. Stop the loop entirely.
 4. Report the escalation clearly:
    - Which task is blocked
@@ -129,22 +129,22 @@ All orchestrator commits follow the project's git conventions from `ai-process/g
 
 | What | Branch | Message |
 |---|---|---|
-| Task moved to in-progress | `dev` | `chore(tasks): move T-NNN to in-progress` |
-| Task moved to blocked | `dev` | `chore(tasks): move T-NNN to blocked` |
+| Task moved to in-progress | `dev-agent` | `chore(tasks): move T-NNN to in-progress` |
+| Task moved to blocked | `dev-agent` | `chore(tasks): move T-NNN to blocked` |
 
 The `move T-NNN to completed` commit and merge commit are produced by the `integrate` skill, not by the dev-loop orchestrator.
 
-Implementation commits are made by the implementer on the task branch — the orchestrator does not touch `src/` or `tests/`.
+Implementation commits are made by the Developer on the task branch — the orchestrator does not touch `src/` or `tests/`.
 
 ## Hard Stops (Do Not Continue)
 
 - A task moves to `blocked/` — stop the loop, notify the human
 - Integration fails for any reason (pre-merge test failure, unmet criteria, post-merge regression) — stop the loop, report the failure and any filed bug IDs
-- A git operation fails (branch already exists, merge conflict on `dev`, etc.) — stop and report the git error before attempting anything else
+- A git operation fails (branch already exists, merge conflict on `dev-agent`, etc.) — stop and report the git error before attempting anything else
 - `project/tasks/in-progress/` already contains a task when the loop starts — stop and ask the human whether to resume that task or treat it as abandoned
 
 ## What This Skill Does NOT Do
 
 - Does not touch `main` — human-only branch
 - Does not modify specifications or decisions
-- Does not fix integration failures — regressions are filed as bugs and the loop stops; fixing is the implementer's job on a subsequent cycle
+- Does not fix integration failures — regressions are filed as bugs and the loop stops; fixing is the Developer's job on a subsequent cycle

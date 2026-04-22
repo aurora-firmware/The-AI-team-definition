@@ -17,7 +17,7 @@ When they conflict, the ai-process wins.
 | `ai-process/guidelines/` | Coding standards, review checklists, markdown conventions |
 | `ai-process/processes/` | Workflow definitions, quality gates, escalation procedures |
 | `guides/` | Human-facing guides for setup and customization (not part of the ai-process itself) |
-| `.claude/agents/` | Agent role definitions (planner, architect, implementer, reviewer, integrator) |
+| `.claude/agents/` | Agent role definitions (planner, architect, developer, reviewer, integrator) |
 | `.claude/skills/` | Skills: procedures (brainstorm, write-plan, tdd, code-review, debug, conflict-resolution, integrate), orchestrators (/dev-loop, /bug-loop), and actions (/new-spec, /new-task, /new-bug, /new-adr, /status-report) |
 | `.codex/` | Symlinks to `.claude/agents/` and `.claude/skills/` — compatibility layer for the OpenAI Codex agent platform |
 

@@ -39,11 +39,11 @@ Performs two-stage code review to verify that completed work meets its specifica
 ## Interaction Pattern
 
 ### Receives Work From
-- **Implementer** — completed code with passing tests, ready for review.
+- **Developer** — completed code with passing tests, ready for review.
 
 ### Hands Off To
 - **`/dev-loop`** — verdict recorded in the task file. `/dev-loop` reads the verdict and routes accordingly.
-- **Implementer** (via `/dev-loop`) — specific, actionable feedback if review fails.
+- **Developer** (via `/dev-loop`) — specific, actionable feedback if review fails.
 
 ## Folder Scope
 
@@ -63,4 +63,3 @@ Performs two-stage code review to verify that completed work meets its specifica
 
 ### Review Checklist Reference
 See `ai-process/guidelines/review-checklist.md` for the complete checklist used in each review.
-

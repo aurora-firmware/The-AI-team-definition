@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Two-stage code review checking spec compliance then code quality. Use when an implementer has completed a task and submitted code for review.
+description: Two-stage code review checking spec compliance then code quality. Use when a Developer has completed a task and submitted code for review.
 allowed-tools: Read, Edit, Grep, Glob, Bash(git diff *)
 effort: high
 ---
@@ -38,7 +38,7 @@ Review the code against the checklist in `ai-process/guidelines/review-checklist
 
 ### Step 4: Produce Verdict
 If all checks pass: **PASS**. Hand off to integrator.
-If any check fails: **FAIL**. Return to implementer with specific, actionable feedback.
+If any check fails: **FAIL**. Return to Developer with specific, actionable feedback.
 If a fundamental design issue makes the task impossible as specified: **ESCALATE**.
 
 ### Step 5: Record the Verdict
@@ -47,7 +47,7 @@ The first line of the section must be one of: `PASS`, `FAIL`, or `ESCALATE`.
 
 **On PASS:** Record the verdict with a brief confirmation that both stages passed. Note any minor observations (non-blocking).
 
-**On FAIL:** Record the verdict and list each failed check with the location, what is wrong, and what should change. The task stays in `project/tasks/in-progress/`. The implementer fixes the issues and re-submits. Up to two retries per task (three total review attempts). If the task fails a third time, escalate to architect.
+**On FAIL:** Record the verdict and list each failed check with the location, what is wrong, and what should change. The task stays in `project/tasks/in-progress/`. The Developer fixes the issues and re-submits. Up to two retries per task (three total review attempts). If the task fails a third time, escalate to architect.
 
 ## Output Format
 

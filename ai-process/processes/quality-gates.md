@@ -35,7 +35,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 ## Gate 3: Code Review
 
-**When:** After an Implementer completes a task.
+**When:** After a Developer completes a task.
 **Evaluator:** Reviewer role (two stages).
 
 ### Stage 1: Spec Compliance
@@ -52,7 +52,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 - No performance regressions.
 - Code is readable and maintainable.
 
-**On failure:** Task returns to the Implementer with specific feedback. The Reviewer must provide actionable notes, not vague criticism.
+**On failure:** Task returns to the Developer with specific feedback. The Reviewer must provide actionable notes, not vague criticism.
 
 ## Gate 4: Integration Tests
 
@@ -60,7 +60,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 **Evaluator:** Automated test suite, run by the integration procedure.
 **Pass criteria:**
 - All unit tests pass on the feature branch (pre-merge).
-- All unit and integration tests pass on `dev` after the merge (regression check).
+- All unit and integration tests pass on `dev-agent` after the merge (regression check).
 - No unresolved merge conflicts remain.
 
 **On failure:** The integration procedure reverts the merge commit, files a bug report for each regression, and stops the development loop. The feature branch is preserved for fixing.

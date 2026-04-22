@@ -40,7 +40,7 @@ Feature Request (human)
 │  │  SEQUENTIAL EXECUTION (per task)              │  │
 │  │                                               │  │
 │  │  ┌─────────────┐                              │  │
-│  │  │ IMPLEMENTER │  ← test-driven development   │  │
+│  │  │  DEVELOPER  │  ← test-driven development   │  │
 │  │  │ (one task)  │                              │  │
 │  │  └──────┬──────┘                              │  │
 │  │         ↓  (max 2 retries)                    │  │
@@ -106,17 +106,17 @@ After Gate 2 passes, a human starts the development loop. From that point the lo
 #### What the development loop does
 
 1. Picks the next task from `pending/` (priority → dependency readiness → creation date).
-2. Moves it to `in-progress/`, creates the task branch, commits the state change on `dev`.
-3. Assigns the task to the **Implementer** for test-driven implementation and debugging — waits for completion.
+2. Moves it to `in-progress/`, creates the task branch, commits the state change on `dev-agent`.
+3. Assigns the task to the **Developer** for test-driven implementation and debugging — waits for completion.
 4. Assigns the completed task to the **Reviewer** for two-stage code review — waits for verdict.
 5. Reads the verdict (`PASS` / `FAIL` / `ESCALATE`) from the task file.
-6. On **PASS**: runs the integration procedure to merge the task branch into `dev`, run tests, and move the task to `completed/`. Picks the next task.
-7. On **FAIL** (cycles 1–2): sends task back to the Implementer with the reviewer's feedback.
-8. On **FAIL** (cycle 3) or **ESCALATE**: moves task to `blocked/`, commits on `dev`, stops.
+6. On **PASS**: runs the integration procedure to merge the task branch into `dev-agent`, run tests, and move the task to `completed/`. Picks the next task.
+7. On **FAIL** (cycles 1–2): sends task back to the Developer with the reviewer's feedback.
+8. On **FAIL** (cycle 3) or **ESCALATE**: moves task to `blocked/`, commits on `dev-agent`, stops.
 
-#### Implementer details
+#### Developer details
 
-**Role:** Implementer.
+**Role:** Developer.
 **Procedure:** Test-driven implementation and debugging.
 **Input:** Task file in `project/tasks/in-progress/`.
 **Output:** Working code with passing tests, Work Log entry appended to the task file.
@@ -125,7 +125,7 @@ After Gate 2 passes, a human starts the development loop. From that point the lo
 
 **Role:** Reviewer.
 **Procedure:** Two-stage code review.
-**Input:** Completed task with code changes and implementer Work Log entry.
+**Input:** Completed task with code changes and Developer Work Log entry.
 **Output:** Verdict appended to the task file under `### Review Verdict — [date]`.
 **Two stages:**
 1. Spec compliance — does the code do what the task requires?
@@ -134,7 +134,7 @@ After Gate 2 passes, a human starts the development loop. From that point the lo
 **On review failure:**
 1. The task stays in `project/tasks/in-progress/`.
 2. Reviewer appends verdict and specific, actionable feedback under `### Review Verdict — [date]`.
-3. The development loop routes the task back to the Implementer for fixes on the same branch.
+3. The development loop routes the task back to the Developer for fixes on the same branch.
 4. Up to two retries (three total review attempts). On a third failure, the development loop escalates to Architect.
 
 #### When the development loop stops
@@ -148,13 +148,13 @@ After Gate 2 passes, a human starts the development loop. From that point the lo
 
 ### 5. Final Merge
 
-Integration happens per-task inside the development loop: after each Reviewer PASS, the integration procedure merges the task branch into `dev`, runs the full test suite, and moves the task to `completed/` (Gate 4).
-If integration fails, the development loop stops and files a bug report — the task branch is not deleted and `dev` is left clean.
+Integration happens per-task inside the development loop: after each Reviewer PASS, the integration procedure merges the task branch into `dev-agent`, runs the full test suite, and moves the task to `completed/` (Gate 4).
+If integration fails, the development loop stops and files a bug report — the task branch is not deleted and `dev-agent` is left clean.
 
 Once the queue is empty and all tasks are in `completed/`, the human reviews the status summary and approves the merge to `main` (Gate 5).
 This is a sign-off — the human confirms the outcome matches the spec intent, not individual code diffs.
 
-**Ends when:** Human approves the merge from `dev` to `main` (Gate 5).
+**Ends when:** Human approves the merge from `dev-agent` to `main` (Gate 5).
 
 ### Bug-Fix Flow
 
@@ -166,11 +166,11 @@ From that point the loop runs autonomously — same structure as the development
 #### What the bug-fix loop does
 
 1. Picks the highest-severity open bug (critical → high → medium → low, oldest first on ties).
-2. Moves it to `project/bugs/in-progress/`, creates a bug branch from `dev` (`bug/B-NNN-short-description`).
-3. Assigns the bug to the **Implementer** — waits for completion.
+2. Moves it to `project/bugs/in-progress/`, creates a bug branch from `dev-agent` (`bug/B-NNN-short-description`).
+3. Assigns the bug to the **Developer** — waits for completion.
 4. Assigns the completed fix to the **Reviewer** — waits for verdict.
-5. On **PASS**: runs the integration procedure to merge the bug branch into `dev`, then moves the bug to `project/bugs/resolved/`.
-6. On **FAIL** (cycles 1–2): sends the bug back to the Implementer with the reviewer's feedback.
+5. On **PASS**: runs the integration procedure to merge the bug branch into `dev-agent`, then moves the bug to `project/bugs/resolved/`.
+6. On **FAIL** (cycles 1–2): sends the bug back to the Developer with the reviewer's feedback.
 7. On **FAIL** (cycle 3) or **ESCALATE**: consults the Architect first. If the Architect cannot resolve it, stops and escalates to the human.
 
 #### When to start the bug-fix loop
@@ -187,13 +187,13 @@ Full rules and commit format: `ai-process/guidelines/git-conventions.md`.
 
 **Branches:**
 - `main` — human-only, production releases.
-- `dev` — integration target. The integration procedure merges task branches here during the development loop; the Integrator handles manual merges and conflict resolution. Planners, Reviewers, and Architects commit docs/specs directly here.
-- `task/T-NNN-short-description` — created by the Implementer at task pickup, deleted after successful integration.
+- `dev-agent` — integration target. The integration procedure merges task branches here during the development loop; the Integrator handles manual merges and conflict resolution. Planners, Reviewers, and Architects commit docs/specs directly here.
+- `task/T-NNN-short-description` — created by the Developer at task pickup, deleted after successful integration.
 
 **Key constraints:**
 - No automated role ever commits to `main`.
-- The Implementer never commits to `dev`.
-- The integration procedure is the standard path for merging task branches into `dev`. The Integrator handles manual merges and conflict resolution.
+- The Developer never commits to `dev-agent`.
+- The integration procedure is the standard path for merging task branches into `dev-agent`. The Integrator handles manual merges and conflict resolution.
 - Branches blocked at review stay open on their task branch until the blocker is resolved.
 
 ## Escalation
@@ -214,7 +214,7 @@ Five gates control the workflow (see `ai-process/processes/quality-gates.md` for
 | 2 | Task Plan Preflight | Architect | Task Breakdown → Development Loop |
 | 3 | Code Review | Reviewer | Implementation → Integration (per-task, inside the development loop) |
 | 4 | Integration Tests | Integration procedure | Review → Completed (per-task, inside the development loop) |
-| 5 | Final Merge Sign-off | Human | `dev` → `main` |
+| 5 | Final Merge Sign-off | Human | `dev-agent` → `main` |
 
 Gates 1 and 5 are human touchpoints — design approval and final production sign-off.
 Gate 2 is automated — it catches structural problems in the task plan before implementation starts.

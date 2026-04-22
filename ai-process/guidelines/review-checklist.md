@@ -49,4 +49,4 @@ This checklist is used by the Reviewer role during the two-stage code review pro
 ## Review Verdict
 
 **Pass** — all checks are satisfied.
-**Fail** — one or more checks are not satisfied. Return to implementer with specific, actionable notes for each failed check.
+**Fail** — one or more checks are not satisfied. Return to Developer with specific, actionable notes for each failed check.

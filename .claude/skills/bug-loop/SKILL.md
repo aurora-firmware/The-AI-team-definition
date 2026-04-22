@@ -1,6 +1,6 @@
 ---
 name: bug-loop
-description: Fully autonomous bug-fix loop. Picks open bugs one at a time, creates a dedicated branch from dev for each, drives each through Implementer → Reviewer cycles until the reviewer passes, then moves to the next bug. Stops only when the queue is empty or a bug cannot be resolved after full escalation. Use this whenever there are open bugs to fix.
+description: Fully autonomous bug-fix loop. Picks open bugs one at a time, creates a dedicated branch from dev-agent for each, drives each through Developer → Reviewer cycles until the reviewer passes, then moves to the next bug. Stops only when the queue is empty or a bug cannot be resolved after full escalation. Use this whenever there are open bugs to fix.
 argument-hint: "[bug-id ...] — optional space-separated bug IDs (e.g., B-001 B-003). If omitted, processes all open bugs."
 allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate)
 disable-model-invocation: true
@@ -9,7 +9,7 @@ disable-model-invocation: true
 # Bug Loop
 
 Autonomous orchestrator that processes the open bug queue without human intervention.
-Each bug gets its own branch off `dev` — bugs are never mixed on the same branch.
+Each bug gets its own branch off `dev-agent` — bugs are never mixed on the same branch.
 Stops only when the queue is empty or when a bug requires human resolution after full escalation.
 
 ## Inputs
@@ -47,27 +47,27 @@ Select the highest-severity unblocked bug:
 
 1. Move the selected bug file from `project/bugs/open/` to `project/bugs/in-progress/`
 2. Update the `status` field in the bug frontmatter to `in-progress`
-3. Switch to `dev` and commit the bug move: `chore(bugs): move B-NNN to in-progress`
-4. Create and check out the bug branch **from `dev`**: `git checkout -b bug/B-NNN-short-description`
+3. Switch to `dev-agent` and commit the bug move: `chore(bugs): move B-NNN to in-progress`
+4. Create and check out the bug branch **from `dev-agent`**: `git checkout -b bug/B-NNN-short-description`
    - Derive the branch name from the bug filename (e.g., `B-001-system-prompt-exposed` → `bug/B-001-system-prompt-exposed`)
 
 ### Step 4: Implementation Cycle
 
-**Spawn the Implementer agent** with this prompt:
+**Spawn the Developer role** with this prompt:
 
 > "Fix the bug described at `project/bugs/in-progress/<bug-file>`.
 > You are on branch `bug/B-NNN-...`. Use the tdd skill where applicable.
 > Commit after each red→green→refactor cycle.
 > Append a Work Log entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The final entry serves as the handoff to the reviewer."
 
-Wait for the implementer to complete before continuing.
+Wait for the Developer to complete before continuing.
 
 ### Step 5: Review Cycle
 
 **Spawn the Reviewer agent** with this prompt:
 
 > "Review the bug fix at `project/bugs/in-progress/<bug-file>` using the code-review skill.
-> The implementer has completed their work on branch `bug/B-NNN-...`.
+> The Developer has completed their work on branch `bug/B-NNN-...`.
 > Verify the fix addresses the root cause and passes the Fix Verification steps in the bug file.
 > Append your verdict to the bug file under `### Review Verdict — YYYY-MM-DD`.
 > Verdict must be one of: PASS, FAIL, or ESCALATE."
@@ -81,27 +81,27 @@ Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 
 #### On PASS
 
-1. Invoke the `integrate` skill to merge the reviewed branch into `dev`:
-   > `/integrate bug/B-NNN-... dev`
+1. Invoke the `integrate` skill to merge the reviewed branch into `dev-agent`:
+   > `/integrate bug/B-NNN-... dev-agent`
 
    The integrate skill handles test verification, the merge, regression checks, and branch deletion.
    It will not find a task file (bug branches have no matching `project/tasks/` entry) — that is expected; integrate will note the absence and skip task file promotion.
 
-2. **If integrate succeeds** — on `dev`, move the bug file from `project/bugs/in-progress/` to `project/bugs/resolved/`, update `status` to `resolved`, and commit:
+2. **If integrate succeeds** — on `dev-agent`, move the bug file from `project/bugs/in-progress/` to `project/bugs/resolved/`, update `status` to `resolved`, and commit:
    `chore(bugs): move B-NNN to resolved`
    Then go back to **Step 1** to pick the next bug.
 
 3. **If integrate fails** — stop the loop entirely and report:
    - The failure reason (pre-merge test failure, unmet fix criteria, or post-merge regression).
    - Which bug IDs were filed (if regressions were found).
-   - That the bug branch was NOT deleted, `dev` was left clean (integrate reverts on regression), and the bug file remains in `in-progress/`.
+   - That the bug branch was NOT deleted, `dev-agent` was left clean (integrate reverts on regression), and the bug file remains in `in-progress/`.
    - Next step for the human: resolve the filed regression bugs before re-running the loop.
 
 #### On FAIL
 
 Increment the review cycle counter.
 
-- If **cycle < 3**: go back to **Step 4** (implementer fixes the issues noted in the Review Verdict)
+- If **cycle < 3**: go back to **Step 4** (Developer fixes the issues noted in the Review Verdict)
 - If **cycle = 3**: treat as ESCALATE (max review cycles exceeded)
 
 #### On ESCALATE
@@ -111,7 +111,7 @@ Follow the two-phase escalation procedure from `ai-process/processes/escalation-
 **Phase 1 — Architect Consultation:**
 Spawn the Architect agent with a structured request:
 - Problem: what the reviewer found
-- Attempted: what the implementer tried (and how many cycles)
+- Attempted: what the Developer tried (and how many cycles)
 - Failed because: why it did not work
 - Question: specific guidance needed
 
@@ -123,7 +123,7 @@ If the architect cannot resolve it, proceed to Phase 2.
 2. Stop the loop entirely
 3. Report to the human:
    - Which bug is stuck
-   - Full chain: reviewer verdict → what the implementer tried → architect's advice and why it was insufficient
+   - Full chain: reviewer verdict → what the Developer tried → architect's advice and why it was insufficient
    - What the human should do next (revise the bug description, provide guidance, or defer the fix)
 
 ### Step 7: Loop Complete
@@ -144,22 +144,22 @@ All orchestrator commits follow the project's git conventions from `ai-process/g
 
 | What | Branch | Message |
 |---|---|---|
-| Bug moved to in-progress | `dev` | `chore(bugs): move B-NNN to in-progress` |
-| Bug moved to resolved | `dev` | `chore(bugs): move B-NNN to resolved` |
-| Bug escalated | `dev` | `chore(bugs): escalate B-NNN — needs human review` |
+| Bug moved to in-progress | `dev-agent` | `chore(bugs): move B-NNN to in-progress` |
+| Bug moved to resolved | `dev-agent` | `chore(bugs): move B-NNN to resolved` |
+| Bug escalated | `dev-agent` | `chore(bugs): escalate B-NNN — needs human review` |
 
-The merge commit is produced by the `integrate` skill. The `move B-NNN to resolved` commit is made by bug-loop on `dev` only after integrate confirms a successful merge.
+The merge commit is produced by the `integrate` skill. The `move B-NNN to resolved` commit is made by bug-loop on `dev-agent` only after integrate confirms a successful merge.
 
-Implementation commits are made by the implementer on the bug branch — the orchestrator does not touch `src/` or `tests/`.
+Implementation commits are made by the Developer on the bug branch — the orchestrator does not touch `src/` or `tests/`.
 
 ## Hard Stops (Do Not Continue)
 
 - A bug reaches human escalation (Phase 2) — stop the loop, notify the human
-- A git operation fails (branch already exists, conflict on `dev`, etc.) — stop and report the git error before attempting anything else
+- A git operation fails (branch already exists, conflict on `dev-agent`, etc.) — stop and report the git error before attempting anything else
 - `project/bugs/in-progress/` already contains a bug when the loop starts — stop and ask the human whether to resume that bug or treat it as abandoned
 
 ## What This Skill Does NOT Do
 
 - Does not touch `main` — human-only branch
 - Does not modify specifications or task files
-- Does not fix integration failures — regressions are filed as bugs and the loop stops; fixing is the implementer's job on a subsequent cycle
+- Does not fix integration failures — regressions are filed as bugs and the loop stops; fixing is the Developer's job on a subsequent cycle

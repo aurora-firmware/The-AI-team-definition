@@ -32,8 +32,8 @@ These retries happen **before** entering the escalation chain.
 
 | Role | Self-recovery threshold |
 |-------|------------------------|
-| Implementer | Three consecutive failed attempts to make tests pass |
-| Reviewer | One review cycle for ESCALATE-worthy issues — if the code has fundamental design problems that no amount of Implementer fixes can address, issue ESCALATE immediately rather than FAIL. For ordinary quality issues, issue FAIL; the Development Loop allows up to three total review cycles before forcing escalation |
+| Developer | Three consecutive failed attempts to make tests pass |
+| Reviewer | One review cycle for ESCALATE-worthy issues — if the code has fundamental design problems that no amount of Developer fixes can address, issue ESCALATE immediately rather than FAIL. For ordinary quality issues, issue FAIL; the Development Loop allows up to three total review cycles before forcing escalation |
 | Integrator | One bisect cycle — if the root cause spans multiple tasks, escalate immediately |
 
 Once the role exceeds its threshold, it stops retrying and enters Phase 2.
@@ -66,15 +66,15 @@ Question: [Specific question for the Architect]
 | Human decision | What happens next | Role responsible |
 |---------------|-------------------|-------------------|
 | Revise the spec | Planner edits spec in-place, adds entry to the spec's Amendment Log section, identifies affected tasks, adds a note to each affected `in-progress/` task referencing the amendment. | Planner |
-| Modify the task | Task file is updated directly with new or changed requirements. Implementer re-reads the task and continues. | Human or Planner |
+| Modify the task | Task file is updated directly with new or changed requirements. Developer re-reads the task and continues. | Human or Planner |
 | Provide guidance | The blocked role applies the guidance and continues. No document changes needed. | Blocked role |
-| Defer the work | Task moves to `blocked/` with the reason noted. The spec issue is not addressed now. | Implementer |
+| Defer the work | Task moves to `blocked/` with the reason noted. The spec issue is not addressed now. | Developer |
 
 ## When to Escalate
 
 A role enters the escalation chain when it **cannot complete its assigned task** after exhausting its self-recovery threshold. Specific triggers:
 
-- **Implementer:** Tests fail repeatedly (3 attempts). Requirements are ambiguous or untestable. Conflicting constraints make the task impossible as specified.
+- **Developer:** Tests fail repeatedly (3 attempts). Requirements are ambiguous or untestable. Conflicting constraints make the task impossible as specified.
 - **Reviewer:** Code has fundamental design issues that cannot be fixed without changing the specification.
 - **Integrator:** Merge conflicts that cannot be resolved without understanding both sides' intent. Integration tests fail and bisect points to multiple interacting causes.
 

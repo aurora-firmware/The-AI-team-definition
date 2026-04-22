@@ -28,7 +28,7 @@ This document describes the architecture of an AI team — how roles are organiz
 │  │         EXECUTION POOL                   │               │
 │  │                                          │               │
 │  │  ┌─────────────┐  ┌─────────────┐       │               │
-│  │  │ IMPLEMENTER │  │ IMPLEMENTER │  ...  │               │
+│  │  │  DEVELOPER  │  │  DEVELOPER  │  ...  │               │
 │  │  │   (TDD)    │  │   (TDD)    │       │               │
 │  │  └──────┬──────┘  └──────┬──────┘       │               │
 │  │         ↓                ↓              │               │
@@ -53,19 +53,19 @@ This document describes the architecture of an AI team — how roles are organiz
 ### Process Layer
 
 **Process:** Development Loop.
-**Purpose:** Drive the full Implementer → Reviewer loop autonomously across all pending tasks.
+**Purpose:** Drive the full Developer → Reviewer loop autonomously across all pending tasks.
 **Key principle:** The human starts the loop once after Gate 2 passes; the loop runs until the queue is empty or a hard stop is hit (blocked task, escalation). No human input is required between tasks.
 
 ### Execution Layer
 
-**Roles:** Implementer, Reviewer.
+**Roles:** Developer, Reviewer.
 **Purpose:** Produce working, tested, reviewed code for each task.
-**Key principle:** Tasks are atomic and independent. The Implementer writes both tests and production code using the test-driven implementation procedure. The Reviewer evaluates spec compliance and code quality. Both are assigned and sequenced by the Development Loop process.
+**Key principle:** Tasks are atomic and independent. The Developer writes both tests and production code using the test-driven implementation procedure. The Reviewer evaluates spec compliance and code quality. Both are assigned and sequenced by the Development Loop process.
 
 ### Integration Layer
 
 **Procedure:** Integration Procedure.
-**Role:** Integrator (conflict resolution and manual merges into `dev`/`main`).
+**Role:** Integrator (conflict resolution and manual merges into `dev-agent`/`main`).
 **Purpose:** Merge completed work, run integration tests, and resolve conflicts.
 **Key principle:** Merge in dependency order. Test once (optimistic). Revert and file bugs on failure.
 
@@ -87,11 +87,11 @@ This document describes the architecture of an AI team — how roles are organiz
 | Planner | Architect | Gate 2 evaluation request |
 | Architect | Development Loop | Validated task plan — ready to run |
 | Human | Development Loop | Start signal after Gate 2 passes |
-| Development Loop | Implementer | Task assignment |
-| Implementer | Development Loop | Completion signal; Work Log entry in task file |
+| Development Loop | Developer | Task assignment |
+| Developer | Development Loop | Completion signal; Work Log entry in task file |
 | Development Loop | Reviewer | Review request |
 | Reviewer | Development Loop | Verdict in task file (`PASS`/`FAIL`/`ESCALATE`) |
-| Development Loop | Implementer | Feedback routing (on `FAIL`) |
+| Development Loop | Developer | Feedback routing (on `FAIL`) |
 | Development Loop | Integration Procedure | Merge request (on `PASS`) |
 | Integration Procedure | Task directory | State transitions (`in-progress` → `completed`) |
 | Development Loop | Task directory | State transitions (`in-progress` → `blocked`) |
@@ -99,7 +99,7 @@ This document describes the architecture of an AI team — how roles are organiz
 | Any role | Architect | Escalation request |
 | Architect | Requesting role | Advisory guidance |
 | Architect | Human | Escalation (if architect cannot resolve) |
-| Human | `main` | Final merge from `dev` after Gate 5 sign-off |
+| Human | `main` | Final merge from `dev-agent` after Gate 5 sign-off |
 
 ## Design Decisions
 
@@ -107,7 +107,7 @@ This document describes the architecture of an AI team — how roles are organiz
 2. **Filesystem state machine** — task status is represented by which directory the file lives in, making it visible and auditable.
 3. **Separation of roles and procedures** — roles define who acts; procedures define how repeatable work is performed. Procedures can be composed and reused across roles. Each document type is authoritative for a distinct domain; see "Content Boundaries" below.
 4. **Five gates** — Gate 1 (spec approval), Gate 2 (task plan preflight), Gate 3 (code review), Gate 4 (integration tests), and Gate 5 (final merge sign-off). Gate 1 and Gate 5 are human gates; Gate 2 through Gate 4 are automated role or procedure gates.
-5. **Process-driven orchestration** — the Implementer → Reviewer loop is driven by the Development Loop process. A process is the right primitive when control flow is deterministic and human-started.
+5. **Process-driven orchestration** — the Developer → Reviewer loop is driven by the Development Loop process. A process is the right primitive when control flow is deterministic and human-started.
 
 ## Content Boundaries
 
