@@ -13,8 +13,8 @@ This checklist is used by the Reviewer role during the two-stage code review pro
 - [ ] All acceptance criteria from the task are met.
 - [ ] No functionality is missing compared to what the task specifies.
 - [ ] No unspecified behavior or features were added.
-- [ ] Exclusions section is present and not empty. If no exclusions are defined, it must say so.
-- [ ] Files modified match the "Files to Touch" list in the task. Any file created or modified that is not listed there must be explicitly justified in the Work Log — otherwise this is a **Fail**.
+- [ ] Any exclusions or file-scope constraints stated in the task are respected.
+- [ ] Any file created or modified outside the task's stated scope is explicitly justified in the Work Log — otherwise this is a **Fail**.
 
 ## Stage 2: Code Quality
 
@@ -27,7 +27,7 @@ This checklist is used by the Reviewer role during the two-stage code review pro
 - [ ] Tests exist for the new or modified code.
 - [ ] Tests cover both success and failure paths.
 - [ ] Tests are independent (no shared mutable state).
-- [ ] All tests pass. "Pre-existing failure" is not an exception — if a failure exists in the test suite when this task is reviewed, it must be fixed or explicitly excluded from the test runner before this task can pass. A failure that predates the task is still a failure.
+- [ ] The Work Log records local test evidence or explains why a local test run was not possible. Gate 4 owns authoritative pre-merge and post-merge test execution.
 
 ### Security
 - [ ] No hardcoded credentials or secrets.
@@ -45,6 +45,18 @@ This checklist is used by the Reviewer role during the two-stage code review pro
 - [ ] No unnecessary loops over large data sets.
 - [ ] No blocking operations in hot paths without justification.
 - [ ] No obvious memory leaks or resource leaks.
+
+## Bug Fix Review Addendum
+
+Use these checks when reviewing a bug fix:
+
+- [ ] The bug file contains a Diagnosis Log entry before the fix Work Log entry.
+- [ ] Reproduction status is explicit: confirmed, intermittent, or not yet reproduced.
+- [ ] Relevant logs, stack traces, failing assertions, or command output are recorded or summarized.
+- [ ] The isolated fault and root cause or fault hypothesis are documented.
+- [ ] The fix is scoped to the isolated cause and does not add unrelated behavior.
+- [ ] A regression test covers the defect when practical; if not, the Work Log explains why.
+- [ ] The Fix Verification steps were run, or the Work Log explains why they could not be run.
 
 ## Review Verdict
 

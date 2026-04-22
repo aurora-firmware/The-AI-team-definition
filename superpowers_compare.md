@@ -19,7 +19,7 @@ The key differences are in structure and enforcement.
 1. Brainstorm (Planner + human interactive)
 2. Spec approval (Gate 1 — hard human stop)
 3. Architect Preflight (automated structural validation)
-4. `/dev-loop` (autonomous Implementer → Reviewer → Integrator cycles)
+4. `/dev-loop` (autonomous Developer → Reviewer → Integrator cycles)
 5. Final merge sign-off (Gate 4 — hard human stop)
 
 **superpowers:**
@@ -41,10 +41,10 @@ Superpowers treats worktrees as a first-class isolation primitive; this project 
 ## Agent Model
 
 **This project:** 5 named, specialized agents with explicit decision authority, folder scope, escalation thresholds, and quality bars:
-Planner, Architect (advisory/preflight), Implementer, Reviewer, Integrator.
+Planner, Architect (advisory/preflight), Developer, Reviewer, Integrator.
 
 **superpowers:** 1 defined agent (`code-reviewer.md`).
-All other roles are executed by invoking skills against the active session — no distinct agent personas for Planner, Implementer, etc.
+All other roles are executed by invoking skills against the active session — no distinct agent personas for Planner, Developer, etc.
 The human or orchestrator uses skills directly.
 
 **Implication:** This project's multi-agent model makes accountability explicit (who can touch what files, who escalates to whom).
@@ -150,7 +150,7 @@ Superpowers' approach is better for single-session solo work — lower ceremony,
 5. **Regression detection with revert** — The `integrate` skill explicitly compares pre/post-merge test failures and reverts + files bugs if regressions appear.
    Superpowers' `finishing-a-development-branch` runs tests but has no automated revert logic.
 
-6. **Escalation procedure** — Explicit escalation chain (agent → architect → human) with defined thresholds (3 failed attempts for Implementer, etc.).
+6. **Escalation procedure** — Explicit escalation chain (agent → architect → human) with defined thresholds (3 failed attempts for Developer, etc.).
    Superpowers has less formal guidance on when and how to escalate.
 
 7. **Spec/task lifecycle tracking** — Specifications move through draft → review → approved → superseded.

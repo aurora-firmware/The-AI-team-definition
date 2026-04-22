@@ -31,11 +31,11 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 - Task plan is architecturally consistent with existing decisions.
 - Tasks are atomic, independently verifiable, and ready for implementation.
 
-**On failure:** Architect creates corrective tasks or returns the task plan to the Planner for revision.
+**On failure:** Architect returns a correction request to the Planner. The Planner revises the task plan and resubmits it to Gate 2.
 
 ## Gate 3: Code Review
 
-**When:** After a Developer completes a task.
+**When:** After a Developer completes a task or bug fix.
 **Evaluator:** Reviewer role (two stages).
 
 ### Stage 1: Spec Compliance
@@ -47,23 +47,32 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 ### Stage 2: Code Quality
 **Pass criteria:**
 - Code follows the coding standards: `ai-process/guidelines/coding-standards.md` (general) and `project/docs/coding-guidelines.md` (project-specific tech-stack rules, if present).
-- Tests exist and pass.
+- Relevant tests exist for the changed behavior.
+- The Developer's Work Log records local test evidence or explains why a local test run was not possible.
 - No security vulnerabilities introduced.
 - No performance regressions.
 - Code is readable and maintainable.
 
-**On failure:** Task returns to the Developer with specific feedback. The Reviewer must provide actionable notes, not vague criticism.
+### Bug Fix Criteria
+For bug fixes, the Reviewer also verifies:
+- The Diagnosis Log records reproduction status, captured evidence, isolated fault, and root cause or fault hypothesis.
+- The fix targets the isolated cause rather than masking the symptom downstream.
+- A regression test exists when the defect can be tested automatically, or the Work Log explains why only manual verification is possible.
+- The Fix Verification steps from the bug report were run or a clear reason is recorded.
+
+**On failure:** The work item returns to the Developer with specific feedback. The Reviewer must provide actionable notes, not vague criticism.
 
 ## Gate 4: Integration Tests
 
-**When:** After each task passes code review (Gate 3), during per-task integration within the development loop.
+**When:** After each task or bug fix passes code review (Gate 3), during integration by the active loop.
 **Evaluator:** Automated test suite, run by the integration procedure.
 **Pass criteria:**
-- All unit tests pass on the feature branch (pre-merge).
-- All unit and integration tests pass on `dev-agent` after the merge (regression check).
+- All unit tests pass on the source branch (pre-merge).
+- All unit and integration tests pass on the destination branch after the merge (regression check).
 - No unresolved merge conflicts remain.
 
-**On failure:** The integration procedure reverts the merge commit, files a bug report for each regression, and stops the development loop. The feature branch is preserved for fixing.
+**On failure:** The integration procedure reverts the merge commit, files a bug report for each regression, and stops the active loop. The source branch is preserved for fixing.
+Regression bug reports must record the preserved source branch as `source_branch` so the bug-fix loop can branch from and merge back into that branch before integration is retried.
 
 ## Gate 5: Final Merge Sign-off
 
@@ -73,6 +82,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 - Integration tests are green.
 - No open bugs with severity `critical` or `high`.
 - The status summary matches the approved specification.
+- The status summary lists completed tasks, unresolved bugs by severity, and latest integration-test result.
 
 **On failure:** Human provides feedback. New tasks are created to address issues.
 

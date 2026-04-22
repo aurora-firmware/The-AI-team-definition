@@ -8,7 +8,7 @@ allowed-tools: Read, Grep, Glob, Write, Edit, Bash
 
 ## Input Requirements
 
-- **Task file** — with acceptance criteria and verification command.
+- **Task or bug file** — with acceptance criteria or fix-verification steps.
 - **Project test setup** — test framework, directory structure, how to run tests.
 - **Coding standards** — `ai-process/guidelines/coding-standards.md` (general) and `project/docs/coding_guidelines.md` (project-specific: Next.js, Drizzle, Claude API, component patterns).
 
@@ -17,13 +17,17 @@ allowed-tools: Read, Grep, Glob, Write, Edit, Bash
 ### Step 0: Read the Work Log
 Before reading the acceptance criteria or starting any other work, read every existing entry in the task or bug Work Log.
 This step is mandatory even on the first session, when the Work Log is empty and the read is a cheap no-op.
+For bug fixes, also read the Diagnosis Log.
+If no Diagnosis Log exists, stop and run the debug procedure before writing tests or implementation.
 
-### Step 1: Read the Acceptance Criteria
-For each criterion, identify the testable behavior.
+### Step 1: Read the Acceptance Criteria or Fix Verification
+For each task criterion or bug fix-verification step, identify the testable behavior.
 Translate each criterion into one or more test cases with:
 - Input (what goes in)
 - Expected output (what comes out)
 - Edge cases (boundaries, empty inputs, error conditions)
+
+For a bug fix, the first test should reproduce the diagnosed defect when practical.
 
 ### Step 2: Write the Test
 Write a failing test for the first acceptance criterion.

@@ -33,7 +33,7 @@ Each agent implements a distinct role defined in `ai-process/architecture/`:
 |---|---|
 | **Planner** | Turns approved specs into atomic, independent tasks |
 | **Architect** | Designs systems, validates plans, unblocks structural problems |
-| **Implementer** | Writes tests and production code following TDD |
+| **Developer** | Writes tests and production code following TDD |
 | **Reviewer** | Two-stage code review: spec compliance, then code quality |
 | **Integrator** | Merges branches, runs integration tests, resolves conflicts |
 
@@ -48,14 +48,14 @@ Each skill implements a workflow or action defined in the ai-process:
 | **write-plan** | Decomposition of a spec into atomic tasks |
 | **tdd** | Test-driven development cycle |
 | **code-review** | Two-stage review (spec compliance → code quality) |
-| **debug** | Reproduce → isolate → fix → verify loop |
+| **debug** | Reproduce → gather evidence → isolate → fix → verify loop |
 | **conflict-resolution** | Git conflict resolution preserving both sides' intent |
 | **integrate** | Branch merge with test verification and task completion |
-| **/dev-loop** | Autonomous Implementer → Reviewer → Integrator loop across the pending task queue |
-| **/bug-loop** | Autonomous Implementer → Reviewer loop across the open bug queue |
+| **/dev-loop** | Autonomous Developer → Reviewer → Integrator loop across the pending task queue |
+| **/bug-loop** | Autonomous diagnosis-first Developer → Reviewer loop across the open bug queue |
 | **/new-spec** | Creates a new specification document from the template |
 | **/new-task** | Creates a new task document from the template |
-| **/new-bug** | Creates a new bug report from the template |
+| **/new-bug** | Creates an evidence-backed bug report from the template |
 | **/new-adr** | Creates a new Architecture Decision Record |
 | **/status-report** | Summarizes current project state across all work items |
 

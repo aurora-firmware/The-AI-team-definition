@@ -16,12 +16,15 @@ Project-specific commit scopes and any overrides belong in the project's own `CL
 | `main` | Production-ready releases | Human only — never automated roles |
 | `dev-agent` | Integration target | The integration procedure merges task branches here; the Integrator handles manual merges and conflicts; Planners, Reviewers, and Architects commit docs here |
 | `task/T-NNN-short-description` | Single task implementation | Developer only |
+| `bug/B-NNN-short-description` | Single bug diagnosis and fix | Developer only |
 
 **Rules:**
 - No automated role ever commits to `main`.
 - `dev-agent` receives merge commits from the integration procedure or the Integrator role (code), and direct commits from non-Developer roles (docs/specs/task files — no source code).
 - Developer always works on a task branch, never on `dev-agent`.
 - Task branches are created when the Developer picks up a task and deleted after successful integration into `dev-agent`.
+- Bug branches are created when the bug-fix loop picks up a bug.
+  Existing-defect bug branches are based on `dev-agent`; task-regression bug branches are based on the bug report's `source_branch`.
 
 ## Commit Message Format
 
@@ -49,10 +52,10 @@ chore(tasks): move T-004 to completed
 | Role | Commits when | Branch |
 |---|---|---|
 | **Planner** | Each spec or task file is finalized | `dev-agent` |
-| **Developer** | After each TDD red→green→refactor cycle; once more before the final Work Log entry | `task/T-NNN-…` |
-| **Reviewer** | After writing review verdict (task file only) | `dev-agent` |
+| **Developer** | After each TDD red→green→refactor cycle; once more before the final Work Log entry | `task/T-NNN-…` or `bug/B-NNN-…` |
+| **Reviewer** | After writing review verdict (task or bug file only) | `dev-agent` |
 | **Architect** | After producing an ADR or amendment | `dev-agent` |
-| **Integrator** | One merge commit per task branch merged into `dev-agent` | `dev-agent` |
+| **Integrator** | One merge commit per task or bug branch merged into its target branch | target branch |
 
 ## Hard Rules
 

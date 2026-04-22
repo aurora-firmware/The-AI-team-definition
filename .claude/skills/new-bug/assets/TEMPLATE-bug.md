@@ -4,6 +4,7 @@ title: "[Bug Title]"
 severity: medium  # critical | high | medium | low
 status: open  # open | in-progress | resolved
 created: YYYY-MM-DD
+source_branch: ""  # required for task-regression bugs; blank for existing defects on dev-agent
 ---
 
 # [Bug Title]
@@ -11,6 +12,19 @@ created: YYYY-MM-DD
 ## Summary
 
 One-paragraph description of the bug and its impact.
+
+## Reproduction Status
+
+Status: confirmed | intermittent | not yet reproduced
+
+Evidence-backed status notes.
+
+## Evidence
+
+- Logs / stack traces / failing assertions:
+- Screenshots or recordings:
+- Failing command or test:
+- First diagnostic step if not yet reproduced:
 
 ## Reproduction Steps
 
@@ -32,17 +46,34 @@ Include error messages, stack traces, or unexpected output.
 - OS / platform:
 - Language / runtime version:
 - Relevant dependencies:
+- Branch / commit:
 
 ## Related
 
 - Task: `T-XXX` (if applicable)
 - Specification: `specification-name.md` (if applicable)
 
+## Suspected Area
+
+Known suspected component, file, or subsystem.
+Use `unknown` if not yet isolated.
+
 ## Fix Verification
 
 ```bash
 # Command(s) to verify the bug is fixed
 ```
+
+## Diagnosis Log
+
+<!-- Mandatory before implementation. Append one entry before changing production code. Format:
+### Diagnosis N — YYYY-MM-DD
+Reproduction status:
+Evidence captured:
+Isolated fault:
+Root cause or fault hypothesis:
+Planned verification:
+-->
 
 ## Work Log
 

@@ -14,30 +14,30 @@ This document describes the architecture of an AI team — how roles are organiz
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                           AI TEAM                            │
-│                                                              │
-│  ┌──────────┐  ┌──────────────┐  ┌────────────────────┐    │
-│  │ PLANNER  │  │  ARCHITECT   │  │    INTEGRATOR      │    │
-│  │          │  │              │  │                    │    │
-│  │ creative │  │ structural   │  │ merge + test       │    │
-│  │ + struct │  │ + gate eval  │  │ + conflict resolve │    │
-│  └────┬─────┘  └──────┬───────┘  └─────────┬──────────┘    │
+│                           AI TEAM                           │
+│                                                             │
+│  ┌──────────┐  ┌──────────────┐  ┌────────────────────┐     │
+│  │ PLANNER  │  │  ARCHITECT   │  │    INTEGRATOR      │     │
+│  │          │  │              │  │                    │     │
+│  │ creative │  │ structural   │  │ merge + test       │     │
+│  │ + struct │  │ + gate eval  │  │ + conflict resolve │     │
+│  └────┬─────┘  └──────┬───────┘  └──────────┬─────────┘     │
 │       │               │                     │               │
 │       ↓               ↓ (on demand)         ↑               │
 │  ┌──────────────────────────────────────────┤               │
 │  │         EXECUTION POOL                   │               │
 │  │                                          │               │
-│  │  ┌─────────────┐  ┌─────────────┐       │               │
-│  │  │  DEVELOPER  │  │  DEVELOPER  │  ...  │               │
-│  │  │   (TDD)    │  │   (TDD)    │       │               │
-│  │  └──────┬──────┘  └──────┬──────┘       │               │
-│  │         ↓                ↓              │               │
-│  │  ┌─────────────┐  ┌─────────────┐       │               │
-│  │  │  REVIEWER   │  │  REVIEWER   │       │               │
-│  │  └──────┬──────┘  └──────┬──────┘       │               │
+│  │  ┌─────────────┐  ┌─────────────┐        │               │
+│  │  │  DEVELOPER  │  │  DEVELOPER  │  ...   │               │
+│  │  │   (TDD)     │  │   (TDD)     │        │               │
+│  │  └──────┬──────┘  └──────┬──────┘        │               │
+│  │         ↓                ↓               │               │
+│  │  ┌─────────────┐  ┌─────────────┐        │               │
+│  │  │  REVIEWER   │  │  REVIEWER   │        │               │
+│  │  └──────┬──────┘  └──────┬──────┘        │               │
 │  │         └────────────────┴───────────────┘               │
 │  └──────────────────────────────────────────────────────────┘
-│                                                              │
+│                                                             │
 │  ★ GATES: spec, task plan, review, integration, final       │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -52,15 +52,18 @@ This document describes the architecture of an AI team — how roles are organiz
 
 ### Process Layer
 
-**Process:** Development Loop.
-**Purpose:** Drive the full Developer → Reviewer loop autonomously across all pending tasks.
-**Key principle:** The human starts the loop once after Gate 2 passes; the loop runs until the queue is empty or a hard stop is hit (blocked task, escalation). No human input is required between tasks.
+**Processes:** Development Loop and Bug-Fix Loop.
+**Purpose:** Drive the full Developer → Reviewer loop autonomously across pending tasks and open bugs.
+**Key principle:** The human starts the appropriate loop when its queue is ready: the development loop after Gate 2 passes, or the bug-fix loop when open bugs need resolution.
+The loop runs until the queue is empty or a hard stop is hit (blocked task, unresolved bug, escalation).
+No human input is required between work items.
 
 ### Execution Layer
 
 **Roles:** Developer, Reviewer.
 **Purpose:** Produce working, tested, reviewed code for each task.
 **Key principle:** Tasks are atomic and independent. The Developer writes both tests and production code using the test-driven implementation procedure. The Reviewer evaluates spec compliance and code quality. Both are assigned and sequenced by the Development Loop process.
+For bug fixes, the Developer follows a diagnosis-first debugging procedure before changing production code, and the Reviewer checks the diagnostic evidence as part of review.
 
 ### Integration Layer
 
@@ -104,7 +107,7 @@ This document describes the architecture of an AI team — how roles are organiz
 ## Design Decisions
 
 1. **File-based task tracking** — roles read and write Markdown files natively. No external databases or issue trackers required.
-2. **Filesystem state machine** — task status is represented by which directory the file lives in, making it visible and auditable.
+2. **Lifecycle state machines** — task, bug, and gate state transitions are defined in the workflow overview and referenced by the rest of the process.
 3. **Separation of roles and procedures** — roles define who acts; procedures define how repeatable work is performed. Procedures can be composed and reused across roles. Each document type is authoritative for a distinct domain; see "Content Boundaries" below.
 4. **Five gates** — Gate 1 (spec approval), Gate 2 (task plan preflight), Gate 3 (code review), Gate 4 (integration tests), and Gate 5 (final merge sign-off). Gate 1 and Gate 5 are human gates; Gate 2 through Gate 4 are automated role or procedure gates.
 5. **Process-driven orchestration** — the Developer → Reviewer loop is driven by the Development Loop process. A process is the right primitive when control flow is deterministic and human-started.
@@ -115,7 +118,7 @@ Three document types in the AI team framework each have a distinct authority dom
 
 ### Component map (`ai-process/architecture/component-map.md`)
 
-Authoritative for **structure**: which roles, processes, procedures, and gates exist; their purpose; and the high-level data flow between them.
+Authoritative for **structure**: which roles, processes, procedures, and gates exist; their purpose; lifecycle ownership; and the high-level data flow between them.
 When a component is added, removed, or reassigned, the component map is updated first.
 
 ### Role implementation files (`.claude/agents/`)

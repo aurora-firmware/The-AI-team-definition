@@ -51,9 +51,9 @@ These files are generic and work for any project without modification:
 
 | Team Size | Recommended Agents |
 |---|---|
-| Solo (1 agent) | Implementer (combines all roles) |
-| Small (2-3 agents) | Planner + Implementer + Reviewer |
-| Standard (4 agents) | Planner + Implementer + Reviewer + Integrator |
+| Solo (1 agent) | Developer (combines all roles) |
+| Small (2-3 agents) | Planner + Developer + Reviewer |
+| Standard (4 agents) | Planner + Developer + Reviewer + Integrator |
 | Full (5 agents) | All agents including Architect |
 
 To reduce the team: keep only the agent files you need. The workflow still works — agents whose roles are absent have their responsibilities absorbed by adjacent agents (e.g., without an integrator, the implementer handles merges).

@@ -1,6 +1,6 @@
 ---
 name: bug-loop
-description: Fully autonomous bug-fix loop. Picks open bugs one at a time, creates a dedicated branch from dev-agent for each, drives each through Developer → Reviewer cycles until the reviewer passes, then moves to the next bug. Stops only when the queue is empty or a bug cannot be resolved after full escalation. Use this whenever there are open bugs to fix.
+description: Fully autonomous bug-fix loop. Picks open bugs one at a time, creates a dedicated branch from the correct base, drives each through diagnosis-first Developer → Reviewer cycles until the reviewer passes, then moves to the next bug. Stops only when the queue is empty or a bug cannot be resolved after full escalation. Use this whenever there are open bugs to fix.
 argument-hint: "[bug-id ...] — optional space-separated bug IDs (e.g., B-001 B-003). If omitted, processes all open bugs."
 allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate)
 disable-model-invocation: true
@@ -9,7 +9,7 @@ disable-model-invocation: true
 # Bug Loop
 
 Autonomous orchestrator that processes the open bug queue without human intervention.
-Each bug gets its own branch off `dev-agent` — bugs are never mixed on the same branch.
+Each bug gets its own branch — bugs are never mixed on the same branch.
 Stops only when the queue is empty or when a bug requires human resolution after full escalation.
 
 ## Inputs
@@ -48,15 +48,22 @@ Select the highest-severity unblocked bug:
 1. Move the selected bug file from `project/bugs/open/` to `project/bugs/in-progress/`
 2. Update the `status` field in the bug frontmatter to `in-progress`
 3. Switch to `dev-agent` and commit the bug move: `chore(bugs): move B-NNN to in-progress`
-4. Create and check out the bug branch **from `dev-agent`**: `git checkout -b bug/B-NNN-short-description`
+4. Determine the bug branch base and target:
+   - If the bug frontmatter has a non-empty `source_branch`, use that branch as both the base and target.
+   - Otherwise use `dev-agent` as both the base and target.
+5. Create and check out the bug branch from the selected base: `git checkout -b bug/B-NNN-short-description`
    - Derive the branch name from the bug filename (e.g., `B-001-system-prompt-exposed` → `bug/B-001-system-prompt-exposed`)
 
-### Step 4: Implementation Cycle
+### Step 4: Diagnosis + Implementation Cycle
 
 **Spawn the Developer role** with this prompt:
 
 > "Fix the bug described at `project/bugs/in-progress/<bug-file>`.
-> You are on branch `bug/B-NNN-...`. Use the tdd skill where applicable.
+> You are on branch `bug/B-NNN-...`.
+> Use the debug skill first.
+> Before changing production code, reproduce or confirm the defect, gather relevant logs or command output, isolate the fault, and append a Diagnosis Log entry to the bug file.
+> The Diagnosis Log entry must record reproduction status, evidence captured, isolated fault, root cause or fault hypothesis, and planned verification.
+> After diagnosis, use the tdd skill where applicable: add or update a failing regression test when the defect can be tested automatically, verify it fails, implement the minimal fix, and verify it passes.
 > Commit after each red→green→refactor cycle.
 > Append a Work Log entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The final entry serves as the handoff to the reviewer."
 
@@ -68,7 +75,9 @@ Wait for the Developer to complete before continuing.
 
 > "Review the bug fix at `project/bugs/in-progress/<bug-file>` using the code-review skill.
 > The Developer has completed their work on branch `bug/B-NNN-...`.
-> Verify the fix addresses the root cause and passes the Fix Verification steps in the bug file.
+> Verify the Diagnosis Log records reproduction status, evidence captured, isolated fault, and root cause or fault hypothesis.
+> Verify the fix addresses the isolated cause and passes the Fix Verification steps in the bug file.
+> Verify a regression test exists when practical, or that the Work Log explains why only manual verification was possible.
 > Append your verdict to the bug file under `### Review Verdict — YYYY-MM-DD`.
 > Verdict must be one of: PASS, FAIL, or ESCALATE."
 
@@ -81,11 +90,11 @@ Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 
 #### On PASS
 
-1. Invoke the `integrate` skill to merge the reviewed branch into `dev-agent`:
-   > `/integrate bug/B-NNN-... dev-agent`
+1. Invoke the `integrate` skill to merge the reviewed branch into the target branch chosen in Step 3:
+   > `/integrate bug/B-NNN-... <target-branch>`
 
    The integrate skill handles test verification, the merge, regression checks, and branch deletion.
-   It will not find a task file (bug branches have no matching `project/tasks/` entry) — that is expected; integrate will note the absence and skip task file promotion.
+   It reads the bug file for diagnosis and fix-verification context, but bug state changes remain owned by bug-loop.
 
 2. **If integrate succeeds** — on `dev-agent`, move the bug file from `project/bugs/in-progress/` to `project/bugs/resolved/`, update `status` to `resolved`, and commit:
    `chore(bugs): move B-NNN to resolved`
@@ -94,7 +103,7 @@ Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 3. **If integrate fails** — stop the loop entirely and report:
    - The failure reason (pre-merge test failure, unmet fix criteria, or post-merge regression).
    - Which bug IDs were filed (if regressions were found).
-   - That the bug branch was NOT deleted, `dev-agent` was left clean (integrate reverts on regression), and the bug file remains in `in-progress/`.
+   - That the bug branch was NOT deleted, the target branch was left clean (integrate reverts on regression), and the bug file remains in `in-progress/`.
    - Next step for the human: resolve the filed regression bugs before re-running the loop.
 
 #### On FAIL
@@ -157,6 +166,7 @@ Implementation commits are made by the Developer on the bug branch — the orche
 - A bug reaches human escalation (Phase 2) — stop the loop, notify the human
 - A git operation fails (branch already exists, conflict on `dev-agent`, etc.) — stop and report the git error before attempting anything else
 - `project/bugs/in-progress/` already contains a bug when the loop starts — stop and ask the human whether to resume that bug or treat it as abandoned
+- The Developer cannot reproduce the bug and cannot form an evidence-backed fault hypothesis — escalate instead of patching by guesswork
 
 ## What This Skill Does NOT Do
 

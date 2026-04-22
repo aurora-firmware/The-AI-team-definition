@@ -6,7 +6,8 @@ created: 2026-03-10
 
 # Markdown Conventions
 
-All documents in this repository are Markdown. Follow these conventions for consistency.
+Generated project artifacts are Markdown.
+These conventions apply to bugs, tasks, specs, ADRs, and role/procedure outputs created by the AI team.
 
 ## Frontmatter
 
@@ -31,7 +32,7 @@ Additional fields depend on document type. See each `TEMPLATE-*.md` for the requ
 
 ## Text
 
-- One sentence per line in the source file (produces cleaner diffs).
+- Use one sentence per line in the source file.
 - Use blank lines to separate paragraphs.
 - Do not use trailing spaces for line breaks — use blank lines instead.
 

@@ -12,15 +12,46 @@ allowed-tools: Read, Grep, Glob, Edit, Bash
 - **Code under investigation** — the files involved.
 - **Expected behavior** — what should happen (from the task's acceptance criteria).
 - **Actual behavior** — what is happening instead.
+- **Available evidence** — reproduction steps, logs, stack traces, environment details, branch context, and prior Work Log or Diagnosis Log entries.
 
 ## Procedure
 
-### Step 1: Reproduce the Failure
+### Step 0: Read Existing Context
+
+Read the bug or task file, including every existing Work Log and Diagnosis Log entry.
+Identify:
+- Observable symptom.
+- Expected behavior.
+- Actual behavior.
+- Reproduction status.
+- Known environment and branch context.
+- Fix Verification steps.
+
+Do not change production code during this step.
+
+### Step 1: Reproduce or Confirm the Failure
+
 Run the failing test or trigger the error.
 Confirm it fails consistently (not flaky).
-Record the exact error message and stack trace.
+Record the exact command, error message, stack trace, logs, failing assertion, or other observable evidence.
 
-### Step 2: Isolate the Cause
+If the issue is intermittent, run enough attempts to establish a pattern and record the frequency.
+If the issue cannot be reproduced, do not guess at a fix.
+Record what was tried, what evidence still exists, and the next diagnostic step; then escalate if no evidence-backed fault hypothesis can be formed.
+
+### Step 2: Gather Context and Logs
+
+Collect the smallest useful evidence set:
+- Runtime logs or test output.
+- Relevant configuration and environment values.
+- Input data or fixture details.
+- Recent related changes when branch history is relevant.
+- A minimal failing command or manual path.
+
+Avoid adding permanent logging or debug prints.
+If temporary instrumentation is needed, remove it before completion and mention it in the Work Log.
+
+### Step 3: Isolate the Fault
 Narrow down the failing component:
 - Which function or method is producing the wrong result?
 - What input triggers the failure?
@@ -31,19 +62,37 @@ Strategies:
 - **Minimal reproduction**: Create the smallest test case that still fails.
 - **Trace the data flow**: Follow the input from entry point to the point of failure.
 
-### Step 3: Identify the Root Cause
+### Step 4: Identify the Root Cause
 Once isolated, determine WHY it fails:
 - Logic error (wrong condition, off-by-one, missing case).
 - State error (variable has unexpected value due to earlier operation).
 - Environment error (missing dependency, wrong configuration).
 - Specification error (the spec itself is contradictory or incomplete).
 
-### Step 4: Fix with Minimal Change
+Record the root cause.
+If the evidence supports only a fault hypothesis, label it as a hypothesis and explain why it is the best current explanation.
+
+### Step 5: Record the Diagnosis
+
+Append or update the bug file's Diagnosis Log before implementing the fix.
+Include:
+- Reproduction status.
+- Evidence captured.
+- Isolated fault.
+- Root cause or fault hypothesis.
+- Planned verification.
+
+For task debugging, include the same information in the task Work Log.
+
+### Step 6: Fix with Minimal Change
+
 Apply the smallest change that fixes the root cause.
 Do not refactor surrounding code, add features, or "improve" unrelated areas.
 The fix should be obviously correct and narrowly scoped.
+When the defect can be tested automatically, add or update a regression test that fails before the fix and passes after it.
 
-### Step 5: Verify the Fix
+### Step 7: Verify the Fix
+
 Run the originally failing test — it must pass.
 Run the full test suite — nothing else should have broken.
 If something else broke, the fix was too broad or the root cause was misidentified. Return to Step 2.
@@ -53,10 +102,12 @@ If something else broke, the fix was too broad or the root cause was misidentifi
 - **Fix applied** — the specific code change.
 - **Root cause** — brief explanation of what was wrong and why.
 - **Verification** — confirmation that the fix resolves the issue and all tests pass.
+- **Diagnosis Log** — for bug fixes, a dated entry in the bug file before the Work Log handoff.
 
 ## Quality Criteria
 
 - The root cause is identified and documented, not just the symptom.
+- Reproduction status and evidence are recorded before implementation starts.
 - The fix is minimal — only the necessary change, nothing more.
 - All tests pass after the fix (both the failing test and the full suite).
 - No new debugging artifacts remain in the code (print statements, commented-out code).
@@ -65,5 +116,6 @@ If something else broke, the fix was too broad or the root cause was misidentifi
 
 - **Fixing symptoms, not causes** — if a function returns the wrong value, do not add a corrective step downstream. Fix the function.
 - **Shotgun debugging** — making multiple changes at once and hoping one of them fixes it. Change one thing at a time and test after each change.
+- **Skipping reproduction** — do not patch from a vague symptom unless a reproduction is impossible and the evidence still supports a clear fault hypothesis.
 - **Leaving debug code** — remove all print statements, logging additions, and temporary code before completing the fix.
 - **Broadening scope** — the urge to "clean up while I'm here" leads to larger diffs, more risk, and harder reviews. Stay focused on the bug.

@@ -1,6 +1,6 @@
 ---
 name: integrator
-description: Merges reviewed task branches in dependency order, runs integration tests, and resolves conflicts.
+description: Merges reviewed task and bug branches, runs integration tests, and resolves conflicts.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: claude-sonnet-4-6
 skills: conflict-resolution new-task
@@ -8,7 +8,7 @@ skills: conflict-resolution new-task
 
 ## Purpose
 
-Resolves merge conflicts and performs manual merges of task and bug branches into `dev-agent` or `main`.
+Resolves merge conflicts and performs manual merges of task and bug branches into `dev-agent`, preserved task branches, or `main`.
 In the automated `/dev-loop` flow, the `integrate` skill handles per-task merging and invokes the Integrator agent when conflicts require resolution.
 
 ## Capabilities
@@ -25,14 +25,14 @@ In the automated `/dev-loop` flow, the `integrate` skill handles per-task mergin
 ## Decision Authority
 
 ### Can Decide Alone
-- Order of branch merges (based on task dependency graph).
+- Order of task branch merges (based on task dependency graph).
 - Trivial conflict resolution (e.g., whitespace, import ordering).
 - Whether to proceed with merge after successful tests.
 
 ### Must Escalate
 - Semantic merge conflicts where both sides made intentional changes to the same logic — escalate to architect.
 - Integration test failures that bisect to multiple interacting causes — escalate to architect.
-- Any conflict where the correct resolution is not obvious from the task specifications — escalate to architect.
+- Any conflict where the correct resolution is not obvious from the task or bug context — escalate to architect.
 
 ## Escalation Triggers
 
@@ -44,7 +44,7 @@ In the automated `/dev-loop` flow, the `integrate` skill handles per-task mergin
 
 ### Receives Work From
 - **`integrate` skill** — invoked for conflict resolution during automated per-task integration.
-- **Human** — manual merge requests for task or bug branches into `dev-agent` or `main`.
+- **Human** — manual merge requests for task or bug branches into `dev-agent`, preserved task branches, or `main`.
 
 ### Hands Off To
 - **`integrate` skill** — resolved conflicts, allowing the merge to proceed.
@@ -57,7 +57,7 @@ In the automated `/dev-loop` flow, the `integrate` skill handles per-task mergin
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | `src/`, `tests/` (conflict resolution), `project/tasks/` (move tasks to `completed/`), `project/tasks/pending/` (new fix tasks) |
+| Write / Edit | `src/`, `tests/` (conflict resolution), `project/tasks/` (move tasks to `completed`), `project/bugs/` (bug state updates when explicitly assigned), `project/tasks/pending/` (new fix tasks) |
 | Never touch | `project/specs/`, `project/decisions/`, `project/docs/` |
 
 ## Quality Bar
