@@ -25,6 +25,50 @@ The ai-process lives in `ai-process/` and has three layers:
 Everything in `ai-process/` is the **specification layer** — the authoritative source of truth.
 The agents and skills in `.claude/` are the **implementation layer** — they must faithfully execute what the ai-process defines.
 
+## Process Overview
+
+```text
+                         +----------------------+
+                         |        Human         |
+                         +----------+-----------+
+                                    |
+                                    v
+        +------------------- Spec + Planning Process -------------------+
+        |                                                               |
+        |  Feature request -> Planner brainstorm -> Specification       |
+        |                         |                                     |
+        |                         v                                     |
+        |                  Gate 1: human approval                       |
+        |                         |                                     |
+        |                         v                                     |
+        |             Planner task plan -> Gate 2: Architect            |
+        |                         |                                     |
+        +-------------------------+-------------------------------------+
+                                  |
+                                  v
+        +---------------- Development Loop (/dev-loop) -----------------+
+        |                                                               |
+        |  pending task -> Developer -> Reviewer -> Integration         |
+        |                     ^           |              |              |
+        |                     |           | FAIL         | regression   |
+        |                     +-----------+              v              |
+        |                                      bug report in open/      |
+        +-------------------------+---------------------+---------------+
+                                  |                     |
+                                  | queue empty         | bugs exist
+                                  v                     v
+        +---------------- Final Sign-off --------+   +-- Bug Loop (/bug-loop) --+
+        |                                        |   |                          |
+        |  status report -> Gate 5: Human        |   | diagnose -> fix ->       |
+        |  approves dev-agent -> main            |   | review -> integrate      |
+        |                                        |   |            ^             |
+        +----------------------------------------+   |            | FAIL        |
+                                                     +------------+-------------+
+
+        Escalation path for blocked work:
+        Developer / Reviewer / Integrator / Loop -> Architect -> Human
+```
+
 ## Agent Roles
 
 Each agent implements a distinct role defined in `ai-process/architecture/`:
