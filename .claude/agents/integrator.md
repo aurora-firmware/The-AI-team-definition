@@ -33,7 +33,7 @@ The Integrator enters the escalation chain when the `integrate` or `conflict-res
 
 ## Interaction Pattern
 
-### Spawned By
+### Receives Work From
 - **Human** — manual merge requests for task or bug branches into `dev-agent`, preserved task branches, or `main`.
 - **`/dev-loop` or `/bug-loop`** — only when an unresolved conflict or multi-task regression is returned to the human for manual handling.
 

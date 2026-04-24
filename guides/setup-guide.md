@@ -25,8 +25,6 @@ mkdir -p project/tasks/pending project/tasks/in-progress project/tasks/completed
 mkdir -p project/bugs/open project/bugs/in-progress project/bugs/resolved
 mkdir -p project/decisions
 mkdir -p project/docs
-mkdir -p ai-process/templates
-mkdir -p ai-process/architecture ai-process/guidelines ai-process/processes
 mkdir -p .claude/agents
 mkdir -p .claude/skills
 # Optional for OpenAI Codex compatibility:
@@ -57,7 +55,6 @@ Copy the following files from this repository into your new project, preserving 
 - `.claude/skills/status-report/assets/progress-report.md`
 
 **Agent definitions (copy to `.claude/agents/`):**
-- `TEMPLATE-agent.md`
 - `planner.md`
 - `architect.md`
 - `developer.md`
@@ -67,19 +64,8 @@ Copy the following files from this repository into your new project, preserving 
 **Skill definitions (copy to `.claude/skills/<name>/SKILL.md`):**
 - `brainstorm`, `write-plan`, `gate-2-preflight`, `code-review`, `tdd`, `debug`, `conflict-resolution`
 - `dev-loop`, `integrate`, `bug-loop`
-- `escalation-consultation`
+- `escalation-consultation`, `git-conventions`
 - `new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`
-
-**Process and guidelines docs (copy as-is):**
-- `ai-process/processes/workflow-overview.md`
-- `ai-process/processes/quality-gates.md`
-- `ai-process/processes/escalation-procedure.md`
-- `ai-process/guidelines/coding-standards.md`
-- `ai-process/guidelines/review-checklist.md`
-- `ai-process/guidelines/markdown-conventions.md`
-- `ai-process/guidelines/git-conventions.md`
-- `ai-process/architecture/system-overview.md`
-- `ai-process/architecture/component-map.md`
 
 If you use OpenAI Codex, either copy the same definitions under `.codex/` according to your platform's expected layout or create symlinks from `.codex/agents` and `.codex/skills` to `.claude/agents` and `.claude/skills`.
 
@@ -103,8 +89,6 @@ Create a `CLAUDE.md` in your project root. Start with this structure and customi
 | `project/bugs/` | Bug reports: `open/`, `in-progress/`, `resolved/` |
 | `project/decisions/` | Architecture Decision Records (ADRs) |
 | `project/docs/` | Project-specific guidance for commands, coding conventions, and operations |
-| `ai-process/templates/` | Reusable document formats |
-| `ai-process/` | Architecture, guidelines, and process documentation |
 | `.claude/agents/` | Agent role definitions |
 | `.claude/skills/` | Reusable skill definitions (each as `<name>/SKILL.md`) |
 | `[source path]` | Source code location for this project |

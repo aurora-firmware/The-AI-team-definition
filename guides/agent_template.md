@@ -93,7 +93,7 @@ The [Role] enters the escalation chain when the `<skill-name>` skill returns `ES
 
 ## Interaction Pattern
 
-### Spawned By
+### Receives Work From
 
 - **[Role / process / human]** — what state the work arrives in.
 
