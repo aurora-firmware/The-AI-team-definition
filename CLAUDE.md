@@ -19,7 +19,7 @@ When they conflict, the ai-process wins.
 | `guides/` | Human-facing guides for setup and customization (not part of the ai-process itself) |
 | `.claude/agents/` | Agent role definitions (planner, architect, developer, reviewer, integrator) |
 | `.claude/skills/` | Skills: procedures (brainstorm, write-plan, tdd, code-review, debug, conflict-resolution, integrate, escalation-consultation, gate-2-preflight), orchestrators (/dev-loop, /bug-loop), and actions (/new-spec, /new-task, /new-bug, /new-adr, /status-report, /git-conventions) |
-| `.codex/` | Symlinks to `.claude/agents/` and `.claude/skills/` — compatibility layer for the OpenAI Codex agent platform |
+| `.codex/` | OpenAI Codex compatibility layer: project-scoped custom agents in `.codex/agents/*.toml` plus a symlinked `.codex/skills/` view of `.claude/skills/` |
 
 ---
 
