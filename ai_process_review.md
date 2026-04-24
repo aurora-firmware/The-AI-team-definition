@@ -13,12 +13,14 @@ This review checks whether `.claude/agents/` and `.claude/skills/` consistently 
 The agents are broadly aligned with the intended boundary: agents define roles, while skills define procedures.
 The previously identified inconsistencies in state handling, branch handling, review verdict formats, and hardcoded integration verification have been addressed.
 
-Post-implementation status:
+Post-implementation status (verified 2026-04-24):
 
 - Findings 1 through 11 are resolved in the relevant `ai-process`, `.claude/skills`, `.claude/agents`, and template files.
 - The implementation now follows the canonical `dev-agent` lifecycle-state model.
 - Integration verification commands are discovered from the work item or target project instead of being hardcoded.
 - Developer log entries are handoffs to the active loop; Review Verdicts are committed by the Reviewer to canonical lifecycle files.
+
+Findings 1 through 12 are resolved.
 
 ## Findings And Suggestions
 
@@ -332,6 +334,41 @@ It should treat task and bug files as lifecycle state owned by the active loop, 
 
 **Resolution:** `integrate` now reads canonical work-item state from `dev-agent` and stops if implementation branches contain lifecycle-file edits.
 
+### 12. `code-review` embeds loop-level cycle-count logic
+
+**Severity:** Low
+
+**Status:** Resolved.
+
+`code-review` Step 5, FAIL section reads:
+
+> "Up to two retries per work item (three total review attempts). If the work item fails a third time, escalate to architect."
+
+This blurs the skill–loop boundary in two ways:
+
+1. **Cycle counting belongs to the active loop.** `dev-loop` and `bug-loop` both maintain their own review-cycle counter and handle the transition on cycle 3 → ESCALATE. The code-review skill does not have access to that counter and cannot know which cycle it is on without external context.
+
+2. **The Reviewer cannot execute the instruction.** Neither the `code-review` skill (`allowed-tools: Read, Edit, Grep, Glob, Bash(…)`) nor the Reviewer agent (`tools: Read, Write, Edit, Glob, Grep, Bash`) includes the `Agent` tool needed to spawn the Architect. Only the loops have `Agent` in their allowed-tools. The statement is therefore unenforceable as written.
+
+The ESCALATE verdict path is already handled correctly: the Output Format section says "Next owner: active loop for Architect consultation." The FAIL path should be consistent.
+
+Relevant files:
+
+- `.claude/skills/code-review/SKILL.md` (Step 5, On FAIL paragraph)
+- `.claude/skills/dev-loop/SKILL.md` (cycle counter logic — correct)
+- `.claude/skills/bug-loop/SKILL.md` (cycle counter logic — correct)
+
+**Why this matters:**
+
+A Reviewer reading the code-review skill may attempt to produce an ESCALATE verdict on the third FAIL cycle (treating the instruction as a signal to change the verdict) instead of always producing FAIL when quality issues are found and ESCALATE only for fundamental design issues.
+This makes the loop's own cycle-3 escalation logic redundant in one reading, or contradicts the Reviewer's own verdict criteria in another reading.
+
+**Suggestion:**
+
+Replace the last sentence of the On FAIL paragraph in Step 5 with:
+
+> The active loop tracks the review cycle count. On a third consecutive FAIL, the active loop escalates to the Architect — the Reviewer does not need to change the verdict type.
+
 ### Scan Notes
 
 The Python fenced-code example in `ai-process/guidelines/markdown-conventions.md` is not treated as an issue.
@@ -346,6 +383,8 @@ They implement the framework's own branch and merge model, which is part of `ai-
 
 ## Validation Performed
 
+### Initial validation (2026-04-22)
+
 Ran:
 
 ```bash
@@ -355,3 +394,9 @@ rg -n 'npm test|Next\.js|Drizzle|Claude API|component patterns|Hand off to integ
 
 Result: whitespace check passed.
 The targeted process and implementation scan returned no matches.
+
+### Re-verification (2026-04-24)
+
+Read all files referenced by Findings 1–11 and confirmed every resolution matches the current codebase state. No regressions found.
+
+Identified Finding 12: `code-review` Step 5, On FAIL paragraph, embeds loop-level cycle-count logic that the Reviewer cannot act on (no `Agent` tool available). The active loops already handle this correctly.
