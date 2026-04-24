@@ -2,7 +2,7 @@
 name: bug-loop
 description: Fully autonomous bug-fix loop. Picks open bugs one at a time, creates a dedicated branch from the correct base, drives each through diagnosis-first Developer → Reviewer cycles until the reviewer passes, then moves to the next bug. Stops only when the queue is empty or a bug cannot be resolved after full escalation. Use this whenever there are open bugs to fix.
 argument-hint: "[bug-id ...] — optional space-separated bug IDs (e.g., B-001 B-003). If omitted, processes all open bugs."
-allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate)
+allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate), Skill(git-conventions)
 disable-model-invocation: true
 ---
 
@@ -62,7 +62,7 @@ Select the highest-severity unblocked bug:
 
 ### Step 4: Diagnosis Cycle
 
-**Spawn the Developer role** with this prompt:
+**Spawn the Developer subagent** with this prompt:
 
 > "Diagnose the bug described in the canonical bug file `project/bugs/in-progress/<bug-file>` on `dev-agent`.
 > You are on branch `bug/B-NNN-...`.
@@ -71,7 +71,8 @@ Select the highest-severity unblocked bug:
 > Do not change production code during diagnosis and do not edit the bug lifecycle file on the bug branch.
 > Reproduce or confirm the defect, gather relevant logs or command output, isolate the fault, and return a Diagnosis Log handoff entry.
 > The Diagnosis Log entry must record reproduction status, evidence captured, isolated fault, root cause or fault hypothesis, and planned verification.
-> If the bug cannot be reproduced and no evidence-backed fault hypothesis can be formed, return ESCALATE instead of guessing."
+> If the bug cannot be reproduced and no evidence-backed fault hypothesis can be formed, return ESCALATE with the four-field escalation request block defined in the debug skill — do not guess.
+> Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 Wait for the Developer to complete diagnosis before continuing.
 If the Developer returns `ESCALATE`, go directly to **On ESCALATE**.
@@ -86,7 +87,7 @@ Record the Diagnosis Log handoff:
 
 Check out the bug branch `bug/B-NNN-...`.
 
-**Spawn the Developer role** with this prompt:
+**Spawn the Developer subagent** with this prompt:
 
 > "Fix the diagnosed bug described in canonical bug file `project/bugs/in-progress/<bug-file>` on `dev-agent`.
 > You are on branch `bug/B-NNN-...`.
@@ -94,7 +95,8 @@ Check out the bug branch `bug/B-NNN-...`.
 > Do not edit the bug lifecycle file on the bug branch.
 > Use the tdd skill where applicable: add or update a failing regression test when the defect can be tested automatically, verify it fails, implement the minimal fix, and verify it passes.
 > Commit after each red→green→refactor cycle.
-> Return a Work Log handoff entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The loop will append and commit it on `dev-agent`."
+> Return a Work Log handoff entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The loop will append and commit it on `dev-agent`.
+> Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 Wait for the Developer to complete before continuing.
 If the Developer does not return a Work Log handoff entry, stop with `BLOCKED` and report the missing handoff.
@@ -106,7 +108,7 @@ Record the Work Log handoff:
 
 ### Step 6: Review Cycle
 
-**Spawn the Reviewer agent** with this prompt:
+**Spawn the Reviewer subagent** with this prompt:
 
 > "Review the bug fix using the canonical bug file `project/bugs/in-progress/<bug-file>` on `dev-agent` and the code-review skill.
 > The Developer has completed their work on branch `bug/B-NNN-...`.
@@ -114,7 +116,8 @@ Record the Work Log handoff:
 > Verify the fix addresses the isolated cause and passes the Fix Verification steps in the bug file.
 > Verify a regression test exists when practical, or that the Work Log explains why only manual verification was possible.
 > Append your verdict to the canonical bug file under `### Review Verdict — YYYY-MM-DD` and commit it on `dev-agent`.
-> Verdict must be one of: PASS, FAIL, or ESCALATE."
+> Verdict must be one of: PASS, FAIL, or ESCALATE. On ESCALATE, include the four-field escalation request block defined in the code-review skill.
+> Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 Wait for the reviewer to complete before continuing.
 
@@ -150,26 +153,26 @@ Increment the review cycle counter.
 
 #### On ESCALATE
 
-Follow the two-phase escalation procedure from `ai-process/processes/escalation-procedure.md`:
+Follow the two-phase escalation procedure below. Phase 1 is a single Architect consultation; Phase 2 is human escalation. The chain is linear — no second Architect round.
 
 **Phase 1 — Architect Consultation:**
-Spawn the Architect agent with a structured request:
-- Use the `escalation-consultation` skill.
-- Problem: what the reviewer found.
-- Attempted: what the Developer tried, including diagnosis attempts and review cycles.
-- Failed because: why the bug still cannot pass.
-- Question: specific guidance needed to continue within the bug report and approved specification.
+**Spawn the Architect subagent** with this prompt:
+
+> "Use the escalation-consultation skill for bug `project/bugs/in-progress/<bug-file>`.
+> Problem: <what the reviewer found>
+> Attempted: <what the Developer tried, including diagnosis attempts and review cycles>
+> Failed because: <why the bug still cannot pass>
+> Question: <specific guidance needed to continue within the bug report and approved specification>
+> Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 If the Architect resolves the issue, go back to **Step 5** with the Architect's guidance.
 If the Architect cannot resolve it, proceed to Phase 2.
 
 **Phase 2 — Human Escalation:**
-1. Leave the bug file in `project/bugs/in-progress/` — there is no `blocked/` state for bugs
-2. Stop the loop entirely
-3. Report to the human:
-   - Which bug is stuck
-   - Full chain: reviewer verdict → what the Developer tried → architect's advice and why it was insufficient
-   - What the human should do next (revise the bug description, provide guidance, or defer the fix)
+1. Leave the bug file in `project/bugs/in-progress/` — there is no `blocked/` state for bugs.
+2. Switch to `dev-agent` and commit the escalation marker: `chore(bugs): escalate B-NNN — needs human review`.
+3. Stop the loop entirely.
+4. Produce the report using the Phase 2 Human Escalation Report template defined in the `escalation-consultation` skill. Fill every section (Work item, Original request, Self-recovery attempts, Architect analysis, Why human input is required, Decision needed).
 
 ### Step 8: Loop Complete
 
@@ -185,7 +188,7 @@ It is local to each bug — one bug failing twice does not affect the counter fo
 
 ## Commit Conventions
 
-All orchestrator commits follow the project's git conventions from `ai-process/guidelines/git-conventions.md`:
+All orchestrator commits follow the `git-conventions` skill. Canonical patterns for this orchestrator:
 
 | What | Branch | Message |
 |---|---|---|

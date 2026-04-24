@@ -68,11 +68,6 @@ To reduce the team: keep only the agent files you need. The workflow still works
 - Gate 5 is human final merge sign-off.
 - If your project needs a different gate model, update `ai-process/processes/quality-gates.md`, `ai-process/processes/workflow-overview.md`, and the affected skills together.
 
-**Temperature guidance** — In agent definitions:
-- The defaults (creative 0.7, structured 0.2, execution 0.3, review 0.4) work well for most cases.
-- Lower temperatures for safety-critical code.
-- Higher temperatures for creative or design-heavy work.
-
 **Escalation thresholds** — In `ai-process/processes/escalation-procedure.md`:
 - Default: architect consultation after failure, then human escalation.
 - For faster iteration: skip architect, escalate directly to human.
@@ -82,7 +77,7 @@ To reduce the team: keep only the agent files you need. The workflow still works
 
 ### Adding New Agent Roles
 
-Use `.claude/agents/TEMPLATE-agent.md`. Common additions:
+Use `guides/agent_template.md` as a reference. Common additions:
 - **DevOps agent** — manages CI/CD, deployment, infrastructure.
 - **Documentation agent** — writes user-facing docs, API references.
 - **Security agent** — dedicated security review, dependency auditing.

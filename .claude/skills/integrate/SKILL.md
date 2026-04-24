@@ -2,7 +2,7 @@
 name: integrate
 description: Integrate a task or bug branch into a destination branch. Verifies expected changes, runs tests on the source branch, merges, re-runs tests for regressions, files bugs on failure, and deletes the branch on success.
 argument-hint: "<branch-or-task-id> [destination-branch]"
-allowed-tools: Read, Grep, Glob, Bash, Skill(conflict-resolution), Skill(new-bug)
+allowed-tools: Read, Grep, Glob, Bash, Skill(conflict-resolution), Skill(new-bug), Skill(git-conventions)
 ---
 
 # Integrate
@@ -177,7 +177,7 @@ Reached only when both Step 4 and Step 6 tests pass.
 
 ## Commit Conventions
 
-All integrator commits follow `ai-process/guidelines/git-conventions.md`:
+All integrator commits follow the `git-conventions` skill. Canonical patterns for this skill:
 
 | What | Branch | Message pattern |
 |---|---|---|
@@ -185,6 +185,19 @@ All integrator commits follow `ai-process/guidelines/git-conventions.md`:
 | Merge bug branch | `<destination>` | `chore(bugs): merge B-NNN short-description` |
 | Move task to completed | `<destination>` | `chore(tasks): move T-NNN to completed` |
 | Revert on regression | `<destination>` | `chore(<kind>): revert merge of <branch> — regression in <tests>` |
+
+## Escalation
+
+The Integrator's self-recovery threshold is **one bisect cycle**. If a post-merge regression cannot be localized to a single task branch after one bisect, or the merge conflict in Step 5 cannot be resolved by the `conflict-resolution` skill, stop and return `ESCALATE` with a structured request:
+
+```text
+Problem: [what went wrong — unresolvable conflict, multi-task regression, etc.]
+Attempted: [merge attempt, conflict-resolution invocation, bisect scope]
+Failed because: [why the single-bisect or conflict-resolution could not isolate the cause]
+Question: [specific guidance needed — which source task owns the behavior, which spec applies, etc.]
+```
+
+The active loop routes the request to the Architect via the `escalation-consultation` skill. Do not force-resolve or pick a side in a semantic conflict.
 
 ## What This Skill Does NOT Do
 

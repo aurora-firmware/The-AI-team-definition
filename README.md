@@ -135,6 +135,15 @@ The normal workflow is:
 
 See `guides/setup-guide.md` for the complete file list, CLAUDE.md starter template, and verification steps.
 
+## Guides
+
+| Guide | Purpose |
+|---|---|
+| [`guides/setup-guide.md`](guides/setup-guide.md) | Step-by-step walkthrough for bootstrapping a new project with the framework |
+| [`guides/customization-guide.md`](guides/customization-guide.md) | What to adapt when tailoring the framework to your project's stack and conventions |
+| [`guides/agent_template.md`](guides/agent_template.md) | Canonical template and rules for writing new agent definitions |
+| [`guides/skill_template.md`](guides/skill_template.md) | Canonical template and rules for writing new skill definitions |
+
 ## Repository Structure
 
 ```

@@ -40,7 +40,14 @@ Record the exact command, error message, stack trace, logs, failing assertion, o
 
 If the issue is intermittent, run enough attempts to establish a pattern and record the frequency.
 If the issue cannot be reproduced, do not guess at a fix.
-Record what was tried, what evidence still exists, and the next diagnostic step; then escalate if no evidence-backed fault hypothesis can be formed.
+Record what was tried, what evidence still exists, and the next diagnostic step; then return `ESCALATE` with the structured four-field block below if no evidence-backed fault hypothesis can be formed. The active loop routes the request to the Architect via the `escalation-consultation` skill.
+
+```text
+Problem: [the observed symptom and why reproduction has failed]
+Attempted: [reproduction strategies, instrumentation, logs inspected]
+Failed because: [what evidence is missing, what assumptions could not be validated]
+Question: [specific decision or guidance needed from the Architect]
+```
 
 ### Step 2: Gather Context and Logs
 

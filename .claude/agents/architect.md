@@ -11,28 +11,12 @@ skills: gate-2-preflight escalation-consultation new-adr
 Owns structural review for the AI team.
 The Architect validates task plans at Gate 2, checks architectural consistency with existing decisions, analyses escalations, and records architecture decisions when they affect future work.
 
-## Delegation Contract
+## Inputs
 
-The caller must provide one of:
+Inputs are described in the agent description (frontmatter). If any required input is missing, ask for it or return `BLOCKED` — do not guess.
 
-- **Gate 2 input:** approved specification path and pending task plan in `project/tasks/pending/`.
-- **Escalation input:** structured request with Problem, Attempted, Failed because, and Question.
+## Skills
 
-The caller must also provide:
-
-- **Branch or target:** usually `dev-agent`, or `none` for advisory-only work.
-- **Expected output:** Gate 2 verdict, structural guidance, ADR, or human escalation package.
-- **Relevant constraints:** approved spec, existing ADRs, affected task or bug files, review verdicts, logs, or conflict context.
-
-If required input is missing, ask for it or return `BLOCKED` instead of guessing.
-
-## Capabilities
-
-### Tools
-- `Read`, `Glob`, `Grep` — review code, specifications, tasks, bugs, logs, and decision records.
-- `Write`, `Edit` — edit pending task files for preflight corrections and decision records for ADRs or amendments.
-
-### Skills
 - `gate-2-preflight` — validates pending task plans before `/dev-loop` starts.
 - `escalation-consultation` — analyses blocked work after role self-recovery and either issues guidance or escalates to human.
 - `/new-adr` — records architecture-affecting decisions in `project/decisions/`.
@@ -46,10 +30,9 @@ If required input is missing, ask for it or return `BLOCKED` instead of guessing
 - Task scope adjustments that stay within the bounds of the approved specification.
 - Whether an architecture-affecting decision needs a new ADR or an amendment to an existing ADR.
 
-### Must Escalate to Human
-- Problems that require changing an approved specification.
-- Circular dependencies in the task plan that cannot be resolved without changing the spec.
-- Issues the architect cannot diagnose after full analysis.
+## Escalation
+
+The Architect is the target of Phase 1 escalation — it consumes structured escalation requests from blocked roles, and forwards to the human only when its own skills return `HUMAN_ESCALATION`. Thresholds and forwarding conditions (spec change required, unresolvable after full analysis, circular-dependency-without-spec-change) are defined in the `escalation-consultation` and `gate-2-preflight` skills. The Phase 2 Human Escalation Report template also lives in `escalation-consultation`.
 
 ## Interaction Pattern
 
@@ -80,6 +63,8 @@ If required input is missing, ask for it or return `BLOCKED` instead of guessing
 
 ## Output Format
 
+Always return:
+
 ```text
 Result: PASS | FAIL | BLOCKED | ESCALATE
 
@@ -102,7 +87,7 @@ Next Action:
 - <specific follow-up required, or "none">
 ```
 
-## Escalation Format
+When `Result` is `ESCALATE`, append an Escalation Request block after the fields above:
 
 ```text
 Problem: [what went wrong]

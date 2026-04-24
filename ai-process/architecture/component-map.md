@@ -62,7 +62,7 @@ This document maps the ai-process roles, procedures, processes, and gates to the
 | Task Board | Directory tree | Task lifecycle tracking | `project/tasks/{pending,in-progress,completed,blocked}/` |
 | Bug Tracker | Directory tree | Bug lifecycle tracking | `project/bugs/{open,in-progress,resolved}/` |
 | Decision Log | Directory | Architecture decision records | `project/decisions/` |
-| Templates | Procedure assets | Reusable document formats | `.claude/skills/*/assets/` and `ai-process/templates/` |
+| Templates | Procedure assets | Reusable document formats | `.claude/skills/*/assets/` |
 | Process Docs | Directory | Workflow and procedure definitions | `ai-process/processes/` |
 | Guidelines | Directory | Standards and checklists | `ai-process/guidelines/` |
 | Architecture Docs | Directory | System design documentation | `ai-process/architecture/` |

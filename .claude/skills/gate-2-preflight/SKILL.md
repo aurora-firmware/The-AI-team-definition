@@ -63,10 +63,10 @@ If the plan fails:
 
 ## Output Format
 
-Use this structure:
+Use this structure — matches the Architect agent's standard `Result:` vocabulary:
 
 ```text
-Gate 2 Verdict: PASS | FAIL | ESCALATE
+Result: PASS | FAIL | BLOCKED | ESCALATE
 
 Spec reviewed: project/specs/<file>
 Tasks reviewed: <count>
@@ -80,6 +80,19 @@ Corrections made:
 Next owner:
 - Planner | Development Loop | Human
 ```
+
+`BLOCKED` is returned when required inputs are missing (for example, the approved specification path was not provided).
+
+When `Result` is `ESCALATE`, append an Escalation Request block after the fields above:
+
+```text
+Problem: [why the plan cannot be validated — spec contradiction, irresolvable circular dependency, unresolved architecture decision]
+Attempted: [checks already run and any corrections attempted in-place]
+Failed because: [why the problem requires changing the approved specification]
+Question: [specific decision or guidance needed from the Human]
+```
+
+Then produce a Phase 2 Human Escalation Report using the template defined in the `escalation-consultation` skill. The Planner (caller of Gate 2) forwards the report to the human alongside the preflight verdict.
 
 ## Quality Criteria
 

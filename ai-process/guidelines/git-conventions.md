@@ -60,6 +60,8 @@ chore(tasks): move T-004 to completed
 | **Architect** | After producing an ADR or amendment | `dev-agent` |
 | **Integrator** | One merge commit per task or bug branch merged into its target branch | target branch |
 
+<!-- Implementation-layer copy: .claude/skills/git-conventions/SKILL.md — changes must be made to both files atomically. -->
+
 ## Hard Rules
 
 - No `--no-verify`. Fix the hook failure instead.
