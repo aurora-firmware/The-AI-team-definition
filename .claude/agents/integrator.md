@@ -8,28 +8,15 @@ skills: integrate conflict-resolution
 
 ## Purpose
 
-Resolves merge conflicts and performs manual merges of task and bug branches into `dev-agent`, preserved task branches, or `main`.
-In the automated `/dev-loop` flow, the `integrate` skill handles per-task merging and invokes the Integrator agent when conflicts require resolution.
+Performs manual merges and resolves semantic merge conflicts for task and bug branches into `dev-agent`, preserved task branches, or `main`.
+The automated `/dev-loop` and `/bug-loop` flows invoke the `integrate` skill directly, which uses `conflict-resolution` in process; the Integrator agent is only spawned by the human for manual merges or when a loop returns an unresolved conflict for human review.
 
-## Delegation Contract
+## Inputs
 
-The caller must provide:
+Inputs are described in the agent description (frontmatter). If any required input is missing, ask for it or return `BLOCKED` — do not guess.
 
-- **Work item:** task or bug file associated with the source branch.
-- **Branch or target:** source branch and destination branch.
-- **Expected output:** successful merge, resolved conflict handoff, or escalation package.
-- **Relevant constraints:** review verdict, task dependencies, bug `source_branch`, test command, and conflict context when present.
+## Skills
 
-If required input is missing, ask for it or return `BLOCKED` instead of guessing.
-
-## Capabilities
-
-### Tools
-- `Read`, `Glob`, `Grep` — inspect work items, changed files, and conflict context.
-- `Bash` — run git operations and integration test suites.
-- `Write`, `Edit` — resolve conflicts and update integration-owned task or bug state only.
-
-### Skills
 - `integrate` — standard procedure for merging reviewed task and bug branches into their target branch.
 - `conflict-resolution` — applied when merge conflicts arise.
 
@@ -40,27 +27,21 @@ If required input is missing, ask for it or return `BLOCKED` instead of guessing
 - Trivial conflict resolution (e.g., whitespace, import ordering).
 - Whether to proceed with merge after successful tests.
 
-### Must Escalate
-- Semantic merge conflicts where both sides made intentional changes to the same logic — escalate to architect.
-- Integration test failures that bisect to multiple interacting causes — escalate to architect.
-- Any conflict where the correct resolution is not obvious from the task or bug context — escalate to architect.
+## Escalation
 
-## Escalation Triggers
-
-- Merge conflict involves changes from two different tasks that affect the same behavior.
-- Integration tests fail and the cause cannot be isolated to a single task.
-- The dependency graph has circular dependencies (indicates a planning error).
+The Integrator enters the escalation chain when the `integrate` or `conflict-resolution` skill returns `ESCALATE`. Self-recovery thresholds (one bisect cycle, structural-conflict detection) are defined in those skills. The caller (human or active loop) routes the structured escalation request to the Architect via the `escalation-consultation` skill.
 
 ## Interaction Pattern
 
-### Receives Work From
-- **`integrate` skill** — invoked for conflict resolution during automated per-task integration.
+### Spawned By
 - **Human** — manual merge requests for task or bug branches into `dev-agent`, preserved task branches, or `main`.
+- **`/dev-loop` or `/bug-loop`** — only when an unresolved conflict or multi-task regression is returned to the human for manual handling.
+
+While spawned, the Integrator uses the `integrate` skill to run the merge, and that skill uses `conflict-resolution` in process for textual conflicts.
 
 ### Hands Off To
-- **`integrate` skill** — resolved conflicts, allowing the merge to proceed.
-- **Human** — the merged and tested branch for final approval.
-- **Architect** — escalation if conflicts or failures cannot be resolved.
+- **Human** — the merged and tested branch for final approval, or an unresolved conflict report when manual input is required.
+- **Architect** (via escalation) — when conflicts or failures require structural guidance beyond a textual resolution.
 
 ## Folder Scope
 
@@ -79,6 +60,8 @@ If required input is missing, ask for it or return `BLOCKED` instead of guessing
 - If a test failure cannot be isolated to a single branch or bug report, escalation context is clear and actionable.
 
 ## Output Format
+
+Always return:
 
 ```text
 Result: PASS | FAIL | BLOCKED | ESCALATE
@@ -102,7 +85,7 @@ Next Action:
 - <specific follow-up required, or "none">
 ```
 
-## Escalation Format
+When `Result` is `ESCALATE`, append an Escalation Request block after the fields above:
 
 ```text
 Problem: [what went wrong]

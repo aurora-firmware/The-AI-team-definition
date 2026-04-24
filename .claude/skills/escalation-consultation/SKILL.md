@@ -68,6 +68,37 @@ Human escalation required because:
 - <only when verdict is HUMAN_ESCALATION>
 ```
 
+### Phase 2 — Human Escalation Report Template
+
+When the verdict is `HUMAN_ESCALATION`, also produce a Phase 2 Human Escalation Report. This is the single canonical template that all callers (dev-loop, bug-loop, write-plan, and any future orchestrator) use when handing off to a human. The report is plain markdown appended to the final output.
+
+```text
+## Human Escalation Report
+
+Work item: <task or bug ID and path to canonical file>
+Source skill / loop: <dev-loop | bug-loop | write-plan | other>
+Date: <YYYY-MM-DD>
+
+### Original request
+<The blocked role's escalation request, verbatim — the four-field Problem / Attempted / Failed because / Question block.>
+
+### Self-recovery attempts
+<What the blocked role tried before escalating, including retry counts, review cycles, or bisect attempts.>
+
+### Architect analysis
+<Classification, root-cause analysis, and any directive the Architect issued (or "no resolution possible — see reason below").>
+
+### Why human input is required
+<Precise reason the Architect cannot resolve: approved spec must change, contradictory constraints, etc.>
+
+### Decision needed
+<Enumerated options for the human, each with its downstream effect:
+- Revise the spec — Planner edits spec and re-runs Gate 2.
+- Modify the task/bug — task or bug file is updated in place; work resumes.
+- Provide guidance — blocked role applies guidance and continues.
+- Defer — work item moves to blocked/deferred state.>
+```
+
 ## Quality Criteria
 
 - The response addresses root cause, not symptoms.

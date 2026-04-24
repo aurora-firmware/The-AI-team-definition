@@ -28,7 +28,14 @@ Classify the conflict:
 
 ### Step 3: Resolve
 Apply the resolution that preserves the intent of both changes.
-If the changes are incompatible (one deletes what the other modifies), escalate to the architect.
+If the changes are incompatible (one deletes what the other modifies), or the conflict is Structural and neither side clearly serves both tasks, stop and return `ESCALATE` using the structured four-field request below. The caller (typically the `integrate` skill) routes the request to the Architect via the `escalation-consultation` skill.
+
+```text
+Problem: [the specific conflict that cannot be resolved — file, lines, incompatibility]
+Attempted: [which resolution strategies were considered, including reading both work items]
+Failed because: [why neither side's intent can be preserved without guessing]
+Question: [specific decision or guidance needed from the Architect]
+```
 
 ### Step 4: Verify
 Run the test suites or fix-verification commands for both work items to confirm neither is broken.

@@ -43,17 +43,18 @@ Verify atomicity: can each task be completed in a single agent pass? If a task f
 Save all task files to `project/tasks/pending/`.
 
 ### Step 6: Architect Preflight
-Spawn the **Architect agent** with this prompt:
+**Spawn the Architect subagent** with this prompt:
 
 > "Review the task plan just placed in `project/tasks/pending/` for the spec at `project/specs/<spec-file>`.
 > Use the gate-2-preflight skill.
 > Validate dependency correctness, file conflict risk, architectural consistency with `project/decisions/`, atomicity, and implementation readiness.
-> If all is sound, return `Gate 2 Verdict: PASS` and state that the plan is ready for /dev-loop.
-> If issues are found, return `Gate 2 Verdict: FAIL` with exact Planner corrections, or `Gate 2 Verdict: ESCALATE` only when a problem requires changing the approved specification."
+> If all is sound, return `Result: PASS` and state that the plan is ready for /dev-loop.
+> If issues are found, return `Result: FAIL` with exact Planner corrections, or `Result: ESCALATE` only when a problem requires changing the approved specification.
+> Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 Wait for the Architect to complete.
 If the Architect requests Planner revisions, address them and re-trigger the preflight.
-If the Architect escalates because the approved specification must change, stop and return the escalation to the human.
+If the Architect escalates because the approved specification must change, stop and return the escalation to the human using the Phase 2 human report template defined in the `escalation-consultation` skill.
 
 ## Output Format
 

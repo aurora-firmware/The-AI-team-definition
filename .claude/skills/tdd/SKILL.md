@@ -10,7 +10,7 @@ allowed-tools: Read, Grep, Glob, Write, Edit, Bash
 
 - **Task or bug file** — with acceptance criteria or fix-verification steps.
 - **Project test setup** — test framework, directory structure, how to run tests.
-- **Coding standards** — `ai-process/guidelines/coding-standards.md` for framework standards, plus target-project guidance such as the project `CLAUDE.md`, `project/docs/coding_guidelines.md`, README, build configuration, and human-provided instructions.
+- **Target-project coding guidance** — the project `CLAUDE.md`, `project/docs/coding_guidelines.md`, README, build configuration, and any human-provided instructions (the framework-level coding standards are carried by the invoking role's definition).
 
 Task and bug files are canonical lifecycle state on `dev-agent`.
 Read their existing Work Log and Diagnosis Log entries, but return new log content as a handoff to the active loop instead of editing lifecycle files directly.
@@ -51,6 +51,7 @@ Do not add extra logic, error handling, or features beyond what the test require
 ### Step 5: Verify the Test Passes
 Run the test. It must pass.
 If it fails, fix the implementation (not the test, unless the test was wrong).
+If Step 4 → Step 5 fails three consecutive times on the same acceptance criterion, stop and apply the Escalation section below.
 
 ### Step 6: Refactor
 Clean up the code without changing behavior.
@@ -65,6 +66,25 @@ After refactor and before handing back to the orchestrator, prepare a dated Work
 Use a free-prose body that summarizes what was done, what was tried and rejected, and what remains.
 The session number increments monotonically across all sessions on the same task or bug.
 Return this entry to the active loop. The loop appends and commits it to the canonical task or bug file on `dev-agent`.
+
+## Escalation
+
+Return `ESCALATE` under any of these conditions. All cases use the same structured four-field request; the active loop forwards it to the Architect via the `escalation-consultation` skill. Do not resume the TDD cycle until the Architect responds.
+
+**Retry threshold.** Three consecutive Step 4 → Step 5 failures on the same acceptance criterion.
+
+**Boundary violations (no retry — escalate on first detection):**
+- The task can only be completed by modifying a file that is not listed under `Files to Touch` in the task file.
+- Implementation reveals a dependency on another task that is not listed under `Dependencies`.
+- The acceptance criteria cannot be satisfied without changing the approved specification.
+- Requirements in the task are internally contradictory.
+
+```text
+Problem: [the criterion that will not pass, or the boundary that was violated]
+Attempted: [implementations tried on retry, or why the boundary cannot be honoured as written]
+Failed because: [the specific reason — test output, scope mismatch, contradictory requirement]
+Question: [specific guidance needed to continue within the approved specification]
+```
 
 ## Output Format
 

@@ -2,15 +2,55 @@
 title: "Agent Template"
 status: draft
 created: 2026-04-22
+updated: 2026-04-24
 ---
 
 # Agent Template
 
 Use this template when creating or updating an agent for this framework.
 Agents are **roles**: they define identity, authority, scope, handoffs, and output expectations.
-Step-by-step procedures belong in skills.
+Procedures — the steps, thresholds, and branching logic — belong in skills.
 
-This template applies the subagent best practices from `anthropic_agents_course.md`: specific descriptions, structured output, obstacle reporting, and limited tool access.
+This template applies the subagent best practices from Anthropics subagent course: specific descriptions, structured output, obstacle reporting, and limited tool access. It also reflects the conventions settled during the 2026-04 review of `.claude/`.
+
+## The Separation Rule
+
+- Agent = identity + authority ("who I am, what I'm allowed to decide").
+- Skill = procedure ("what to do step by step").
+
+If you need to write "first do X, then Y, then Z" — that's a skill. Put it there and have the agent *invoke* the skill by name.
+
+If you need to write "I can decide X alone; Y needs the Architect; Z needs a human" — that's an agent.
+
+## What Goes Where
+
+| Content | Agent | Skill |
+|---|---|---|
+| One-sentence role purpose | ✅ | ✗ |
+| Tools list | ✅ (frontmatter) | ✅ (frontmatter, as `allowed-tools`) |
+| List of skills used and when | ✅ | ✗ |
+| Decision-authority boundaries (what I can decide alone) | ✅ | ✗ |
+| Spawned-by / hands-off-to graph | ✅ | ✗ |
+| Folder scope (read / write / never-touch paths) | ✅ | ✗ |
+| Quality bar ("done" criteria and embedded checklists) | ✅ | ✗ |
+| Structured output format | ✅ | ✅ (procedure skills only) |
+| Numbered procedural steps | ✗ | ✅ |
+| Retry thresholds / escalation triggers | ✗ | ✅ |
+| The 4-field escalation request block | ✗ | ✅ |
+
+## Canonical Section Order
+
+Every agent in this framework uses exactly these nine sections, in this order:
+
+1. `## Purpose`
+2. `## Inputs`
+3. `## Skills`
+4. `## Decision Authority`
+5. `## Escalation`
+6. `## Interaction Pattern`
+7. `## Folder Scope`
+8. `## Quality Bar`
+9. `## Output Format`
 
 ## Agent File Template
 
@@ -25,87 +65,67 @@ skills: skill-one skill-two
 
 ## Purpose
 
-One short paragraph describing the role this agent plays in the AI team.
-State what outcome this agent is responsible for.
+One short paragraph stating the role this agent plays and the outcome it is responsible for.
 Do not include step-by-step procedure logic here.
 
-## Delegation Contract
+## Inputs
 
-The caller must provide:
+Inputs are described in the agent description (frontmatter). If any required input is missing, ask for it or return `BLOCKED` — do not guess.
 
-- **Work item:** `project/.../<file>.md`
-- **Branch or target:** `branch-name` or `none`
-- **Expected output:** [verdict, document, code handoff, guidance, merge result]
-- **Relevant constraints:** [spec, ADRs, files to review, test command, escalation context]
-
-If required input is missing, ask for it or return `BLOCKED` instead of guessing.
-
-## Capabilities
-
-### Tools
-
-- `Read`, `Glob`, `Grep` — use for context gathering.
-- `Bash` — use only when this role must inspect git state, diffs, tests, or branch status.
-- `Write`, `Edit` — use only when this role is allowed to change files.
-
-Keep tool access narrow.
-Do not grant write tools to read-only roles.
-
-### Skills
+## Skills
 
 - `skill-one` — when this role uses it.
 - `skill-two` — when this role uses it.
+- `/action-skill` — when this role invokes it.
 
-Skills define procedures.
-This agent invokes them but does not duplicate their steps.
+Skills define procedures. This agent invokes them but does not duplicate their steps.
 
 ## Decision Authority
 
 ### Can Decide Alone
 
-- [Decision this role owns]
+- [Decision this role owns within its scope]
 - [Decision within approved spec/task/bug scope]
 
-### Must Escalate
+## Escalation
 
-- [Condition requiring Architect]
-- [Condition requiring Human]
-- [Condition requiring approved spec change]
+The [Role] enters the escalation chain when the `<skill-name>` skill returns `ESCALATE`. Self-recovery thresholds and trigger conditions (retry counts, boundary violations, review cycles) are defined in that skill. The caller (active loop or human) routes the structured escalation request to the Architect via the `escalation-consultation` skill.
 
 ## Interaction Pattern
 
-### Receives Work From
+### Spawned By
 
-- **[Role/process/human]** — what is received and in what state.
+- **[Role / process / human]** — what state the work arrives in.
 
 ### Hands Off To
 
-- **[Role/process/human]** — what is delivered and where it is recorded.
+- **[Role / process / human]** — what is delivered and where it is recorded.
 
 ## Folder Scope
 
 | Access | Paths |
 |---|---|
-| Read | [paths] |
+| Read | [paths or `anywhere`] |
 | Write / Edit | [paths or `none`] |
 | Never touch | [paths] |
 
 ## Quality Bar
 
-- [Done criterion 1]
+- [Done criterion 1 — observable, not procedural]
 - [Done criterion 2]
-- [Evidence expected]
 - [Scope constraint]
+
+Embedded checklists (e.g., coding standards for Developer, review checklist for Reviewer) live under this heading. They describe *what good output looks like*, not *how to produce it*.
 
 ## Output Format
 
-Return this structure at the end of every assignment:
+Always return:
 
 ```text
 Result: PASS | FAIL | BLOCKED | ESCALATE
 
 Summary:
-- <brief statement of what was reviewed, created, changed, or decided>
+- <brief statement of what was produced or decided>
 
 Artifacts:
 - <files created/updated/read as primary evidence>
@@ -123,9 +143,7 @@ Next Action:
 - <specific follow-up required, or "none">
 ```
 
-## Escalation Format
-
-When escalating, use:
+When `Result` is `ESCALATE`, append an Escalation Request block after the fields above:
 
 ```text
 Problem: [what went wrong]
@@ -133,62 +151,73 @@ Attempted: [what was tried, including retry count or review cycle]
 Failed because: [why it did not work]
 Question: [specific decision or guidance needed]
 ```
-
-## Anti-Patterns
-
-- Do not include detailed procedural steps; put them in a skill.
-- Do not claim generic expertise as the reason this agent exists.
-- Do not run hidden test-runner work when the caller needs full test output.
-- Do not split tightly coupled sequential work across multiple agents.
-- Do not modify files outside the folder scope.
 ````
 
 ## Description Guidance
 
-The `description` is loaded before the full agent file.
-It controls when the agent is selected and shapes the prompt the caller gives it.
+The `description` is loaded before the full agent file. It controls when the agent is selected and shapes the prompt the caller gives it.
 
 A good description includes:
 
 - The role's concrete responsibility.
 - The workflow point where it should be used.
 - The exact inputs the caller should provide.
-- The output the caller should expect.
 
-Example:
-
+**Good example** (from `reviewer.md`):
 ```yaml
-description: Reviews completed task or bug-fix work after Developer handoff. Caller must provide the task or bug file, source branch, relevant diff or changed files, and expected verdict location.
+description: Reviews completed task or bug-fix work after Developer handoff. Caller must provide the task or bug file, source branch, relevant diff or changed files, test evidence, and expected verdict location.
 ```
 
-Avoid vague descriptions such as:
-
+**Bad example — too vague:**
 ```yaml
 description: Expert code reviewer.
 ```
 
 ## Tool Guidance
 
-Start with the narrowest viable tool set:
+Start with the narrowest viable tool set. Broader access is harder to reason about and prone to accidents.
 
-- Research or structural read-only roles: `Read, Glob, Grep`
-- Review roles that inspect git diffs or run verification: `Read, Glob, Grep, Bash`
-- Roles that write verdicts or documents: add `Write, Edit`
-- Roles that modify code or resolve conflicts: add `Write, Edit, Bash`
+| Role shape | Tool frontmatter |
+|---|---|
+| Read-only research / structural review | `Read, Glob, Grep` |
+| Read plus git / test inspection | `Read, Glob, Grep, Bash` |
+| Writes verdicts or planning documents | `Read, Glob, Grep, Write, Edit` |
+| Writes source and test code | `Read, Glob, Grep, Write, Edit, Bash` |
 
 If a role has broad tools for platform reasons, restate path restrictions in `Folder Scope` and `Quality Bar`.
 
-## Fit With This Repo
+## Self-Contained `.claude/` Rule
 
-Use these defaults for the AI team:
+The `.claude/agents/` and `.claude/skills/` folders must be standalone. Agents must **not** reference content outside `.claude/` — no `ai-process/...` paths, no cross-repo citations. If a rule belongs to the framework spec (e.g. coding standards, review checklist), embed the content directly in the agent or skill that owns it, or create a dedicated skill (see `git-conventions` as an example of extracting cross-cutting rules into a skill when multiple callers need them).
 
-| Agent | Expected Tool Shape | Main Skills |
-|---|---|---|
-| Planner | Read/write docs and tasks; no source edits | `brainstorm`, `write-plan`, `new-spec`, `new-task` |
-| Architect | Read broadly; edit pending tasks and ADRs only | `gate-2-preflight`, `escalation-consultation`, `new-adr` |
-| Developer | Edit source/tests and assigned work logs | `debug`, `tdd`, `new-bug` |
-| Reviewer | Read source/tests; write verdicts only | `code-review`, `new-bug` |
-| Integrator | Git/test/conflict tools; write only integration-owned state | `integrate`, `conflict-resolution` |
+## Where Escalation Mechanics Live
 
-Keep agents stable and small.
-When behavior becomes a repeatable sequence, create or update a skill instead of expanding the agent file.
+**In the agent** — only a one-paragraph `## Escalation` pointer naming which skill(s) own the thresholds.
+
+**In the skills the agent uses** — the actual mechanics:
+- Retry threshold (e.g., *"three consecutive Step 4 → Step 5 failures"*).
+- Boundary violations (e.g., *"task requires modifying a file not listed in Files to Touch"*).
+- The 4-field escalation request block (`Problem / Attempted / Failed because / Question`).
+
+Rationale: thresholds change as the procedure changes. Keeping them in one place (the skill) prevents drift across role definitions.
+
+## Canonical Agents In This Repo
+
+| Agent | Model | Tools | Main skills |
+|---|---|---|---|
+| Planner | Sonnet | `Read, Write, Edit, Glob, Grep` | `brainstorm`, `write-plan`, `/new-spec`, `/new-task` |
+| Architect | Opus | `Read, Write, Edit, Glob, Grep` | `gate-2-preflight`, `escalation-consultation`, `/new-adr` |
+| Developer | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `tdd`, `debug`, `/new-bug` |
+| Reviewer | Opus | `Read, Write, Edit, Glob, Grep, Bash` | `code-review`, `/new-bug` |
+| Integrator | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `integrate`, `conflict-resolution` |
+
+Keep agents stable and small. When behavior becomes a repeatable sequence, create or update a skill rather than expanding the agent file.
+
+## Anti-Patterns
+
+- Embedding numbered procedures in the agent (belongs in a skill).
+- Duplicating `Must Escalate` and `Escalation Triggers` as two sections (collapse into one `## Escalation` pointer).
+- Generic-expertise descriptions ("expert X"). Describe the role, not the expertise.
+- Cross-referencing other agents operationally (*"spawned by the Integrator agent"* when in fact a skill is doing the work).
+- Broad tool access without Folder Scope restrictions.
+- Referencing `ai-process/` paths. Agents must be self-contained within `.claude/`.

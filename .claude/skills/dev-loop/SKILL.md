@@ -2,7 +2,7 @@
 name: dev-loop
 description: Fully autonomous implementation loop. Picks pending tasks one at a time, drives each through Developer → Reviewer cycles until the reviewer passes, commits, then moves to the next task. Stops only when the queue is empty, a task is blocked, or escalation is required.
 argument-hint: "[task-id | task-branch] — optional single task to process (e.g., T-012 or task/T-012-my-feature). If omitted, processes the full pending queue."
-allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate)
+allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate), Skill(git-conventions)
 disable-model-invocation: true
 ---
 
@@ -59,12 +59,13 @@ If no task has all dependencies satisfied, stop and report which tasks are waiti
 Before spawning the Developer, read the latest canonical task file from `dev-agent`.
 Check out the task branch `task/T-NNN-...`.
 
-**Spawn the Developer role** with this prompt:
+**Spawn the Developer subagent** with this prompt:
 
 > "Pick up the task from the canonical task file `project/tasks/in-progress/<task-file>` on `dev-agent` and implement it using the tdd skill.
 > You are on branch `task/T-NNN-...`. Commit after each red→green→refactor cycle.
 > Do not edit the task lifecycle file on the task branch.
-> Return a Work Log handoff entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The loop will append and commit it on `dev-agent`."
+> Return a Work Log handoff entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The loop will append and commit it on `dev-agent`.
+> Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 Wait for the Developer to complete before continuing.
 If the Developer does not return a Work Log handoff entry, stop with `BLOCKED` and report the missing handoff.
@@ -76,12 +77,13 @@ Record the Work Log handoff:
 
 ### Step 5: Review Cycle
 
-**Spawn the Reviewer agent** with this prompt:
+**Spawn the Reviewer subagent** with this prompt:
 
 > "Review the task using the canonical task file `project/tasks/in-progress/<task-file>` on `dev-agent` and the code-review skill.
 > The Developer has completed their work on branch `task/T-NNN-...`.
 > Append your verdict to the canonical task file's Review section under `### Review Verdict — YYYY-MM-DD` and commit it on `dev-agent`.
-> Verdict must be one of: PASS, FAIL, or ESCALATE."
+> Verdict must be one of: PASS, FAIL, or ESCALATE. On ESCALATE, include the four-field escalation request block defined in the code-review skill.
+> Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 Wait for the reviewer to complete before continuing.
 
@@ -114,30 +116,26 @@ Increment the review cycle counter.
 
 #### On ESCALATE
 
-Follow the two-phase escalation procedure from `ai-process/processes/escalation-procedure.md`.
+Follow the two-phase escalation procedure below. Phase 1 is a single Architect consultation; Phase 2 is human escalation. The chain is linear — no second Architect round.
 
 **Phase 1 — Architect Consultation:**
-Spawn the Architect agent with this prompt:
+**Spawn the Architect subagent** with this prompt:
 
 > "Use the escalation-consultation skill for task `project/tasks/in-progress/<task-file>`.
 > Problem: <what the reviewer or loop found>
 > Attempted: <what the Developer tried and how many review cycles occurred>
 > Failed because: <why the task still cannot pass>
-> Question: <specific guidance needed to continue within the approved specification>"
+> Question: <specific guidance needed to continue within the approved specification>
+> Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 If the Architect resolves the issue, go back to **Step 4** with the Architect's guidance.
 
 **Phase 2 — Human Escalation:**
 If the Architect cannot resolve the issue:
-1. Move the task file from `project/tasks/in-progress/` to `project/tasks/blocked/`
-2. Switch to `dev-agent` and commit: `chore(tasks): move T-NNN to blocked`
+1. Move the task file from `project/tasks/in-progress/` to `project/tasks/blocked/`.
+2. Switch to `dev-agent` and commit: `chore(tasks): escalate T-NNN — move to blocked`.
 3. Stop the loop entirely.
-4. Report the escalation clearly:
-   - Which task is blocked
-   - The last reviewer verdict and reason
-   - What the Developer tried
-   - The Architect's analysis
-   - What the human should do next (revise spec, modify task, provide guidance, or defer)
+4. Produce the report using the Phase 2 Human Escalation Report template defined in the `escalation-consultation` skill. Fill every section (Work item, Original request, Self-recovery attempts, Architect analysis, Why human input is required, Decision needed).
 
 ### Step 7: Loop Complete
 
@@ -154,13 +152,13 @@ It is local to each task — one task failing twice does not affect the counter 
 
 ## Commit Conventions
 
-All orchestrator commits follow the project's git conventions from `ai-process/guidelines/git-conventions.md`:
+All orchestrator commits follow the `git-conventions` skill. Canonical patterns for this orchestrator:
 
 | What | Branch | Message |
 |---|---|---|
 | Task moved to in-progress | `dev-agent` | `chore(tasks): move T-NNN to in-progress` |
 | Developer Work Log recorded | `dev-agent` | `chore(tasks): record T-NNN work log` |
-| Task moved to blocked | `dev-agent` | `chore(tasks): move T-NNN to blocked` |
+| Task escalated and moved to blocked | `dev-agent` | `chore(tasks): escalate T-NNN — move to blocked` |
 
 The `move T-NNN to completed` commit and merge commit are produced by the `integrate` skill, not by the dev-loop orchestrator.
 
