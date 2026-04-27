@@ -140,7 +140,7 @@ Because the human shaped the spec interactively, Gate 1 should be a quick confir
 
 ## Common Pitfalls
 
-- **Writing the spec before aligning** — producing a full document, then waiting for approval, is the old pattern. The goal is to arrive at the spec *together*.
+- **Writing the spec before aligning** — producing a full document, then waiting for approval. The goal is to arrive at the spec *together*.
 - **Asking too many questions in one round** — aim for about five per round. If the six internal categories cannot be covered materially within that budget, run a second round rather than stretching a single round indefinitely.
 - **Anchoring on the first idea** — always generate at least one meaningfully different alternative before committing to a direction.
 - **Solving the wrong problem** — re-read the original request after generating alternatives to verify you are addressing the actual need.
