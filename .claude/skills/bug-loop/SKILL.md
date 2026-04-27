@@ -12,7 +12,7 @@ Autonomous orchestrator that processes the open bug queue without human interven
 Each bug gets its own branch — bugs are never mixed on the same branch.
 Stops only when the queue is empty or when a bug requires human resolution after full escalation.
 
-## Inputs
+## Input Requirements
 
 Optional: one or more bug IDs as `$ARGUMENTS` (e.g., `B-001 B-003`).
 - If bug IDs are provided, the loop processes only those bugs — skipping all others in the queue.

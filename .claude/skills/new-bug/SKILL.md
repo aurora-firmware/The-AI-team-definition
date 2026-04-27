@@ -5,6 +5,8 @@ argument-hint: "[optional: bug title]"
 allowed-tools: Read, Glob, Write, Bash
 ---
 
+# New Bug
+
 Create a new bug report.
 
 ## Input Requirements
@@ -19,7 +21,7 @@ Required:
 - `actual-behavior`
 - `evidence`
 - `environment`
-- `source-branch` (`dev-agent` for existing defects unless a task-regression branch is provided)
+- `source-branch` (required for task-regression bugs; blank for existing defects on `dev-agent`)
 - `suspected-area` (or `unknown`)
 - `fix-verification`
 

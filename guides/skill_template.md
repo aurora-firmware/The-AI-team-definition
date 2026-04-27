@@ -2,14 +2,38 @@
 title: "Skill Template"
 status: draft
 created: 2026-04-22
-updated: 2026-04-24
+updated: 2026-04-27
 ---
 
 # Skill Template
 
 Use this template when creating a new skill for this framework. Skills are **procedures**: they describe what to do, in what order, with which inputs and outputs.
 
-This template reflects the conventions settled during the 2026-04 review of `.claude/`. It follows the [Claude Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices): concise `SKILL.md`, specific discovery metadata, progressive disclosure for detail, clear workflows, validation loops for quality-critical work.
+This template reflects the conventions settled during the 2026-04 review of `.claude/` and the [Claude Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices): concise `SKILL.md`, specific discovery metadata, progressive disclosure for detail, clear workflows, validation loops for quality-critical work.
+
+## Core Principles
+
+### Concise is key
+
+The context window is shared with the system prompt, conversation history, other skills' metadata, and the actual request. Only the `name` and `description` of every skill are pre-loaded; `SKILL.md` is read on demand. Even so, every token in `SKILL.md` competes with conversation history once loaded.
+
+Default assumption: **Claude is already smart**. Only add context Claude does not already have. Challenge each line: "Does Claude need this? Can I assume it knows? Does this paragraph justify its tokens?"
+
+Keep `SKILL.md` body **under 500 lines** for optimal performance. Above that, move detail into `references/` (see Progressive Disclosure).
+
+### Set appropriate degrees of freedom
+
+Match instruction specificity to the task's fragility:
+
+- **High freedom** (text guidance) — multiple valid approaches, decisions depend on context. Example: "Analyse code structure, check for edge cases, suggest readability improvements."
+- **Medium freedom** (templates, parameterised scripts) — preferred pattern exists, some variation acceptable. Example: "Use this template; customise as needed."
+- **Low freedom** (specific scripts, no parameters) — fragile, error-prone, consistency critical. Example: "Run exactly `python scripts/migrate.py --verify --backup`. Do not modify."
+
+Procedure skills in this framework lean **medium-to-low freedom**: numbered steps, named outputs, fixed verdict vocabulary. Orchestrator spawn prompts are **low freedom**: word them uniformly.
+
+### Test with the models you ship to
+
+A skill that works for Opus may need more detail for Haiku. If a skill will be invoked across multiple models in this team (e.g., Haiku for cheap orchestration, Sonnet for implementation, Opus for review), exercise it on each.
 
 ## Skill Categories
 
@@ -186,19 +210,27 @@ When an orchestrator exhausts Phase 1 (Architect) without resolution, it produce
 ## Frontmatter Guidance
 
 `name`:
-- Lowercase letters, numbers, and hyphens only.
-- Short and specific. Prefer action-oriented or noun-phrase names.
+- **Maximum 64 characters.** Lowercase letters, numbers, and hyphens only.
+- **Cannot contain** XML tags or the reserved words `anthropic`, `claude`.
+- Short and specific. Prefer action-oriented or noun-phrase names (`write-plan`, `code-review`, `git-conventions`). Anthropic's published guidance recommends gerund form (`writing-plans`); both are acceptable in this framework, but stay consistent with neighbouring skills.
 - Avoid vague names such as `helper`, `utils`, `tools`.
 
 `description`:
-- Third person.
-- State what the skill does and when to use it.
-- Include concrete trigger words, artifacts, and process states.
+- **Maximum 1024 characters.** Non-empty. No XML tags.
+- **Always third person.** The description is injected into the system prompt; first/second person ("I can…", "You can…") causes discovery problems.
+- State **what the skill does and when to use it** in the same sentence — concrete trigger words, artifacts, and process states.
 - Distinguish the skill from neighbouring skills.
 
 **Good example** (from `code-review/SKILL.md`):
 ```yaml
 description: Two-stage code review for completed tasks and bug fixes. Use when a Developer submits work and the Reviewer must check task acceptance or bug diagnosis criteria before reviewing code quality.
+```
+
+**Avoid:**
+```yaml
+description: Helps with code review.   # vague — no trigger
+description: I can review code.        # first person
+description: Use this when needed.     # no specifics
 ```
 
 `allowed-tools`:
@@ -248,25 +280,181 @@ Keep `SKILL.md` focused on the core workflow. Move detail out when it is conditi
 - Put domain references, schemas, examples, or long policies in `references/`.
 - Put deterministic or fragile operations in `scripts/`.
 
-Reference every optional file directly from `SKILL.md` using `${CLAUDE_SKILL_DIR}/...` or `.claude/skills/<skill>/...`. Keep references one level deep so the agent can find and read the right file without chasing nested links.
+Reference every optional file directly from `SKILL.md` using `${CLAUDE_SKILL_DIR}/...` or `.claude/skills/<skill>/...`. **Keep references one level deep.** When a referenced file links to *another* file, Claude often previews with `head` instead of reading fully — leading to incomplete information. Every supplementary file should be reachable from `SKILL.md` directly.
+
+For reference files longer than ~100 lines, include a **table of contents** at the top so partial reads still expose the full scope.
+
+### Pattern 1 — High-level guide with references
+
+`SKILL.md` shows the most-common path inline, then points to deep dives:
+
+```markdown
+## Quick start
+[the 80% path, inline]
+
+## Advanced
+**Form filling**: see [references/forms.md](references/forms.md)
+**API reference**: see [references/api.md](references/api.md)
+```
+
+### Pattern 2 — Domain-specific organisation
+
+When the skill spans multiple domains, organise references by domain so Claude only loads the relevant slice:
+
+```text
+bigquery-skill/
+├── SKILL.md
+└── references/
+    ├── finance.md
+    ├── sales.md
+    └── product.md
+```
+
+`SKILL.md` lists each domain and its file. A request about sales metrics never loads `finance.md`.
+
+### Pattern 3 — Conditional details
+
+Show the basic case inline; link advanced variants:
+
+```markdown
+## Editing documents
+For simple edits, modify the XML directly.
+**For tracked changes**: see [references/redlining.md](references/redlining.md)
+```
+
+## Workflows And Feedback Loops
+
+### Numbered steps and checklists
+
+For multi-step procedures, number steps and — for particularly long workflows — provide a checklist Claude can copy into its response and tick off:
+
+````markdown
+## Workflow
+
+Copy this checklist and check off as you go:
+
+```
+- [ ] Step 1: Read input
+- [ ] Step 2: Identify acceptance criteria
+- [ ] Step 3: Perform action
+- [ ] Step 4: Validate
+- [ ] Step 5: Produce output
+```
+
+**Step 1: …**
+````
+
+### Validation loops
+
+For quality-critical work, build an explicit *validate → fix → re-validate* loop into the procedure:
+
+```markdown
+1. Make the change.
+2. Run the validator (script, linter, or checklist).
+3. If validation fails, fix and return to step 2.
+4. Only proceed when validation passes.
+```
+
+This is the same pattern `tdd` uses (red → green → refactor with tests as the validator) and `code-review` uses (Stage 1 acceptance, Stage 2 quality).
+
+### Plan–validate–execute (for destructive or batch work)
+
+For complex, error-prone, or destructive operations, insert an intermediate machine-checkable artifact:
+
+```markdown
+1. Analyse inputs.
+2. **Produce a plan file** (e.g. `changes.json`).
+3. **Validate the plan** with a script that emits specific errors.
+4. Execute the plan.
+5. Verify the output.
+```
+
+Catches errors before they touch the real artifact and gives Claude an objective signal to iterate against.
+
+## Common Patterns
+
+### Template pattern
+
+When the skill produces a document or report, embed the template directly. State whether it is **strict** ("ALWAYS use this exact structure") or **flexible** ("Sensible default; adapt as needed"). Most agent-output blocks in this framework (`Result:`, `Diagnosis Log`, escalation block) are strict.
+
+### Examples pattern
+
+When output quality depends on style or tone (commit messages, escalation requests, review comments), include 2–3 concrete input/output pairs. Examples beat description.
+
+### Conditional workflow pattern
+
+When the procedure branches on input type, surface the decision point first:
+
+```markdown
+## Workflow
+
+1. Determine the modification type:
+   **Creating new content?** → Follow "Creation workflow"
+   **Editing existing?** → Follow "Editing workflow"
+
+2. Creation workflow: …
+3. Editing workflow: …
+```
+
+If branches grow large, push each into its own `references/` file.
+
+## Content Guidelines
+
+### Avoid time-sensitive information
+
+Do not write "if you're doing this before August 2026, use X". Use a current section plus an `<details>`-folded *Old patterns* section for historical context. Prefer durable framing: name the API version, not the date.
+
+### Use consistent terminology
+
+Pick one term per concept and use it throughout the skill (e.g., always "API endpoint" — never mix in "URL", "route", "path"). Inconsistent vocabulary makes Claude hedge and re-derive meaning.
+
+## Scripts
+
+For skills that bundle scripts under `scripts/`:
+
+- **Solve, don't punt.** Handle expected error conditions inside the script with specific messages — don't leave Claude to figure out a stack trace. Example: a missing-file path should print `File X not found; creating default` rather than raising `FileNotFoundError`.
+- **No voodoo constants.** Every magic number needs a one-line comment explaining the value (`# 30s covers slow connections`). If you don't know the right value, neither will Claude.
+- **Forward slashes only.** `scripts/helper.py`, never `scripts\helper.py`. Unix paths work everywhere; Windows paths break on Linux.
+- **Be explicit about execute vs. read.** "Run `analyze.py`" (execute, output is what matters) vs "See `analyze.py` for the algorithm" (read as reference). Most utility scripts should be executed — it saves tokens and is more reliable than asking Claude to recreate the logic.
+- **Document required packages.** List them in `SKILL.md` and verify they're available in the runtime. The Claude API runtime has no network access; `claude.ai` can install from PyPI/npm. Don't assume `pip install` succeeds.
+- **Specific error messages.** `Field 'signature_date' not found. Available fields: customer_name, order_total, signature_date_signed` is far more useful than `KeyError`.
+
+## MCP Tool References
+
+If a skill invokes an MCP tool, always use the fully qualified `ServerName:tool_name` form (e.g., `BigQuery:bigquery_schema`, `GitHub:create_issue`). Without the prefix, lookup fails when multiple MCP servers are configured.
 
 ## Validation And Evaluation
 
-Before treating a skill as ready:
+Build evaluations **before** writing extensive documentation. Skills should solve real, observed problems — not imagined ones.
 
-- Create at least three representative scenarios the skill should handle.
-- Test that the skill triggers for the right requests.
-- Test that it does not trigger for adjacent out-of-scope requests.
-- Observe whether the agent reads the right referenced files.
-- Iterate when the agent skips required steps, misses references, or overuses irrelevant detail.
+1. **Identify the gap.** Run a representative task without the skill. Note where Claude lacks context, picks the wrong default, or skips a step.
+2. **Author 3+ evaluation scenarios** that exercise the gap. Suggested JSON shape:
 
-For skills with scripts:
+   ```json
+   {
+     "skills": ["my-skill"],
+     "query": "…the user request…",
+     "files": ["fixtures/input.pdf"],
+     "expected_behavior": [
+       "Triggered the skill",
+       "Read the right reference file",
+       "Produced output matching the verdict format"
+     ]
+   }
+   ```
+3. **Establish baseline** without the skill, measure with the skill, iterate until the skill closes the gap.
+4. **Test triggering both ways.** Verify the skill triggers for in-scope requests and does *not* trigger for adjacent out-of-scope requests.
+5. **Test on every model the skill ships to.** Haiku may need more explicit step labels than Opus.
 
-- Prefer running scripts over asking the model to recreate deterministic logic.
-- Make script errors specific and actionable.
-- Document required packages and environment assumptions.
-- Use forward-slash paths.
-- Add validation loops for critical operations.
+### Iterative authoring with Claude
+
+The most effective workflow is **Claude A authors, Claude B uses**:
+
+- Use one Claude session to draft and refine `SKILL.md`.
+- Use a fresh Claude session (with the skill loaded) to perform real tasks.
+- Bring observations from session B back to session A. Refine. Repeat.
+
+When Claude B forgets a rule, the rule probably isn't prominent enough — strengthen the wording (`MUST` instead of `always`) or move it earlier in the procedure rather than adding more prose.
 
 ## Anti-Patterns
 
@@ -276,3 +464,51 @@ For skills with scripts:
 - Inconsistent spawn wording (`Spawn the X role`, `invoke the X agent`). Use `**Spawn the <Role> subagent**` uniformly.
 - Declaring `Skill(x)` in `allowed-tools` when the skill only references `x` descriptively and never invokes it.
 - Referencing `ai-process/` paths. Skills must be self-contained within `.claude/`.
+- First/second person in `description` (`I can…`, `You can…`). Always third person.
+- Vague descriptions (`Helps with X`) — no trigger words means Claude cannot pick the skill.
+- `SKILL.md` body over 500 lines. Split into `references/` instead.
+- Deeply nested references (`SKILL.md` → `a.md` → `b.md`). Keep one level deep.
+- Time-sensitive guidance (`before August 2026, do X`). Use durable framing or an *Old patterns* fold.
+- Inconsistent terminology across the skill.
+- Offering many equivalent options without a recommended default.
+- Windows-style paths (`scripts\helper.py`). Forward slashes only.
+- "Voodoo" constants in scripts with no justifying comment.
+- Punt-style error handling that leaves Claude to interpret raw exceptions.
+- MCP tool references without the `ServerName:` prefix.
+
+## Pre-Publication Checklist
+
+Before treating a skill as ready:
+
+**Discovery and scope**
+- [ ] `name` ≤64 chars, lowercase-hyphen only, no reserved words.
+- [ ] `description` ≤1024 chars, third person, names *what* and *when*.
+- [ ] `allowed-tools` lists every tool and every in-process `Skill()` invoked.
+- [ ] `disable-model-invocation: true` set if human-triggered only.
+
+**Content**
+- [ ] `SKILL.md` body under 500 lines.
+- [ ] References one level deep; long ones have a TOC.
+- [ ] Consistent terminology.
+- [ ] No time-sensitive content (or in *Old patterns* fold).
+- [ ] No role identity or authority embedded.
+- [ ] No `ai-process/` paths.
+
+**Procedure**
+- [ ] Numbered steps with clear inputs and outputs.
+- [ ] Validation loop where quality matters.
+- [ ] Verdict vocabulary aligned with `Result: PASS | FAIL | BLOCKED | ESCALATE`.
+- [ ] 4-field escalation block present if the skill can return `ESCALATE`.
+- [ ] Orchestrators use `**Spawn the <Role> subagent**` wording uniformly.
+
+**Scripts (if any)**
+- [ ] Forward-slash paths only.
+- [ ] Constants justified with comments.
+- [ ] Explicit error handling with actionable messages.
+- [ ] Required packages listed and verified in the runtime.
+- [ ] Execution intent (run vs. read) is explicit.
+
+**Validation**
+- [ ] At least three evaluation scenarios authored.
+- [ ] Skill triggers for in-scope, does not trigger for adjacent out-of-scope.
+- [ ] Tested on every model the skill is expected to run under.

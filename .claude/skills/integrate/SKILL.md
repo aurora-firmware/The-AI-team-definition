@@ -9,7 +9,7 @@ allowed-tools: Read, Grep, Glob, Bash, Skill(conflict-resolution), Skill(new-bug
 
 Merge a reviewed task or bug branch into a destination branch after verifying expected behavior and test health.
 
-## Inputs
+## Input Requirements
 
 Provided as `$ARGUMENTS`:
 - **Required** — branch name (e.g., `task/T-012-settings-api`, `bug/B-003-login-crash`) **or** task ID (e.g., `T-012`). If a task ID is given, derive the branch by scanning `git branch` for a branch containing that ID.
@@ -114,11 +114,19 @@ Evaluate the result:
 2. For each regression (a test that passed in Step 4 but fails now):
    - Determine which file(s) and logic are responsible.
    - Switch to `dev-agent`.
-   - Invoke the `new-bug` skill to file a canonical bug report for each regression:
-     > `/new-bug <short description of the regression>`
-     - Set severity based on user impact, data risk, security risk, and how much of the system is blocked.
-     - In the bug's Summary and Evidence sections, include: the failing test name, the error message, the merge commit that introduced the regression, the destination branch, and the source branch that was being integrated.
-     - Set `source_branch` to the source branch being integrated so the bug-fix loop fixes the regression on that preserved branch before integration is retried.
+   - Invoke the `new-bug` skill to file a canonical bug report for each regression. Provide the full required input set in the invocation text:
+     - `title`: concise regression title
+     - `severity`: based on user impact, data risk, security risk, and how much of the system is blocked
+     - `summary`: include the merge commit that introduced the regression, the destination branch, and the source branch that was being integrated
+     - `reproduction-status`: `confirmed`
+     - `reproduction-steps`: the destination-branch verification command that now fails
+     - `expected-behavior`: the command should pass after integration
+     - `actual-behavior`: the failing test name and error message
+     - `evidence`: failing command, stderr/stdout summary, merge commit, destination branch, and source branch
+     - `environment`: current project/runtime details known from the verification run
+     - `source-branch`: the source branch being integrated, so the bug-fix loop fixes the regression on that preserved branch before integration is retried
+     - `suspected-area`: changed files implicated by the regression, or `unknown`
+     - `fix-verification`: the destination-branch verification command that must pass after the fix
    - Commit the filed regression bug report(s) on `dev-agent`: `chore(bugs): file integration regression for <work-item-id>`.
 3. Switch back to the destination branch.
 4. After filing all regression bugs, **revert the merge commit**:
@@ -188,7 +196,9 @@ All integrator commits follow the `git-conventions` skill. Canonical patterns fo
 
 ## Escalation
 
-The Integrator's self-recovery threshold is **one bisect cycle**. If a post-merge regression cannot be localized to a single task branch after one bisect, or the merge conflict in Step 5 cannot be resolved by the `conflict-resolution` skill, stop and return `ESCALATE` with a structured request:
+The Integrator's self-recovery threshold is **one bisect cycle**.
+Return `ESCALATE` when a post-merge regression cannot be localized to a single task branch after one bisect, or the merge conflict in Step 5 cannot be resolved by the `conflict-resolution` skill.
+Use this structured request:
 
 ```text
 Problem: [what went wrong — unresolvable conflict, multi-task regression, etc.]
@@ -198,6 +208,29 @@ Question: [specific guidance needed — which source task owns the behavior, whi
 ```
 
 The active loop routes the request to the Architect via the `escalation-consultation` skill. Do not force-resolve or pick a side in a semantic conflict.
+
+## Output Format
+
+- **Result:** `PASS`, `FAIL`, `BLOCKED`, or `ESCALATE`.
+- **Merge evidence:** source branch, destination branch, merge commit, and revert commit if one was produced.
+- **Verification:** pre-merge and post-merge command results, or why verification could not run.
+- **State changes:** lifecycle file moves, regression bugs filed, and source branch deletion status.
+- **Next action:** whether the active loop can continue or which owner must act next.
+
+## Quality Criteria
+
+- The canonical task or bug file on `dev-agent` was used for acceptance or fix-verification context.
+- The source branch was verified before merge and the destination branch was verified after merge.
+- Regression bugs include enough evidence for the bug-fix loop to reproduce and fix from the preserved source branch.
+- Lifecycle-file edits from implementation branches were not merged.
+- All commits follow the `git-conventions` skill.
+
+## Common Pitfalls
+
+- Merging a branch whose tests already fail on the source branch.
+- Filing regression bugs without setting `source-branch` to the preserved branch.
+- Moving bug lifecycle state inside `integrate`; bug state is owned by `bug-loop`.
+- Treating conflict resolution as a textual choice instead of preserving both work items' intent.
 
 ## What This Skill Does NOT Do
 
