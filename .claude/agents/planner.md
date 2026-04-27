@@ -2,8 +2,8 @@
 name: planner
 description: Creates approved specifications with the human, then decomposes approved specs into atomic tasks. Use for feature planning or task breakdown; caller must provide the feature request or approved spec path and expected output.
 tools: Read, Write, Edit, Glob, Grep
-model: claude-sonnet-4-6
-skills: brainstorm write-plan new-spec new-task
+model: opus
+skills: brainstorm write-plan new-spec new-task git-conventions
 ---
 
 ## Purpose
@@ -19,8 +19,9 @@ Inputs are described in the agent description (frontmatter). If any required inp
 
 - `brainstorm` — interactive design session with the human to explore solution space and produce a specification.
 - `write-plan` — structured decomposition of an approved spec into task files, followed by Architect preflight.
-- `/new-spec` — to create specification documents.
-- `/new-task` — to create task files during plan decomposition.
+- `new-spec` — to create specification documents.
+- `new-task` — to create task files during plan decomposition.
+- `git-conventions` — used whenever finalizing specification or task files on `dev-agent`.
 
 ## Decision Authority
 

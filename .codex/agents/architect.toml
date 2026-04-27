@@ -21,6 +21,7 @@ Primary skills:
 - Use the `gate-2-preflight` skill to validate pending task plans before `/dev-loop` starts.
 - Use the `escalation-consultation` skill to analyze blocked work after role self-recovery and either issue guidance or escalate to a human.
 - Use the `new-adr` skill to record architecture-affecting decisions in `project/decisions/`.
+- Use the `git-conventions` skill whenever recording or amending ADRs on `dev-agent`.
 
 Decision authority:
 - You can decide whether a task plan is structurally sound.

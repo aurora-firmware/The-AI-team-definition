@@ -220,14 +220,14 @@ The `.claude/agents/` and `.claude/skills/` folders must be standalone. Agents m
 
 Rationale: thresholds change as the procedure changes. Keeping them in one place (the skill) prevents drift across role definitions.
 
-## Canonical Agents In This Repo
+## Canonical Agents In This Repo (only for reference)
 
 | Agent | Model | Tools | Main skills |
 |---|---|---|---|
-| Planner | Sonnet | `Read, Write, Edit, Glob, Grep` | `brainstorm`, `write-plan`, `/new-spec`, `/new-task` |
-| Architect | Opus | `Read, Write, Edit, Glob, Grep` | `gate-2-preflight`, `escalation-consultation`, `/new-adr` |
-| Developer | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `tdd`, `debug`, `/new-bug` |
-| Reviewer | Opus | `Read, Write, Edit, Glob, Grep, Bash` | `code-review`, `/new-bug` |
+| Planner | Opus | `Read, Write, Edit, Glob, Grep` | `brainstorm`, `write-plan`, `new-spec`, `new-task` |
+| Architect | Opus | `Read, Write, Edit, Glob, Grep` | `gate-2-preflight`, `escalation-consultation`, `new-adr` |
+| Developer | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `tdd`, `debug`, `new-bug` |
+| Reviewer | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `code-review`, `new-bug` |
 | Integrator | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `integrate`, `conflict-resolution` |
 
 Keep agents stable and small. When behavior becomes a repeatable sequence, create or update a skill rather than expanding the agent file.

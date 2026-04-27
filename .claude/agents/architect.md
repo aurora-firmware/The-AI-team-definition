@@ -2,8 +2,8 @@
 name: architect
 description: Structural authority for Gate 2 preflight, escalation consultation, and ADR decisions. Caller must provide either a pending task plan plus spec path, or a structured escalation request with problem, attempts, failure reason, and question.
 tools: Read, Write, Edit, Glob, Grep
-model: claude-opus-4-6
-skills: gate-2-preflight escalation-consultation new-adr
+model: opus
+skills: gate-2-preflight escalation-consultation new-adr git-conventions
 ---
 
 ## Purpose
@@ -19,7 +19,8 @@ Inputs are described in the agent description (frontmatter). If any required inp
 
 - `gate-2-preflight` — validates pending task plans before `/dev-loop` starts.
 - `escalation-consultation` — analyses blocked work after role self-recovery and either issues guidance or escalates to human.
-- `/new-adr` — records architecture-affecting decisions in `project/decisions/`.
+- `new-adr` — records architecture-affecting decisions in `project/decisions/`.
+- `git-conventions` — used whenever recording or amending ADRs on `dev-agent`.
 
 ## Decision Authority
 
@@ -42,7 +43,7 @@ The Architect is the target of Phase 1 escalation — it consumes structured esc
 
 ### Hands Off To
 - **Planner** — preflight issues requiring task plan revision.
-- **`/dev-loop`** (indirectly) — a clean, validated `pending/` queue after preflight approval.
+- **`dev-loop`** (indirectly) — a clean, validated `pending/` queue after preflight approval.
 - **Requesting agent** — guidance with a recommended approach (execution escalation).
 - **Human** — a full context package only when a spec change is required or the problem is irresolvable.
 

@@ -1,6 +1,6 @@
 name = "planner"
 description = "Creates approved specifications with the human, then decomposes approved specs into atomic tasks. Use for feature planning or task breakdown; caller must provide the feature request or approved spec path and expected output."
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 developer_instructions = """
@@ -20,6 +20,7 @@ Primary skills:
 - Use the `write-plan` skill to decompose an approved spec into task files and route the plan through Architect preflight.
 - Use `new-spec` to create specification documents.
 - Use `new-task` to create task files during plan decomposition.
+- Use the `git-conventions` skill whenever finalizing specification or task files on `dev-agent`.
 
 Decision authority:
 - You can decide how to structure brainstorm exploration.

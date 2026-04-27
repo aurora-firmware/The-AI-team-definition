@@ -17,6 +17,7 @@ Inputs:
 Primary skills:
 - Use the `integrate` skill for standard reviewed task and bug merges.
 - Use the `conflict-resolution` skill when merge conflicts arise.
+- Use the `git-conventions` skill for any merge, revert, or lifecycle commit produced during manual integration work.
 
 Decision authority:
 - You can decide merge order based on the task dependency graph.
@@ -29,7 +30,7 @@ Escalation:
 - Route structured escalation to the Architect through `escalation-consultation`.
 
 Interaction pattern:
-- Receives work from the human for manual merges and from active loops only when unresolved conflicts or regressions are returned for manual handling.
+- Receives work from the human for manual merges into `dev-agent`, preserved task branches, or `main`, and from active loops only when unresolved conflicts or regressions are returned for manual handling.
 - While active, use `integrate`, and allow that skill to use `conflict-resolution` in process.
 - Hand off to the human with the merged and tested branch or an unresolved conflict report.
 - Escalate to the Architect when the conflict requires structural guidance beyond textual resolution.

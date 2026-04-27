@@ -1,7 +1,7 @@
 ---
 name: tdd
 description: Test-driven implementation cycle for tasks and diagnosed bug fixes. Use after task assignment, or after a bug has a Diagnosis Log, to write a failing test, verify failure, implement the minimal change, verify pass, and refactor.
-allowed-tools: Read, Grep, Glob, Write, Edit, Bash
+allowed-tools: Read, Grep, Glob, Write, Edit, Bash, Skill(git-conventions)
 ---
 
 # Test-Driven Development (TDD)
@@ -57,11 +57,15 @@ If Step 4 → Step 5 fails three consecutive times on the same acceptance criter
 Clean up the code without changing behavior.
 Run all tests again to confirm nothing broke.
 
-### Step 7: Repeat
+### Step 7: Commit the Cycle
+Commit the completed red -> green -> refactor cycle on the assigned implementation branch using the `git-conventions` skill.
+Keep implementation commits on `task/T-NNN-...` or `bug/B-NNN-...` only, and use a message that follows `<type>(<component>): <description>` without repeating the task or bug ID from the branch name.
+
+### Step 8: Repeat
 Go back to Step 2 for the next acceptance criterion.
 Continue until all criteria have tests and passing implementations.
 
-### Step 8: Prepare a Work Log Handoff
+### Step 9: Prepare a Work Log Handoff
 After refactor and before handing back to the orchestrator, prepare a dated Work Log entry using the heading `### Session N — YYYY-MM-DD`.
 Use a free-prose body that summarizes what was done, what was tried and rejected, and what remains.
 The session number increments monotonically across all sessions on the same task or bug.
@@ -101,6 +105,7 @@ Question: [specific guidance needed to continue within the approved specificatio
 - Test names describe the expected behavior, not the implementation (e.g., `test_returns_empty_list_when_no_items` not `test_get_items`).
 - The implementation is minimal — no code exists that is not required by a test.
 - All tests pass when run together.
+- Each completed TDD cycle is committed on the assigned implementation branch using the `git-conventions` skill.
 - The Work Log handoff contains one entry for the current session boundary.
 
 ## Common Pitfalls
@@ -109,5 +114,6 @@ Question: [specific guidance needed to continue within the approved specificatio
 - **Writing implementation first** — this defeats the purpose of TDD. Always write the test first.
 - **Tests that test implementation** — test what the code does (behavior), not how it does it (implementation details). If you refactor internals, tests should still pass.
 - **Skipping the "verify it fails" step** — a test that passes before implementation is not testing anything. It gives false confidence.
+- **Committing outside the branch model** — implementation commits belong only on the assigned task or bug branch, never on `dev-agent`.
 - **Over-refactoring** — refactor only when the code is messy enough to slow down the next test cycle. Do not refactor preemptively.
 - **Giant test functions** — each test should check one thing. If a test has multiple assertions checking different behaviors, split it.
