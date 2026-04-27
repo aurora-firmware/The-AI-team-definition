@@ -5,32 +5,58 @@ disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Bash
 ---
 
-Generate a project status report.
+# Status Report
 
-1. Scan the following directories and count files (excluding TEMPLATE files and .gitkeep):
-   - `project/specs/` — active specifications
-   - `project/tasks/pending/` — pending tasks
-   - `project/tasks/in-progress/` — tasks in progress
-   - `project/tasks/completed/` — completed tasks
-   - `project/tasks/blocked/` — blocked tasks
-   - `project/bugs/open/` — open bugs
-   - `project/bugs/in-progress/` — bugs being fixed
-   - `project/bugs/resolved/` — resolved bugs
-   - `project/decisions/` — ADRs
+## Input Requirements
 
-2. Read the active specifications and list title, status, and latest amendment or version if present.
+- **Project state directories** — `project/specs/`, `project/tasks/`, `project/bugs/`, and `project/decisions/`.
+- **Integration evidence** — completed task Work Logs, resolved bug Work Logs, or recent integration commits when available.
+- **Report template** — `.claude/skills/status-report/assets/progress-report.md`.
+- **Summary script** — `.claude/skills/status-report/scripts/status-summary.sh`.
 
-3. For each task in `project/tasks/in-progress/`, read the frontmatter and list: ID, title, assigned role.
+## Procedure
 
-4. For each task in `project/tasks/blocked/`, read the frontmatter and list: ID, title, and check the Work Log section for the blocking reason.
+### Step 1: Generate Inline Summary
 
-5. For each bug in `project/bugs/open/` with severity "critical" or "high", list: ID, title, severity.
+Run the bundled summary script from the repository root:
 
-6. Inspect recent integration evidence from completed task Work Logs, resolved bug Work Logs, and recent integration commits when available. Record the latest integration-test result or state that no integration evidence was found.
-
-7. Present the report in this format:
-
+```bash
+bash .claude/skills/status-report/scripts/status-summary.sh <project-path>
 ```
+
+Use the target project root as `<project-path>`.
+The script scans the project state directories, excludes template files and `.gitkeep`, reads primary artifact metadata, inspects integration evidence, and prints the inline Gate 5 summary.
+
+### Step 2: Count Current State
+
+Scan these directories and count files, excluding template files and `.gitkeep`:
+- `project/specs/`
+- `project/tasks/pending/`
+- `project/tasks/in-progress/`
+- `project/tasks/completed/`
+- `project/tasks/blocked/`
+- `project/bugs/open/`
+- `project/bugs/in-progress/`
+- `project/bugs/resolved/`
+- `project/decisions/`
+
+### Step 3: Read Primary Artifacts
+
+Read active specifications and list title, status, and latest amendment or version if present.
+For each task in `project/tasks/in-progress/`, read the frontmatter and list ID, title, and assigned role.
+For each task in `project/tasks/blocked/`, read the frontmatter and Work Log section to identify the blocking reason.
+For each open bug with severity `critical` or `high`, list ID, title, and severity.
+
+### Step 4: Inspect Integration Evidence
+
+Inspect recent integration evidence from completed task Work Logs, resolved bug Work Logs, and recent integration commits when available.
+Record the latest integration-test result or state that no integration evidence was found.
+
+### Step 5: Produce Inline Summary
+
+Use the script output as the inline summary. If the script cannot run, manually present the report in this format:
+
+```markdown
 ## Status Report — [today's date]
 
 ### Summary
@@ -57,9 +83,32 @@ Generate a project status report.
 [list of critical and high severity open bugs]
 ```
 
-8. If there are blocked tasks or critical/high bugs, add a "Recommended Actions" section suggesting next steps.
+If there are blocked tasks or critical/high bugs, add a `Recommended Actions` section suggesting next steps.
 
-9. After displaying the inline summary above, generate a full written report using the template at `.claude/skills/status-report/assets/progress-report.md`.
-   Save it to `project/docs/reports/progress-report-[today's date].md`.
-   Create `project/docs/reports/` first if it does not exist.
-   The full report includes: completed tasks table, in-progress details, blocked items with action needed, bug listing, next actions, and risks/concerns.
+### Step 6: Write Full Report
+
+Generate a full written report using the template at `.claude/skills/status-report/assets/progress-report.md`.
+Save it to `project/docs/reports/progress-report-[today's date].md`.
+Create `project/docs/reports/` first if it does not exist.
+The full report includes completed tasks, in-progress details, blocked items with action needed, bug listing, next actions, and risks or concerns.
+
+## Output Format
+
+- **Inline summary:** Gate 5 status summary using the markdown structure above.
+- **Report file:** `project/docs/reports/progress-report-[today's date].md`.
+- **Evidence:** latest integration result or a clear statement that no integration evidence was found.
+
+## Quality Criteria
+
+- Counts exclude templates and `.gitkeep`.
+- Critical and high severity bugs are explicitly listed.
+- Blocked tasks include the blocking reason when one is recorded.
+- The latest integration evidence is recorded or explicitly marked as not found.
+- The report gives the human enough context for Gate 5 final merge sign-off.
+
+## Common Pitfalls
+
+- Treating Gate 5 as a code review instead of a status sign-off.
+- Omitting critical or high severity open bugs.
+- Reporting green status without integration evidence.
+- Writing only the inline summary and forgetting the full report file.

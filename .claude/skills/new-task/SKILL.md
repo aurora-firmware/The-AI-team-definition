@@ -5,6 +5,8 @@ argument-hint: "[optional: task title]"
 allowed-tools: Read, Glob, Write, Bash
 ---
 
+# New Task
+
 Create a new task.
 
 ## Input Requirements

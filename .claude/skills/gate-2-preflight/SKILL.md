@@ -39,6 +39,9 @@ If no dependency exists, add the dependency directly when the correction is obvi
 Compare the task plan against existing ADRs and architecture docs.
 If a task contradicts an existing decision or requires changing an approved specification, do not pass Gate 2.
 Use `new-adr` only when the plan exposes a durable architecture-affecting decision within the approved spec.
+When invoking `new-adr`, provide the full required input set:
+- `title`: concise decision title derived from the architectural choice
+- `context`: the approved spec path, affected task IDs, relevant ADRs, and why the decision is durable rather than an implementation detail
 Escalate to human through the Planner when the approved spec must change.
 
 ### Step 5: Check Atomicity And Verification

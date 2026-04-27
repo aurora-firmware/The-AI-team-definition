@@ -5,6 +5,8 @@ argument-hint: "[optional: decision title]"
 allowed-tools: Read, Glob, Write, Bash
 ---
 
+# New ADR
+
 Create a new Architecture Decision Record (ADR).
 
 ## Input Requirements

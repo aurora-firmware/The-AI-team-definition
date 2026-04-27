@@ -5,6 +5,8 @@ argument-hint: "[optional: specification title]"
 allowed-tools: Read, Glob, Write, Bash
 ---
 
+# New Spec
+
 Create a new specification document.
 
 ## Input Requirements

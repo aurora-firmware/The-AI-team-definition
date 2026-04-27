@@ -11,7 +11,7 @@ disable-model-invocation: true
 Autonomous orchestrator that processes the pending task queue without human intervention.
 Stops only at hard gates: empty queue, blocked task, or escalation.
 
-## Inputs
+## Input Requirements
 
 Optional: a single task ID or branch name as `$ARGUMENTS` (e.g., `T-012` or `task/T-012-my-feature`).
 - If provided, the loop processes only that task — it does not continue to the next task after completion or failure.
@@ -68,6 +68,7 @@ Check out the task branch `task/T-NNN-...`.
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 Wait for the Developer to complete before continuing.
+If the Developer returns `ESCALATE`, go directly to **On ESCALATE**.
 If the Developer does not return a Work Log handoff entry, stop with `BLOCKED` and report the missing handoff.
 
 Record the Work Log handoff:
