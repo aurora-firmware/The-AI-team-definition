@@ -2,8 +2,8 @@
 name: integrator
 description: Integrates reviewed task or bug branches and resolves merge conflicts. Caller must provide source branch, destination branch, work item file, latest review verdict, and expected merge or conflict-resolution output.
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: claude-sonnet-4-6
-skills: integrate conflict-resolution
+model: sonnet
+skills: integrate conflict-resolution git-conventions
 ---
 
 ## Purpose
@@ -19,6 +19,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 
 - `integrate` — standard procedure for merging reviewed task and bug branches into their target branch.
 - `conflict-resolution` — applied when merge conflicts arise.
+- `git-conventions` — used for any merge, revert, or lifecycle commit produced during manual integration work.
 
 ## Decision Authority
 

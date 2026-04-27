@@ -1,7 +1,7 @@
 ---
 name: write-plan
 description: Decompose an approved specification into atomic, independent tasks. Use when a spec needs to be broken into executable work units.
-allowed-tools: Read, Grep, Glob, Write, Agent
+allowed-tools: Read, Grep, Glob, Write, Agent, Skill(new-task)
 effort: high
 ---
 
@@ -25,11 +25,18 @@ Draw a dependency graph.
 Maximize independence — units that touch different files should not depend on each other.
 
 ### Step 3: Write Task Files
-For each unit, create a task file following `.claude/skills/new-task/assets/TEMPLATE-task.md`:
-- **ID**: Sequential within the plan (T-001, T-002, ...).
+For each unit, invoke the `new-task` skill to create the task file. Provide the full required input set in the invocation text:
+- `title`: the task title
+- `description`: the task description
+- `priority`: the task priority
+- `assigned-role`: the intended owner, or `unassigned`
+
+The `new-task` skill handles template loading, ID assignment, filename, and frontmatter scaffolding. Because all required fields are provided here, it should not ask follow-up questions.
+
+Then fill in the task body so it satisfies:
 - **Title**: Clear, descriptive, starts with a verb (Implement, Add, Create, Fix).
 - **Description**: Enough context to start without asking questions.
-- **Acceptance criteria**: Author every criterion using one of the five EARS patterns; use `.claude/skills/new-task/assets/TEMPLATE-task.md` as the pattern reference.
+- **Acceptance criteria**: Author every criterion using one of the five EARS patterns documented in the `new-task` skill (Ubiquitous, Event-driven, Unwanted-behaviour, State-driven, Optional).
 - **Dependencies**: List of task IDs that must complete first.
 - **Files to touch**: Exact file paths that will be created or modified.
 - **Verification command**: Shell command that proves the task is done.

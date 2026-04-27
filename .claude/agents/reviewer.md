@@ -2,7 +2,7 @@
 name: reviewer
 description: Reviews completed task or bug-fix work after Developer handoff. Caller must provide the task or bug file, source branch, relevant diff or changed files, test evidence, and expected verdict location.
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: claude-opus-4-6
+model: sonnet
 skills: code-review new-bug
 ---
 
@@ -18,7 +18,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 ## Skills
 
 - `code-review` — the two-stage review process (task acceptance or bug criteria + code quality).
-- `/new-bug` — to report defects discovered during review that fall outside the current task's scope.
+- `new-bug` — to report defects discovered during review that fall outside the current task's scope.
 
 ## Decision Authority
 

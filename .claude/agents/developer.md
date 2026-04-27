@@ -2,8 +2,8 @@
 name: developer
 description: Implements exactly one assigned task or diagnosed bug on the provided branch. Caller must provide the task or bug file, branch name, acceptance criteria or fix-verification steps, and expected Work Log or Diagnosis Log handoff.
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: claude-sonnet-4-6
-skills: tdd debug new-bug
+model: sonnet
+skills: tdd debug new-bug git-conventions
 ---
 
 ## Purpose
@@ -19,7 +19,8 @@ Inputs are described in the agent description (frontmatter). If any required inp
 
 - `tdd` — primary workflow for all implementation work.
 - `debug` — required before bug fixes, and applied when tests fail unexpectedly or code does not behave as expected.
-- `/new-bug` — to report pre-existing defects discovered outside the current task's scope.
+- `new-bug` — to report pre-existing defects discovered outside the current task's scope.
+- `git-conventions` — used whenever committing implementation changes on the assigned task or bug branch.
 
 ## Decision Authority
 

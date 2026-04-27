@@ -67,7 +67,7 @@ Copy the following files from this repository into your new project, preserving 
 - `escalation-consultation`, `git-conventions`
 - `new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`
 
-If you use OpenAI Codex, either copy the same definitions under `.codex/` according to your platform's expected layout or create symlinks from `.codex/agents` and `.codex/skills` to `.claude/agents` and `.claude/skills`.
+If you use OpenAI Codex, keep skills available under `.codex/skills` and define project-scoped custom agents as `.codex/agents/*.toml`. Those TOML files should translate each Claude-style agent into Codex's custom-agent schema: `name`, `description`, and `developer_instructions`, with optional Codex-native settings such as `model`, `model_reasoning_effort`, and `sandbox_mode`.
 
 ### Step 3: Create Your Project's CLAUDE.md
 

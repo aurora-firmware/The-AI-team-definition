@@ -1,7 +1,7 @@
 ---
 name: brainstorm
 description: Explore solution space for a feature request or problem. Use when a new feature needs a design before implementation, or when an existing approach was rejected and alternatives need exploration.
-allowed-tools: Read, Grep, Glob, Write
+allowed-tools: Read, Grep, Glob, Write, Skill(new-spec)
 effort: high
 ---
 
@@ -109,9 +109,15 @@ If the human corrects something, update the summary and confirm again.
 
 ### Step 7: Produce the Specification
 
-Write the specification following `${CLAUDE_SKILL_DIR}/../new-spec/assets/TEMPLATE-specification.md`.
+Invoke the `new-spec` skill to create the specification file. Provide the full required input set in the invocation text:
+- `title`: the confirmed spec title
+- `description`: a concise summary of the confirmed approach, exclusions, and constraints from Step 6
+- `author`: `planner` unless the human provided a different author
+- `status`: `draft`
 
-Include:
+The `new-spec` skill handles template loading, filename slugification, and frontmatter scaffolding. Because all required fields are provided here, it should not ask follow-up questions.
+
+Once the file exists, fill it in with:
 - The confirmed approach
 - Alternatives considered and why they were not chosen
 - Explicit exclusions from scope

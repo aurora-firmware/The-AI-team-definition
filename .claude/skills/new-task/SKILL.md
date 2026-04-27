@@ -2,28 +2,41 @@
 name: new-task
 description: Create a new task from the template
 argument-hint: "[optional: task title]"
-disable-model-invocation: true
 allowed-tools: Read, Glob, Write, Bash
 ---
 
 Create a new task.
 
+## Input Requirements
+
+Provide these values directly when possible:
+- `title` — required
+- `description` — required
+- `priority` — required (`critical`, `high`, `medium`, or `low`)
+- `assigned-role` — optional; defaults to `unassigned`
+
+When invoked by another skill, the caller should provide every required field in the invocation text and this skill must use them without asking follow-up questions.
+When invoked directly by a human and required fields are missing, ask for the missing values before proceeding.
+
 ## Procedure
 
 1. Read the template at `${CLAUDE_SKILL_DIR}/assets/TEMPLATE-task.md`.
-2. Ask for: task title, description, priority (critical/high/medium/low), and assigned role (or unassigned). Use `$ARGUMENTS` as the title if provided.
+2. Resolve inputs:
+   - Use the caller-provided `title`, `description`, `priority`, and `assigned-role` when they are present.
+   - If invoked directly and some required fields are missing, ask only for the missing fields.
+   - Use `$ARGUMENTS` as the title when it is the only provided input.
 3. Run `bash "${CLAUDE_SKILL_DIR}/assets/next-task-id.sh"` to get the next task ID (e.g., `T-003`).
 4. Generate a filename with the ID prefix: `T-NNN-<lowercase-hyphenated-title>.md` (e.g., `T-001-implement-auth-flow.md`).
 5. Copy the template to `project/tasks/pending/<filename>.md`.
 6. Fill in the frontmatter:
    - `id`: the next sequential ID (e.g., "T-001")
-   - `title`: the provided title
+   - `title`: the resolved title
    - `status`: "pending"
-   - `priority`: the provided priority
-   - `assigned-role`: the provided role or "unassigned"
+   - `priority`: the resolved priority
+   - `assigned-role`: the resolved assigned role
    - `created`: output of `date +%Y-%m-%d`
-7. Fill in the Description section with the provided description.
-8. Leave Acceptance Criteria, Dependencies, Files to Touch, and Verification as placeholders for the Planner or user to complete.
+7. Fill in the Description section with the resolved description.
+8. Leave Acceptance Criteria, Dependencies, Files to Touch, and Verification as placeholders for the Planner or user to complete unless the caller explicitly provided values for them.
 9. Verify the drafted task (or the placeholders that will be completed) can satisfy the Task Quality Rules below.
 10. Confirm the file was created in `project/tasks/pending/`.
 
