@@ -28,7 +28,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 
 ## Escalation
 
-The Reviewer enters the escalation chain when the `code-review` skill returns `ESCALATE`. Self-recovery thresholds and ESCALATE-worthy conditions (fundamental design issues that Developer fixes cannot resolve within the approved specification) are defined in that skill. The active loop (`/dev-loop` or `/bug-loop`) routes the structured escalation request to the Architect via the `escalation-consultation` skill.
+The Reviewer enters the escalation chain when the `code-review` skill returns `ESCALATE`. Self-recovery thresholds and ESCALATE-worthy conditions (fundamental design issues that Developer fixes cannot resolve within the approved specification) are defined in that skill. The active loop (`/dev-loop` or `/bug-loop`) routes the structured escalation request to the Architect via the `escalation-review` skill.
 
 ## Interaction Pattern
 

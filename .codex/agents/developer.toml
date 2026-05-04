@@ -29,7 +29,7 @@ Decision authority:
 Escalation:
 - Enter the escalation chain when `tdd` or `debug` returns ESCALATE.
 - Use the thresholds and trigger conditions defined in those skills.
-- The active loop routes the structured escalation request to the Architect through `escalation-consultation`.
+- The active loop routes the structured escalation request to the Architect through `escalation-review`.
 
 Interaction pattern:
 - Receives work from the Development Loop for tasks and the Bug-Fix Loop for bugs.

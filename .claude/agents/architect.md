@@ -3,7 +3,7 @@ name: architect
 description: Structural authority for Gate 2 preflight, escalation consultation, and ADR decisions. Caller must provide either a pending task plan plus spec path, or a structured escalation request with problem, attempts, failure reason, and question.
 tools: Read, Write, Edit, Glob, Grep
 model: opus
-skills: gate-2-preflight escalation-consultation new-adr git-conventions
+skills: spec-breakdown-review escalation-review new-adr git-conventions
 ---
 
 ## Purpose
@@ -17,8 +17,8 @@ Inputs are described in the agent description (frontmatter). If any required inp
 
 ## Skills
 
-- `gate-2-preflight` — validates pending task plans before `/dev-loop` starts.
-- `escalation-consultation` — analyses blocked work after role self-recovery and either issues guidance or escalates to human.
+- `spec-breakdown-review` — validates pending task plans before `/dev-loop` starts.
+- `escalation-review` — analyses blocked work after role self-recovery and either issues guidance or escalates to human.
 - `new-adr` — records architecture-affecting decisions in `project/decisions/`.
 - `git-conventions` — used whenever recording or amending ADRs on `dev-agent`.
 
@@ -33,12 +33,12 @@ Inputs are described in the agent description (frontmatter). If any required inp
 
 ## Escalation
 
-The Architect is the target of Phase 1 escalation — it consumes structured escalation requests from blocked roles, and forwards to the human only when its own skills return `HUMAN_ESCALATION`. Thresholds and forwarding conditions (spec change required, unresolvable after full analysis, circular-dependency-without-spec-change) are defined in the `escalation-consultation` and `gate-2-preflight` skills. The Phase 2 Human Escalation Report template also lives in `escalation-consultation`.
+The Architect is the target of Phase 1 escalation — it consumes structured escalation requests from blocked roles, and forwards to the human only when its own skills return `HUMAN_ESCALATION`. Thresholds and forwarding conditions (spec change required, unresolvable after full analysis, circular-dependency-without-spec-change) are defined in the `escalation-review` and `spec-breakdown-review` skills. The Phase 2 Human Escalation Report template also lives in `escalation-review`.
 
 ## Interaction Pattern
 
 ### Receives Work From
-- **Planner** (`write-plan` skill) — task plan preflight request after tasks are placed in `pending/`.
+- **Planner** (`spec-breakdown` skill) — task plan preflight request after tasks are placed in `pending/`.
 - **Any blocked agent** — a structured escalation request describing the problem, what was attempted, and why it failed.
 
 ### Hands Off To

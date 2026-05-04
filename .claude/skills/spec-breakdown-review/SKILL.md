@@ -1,5 +1,5 @@
 ---
-name: gate-2-preflight
+name: spec-breakdown-review
 description: Validate a pending task plan before development starts. Use when the Planner has decomposed an approved specification into tasks and Gate 2 must confirm dependency correctness, file conflict risk, ADR consistency, atomicity, and implementation readiness.
 allowed-tools: Read, Grep, Glob, Write, Edit, Skill(new-adr)
 effort: high
@@ -95,7 +95,7 @@ Failed because: [why the problem requires changing the approved specification]
 Question: [specific decision or guidance needed from the Human]
 ```
 
-Then produce a Phase 2 Human Escalation Report using the template defined in the `escalation-consultation` skill. The Planner (caller of Gate 2) forwards the report to the human alongside the preflight verdict.
+Then produce a Phase 2 Human Escalation Report using the template defined in the `escalation-review` skill. The Planner (caller of Gate 2) forwards the report to the human alongside the preflight verdict.
 
 ## Quality Criteria
 

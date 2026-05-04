@@ -1,15 +1,15 @@
 ---
 name: integrator
-description: Integrates reviewed task or bug branches and resolves merge conflicts. Caller must provide source branch, destination branch, work item file, latest review verdict, and expected merge or conflict-resolution output.
+description: Integrates reviewed task or bug branches and resolves merge conflicts. Caller must provide source branch, destination branch, work item file, latest review verdict, and expected merge or merge-conflicts output.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
-skills: integrate conflict-resolution git-conventions
+skills: integrate merge-conflicts git-conventions
 ---
 
 ## Purpose
 
 Performs manual merges and resolves semantic merge conflicts for task and bug branches into `dev-agent`, preserved task branches, or `main`.
-The automated `/dev-loop` and `/bug-loop` flows invoke the `integrate` skill directly, which uses `conflict-resolution` in process; the Integrator agent is only spawned by the human for manual merges or when a loop returns an unresolved conflict for human review.
+The automated `/dev-loop` and `/bug-loop` flows invoke the `integrate` skill directly, which uses `merge-conflicts` in process; the Integrator agent is only spawned by the human for manual merges or when a loop returns an unresolved conflict for human review.
 
 ## Inputs
 
@@ -18,7 +18,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 ## Skills
 
 - `integrate` — standard procedure for merging reviewed task and bug branches into their target branch.
-- `conflict-resolution` — applied when merge conflicts arise.
+- `merge-conflicts` — applied when merge conflicts arise.
 - `git-conventions` — used for any merge, revert, or lifecycle commit produced during manual integration work.
 
 ## Decision Authority
@@ -30,7 +30,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 
 ## Escalation
 
-The Integrator enters the escalation chain when the `integrate` or `conflict-resolution` skill returns `ESCALATE`. Self-recovery thresholds (one bisect cycle, structural-conflict detection) are defined in those skills. The caller (human or active loop) routes the structured escalation request to the Architect via the `escalation-consultation` skill.
+The Integrator enters the escalation chain when the `integrate` or `merge-conflicts` skill returns `ESCALATE`. Self-recovery thresholds (one bisect cycle, structural-conflict detection) are defined in those skills. The caller (human or active loop) routes the structured escalation request to the Architect via the `escalation-review` skill.
 
 ## Interaction Pattern
 
@@ -38,7 +38,7 @@ The Integrator enters the escalation chain when the `integrate` or `conflict-res
 - **Human** — manual merge requests for task or bug branches into `dev-agent`, preserved task branches, or `main`.
 - **`/dev-loop` or `/bug-loop`** — only when an unresolved conflict or multi-task regression is returned to the human for manual handling.
 
-While spawned, the Integrator uses the `integrate` skill to run the merge, and that skill uses `conflict-resolution` in process for textual conflicts.
+While spawned, the Integrator uses the `integrate` skill to run the merge, and that skill uses `merge-conflicts` in process for textual conflicts.
 
 ### Hands Off To
 - **Human** — the merged and tested branch for final approval, or an unresolved conflict report when manual input is required.

@@ -25,7 +25,7 @@ Decision authority:
 Escalation:
 - Enter the escalation chain when `code-review` returns ESCALATE.
 - Use the thresholds and conditions defined in that skill.
-- The active loop routes the structured escalation request to the Architect through `escalation-consultation`.
+- The active loop routes the structured escalation request to the Architect through `escalation-review`.
 
 Interaction pattern:
 - Receives work from the Developer after code and verification evidence are ready for review.

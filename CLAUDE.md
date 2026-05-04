@@ -18,7 +18,7 @@ When they conflict, the ai-process wins.
 | `ai-process/processes/` | Workflow definitions, quality gates, escalation procedures |
 | `guides/` | Human-facing guides for setup and customization (not part of the ai-process itself) |
 | `.claude/agents/` | Agent role definitions (planner, architect, developer, reviewer, integrator) |
-| `.claude/skills/` | Skills: procedures (brainstorm, write-plan, tdd, code-review, debug, conflict-resolution, integrate, escalation-consultation, gate-2-preflight), orchestrators (/dev-loop, /bug-loop), and actions (/new-spec, /new-task, /new-bug, /new-adr, /status-report, /git-conventions) |
+| `.claude/skills/` | Skills: procedures (brainstorm, spec-breakdown, tdd, code-review, debug, merge-conflicts, integrate, escalation-review, spec-breakdown-review), orchestrators (/dev-loop, /bug-loop), and actions (/new-spec, /new-task, /new-bug, /new-adr, /status-report, /git-conventions) |
 | `.codex/` | OpenAI Codex compatibility layer: project-scoped custom agents in `.codex/agents/*.toml` plus a symlinked `.codex/skills/` view of `.claude/skills/` |
 
 ---
@@ -119,7 +119,7 @@ It answers: *What are the steps? In what order? What are the inputs and outputs?
 - Role identity, decision authority, scope boundaries, or "who I am" framing — those belong in the agent.
 
 Skills fall into three categories:
-- **Procedures** — analytical, multi-step work (brainstorm, write-plan, tdd, code-review, debug, conflict-resolution, integrate, escalation-consultation, gate-2-preflight).
+- **Procedures** — analytical, multi-step work (brainstorm, spec-breakdown, tdd, code-review, debug, merge-conflicts, integrate, escalation-review, spec-breakdown-review).
 - **Orchestrators** — autonomous loops that spawn subagents and drive workflows (dev-loop, bug-loop). Use `Agent` in `allowed-tools` and typically `disable-model-invocation: true`.
 - **Actions** — single-purpose operations (new-spec, new-task, new-bug, new-adr, status-report, git-conventions).
 
@@ -145,13 +145,13 @@ These are the conventions applied across `.claude/` after the 2026-04 review. Ne
    Failed because: [why it did not work]
    Question: [specific decision or guidance needed]
    ```
-2. The caller (an orchestrator skill or the human) forwards the request to the Architect by spawning the Architect subagent with the `escalation-consultation` skill.
-3. `escalation-consultation` returns either `RESOLVED` (with a directive) or `HUMAN_ESCALATION` (with a Phase 2 Human Escalation Report generated from the canonical template in that skill).
+2. The caller (an orchestrator skill or the human) forwards the request to the Architect by spawning the Architect subagent with the `escalation-review` skill.
+3. `escalation-review` returns either `RESOLVED` (with a directive) or `HUMAN_ESCALATION` (with a Phase 2 Human Escalation Report generated from the canonical template in that skill).
 4. On `HUMAN_ESCALATION`, the orchestrator commits a lifecycle marker (`chore(tasks): escalate T-NNN — move to blocked` or `chore(bugs): escalate B-NNN — needs human review`), stops the loop, and surfaces the Phase 2 report to the human.
 
 ### Subagent invocation
 
-Orchestrators and `write-plan` spawn subagents with uniform wording:
+Orchestrators and `spec-breakdown` spawn subagents with uniform wording:
 
 ```markdown
 **Spawn the <Role> subagent** with this prompt:
@@ -184,15 +184,15 @@ Do not invent per-skill vocabulary (e.g. `Gate 2 Verdict:`). If the domain needs
 A skill that invokes another skill in-process must declare it in `allowed-tools`:
 
 ```yaml
-allowed-tools: Read, Glob, Grep, Bash, Skill(conflict-resolution), Skill(new-bug), Skill(git-conventions)
+allowed-tools: Read, Glob, Grep, Bash, Skill(merge-conflicts), Skill(new-bug), Skill(git-conventions)
 ```
 
-Referential mentions (describing what a downstream caller will do) do not require a `Skill()` declaration. Example: `tdd` mentions `escalation-consultation` in prose but does not call it — no declaration needed.
+Referential mentions (describing what a downstream caller will do) do not require a `Skill()` declaration. Example: `tdd` mentions `escalation-review` in prose but does not call it — no declaration needed.
 
 ### Naming
 
 - Agent names: bare role (`planner`, `developer`, `architect`).
-- Skill names: lowercase-hyphenated, action-oriented (`write-plan`, `code-review`, `git-conventions`).
+- Skill names: lowercase-hyphenated, action-oriented (`spec-breakdown`, `code-review`, `git-conventions`).
 - Branch names: `task/T-NNN-short-description`, `bug/B-NNN-short-description` (see `git-conventions` skill).
 - Commit messages: `<type>(<component>): <description>` (see `git-conventions` skill).
 

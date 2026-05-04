@@ -108,7 +108,7 @@ Skills define procedures. This agent invokes them but does not duplicate their s
 
 ## Escalation
 
-The [Role] enters the escalation chain when the `<skill-name>` skill returns `ESCALATE`. Self-recovery thresholds and trigger conditions (retry counts, boundary violations, review cycles) are defined in that skill. The caller (active loop or human) routes the structured escalation request to the Architect via the `escalation-consultation` skill.
+The [Role] enters the escalation chain when the `<skill-name>` skill returns `ESCALATE`. Self-recovery thresholds and trigger conditions (retry counts, boundary violations, review cycles) are defined in that skill. The caller (active loop or human) routes the structured escalation request to the Architect via the `escalation-review` skill.
 
 ## Interaction Pattern
 
@@ -224,11 +224,11 @@ Rationale: thresholds change as the procedure changes. Keeping them in one place
 
 | Agent | Model | Tools | Main skills |
 |---|---|---|---|
-| Planner | Opus | `Read, Write, Edit, Glob, Grep` | `brainstorm`, `write-plan`, `new-spec`, `new-task` |
-| Architect | Opus | `Read, Write, Edit, Glob, Grep` | `gate-2-preflight`, `escalation-consultation`, `new-adr` |
+| Planner | Opus | `Read, Write, Edit, Glob, Grep` | `brainstorm`, `spec-breakdown`, `new-spec`, `new-task` |
+| Architect | Opus | `Read, Write, Edit, Glob, Grep` | `spec-breakdown-review`, `escalation-review`, `new-adr` |
 | Developer | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `tdd`, `debug`, `new-bug` |
 | Reviewer | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `code-review`, `new-bug` |
-| Integrator | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `integrate`, `conflict-resolution` |
+| Integrator | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `integrate`, `merge-conflicts` |
 
 Keep agents stable and small. When behavior becomes a repeatable sequence, create or update a skill rather than expanding the agent file.
 

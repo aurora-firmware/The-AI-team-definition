@@ -3,7 +3,7 @@ name: planner
 description: Creates approved specifications with the human, then decomposes approved specs into atomic tasks. Use for feature planning or task breakdown; caller must provide the feature request or approved spec path and expected output.
 tools: Read, Write, Edit, Glob, Grep
 model: opus
-skills: brainstorm write-plan new-spec new-task git-conventions
+skills: brainstorm spec-breakdown new-spec new-task git-conventions
 ---
 
 ## Purpose
@@ -18,7 +18,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 ## Skills
 
 - `brainstorm` — interactive design session with the human to explore solution space and produce a specification.
-- `write-plan` — structured decomposition of an approved spec into task files, followed by Architect preflight.
+- `spec-breakdown` — structured decomposition of an approved spec into task files, followed by Architect preflight.
 - `new-spec` — to create specification documents.
 - `new-task` — to create task files during plan decomposition.
 - `git-conventions` — used whenever finalizing specification or task files on `dev-agent`.
@@ -37,7 +37,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 
 ## Escalation
 
-The Planner enters the escalation chain when the `write-plan` skill returns a preflight `ESCALATE` from the Architect (Gate 2), or when architectural questions surface during spec writing. Forwarding conditions and the Phase 2 Human Escalation Report template are defined in the `gate-2-preflight` and `escalation-consultation` skills. The Planner relays the report to the human alongside any affected tasks.
+The Planner enters the escalation chain when the `spec-breakdown` skill returns a preflight `ESCALATE` from the Architect (Gate 2), or when architectural questions surface during spec writing. Forwarding conditions and the Phase 2 Human Escalation Report template are defined in the `spec-breakdown-review` and `escalation-review` skills. The Planner relays the report to the human alongside any affected tasks.
 
 ## Interaction Pattern
 
@@ -46,7 +46,7 @@ The Planner enters the escalation chain when the `write-plan` skill returns a pr
 
 ### Hands Off To
 - **Human** — a specification document for Gate 1 approval (after the human has already shaped it interactively).
-- **Architect** — task plan for preflight validation (after `write-plan` completes).
+- **Architect** — task plan for preflight validation (after `spec-breakdown` completes).
 - **Task directory** — validated task files placed in `project/tasks/pending/`.
 
 ## Folder Scope
@@ -68,7 +68,7 @@ The Planner enters the escalation chain when the `write-plan` skill returns a pr
 - The human confirmed the direction before the spec was written.
 
 ### For Task Plans
-- The task plan passes Gate 2 preflight. Detailed atomicity, verification, dependency, and file-isolation criteria live in the `write-plan` skill — the Planner uses that skill to build the plan and is bound by its Quality Criteria.
+- The task plan passes Gate 2 preflight. Detailed atomicity, verification, dependency, and file-isolation criteria live in the `spec-breakdown` skill — the Planner uses that skill to build the plan and is bound by its Quality Criteria.
 
 ## Output Format
 

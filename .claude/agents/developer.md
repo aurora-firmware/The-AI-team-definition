@@ -32,7 +32,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 
 ## Escalation
 
-The Developer enters the escalation chain when a skill it uses returns `ESCALATE`. Self-recovery thresholds and trigger conditions are defined in those skills — primarily the `tdd` skill (retry threshold and task-boundary violations) and the `debug` skill (reproduction failure). The active loop (`/dev-loop` or `/bug-loop`) routes the structured escalation request to the Architect via the `escalation-consultation` skill.
+The Developer enters the escalation chain when a skill it uses returns `ESCALATE`. Self-recovery thresholds and trigger conditions are defined in those skills — primarily the `tdd` skill (retry threshold and task-boundary violations) and the `debug` skill (reproduction failure). The active loop (`/dev-loop` or `/bug-loop`) routes the structured escalation request to the Architect via the `escalation-review` skill.
 
 ## Interaction Pattern
 

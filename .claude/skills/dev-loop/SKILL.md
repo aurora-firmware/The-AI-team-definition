@@ -122,7 +122,7 @@ Follow the two-phase escalation procedure below. Phase 1 is a single Architect c
 **Phase 1 — Architect Consultation:**
 **Spawn the Architect subagent** with this prompt:
 
-> "Use the escalation-consultation skill for task `project/tasks/in-progress/<task-file>`.
+> "Use the escalation-review skill for task `project/tasks/in-progress/<task-file>`.
 > Problem: <what the reviewer or loop found>
 > Attempted: <what the Developer tried and how many review cycles occurred>
 > Failed because: <why the task still cannot pass>
@@ -136,7 +136,7 @@ If the Architect cannot resolve the issue:
 1. Move the task file from `project/tasks/in-progress/` to `project/tasks/blocked/`.
 2. Switch to `dev-agent` and commit: `chore(tasks): escalate T-NNN — move to blocked`.
 3. Stop the loop entirely.
-4. Produce the report using the Phase 2 Human Escalation Report template defined in the `escalation-consultation` skill. Fill every section (Work item, Original request, Self-recovery attempts, Architect analysis, Why human input is required, Decision needed).
+4. Produce the report using the Phase 2 Human Escalation Report template defined in the `escalation-review` skill. Fill every section (Work item, Original request, Self-recovery attempts, Architect analysis, Why human input is required, Decision needed).
 
 ### Step 7: Loop Complete
 

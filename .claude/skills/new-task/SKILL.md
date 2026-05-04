@@ -53,7 +53,7 @@ Every task file produced by this skill must be:
 - **EARS-compliant acceptance criteria** — every AC matches one of the five EARS patterns documented in the template (Ubiquitous, Event-driven, Unwanted-behaviour, State-driven, Optional). An AC that resists EARS usually means the task is not atomic.
 - **Dependency-honest** — if the task reads or modifies something that another pending task creates, list that other task ID under `Dependencies`.
 
-Rules that govern the *set of tasks* (no two tasks modifying the same file without a dependency, full coverage of the specification) are enforced by the `write-plan` skill, not here. `new-task` enforces per-task shape; `write-plan` enforces the plan as a whole.
+Rules that govern the *set of tasks* (no two tasks modifying the same file without a dependency, full coverage of the specification) are enforced by the `spec-breakdown` skill, not here. `new-task` enforces per-task shape; `spec-breakdown` enforces the plan as a whole.
 
 ## Common Pitfalls
 
@@ -61,4 +61,4 @@ Rules that govern the *set of tasks* (no two tasks modifying the same file witho
 - **Description is a ticket title, not enough to start** — agent has to open the spec or ask questions. Expand.
 - **Acceptance criteria are aspirational, not testable** — "Works well under load" is not an AC. Name the measurable behaviour.
 - **No verification command** — if the task has no way to prove it's done, its acceptance criteria are not specific enough.
-- **Hidden dependency** — the task reads a file a sibling task creates but no dependency is listed. The `write-plan` Gate 2 preflight will catch this, but it's cheaper to catch here.
+- **Hidden dependency** — the task reads a file a sibling task creates but no dependency is listed. The `spec-breakdown` Gate 2 preflight will catch this, but it's cheaper to catch here.

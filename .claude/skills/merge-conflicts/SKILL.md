@@ -1,5 +1,5 @@
 ---
-name: conflict-resolution
+name: merge-conflicts
 description: Resolve git merge conflicts preserving the intent of both sides. Use when a merge conflict arises during integration of task or bug branches.
 allowed-tools: Read, Grep, Glob, Edit, Bash(git *)
 ---
@@ -28,7 +28,7 @@ Classify the conflict:
 
 ### Step 3: Resolve
 Apply the resolution that preserves the intent of both changes.
-If the changes are incompatible (one deletes what the other modifies), or the conflict is Structural and neither side clearly serves both tasks, stop and return `ESCALATE` using the structured four-field request below. The caller (typically the `integrate` skill) routes the request to the Architect via the `escalation-consultation` skill.
+If the changes are incompatible (one deletes what the other modifies), or the conflict is Structural and neither side clearly serves both tasks, stop and return `ESCALATE` using the structured four-field request below. The caller (typically the `integrate` skill) routes the request to the Architect via the `escalation-review` skill.
 
 ```text
 Problem: [the specific conflict that cannot be resolved — file, lines, incompatibility]

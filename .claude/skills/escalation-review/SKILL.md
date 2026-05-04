@@ -1,5 +1,5 @@
 ---
-name: escalation-consultation
+name: escalation-review
 description: Analyse blocked work after a role has exhausted self-recovery. Use when a Developer, Reviewer, Integrator, Development Loop, or Bug-Fix Loop sends a structured escalation request and the Architect must issue guidance or escalate to a human.
 allowed-tools: Read, Grep, Glob, Write, Edit, Skill(new-adr)
 effort: high
@@ -73,13 +73,13 @@ Human escalation required because:
 
 ### Phase 2 — Human Escalation Report Template
 
-When the verdict is `HUMAN_ESCALATION`, also produce a Phase 2 Human Escalation Report. This is the single canonical template that all callers (dev-loop, bug-loop, write-plan, and any future orchestrator) use when handing off to a human. The report is plain markdown appended to the final output.
+When the verdict is `HUMAN_ESCALATION`, also produce a Phase 2 Human Escalation Report. This is the single canonical template that all callers (dev-loop, bug-loop, spec-breakdown, and any future orchestrator) use when handing off to a human. The report is plain markdown appended to the final output.
 
 ```text
 ## Human Escalation Report
 
 Work item: <task or bug ID and path to canonical file>
-Source skill / loop: <dev-loop | bug-loop | write-plan | other>
+Source skill / loop: <dev-loop | bug-loop | spec-breakdown | other>
 Date: <YYYY-MM-DD>
 
 ### Original request

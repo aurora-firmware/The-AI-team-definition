@@ -73,7 +73,7 @@ Return this entry to the active loop. The loop appends and commits it to the can
 
 ## Escalation
 
-Return `ESCALATE` under any of these conditions. All cases use the same structured four-field request; the active loop forwards it to the Architect via the `escalation-consultation` skill. Do not resume the TDD cycle until the Architect responds.
+Return `ESCALATE` under any of these conditions. All cases use the same structured four-field request; the active loop forwards it to the Architect via the `escalation-review` skill. Do not resume the TDD cycle until the Architect responds.
 
 **Retry threshold.** Three consecutive Step 4 → Step 5 failures on the same acceptance criterion.
 

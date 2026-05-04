@@ -1,5 +1,5 @@
 ---
-name: write-plan
+name: spec-breakdown
 description: Decompose an approved specification into atomic, independent tasks. Use when a spec needs to be broken into executable work units.
 allowed-tools: Read, Grep, Glob, Write, Agent, Skill(new-task)
 effort: high
@@ -53,7 +53,7 @@ Save all task files to `project/tasks/pending/`.
 **Spawn the Architect subagent** with this prompt:
 
 > "Review the task plan just placed in `project/tasks/pending/` for the spec at `project/specs/<spec-file>`.
-> Use the gate-2-preflight skill.
+> Use the spec-breakdown-review skill.
 > Validate dependency correctness, file conflict risk, architectural consistency with `project/decisions/`, atomicity, and implementation readiness.
 > If all is sound, return `Result: PASS` and state that the plan is ready for /dev-loop.
 > If issues are found, return `Result: FAIL` with exact Planner corrections, or `Result: ESCALATE` only when a problem requires changing the approved specification.
@@ -61,7 +61,7 @@ Save all task files to `project/tasks/pending/`.
 
 Wait for the Architect to complete.
 If the Architect requests Planner revisions, address them and re-trigger the preflight.
-If the Architect escalates because the approved specification must change, stop and return the escalation to the human using the Phase 2 human report template defined in the `escalation-consultation` skill.
+If the Architect escalates because the approved specification must change, stop and return the escalation to the human using the Phase 2 human report template defined in the `escalation-review` skill.
 
 ## Output Format
 

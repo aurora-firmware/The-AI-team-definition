@@ -67,7 +67,7 @@ For bug fixes, the Developer follows a diagnosis-first debugging procedure befor
 
 ### Integration Layer
 
-**Procedure:** Integration Procedure.
+**Procedure:** Integrate.
 **Role:** Integrator (conflict resolution and manual merges into `dev-agent`/`main`).
 **Purpose:** Merge completed work, run integration tests, and resolve conflicts.
 **Key principle:** Merge in dependency order. Test once (optimistic). Revert and file bugs on failure.
@@ -95,8 +95,8 @@ For bug fixes, the Developer follows a diagnosis-first debugging procedure befor
 | Development Loop | Reviewer | Review request |
 | Reviewer | Development Loop | Verdict in task file (`PASS`/`FAIL`/`ESCALATE`) |
 | Development Loop | Developer | Feedback routing (on `FAIL`) |
-| Development Loop | Integration Procedure | Merge request (on `PASS`) |
-| Integration Procedure | Task directory | State transitions (`in-progress` → `completed`) |
+| Development Loop | Integrate | Merge request (on `PASS`) |
+| Integrate | Task directory | State transitions (`in-progress` → `completed`) |
 | Development Loop | Task directory | State transitions (`in-progress` → `blocked`) |
 | Development Loop | Human | Stop notification (queue empty, blocked, or escalation) |
 | Any role | Architect | Escalation request |

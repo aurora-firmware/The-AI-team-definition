@@ -2,7 +2,7 @@
 name: integrate
 description: Integrate a task or bug branch into a destination branch. Verifies expected changes, runs tests on the source branch, merges, re-runs tests for regressions, files bugs on failure, and deletes the branch on success.
 argument-hint: "<branch-or-task-id> [destination-branch]"
-allowed-tools: Read, Grep, Glob, Bash, Skill(conflict-resolution), Skill(new-bug), Skill(git-conventions)
+allowed-tools: Read, Grep, Glob, Bash, Skill(merge-conflicts), Skill(new-bug), Skill(git-conventions)
 ---
 
 # Integrate
@@ -93,8 +93,8 @@ Capture stdout and stderr. Evaluate the result:
    - Derive `<short-description>` from the work item title or the branch name slug.
 3. If the merge produces conflicts:
    - Do NOT force-resolve automatically.
-   - Invoke the `conflict-resolution` skill with the conflict context.
-   - If the conflict-resolution skill cannot resolve a semantic conflict, stop and escalate to the architect before proceeding.
+   - Invoke the `merge-conflicts` skill with the conflict context.
+   - If the merge-conflicts skill cannot resolve a semantic conflict, stop and escalate to the architect before proceeding.
 
 ### Step 6: Run Tests on the Destination Branch (Regression Check)
 
@@ -180,7 +180,7 @@ Reached only when both Step 4 and Step 6 tests pass.
 | Diff is empty | Stop — nothing to do |
 | Expected behavior not met by diff | Stop — return to Developer |
 | Pre-merge tests fail (Step 4) | Stop — work item stays `in-progress/`, branch stays open, return to Developer |
-| Merge conflict that conflict-resolution cannot solve | Stop — escalate to architect |
+| Merge conflict that merge-conflicts cannot solve | Stop — escalate to architect |
 | Regressions found post-merge (Step 6) | File bugs, revert merge, stop |
 
 ## Commit Conventions
@@ -197,17 +197,17 @@ All integrator commits follow the `git-conventions` skill. Canonical patterns fo
 ## Escalation
 
 The Integrator's self-recovery threshold is **one bisect cycle**.
-Return `ESCALATE` when a post-merge regression cannot be localized to a single task branch after one bisect, or the merge conflict in Step 5 cannot be resolved by the `conflict-resolution` skill.
+Return `ESCALATE` when a post-merge regression cannot be localized to a single task branch after one bisect, or the merge conflict in Step 5 cannot be resolved by the `merge-conflicts` skill.
 Use this structured request:
 
 ```text
 Problem: [what went wrong — unresolvable conflict, multi-task regression, etc.]
-Attempted: [merge attempt, conflict-resolution invocation, bisect scope]
-Failed because: [why the single-bisect or conflict-resolution could not isolate the cause]
+Attempted: [merge attempt, merge-conflicts invocation, bisect scope]
+Failed because: [why the single-bisect or merge-conflicts could not isolate the cause]
 Question: [specific guidance needed — which source task owns the behavior, which spec applies, etc.]
 ```
 
-The active loop routes the request to the Architect via the `escalation-consultation` skill. Do not force-resolve or pick a side in a semantic conflict.
+The active loop routes the request to the Architect via the `escalation-review` skill. Do not force-resolve or pick a side in a semantic conflict.
 
 ## Output Format
 

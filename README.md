@@ -89,14 +89,14 @@ Each skill implements a workflow or action defined in the ai-process:
 | Skill | What it implements |
 |---|---|
 | **brainstorm** | Solution-space exploration before a spec is written |
-| **write-plan** | Decomposition of a spec into atomic tasks |
-| **gate-2-preflight** | Architect validation of task plans before development starts |
+| **spec-breakdown** | Decomposition of a spec into atomic tasks |
+| **spec-breakdown-review** | Architect validation of task plans before development starts |
 | **tdd** | Test-driven development cycle |
 | **debug** | Diagnosis-first debugging: reproduce or confirm, gather evidence, isolate, then fix |
 | **code-review** | Two-stage review: task or bug criteria, then code quality |
-| **conflict-resolution** | Git conflict resolution preserving both sides' intent |
+| **merge-conflicts** | Git conflict resolution preserving both sides' intent |
 | **integrate** | Branch merge with project-discovered verification and task completion |
-| **escalation-consultation** | Architect analysis for blocked work before human escalation |
+| **escalation-review** | Architect analysis for blocked work before human escalation |
 | **/dev-loop** | Autonomous Developer → Reviewer → Integration loop across the pending task queue |
 | **/bug-loop** | Autonomous diagnosis-first Developer → Reviewer → Integration loop across the open bug queue |
 | **/new-spec** | Creates a new specification document from the template |

@@ -39,7 +39,7 @@ A skill that works for Opus may need more detail for Haiku. If a skill will be i
 
 Skills fall into three categories. The shape of the `SKILL.md` differs slightly per category.
 
-- **Procedures** — analytical, multi-step work. Have a numbered `Procedure`, `Escalation` section, `Quality Criteria`, and `Common Pitfalls`. Examples: `tdd`, `code-review`, `integrate`, `debug`, `conflict-resolution`, `gate-2-preflight`, `escalation-consultation`, `brainstorm`, `write-plan`.
+- **Procedures** — analytical, multi-step work. Have a numbered `Procedure`, `Escalation` section, `Quality Criteria`, and `Common Pitfalls`. Examples: `tdd`, `code-review`, `integrate`, `debug`, `merge-conflicts`, `spec-breakdown-review`, `escalation-review`, `brainstorm`, `spec-breakdown`.
 - **Orchestrators** — autonomous loops that spawn subagents and drive workflows. Have a numbered `Procedure` with explicit `**Spawn the <Role> subagent**` blocks, `Cycle Counter Reset`, `Commit Conventions`, `Hard Stops`, and `What This Skill Does NOT Do`. Usually carry `disable-model-invocation: true`. Examples: `dev-loop`, `bug-loop`.
 - **Actions** — simple document-creation or single-purpose operations. Short numbered list, usually no escalation section, often carry `disable-model-invocation: true`. Examples: `new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`, `git-conventions`.
 
@@ -129,7 +129,7 @@ Record the outcome in the required output location.
 
 ## Escalation
 
-Return `ESCALATE` under any of these conditions. All cases use the same structured four-field request; the active loop forwards it to the Architect via the `escalation-consultation` skill. Do not resume the procedure until the Architect responds.
+Return `ESCALATE` under any of these conditions. All cases use the same structured four-field request; the active loop forwards it to the Architect via the `escalation-review` skill. Do not resume the procedure until the Architect responds.
 
 **Retry threshold.** [State the concrete count, e.g. "three consecutive Step N failures"].
 
@@ -205,14 +205,14 @@ disable-model-invocation: true
 
 ### Phase-2 human escalation
 
-When an orchestrator exhausts Phase 1 (Architect) without resolution, it produces a Phase 2 Human Escalation Report using the canonical template defined in `escalation-consultation/SKILL.md`. Do not reinvent the report shape — point at that template.
+When an orchestrator exhausts Phase 1 (Architect) without resolution, it produces a Phase 2 Human Escalation Report using the canonical template defined in `escalation-review/SKILL.md`. Do not reinvent the report shape — point at that template.
 
 ## Frontmatter Guidance
 
 `name`:
 - **Maximum 64 characters.** Lowercase letters, numbers, and hyphens only.
 - **Cannot contain** XML tags or the reserved words `anthropic`, `claude`.
-- Short and specific. Prefer action-oriented or noun-phrase names (`write-plan`, `code-review`, `git-conventions`). Anthropic's published guidance recommends gerund form (`writing-plans`); both are acceptable in this framework, but stay consistent with neighbouring skills.
+- Short and specific. Prefer action-oriented or noun-phrase names (`spec-breakdown`, `code-review`, `git-conventions`). Anthropic's published guidance recommends gerund form (`writing-plans`); both are acceptable in this framework, but stay consistent with neighbouring skills.
 - Avoid vague names such as `helper`, `utils`, `tools`.
 
 `description`:
@@ -236,7 +236,7 @@ description: Use this when needed.     # no specifics
 `allowed-tools`:
 - Declare every tool the skill actually invokes.
 - Declare every other skill invoked in-process via `Skill(other-skill)`.
-- Referential mentions ("the active loop routes this to `escalation-consultation`") do **not** require a `Skill()` declaration when the current skill does not call it itself.
+- Referential mentions ("the active loop routes this to `escalation-review`") do **not** require a `Skill()` declaration when the current skill does not call it itself.
 
 `argument-hint`:
 - Use for skills invoked as slash commands with positional arguments. Document the argument shape tersely in frontmatter and fully in `## Input Requirements`.
@@ -250,10 +250,10 @@ When one skill invokes another in-process, declare it in `allowed-tools` as `Ski
 
 | Skill | Invokes in-process | `allowed-tools` | Prose reference form |
 |---|---|---|---|
-| `integrate` | `conflict-resolution`, `new-bug`, `git-conventions` | `Skill(conflict-resolution), Skill(new-bug), Skill(git-conventions)` | `` Invoke the `conflict-resolution` skill `` |
+| `integrate` | `merge-conflicts`, `new-bug`, `git-conventions` | `Skill(merge-conflicts), Skill(new-bug), Skill(git-conventions)` | `` Invoke the `merge-conflicts` skill `` |
 | `code-review` | `git-conventions` | `Skill(git-conventions)` | `` Commit using the `git-conventions` skill `` |
 
-Descriptive mentions — referring to skills the caller will invoke, or skills downstream in the chain — do not need a declaration. Example: `tdd` mentions `escalation-consultation` in prose to say *"the active loop forwards the request via `escalation-consultation`"*, but `tdd` itself does not invoke it, so it is not in `allowed-tools`.
+Descriptive mentions — referring to skills the caller will invoke, or skills downstream in the chain — do not need a declaration. Example: `tdd` mentions `escalation-review` in prose to say *"the active loop forwards the request via `escalation-review`"*, but `tdd` itself does not invoke it, so it is not in `allowed-tools`.
 
 ## Escalation Mechanics Live Here
 

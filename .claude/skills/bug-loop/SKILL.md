@@ -158,7 +158,7 @@ Follow the two-phase escalation procedure below. Phase 1 is a single Architect c
 **Phase 1 — Architect Consultation:**
 **Spawn the Architect subagent** with this prompt:
 
-> "Use the escalation-consultation skill for bug `project/bugs/in-progress/<bug-file>`.
+> "Use the escalation-review skill for bug `project/bugs/in-progress/<bug-file>`.
 > Problem: <what the reviewer found>
 > Attempted: <what the Developer tried, including diagnosis attempts and review cycles>
 > Failed because: <why the bug still cannot pass>
@@ -172,7 +172,7 @@ If the Architect cannot resolve it, proceed to Phase 2.
 1. Leave the bug file in `project/bugs/in-progress/` — there is no `blocked/` state for bugs.
 2. Switch to `dev-agent` and commit the escalation marker: `chore(bugs): escalate B-NNN — needs human review`.
 3. Stop the loop entirely.
-4. Produce the report using the Phase 2 Human Escalation Report template defined in the `escalation-consultation` skill. Fill every section (Work item, Original request, Self-recovery attempts, Architect analysis, Why human input is required, Decision needed).
+4. Produce the report using the Phase 2 Human Escalation Report template defined in the `escalation-review` skill. Fill every section (Work item, Original request, Self-recovery attempts, Architect analysis, Why human input is required, Decision needed).
 
 ### Step 8: Loop Complete
 

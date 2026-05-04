@@ -49,7 +49,7 @@ Copy the following files from this repository into your new project, preserving 
 - `.claude/skills/new-task/assets/TEMPLATE-task.md`
 - `.claude/skills/new-bug/assets/TEMPLATE-bug.md`
 - `.claude/skills/new-adr/assets/TEMPLATE-adr.md`
-- `.claude/skills/write-plan/assets/roadmap.md`
+- `.claude/skills/spec-breakdown/assets/roadmap.md`
 - `.claude/skills/tdd/assets/test-plan.md`
 - `.claude/skills/tdd/assets/test-report.md`
 - `.claude/skills/status-report/assets/progress-report.md`
@@ -62,9 +62,9 @@ Copy the following files from this repository into your new project, preserving 
 - `integrator.md`
 
 **Skill definitions (copy to `.claude/skills/<name>/SKILL.md`):**
-- `brainstorm`, `write-plan`, `gate-2-preflight`, `code-review`, `tdd`, `debug`, `conflict-resolution`
+- `brainstorm`, `spec-breakdown`, `spec-breakdown-review`, `code-review`, `tdd`, `debug`, `merge-conflicts`
 - `dev-loop`, `integrate`, `bug-loop`
-- `escalation-consultation`, `git-conventions`
+- `escalation-review`, `git-conventions`
 - `new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`
 
 If you use OpenAI Codex, keep skills available under `.codex/skills` and define project-scoped custom agents as `.codex/agents/*.toml`. Those TOML files should translate each Claude-style agent into Codex's custom-agent schema: `name`, `description`, and `developer_instructions`, with optional Codex-native settings such as `model`, `model_reasoning_effort`, and `sandbox_mode`.
