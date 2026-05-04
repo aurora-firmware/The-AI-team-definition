@@ -49,7 +49,6 @@ Copy the following files from this repository into your new project, preserving 
 - `.claude/skills/new-task/assets/TEMPLATE-task.md`
 - `.claude/skills/new-bug/assets/TEMPLATE-bug.md`
 - `.claude/skills/new-adr/assets/TEMPLATE-adr.md`
-- `.claude/skills/spec-breakdown/assets/roadmap.md`
 - `.claude/skills/tdd/assets/test-plan.md`
 - `.claude/skills/tdd/assets/test-report.md`
 - `.claude/skills/status-report/assets/progress-report.md`
