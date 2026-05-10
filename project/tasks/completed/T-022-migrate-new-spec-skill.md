@@ -1,7 +1,7 @@
 ---
 id: "T-022"
 title: "Migrate new-spec skill to invoke ai-team CLI"
-status: pending
+status: completed
 priority: low
 assigned-role: developer
 created: 2026-05-10
