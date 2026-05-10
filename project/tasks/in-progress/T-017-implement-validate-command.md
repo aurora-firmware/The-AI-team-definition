@@ -52,6 +52,16 @@ cd cli && uv run pytest tests/test_validate.py -q
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Implemented T-017 with a pure validation core and CLI wrapper. I started with a minimal failing AC-1 test (`ai-team validate` on a clean project), implemented the command/module skeleton, and got the first green pass. Then I added failing tests for folder-status mismatch and unresolved cross-references (task→spec, bug→task, ADR supersedes), implemented parser-backed checks plus error findings, and brought those tests green.
+
+After that I expanded coverage for JSON-only output behavior, non-zero exit when any error exists, scope filtering (`--tasks`), and validation of required frontmatter/ID/filename rules. Most of those behaviors were already satisfied by the current implementation, so I kept the code mostly stable and only made a small robustness refactor to accept task spec references with or without `.md` suffix.
+
+Tried/rejected: I considered relaxing spec ID checks because `parse_spec` does not require `id`, but kept spec ID validation as an explicit rule in this task since the requirement includes `S-NNN` ID pattern checks.
+
+Remaining: no known implementation gaps for this task; reviewer can now evaluate against acceptance criteria.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
