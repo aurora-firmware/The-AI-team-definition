@@ -65,3 +65,23 @@ Remaining: no known implementation gaps for this task; reviewer can now evaluate
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
+
+### Review Verdict — 2026-05-10
+PASS
+
+Stage 1 (acceptance criteria): PASS.
+- AC-1: `ai-team validate` returns exit code 0 with zero findings on a clean fixture project.
+- AC-2: Status/folder mismatches emit `status-mismatch` error findings.
+- AC-3: Unresolved task→spec, bug→task, and ADR→supersedes references emit error findings naming missing targets.
+- AC-4: `--json` outputs a JSON list and suppresses Rich table output.
+- AC-5: Any error-level finding causes non-zero exit.
+- File scope check: diff matches expected 3 added files only.
+
+Stage 2 (code quality): PASS.
+- Correctness: validation logic and scope selection align with task requirements.
+- Tests: targeted coverage for success, failure, JSON mode, and scope flags.
+- Security/readability/performance: no issues identified for this task scope.
+
+Verification evidence:
+- Ran `cd cli && uv run pytest tests/test_validate.py -q` on `task/T-017-implement-validate-command`.
+- Result: `7 passed`.
