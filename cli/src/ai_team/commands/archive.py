@@ -79,7 +79,7 @@ def archive(
 
     for source, destination in moves:
         if dry_run:
-            typer.echo(f"DRY-RUN: {source} -> {destination}")
+            typer.echo(f"WOULD MOVE: {source} -> {destination}")
             continue
 
         destination.parent.mkdir(parents=True, exist_ok=True)

@@ -94,3 +94,33 @@ def test_archive_moves_old_completed_tasks_and_resolved_bugs_to_created_month(
     assert old_task_dest.exists()
     assert old_bug_dest.exists()
     assert fresh_task_src.exists()
+
+
+def test_archive_dry_run_lists_would_move_without_mutating_filesystem(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """`archive --dry-run` reports planned moves and leaves source files untouched."""
+    from ai_team.cli import app
+
+    old_task_src = (
+        tmp_path / "project" / "tasks" / "completed" / "T-110-old-task.md"
+    )
+    _write_completed_task(
+        old_task_src,
+        "T-110",
+        (date.today() - timedelta(days=120)).isoformat(),
+    )
+    expected_bucket = (date.today() - timedelta(days=120)).strftime("%Y-%m")
+    expected_dest = (
+        tmp_path / "project" / "archive" / expected_bucket / old_task_src.name
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["archive", "--dry-run"])
+
+    assert result.exit_code == 0
+    assert "would move" in result.output.lower()
+    assert str(old_task_src) in result.output
+    assert str(expected_dest) in result.output
+    assert old_task_src.exists()
+    assert not expected_dest.exists()
