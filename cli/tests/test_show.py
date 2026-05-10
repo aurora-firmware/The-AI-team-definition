@@ -43,3 +43,31 @@ def test_show_exact_id_single_match_prints_markdown(monkeypatch, tmp_path):
     assert result.exit_code == 0
     assert "Initial scaffold" in result.output
     assert "Task body line." in result.output
+
+
+def test_show_json_outputs_path_frontmatter_and_body(monkeypatch, tmp_path):
+    """`--json` emits a single JSON object with path/frontmatter/body and no Rich output."""
+    import json
+
+    from ai_team.cli import app
+
+    task_path = tmp_path / "project" / "tasks" / "pending" / "T-002-json-case.md"
+    _write(task_path, _task("T-002", "JSON case", "Body for json."))
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["show", "T-002", "--json"])
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert payload == {
+        "path": str(task_path),
+        "frontmatter": {
+            "id": "T-002",
+            "title": "JSON case",
+            "status": "pending",
+            "priority": "medium",
+            "assigned-role": "developer",
+            "created": "2026-05-10",
+        },
+        "body": "# JSON case\n\nBody for json.\n",
+    }
