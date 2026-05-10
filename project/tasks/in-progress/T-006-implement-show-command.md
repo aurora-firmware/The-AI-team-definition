@@ -60,3 +60,13 @@ All task verification tests now pass, and there is no remaining implementation w
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
+
+### Review Verdict — 2026-05-10
+
+PASS
+
+Stage 1 (acceptance): PASS. `cli/src/ai_team/commands/show.py` satisfies AC-1 through AC-4, and modified files match the task scope (`show.py`, `test_show.py`, task file).
+
+Stage 2 (quality): PASS. Command behavior is correct for single match, JSON mode, ambiguous identifiers, and not-found handling; tests are present for success and failure paths; no security/performance/readability issues that block acceptance.
+
+Verification run: `cd cli && uv run pytest tests/test_show.py -q` on `task/T-006-implement-show-command` passed (`9 passed`).
