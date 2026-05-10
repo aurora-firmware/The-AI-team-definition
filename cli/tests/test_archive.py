@@ -124,3 +124,52 @@ def test_archive_dry_run_lists_would_move_without_mutating_filesystem(
     assert str(expected_dest) in result.output
     assert old_task_src.exists()
     assert not expected_dest.exists()
+
+
+def test_archive_uses_older_than_cutoff_to_select_artifacts(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """`archive --older-than` moves only artifacts strictly older than the cutoff."""
+    from ai_team.cli import app
+
+    should_move = (
+        tmp_path / "project" / "tasks" / "completed" / "T-120-older-than-cutoff.md"
+    )
+    should_stay = (
+        tmp_path / "project" / "tasks" / "completed" / "T-121-within-cutoff.md"
+    )
+
+    move_created = (date.today() - timedelta(days=85)).isoformat()
+    stay_created = (date.today() - timedelta(days=80)).isoformat()
+    _write_completed_task(should_move, "T-120", move_created)
+    _write_completed_task(should_stay, "T-121", stay_created)
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["archive", "--older-than", "12w"])
+
+    moved_dest = (
+        tmp_path
+        / "project"
+        / "archive"
+        / date.fromisoformat(move_created).strftime("%Y-%m")
+        / should_move.name
+    )
+
+    assert result.exit_code == 0
+    assert moved_dest.exists()
+    assert not should_move.exists()
+    assert should_stay.exists()
+
+
+def test_archive_rejects_invalid_older_than_value(monkeypatch, tmp_path: Path) -> None:
+    """Invalid --older-than syntax exits non-zero with a clear error message."""
+    from ai_team.cli import app
+
+    (tmp_path / "project").mkdir(parents=True, exist_ok=True)
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(app, ["archive", "--older-than", "abc"])
+
+    assert result.exit_code != 0
+    assert "invalid --older-than" in result.stderr.lower()
+    assert "number" in result.stderr.lower()
