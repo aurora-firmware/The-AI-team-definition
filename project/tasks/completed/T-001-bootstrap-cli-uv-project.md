@@ -1,7 +1,7 @@
 ---
 id: "T-001"
 title: "Bootstrap cli/ uv project with Typer scaffold and command auto-discovery"
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: 2026-05-10
