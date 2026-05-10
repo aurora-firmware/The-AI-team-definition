@@ -50,3 +50,38 @@ Implemented `ai-team adr new` at `ai_team.commands.adr` with `NAME = "adr"` and 
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
+
+### Review Verdict — 2026-05-10
+
+PASS
+
+Result: PASS
+
+Summary:
+- Reviewed `task/T-013-implement-adr-new-command` against T-013 acceptance criteria and Stage 2 code-quality checks; all required checks passed.
+
+Artifacts:
+- Updated canonical task file: `project/tasks/in-progress/T-013-implement-adr-new-command.md`
+- Diff reviewed: `dev-agent..task/T-013-implement-adr-new-command` (expected two added files only)
+- Primary files inspected: `cli/src/ai_team/commands/adr.py`, `cli/tests/test_adr_new.py`
+
+Evidence:
+- Scope check: `git diff --name-status dev-agent..task/T-013-implement-adr-new-command` returned only:
+  - `A cli/src/ai_team/commands/adr.py`
+  - `A cli/tests/test_adr_new.py`
+- Stage 1 acceptance checks:
+  - AC-1 satisfied: command allocates ADR ID, slugifies title, loads ADR template body, and creates one file at `project/decisions/ADR-NNN-<slug>.md` with expected frontmatter fields (including status/date/supersedes handling).
+  - AC-2 satisfied: default output prints resulting absolute path to stdout.
+  - AC-3 satisfied: `--json` emits `{"id":"...","path":"..."}` via JSON output path with no Rich rendering.
+  - AC-4 satisfied: existing destination raises non-zero exit and preserves existing file bytes.
+- Verification run (task command): `cd cli && uv run pytest tests/test_adr_new.py -q` on branch `task/T-013-implement-adr-new-command` → `3 passed`.
+- Stage 2 quality checks passed for correctness, tests, security, readability, and performance within task scope.
+
+Obstacles Encountered:
+- Initial in-sandbox checkout/test command failed with `.git/index.lock` write restriction; reran with escalated permissions and completed verification successfully.
+
+Next Owner:
+- Development Loop
+
+Next Action:
+- none
