@@ -53,3 +53,28 @@ def test_init_refuses_to_overwrite_when_force_is_not_set(monkeypatch, tmp_path):
     assert existing.read_text(encoding="utf-8") == "occupied\n"
     assert not (target / ".claude" / "agents" / "planner.md").exists()
     assert not (target / ".ai-team.toml").exists()
+
+
+def test_init_dry_run_lists_files_and_writes_nothing(tmp_path):
+    """Dry-run reports planned writes but does not create files or directories."""
+    from ai_team.cli import app
+
+    target = tmp_path / "new-repo"
+    result = CliRunner().invoke(
+        app,
+        [
+            "init",
+            str(target),
+            "--tools",
+            "claude",
+            "--no-interactive",
+            "--dry-run",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "WOULD WRITE:" in result.output
+    assert str(target / "project" / "tasks" / "pending" / ".gitkeep") in result.output
+    assert str(target / ".claude" / "agents" / "planner.md") in result.output
+    assert str(target / ".ai-team.toml") in result.output
+    assert not target.exists()
