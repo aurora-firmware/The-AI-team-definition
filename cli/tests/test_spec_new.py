@@ -1,5 +1,6 @@
 """Tests for T-012: ai-team spec new command."""
 
+import json
 from datetime import date
 from pathlib import Path
 
@@ -40,3 +41,62 @@ def test_spec_new_creates_spec_with_defaults_and_prints_absolute_path(
 
     content = expected.read_text(encoding="utf-8")
     assert "id: S-001" in content
+
+
+def test_spec_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
+    """`spec new --json` emits id/path and writes frontmatter from supplied flags."""
+    from ai_team.cli import app
+
+    _mkdir(tmp_path / "project" / "specs")
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(
+        app,
+        [
+            "spec",
+            "new",
+            "Auth Spec",
+            "--author",
+            "architect",
+            "--status",
+            "review",
+            "--json",
+        ],
+    )
+
+    expected = tmp_path / "project" / "specs" / "auth-spec.md"
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload == {"id": "S-001", "path": str(expected)}
+    assert "┏" not in result.output
+
+    spec = parse_spec(expected)
+    assert spec.title == "Auth Spec"
+    assert spec.version == "0.1"
+    assert spec.status == "review"
+    assert spec.created == date.today().isoformat()
+    assert spec.author == "architect"
+
+    content = expected.read_text(encoding="utf-8")
+    assert "id: S-001" in content
+
+
+def test_spec_new_refuses_to_overwrite_when_allocated_path_exists(
+    monkeypatch, tmp_path
+):
+    """If the allocated output file exists, command exits non-zero and keeps file bytes."""
+    from ai_team.cli import app
+
+    specs = tmp_path / "project" / "specs"
+    _mkdir(specs)
+
+    existing = specs / "launch-plan.md"
+    existing.write_text("existing bytes\n", encoding="utf-8")
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["spec", "new", "Launch Plan"])
+
+    assert result.exit_code != 0
+    assert "already exists" in result.stderr.lower()
+    assert existing.read_text(encoding="utf-8") == "existing bytes\n"
