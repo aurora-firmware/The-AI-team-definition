@@ -43,6 +43,10 @@ cd cli && uv run pytest tests/test_spec_new.py -q
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Implemented `ai-team spec new` with Typer `NAME = "spec"` and `new` subcommand supporting `--author`, `--status`, and `--json`. The command allocates `S-NNN` via `next_spec_id`, slugifies the title for `project/specs/<slug>.md`, loads the bundled `spec` template, and writes via `write_artifact` with overwrite protection. I first considered constructing `Spec` directly without a source map, but that would drop the generated spec ID from frontmatter; I rejected that and instead parsed the template frontmatter map and injected `id` so the written file contains both templated fields/comments and the allocated ID. Added tests for defaults + absolute path output, JSON payload + custom flags, and refusal to overwrite existing files. Remaining work is reviewer/integration lifecycle only.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
