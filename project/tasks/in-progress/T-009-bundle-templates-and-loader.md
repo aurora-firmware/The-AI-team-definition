@@ -49,6 +49,18 @@ cd cli && uv run pytest tests/test_templates.py -q && uv build && unzip -l dist/
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Implemented T-009 via two TDD cycles on `task/T-009-bundle-templates-and-loader`.
+
+Cycle 1 targeted AC-1: added a failing test asserting `load_template("task")` is byte-equal to `.claude/skills/new-task/assets/TEMPLATE-task.md`, then implemented `ai_team.core.templates.load_template` minimally and bundled `cli/src/ai_team/templates/task.md` verbatim. Test went red then green and was committed.
+
+Cycle 2 targeted AC-2 and AC-4: expanded tests to cover all four kinds (`task`, `bug`, `spec`, `adr`) returning non-empty strings starting with `---`, plus unknown-kind `ValueError` that names supported kinds. Added verbatim bundled templates (`bug.md`, `spec.md`, `adr.md`) and generalized loader mapping with explicit validation/error text. Tests went red then green and were committed.
+
+I briefly considered adding `cli/src/ai_team/templates/__init__.py`, but rejected it after verifying `importlib.resources.files("ai_team.templates")` already resolves correctly in this package layout.
+
+Ran the verification command from the task. `pytest` passed and `uv build` + wheel inspection confirmed all four template files are included in the built wheel (AC-3). No remaining implementation work for this task.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
