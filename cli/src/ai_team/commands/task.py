@@ -9,7 +9,7 @@ from typing import Literal
 import typer
 from slugify import slugify
 
-from ai_team.core.fs import ArtifactExists, write_artifact
+from ai_team.core.fs import ArtifactExists, move_artifact, update_status, write_artifact
 from ai_team.core.ids import next_task_id
 from ai_team.core.locator import find_project_root
 from ai_team.core.models import Task
@@ -20,6 +20,23 @@ NAME = "task"
 app = typer.Typer(help="Create and manage task artifacts.")
 
 Priority = Literal["critical", "high", "medium", "low"]
+
+
+def _task_matches_id(path: Path, task_id: str) -> bool:
+    stem = path.stem
+    return stem == task_id or stem.startswith(f"{task_id}-")
+
+
+def _find_task_file(task_id: str, folders: list[Path]) -> Path | None:
+    for folder in folders:
+        if not folder.exists():
+            continue
+        for path in sorted(folder.glob("*.md")):
+            if path.name == ".gitkeep" or path.match("TEMPLATE-*.md"):
+                continue
+            if _task_matches_id(path, task_id):
+                return path
+    return None
 
 
 def _template_body(template: str) -> str:
@@ -76,3 +93,29 @@ def new_task(
         return
 
     typer.echo(absolute_path)
+
+
+@app.command("start")
+def start_task(task_id: str) -> None:
+    """Move a pending task to in-progress and update status."""
+    root = find_project_root(Path.cwd())
+
+    in_progress = _find_task_file(task_id, [root.tasks_in_progress])
+    if in_progress is not None:
+        typer.echo(f"Task {task_id} already in in-progress.")
+        return
+
+    source = _find_task_file(task_id, [root.tasks_pending])
+    if source is None:
+        searched = ", ".join(str(path) for path in [root.tasks_pending, root.tasks_in_progress])
+        typer.echo(
+            f"Task '{task_id}' not found. Searched folders: {searched}",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+    destination = root.tasks_in_progress / source.name
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    update_status(source, "in-progress")
+    move_artifact(source, destination)
+    typer.echo(str(destination.resolve()))

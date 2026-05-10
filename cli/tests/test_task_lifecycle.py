@@ -1,0 +1,54 @@
+"""Tests for T-014: task lifecycle commands."""
+
+from pathlib import Path
+
+from typer.testing import CliRunner
+
+from ai_team.core.models import parse_task
+
+
+TASK_TEMPLATE = """\
+---
+id: "{id}"
+title: "{title}"
+status: {status}
+priority: medium
+assigned-role: developer
+created: 2026-05-10
+---
+
+## Description
+
+Task body.
+
+## Work Log
+"""
+
+
+def _write_task(path: Path, task_id: str, title: str, status: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        TASK_TEMPLATE.format(id=task_id, title=title, status=status),
+        encoding="utf-8",
+    )
+
+
+def test_task_start_moves_pending_task_to_in_progress_and_updates_status(
+    monkeypatch, tmp_path
+):
+    """`task start` moves pending->in-progress and sets frontmatter status."""
+    from ai_team.cli import app
+
+    pending = tmp_path / "project" / "tasks" / "pending" / "T-042-demo-task.md"
+    _write_task(pending, "T-042", "Demo Task", "pending")
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["task", "start", "T-042"])
+
+    destination = (
+        tmp_path / "project" / "tasks" / "in-progress" / "T-042-demo-task.md"
+    )
+    assert result.exit_code == 0
+    assert not pending.exists()
+    assert destination.exists()
+    assert parse_task(destination).status == "in-progress"
