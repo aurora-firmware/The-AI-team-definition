@@ -1,7 +1,7 @@
 ---
 id: "T-019"
 title: "Migrate status-report skill to invoke ai-team CLI"
-status: pending
+status: completed
 priority: low
 assigned-role: developer
 created: 2026-05-10
