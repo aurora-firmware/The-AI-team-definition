@@ -79,7 +79,8 @@ After fix: 36 `test_models.py` tests pass; 60 total tests pass (no regressions).
 
 <!-- Reviewer: append verdict here after each review cycle. -->
 
-### Review Verdict — 2026-05-10
+
+### Review Verdict — 2026-05-10 (Cycle 1)
 
 FAIL
 
@@ -116,3 +117,37 @@ Stage 2 is skipped per procedure because Stage 1 has a failing criterion.
 Decision 1 — ADR `id` vs `number`: The Developer's choice to use `id: str` (e.g., `"ADR-001"`) is acceptable. The task description is explicit about `id` being the field name and `id` is consistent across all other artifact types. The existing template uses `number: 0` as a placeholder that was never adopted in practice. No action needed.
 
 Decision 2 — Bug `source_branch` omitted from dataclass: Acceptable for v1 **with an explicit note**. The bug-loop reads `source_branch` directly from the file's raw frontmatter (bug-loop/SKILL.md Step 3), not through the `Bug` dataclass, so this omission does not break the current loop. Future components that need it (T-007, T-017) will need to either extend the `Bug` dataclass or read it via raw frontmatter — the Developer's Work Log already flags this trade-off. No action required for this task.
+
+### Review Verdict — 2026-05-10 (Cycle 2)
+
+PASS
+
+**Stage 1 — Acceptance Criteria**
+
+AC-1 (parse_task returns a Task with all fields): PASS — unchanged from cycle 1; all four parse functions populate all common and type-specific fields correctly.
+
+AC-2 (dump_frontmatter round-trips to an equal model): PASS — the in-place source-map update path still produces output that parses back to an equal model. All five round-trip tests pass. Key order verified manually: `id → title → status → priority → assigned-role → created` is preserved exactly. No regression from cycle 1.
+
+AC-3 (FrontmatterError names the field and path): PASS — unchanged from cycle 1; `_require` still includes both the key name and source path in the message.
+
+AC-4 (YAML comments and key order preserved): PASS — fix confirmed.
+
+Root cause was correctly identified: `_parse_yaml_frontmatter` was stripping the `CommentedMap` by converting it to a plain dict. Fix returns the `CommentedMap` directly and threads it through each dataclass via `_source_map`. `dump_frontmatter` updates the source map in-place when present so comments survive.
+
+Manual parse→dump cycle confirmed `status: pending  # workflow state` appears in dumped output. New test `test_dump_frontmatter_preserves_inline_comments` passes. All 36 `test_models.py` tests pass; 60 total tests pass with no regressions.
+
+**Stage 2 — Code Quality**
+
+Correctness: Logic is sound. Each `parse_*` call invokes `_parse_yaml_frontmatter` which reads and re-parses the file independently, so `_source_map` instances across separate parse calls are distinct objects — no shared mutable state. Verified: two `parse_task` calls on the same file produce separate `CommentedMap` objects; mutating one does not affect the other. The fallback path (hand-constructed model with `_source_map=None`) still builds a fresh `CommentedMap` with canonical key order.
+
+Tests: 36 tests covering all four artifact types, success and failure paths, round-trip fidelity, key-order preservation, optional-field handling, and now comment preservation. Tests are independent (each uses `tmp_path`). New test exercises the failure-then-pass scenario implicitly by asserting the comment string is present.
+
+Security: No credentials, no external input used directly in queries, no new permissions.
+
+Readability: `_source_map` field is clearly documented with `compare=False, repr=False`. The two code paths in `dump_frontmatter` (source-map present vs absent) are clearly commented. Names are descriptive and follow existing project conventions.
+
+Performance: No unnecessary loops; the in-place update iterates over `ordered_fields` once — same complexity as the previous fresh-build path.
+
+**Minor observations (non-blocking)**
+
+The in-place update in `dump_frontmatter` mutates the `CommentedMap` held by the model. If a caller dumps the same model twice with different field values between dumps, the second dump sees the updated map. This is consistent with the design intent (the map reflects current model state) and is not a correctness issue for the current use cases, but callers who cache models and dump them multiple times should be aware. No action required for this task.
