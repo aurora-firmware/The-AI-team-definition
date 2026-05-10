@@ -1,7 +1,7 @@
 ---
 id: "T-015"
 title: "Implement bug lifecycle commands (start, resolve)"
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: 2026-05-10
