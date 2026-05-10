@@ -62,3 +62,27 @@ What remains: review and integration.
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
+
+### Review Verdict — 2026-05-10
+
+PASS
+
+Both stages passed.
+
+**Stage 1 — Spec compliance**
+
+- AC-1: `ai-team list tasks` collects every non-template task across `pending`, `in-progress`, `completed`, and `blocked` folders and renders a Rich table with ID, title, state, priority, and assigned-role columns. Covered by `test_list_tasks_displays_all_states_in_rich_table_and_skips_templates`.
+- AC-2: `--state <name>` filters task and bug listings to the selected state folder. Covered by `test_list_tasks_state_filter_only_includes_matching_folder`.
+- AC-3: `--json` returns plain JSON list-of-dict payloads and exits before Rich table rendering. Covered by `test_list_tasks_json_outputs_plain_list_without_rich_table` and the bug/spec/ADR JSON checks.
+- AC-4: `_should_skip` excludes `.gitkeep` and `TEMPLATE-*.md`; tests cover skip behavior for tasks, bugs, specs, and ADRs.
+- Changed files match the task scope: `cli/src/ai_team/commands/list.py` and `cli/tests/test_list.py`.
+
+**Stage 2 — Code quality**
+
+- Correctness: command discovery picks up `NAME = "list"` and the Typer `app`; rows use the required fields for tasks, bugs, specs, and ADRs.
+- Tests: focused tests cover table output, JSON output, state filtering, skip rules, and all artifact types.
+- Security: no external commands, no secrets, no unsafe parsing beyond existing model loaders.
+- Readability: helper functions keep traversal, filtering, row collection, and rendering separated.
+- Performance: simple sorted folder scans only; no unnecessary recursion or resource-heavy work.
+
+**Test evidence:** `cd cli && .venv/bin/pytest tests/test_list.py -q` -> 5 passed. `cd cli && .venv/bin/pytest -q` -> 86 passed. `cd cli && .venv/bin/ai-team list tasks --json` emitted the expected JSON task list.
