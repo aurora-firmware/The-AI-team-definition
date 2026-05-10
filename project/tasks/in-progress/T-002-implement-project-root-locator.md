@@ -63,3 +63,26 @@ Nothing remains for this task: all four acceptance criteria are covered, the ver
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
+
+### Review Verdict — 2026-05-10
+
+PASS
+
+**Stage 1 — Spec compliance:** All four acceptance criteria are satisfied.
+
+- AC-1: `find_project_root(cwd, root=None, project_dir="project")` signature is exact. Upward filesystem walk correctly resolves the repo root from any nested cwd. Six tests cover the walking path including deeply nested directories, all path fields (specs, tasks, bugs, decisions, docs), and absolute-path guarantees.
+- AC-2: `AI_TEAM_ROOT` is checked (strategy 2) before the walk loop (strategies 3+4), giving it correct precedence over directory walking. Two tests verify env-var override and project_dir resolution.
+- AC-3: `.ai-team.toml` is parsed with stdlib `tomllib` (no third-party dependency). The `_toml_project_dir` helper correctly returns `data.get("project", {}).get("dir")` and silently returns `None` on any parse or I/O error. Three tests cover: TOML at cwd, TOML in a parent directory, and TOML without a `[project] dir` key falling through to folder walking.
+- AC-4: `ProjectRootNotFound` is raised with a message containing the searched paths and the `ai-team init` hint. Four tests cover: not-found when no project folder exists, message names searched paths, message contains `ai-team init`, and not-found when `AI_TEAM_ROOT` points to a repo without the expected folder.
+
+No unspecified behaviour was added. Only the three files listed under "Files to Touch" were modified.
+
+**Stage 2 — Code quality:**
+
+- Correctness: Resolution order matches spec exactly (explicit arg → env var → TOML walk → folder-name walk). Edge case where TOML is present but the declared folder is missing is handled correctly (continues walking). `cwd.resolve()` guarantees absolute paths throughout.
+- Tests: 18 tests, all passing (`cd cli && uv run pytest tests/test_locator.py -q` → 18 passed). Tests use `tmp_path` (independent, no shared mutable state). Both success and failure paths covered.
+- Security: No hardcoded credentials. External TOML input errors are caught and silently return `None` (no crash on malformed files). No DB queries.
+- Readability: `ProjectRoot` is a frozen dataclass with field-level docstrings. `find_project_root` has a clear docstring with Parameters and Raises sections. `_toml_project_dir` is a focused private helper. No dead code or debug artifacts.
+- Performance: Single upward walk handles both TOML and folder-name strategies; no double filesystem scan.
+
+Minor observation (non-blocking): when strategy 1 (`root=` arg) is used, `_toml_project_dir(repo)` is also called to allow the TOML to override the project-dir name. The spec does not explicitly address this combination, but it is internally consistent and does not contradict any criterion.
