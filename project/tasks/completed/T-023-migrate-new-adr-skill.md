@@ -1,7 +1,7 @@
 ---
 id: "T-023"
 title: "Migrate new-adr skill to invoke ai-team CLI"
-status: pending
+status: completed
 priority: low
 assigned-role: developer
 created: 2026-05-10
