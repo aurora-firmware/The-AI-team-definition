@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import subprocess
 
 import typer
 from rich.markdown import Markdown
@@ -99,9 +100,31 @@ def _blocking_reason(task_path: Path) -> str:
 
 
 def _latest_integration_result(root: ProjectRoot) -> str:
-    # Discoverability from files is intentionally narrow; fallback is explicit.
-    _ = root
-    return "not found"
+    try:
+        completed = subprocess.run(
+            [
+                "git",
+                "-C",
+                str(root.repo),
+                "log",
+                "--all",
+                "--grep=merge\\|integration\\|verification\\|test",
+                "-n",
+                "1",
+                "--pretty=format:%s",
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return "not found"
+
+    value = completed.stdout.strip()
+    if not value:
+        return "not found"
+    return value
 
 
 def _payload(root: ProjectRoot) -> dict[str, object]:

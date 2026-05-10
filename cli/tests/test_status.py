@@ -190,4 +190,101 @@ def test_status_json_emits_structured_payload_without_rich_table(monkeypatch, tm
             "assigned_role": "developer",
         }
     ]
+    assert payload["counts"]["tasks"] == {
+        "pending": 0,
+        "in_progress": 1,
+        "completed": 0,
+        "blocked": 0,
+    }
+    assert payload["counts"]["bugs"] == {
+        "open": 0,
+        "in_progress": 0,
+        "resolved": 0,
+    }
+    assert payload["counts"]["adrs"] == 0
+    assert payload["latest_integration_result"] == "not found"
     assert "┏" not in result.output
+
+
+def test_status_blocked_task_uses_latest_work_log_when_frontmatter_reason_missing(
+    monkeypatch, tmp_path
+):
+    """Blocked reason falls back to the latest Work Log entry when frontmatter key is absent."""
+    from ai_team.cli import app
+
+    blocked_body = """\
+## Description
+
+Blocked.
+
+## Work Log
+
+### Session 1 — 2026-05-10
+waiting on API contract clarification
+
+### Session 2 — 2026-05-11
+stuck on reviewer approval
+"""
+    _write(
+        tmp_path / "project" / "tasks" / "blocked" / "T-200.md",
+        _task(
+            "T-200",
+            "Needs review",
+            "blocked",
+            body=blocked_body,
+        ),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["status", "--json"])
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert payload["blocked_tasks"] == [
+        {
+            "id": "T-200",
+            "title": "Needs review",
+            "blocking_reason": "stuck on reviewer approval",
+        }
+    ]
+
+
+def test_status_uses_latest_integration_commit_subject_when_available(
+    monkeypatch, tmp_path
+):
+    """When integration commit evidence exists, status reports the latest matching subject."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "tasks" / "pending" / "T-001.md",
+        _task("T-001", "Pending task", "pending"),
+    )
+
+    def _run(cmd: str) -> None:
+        import subprocess
+
+        subprocess.run(
+            cmd,
+            shell=True,
+            check=True,
+            cwd=tmp_path,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+
+    _run("git init")
+    _run("git config user.name 'Test User'")
+    _run("git config user.email 'test@example.com'")
+    _run("git add .")
+    _run("git commit -m 'chore(repo): initial fixture'")
+    _run("git commit --allow-empty -m 'chore(tasks): merge T-099 synthetic integration'")
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["status", "--json"])
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert payload["latest_integration_result"] == (
+        "chore(tasks): merge T-099 synthetic integration"
+    )
