@@ -45,6 +45,19 @@ cd cli && uv run pytest tests/test_archive.py -q
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Implemented `ai-team archive` in `cli/src/ai_team/commands/archive.py` with a default command that scans `project/tasks/completed` and `project/bugs/resolved`, parses each artifact's `created` frontmatter date, and moves only artifacts older than the computed cutoff into `project/archive/YYYY-MM/` where the bucket comes from the artifact's created month. Added support for `--older-than` with `\d+[dwmy]` parsing (`d/w/m/y` mapped to days), and `--dry-run` output that reports files as "WOULD MOVE" without mutating the filesystem.
+
+Followed TDD in cycles:
+- Wrote a failing baseline archive behavior test first, then implemented minimum command behavior to pass.
+- Added a failing dry-run wording/safety test, then changed dry-run output to explicitly state "WOULD MOVE".
+- Added cutoff (`12w`) and invalid duration tests to complete acceptance coverage.
+
+Tried and rejected keeping the original dry-run label `DRY-RUN:` because it did not align as clearly with the "would move" acceptance wording. Updated output accordingly.
+
+Remaining work in this task branch: none. Verification command passes and the branch is clean.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
