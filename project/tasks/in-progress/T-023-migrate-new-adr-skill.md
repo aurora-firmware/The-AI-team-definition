@@ -42,6 +42,10 @@ grep -rn "TEMPLATE-adr.md\|next-adr-id.sh" .claude/ || echo OK
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Migrated the `new-adr` skill from local template/script generation to CLI-based creation. I first ran the verification grep and confirmed the existing skill still referenced `TEMPLATE-adr.md`; I also checked for the real helper name and confirmed it referenced `next-adr-number.sh`. I updated `SKILL.md` to require `title`, `description`, `status`, and optional `supersedes`, then switched the procedure to building and running `ai-team adr new "<title>" --status "<status>" --json` (with optional `--supersedes`), parsing `id`/`path`, and filling ADR body sections from the supplied description. I then deleted both legacy asset files and removed the now-empty assets directory. I considered broadening edits to other skills that mention old `new-adr` inputs, but rejected that because this task's scoped files are limited to `new-adr` skill migration and asset deletion. Final verification greps are clean, including both helper-name variants. Remaining work: reviewer pass and lifecycle updates on `dev-agent` by the loop.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
