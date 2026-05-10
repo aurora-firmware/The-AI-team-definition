@@ -146,6 +146,11 @@ def test_show_json_outputs_path_frontmatter_and_body(monkeypatch, tmp_path):
             "Artifact index",
         ),
         (
+            ("specs", "S-003-artifact-index.md"),
+            "artifact-index",
+            "Artifact index",
+        ),
+        (
             ("decisions", "ADR-001-show-command.md"),
             "ADR-001",
             "Adopt show command",
