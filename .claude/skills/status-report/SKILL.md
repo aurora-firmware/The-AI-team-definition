@@ -11,21 +11,19 @@ allowed-tools: Read, Glob, Grep, Write, Bash
 
 - **Project state directories** — `project/specs/`, `project/tasks/`, `project/bugs/`, and `project/decisions/`.
 - **Integration evidence** — completed task Work Logs, resolved bug Work Logs, or recent integration commits when available.
-- **Report template** — `.claude/skills/status-report/assets/progress-report.md`.
-- **Summary script** — `.claude/skills/status-report/scripts/status-summary.sh`.
+- **AI team CLI** — `ai-team status` and `ai-team report` are available.
 
 ## Procedure
 
 ### Step 1: Generate Inline Summary
 
-Run the bundled summary script from the repository root:
+Run the CLI status command from the repository root:
 
 ```bash
-bash .claude/skills/status-report/scripts/status-summary.sh <project-path>
+ai-team status
 ```
 
-Use the target project root as `<project-path>`.
-The script scans the project state directories, excludes template files and `.gitkeep`, reads primary artifact metadata, inspects integration evidence, and prints the inline Gate 5 summary.
+The command scans the project state directories, excludes template files and `.gitkeep`, reads primary artifact metadata, inspects integration evidence, and prints the inline Gate 5 summary.
 
 ### Step 2: Count Current State
 
@@ -54,7 +52,7 @@ Record the latest integration-test result or state that no integration evidence 
 
 ### Step 5: Produce Inline Summary
 
-Use the script output as the inline summary. If the script cannot run, manually present the report in this format:
+Use `ai-team status` output as the inline summary. If the command cannot run, manually present the report in this format:
 
 ```markdown
 ## Status Report — [today's date]
@@ -87,9 +85,13 @@ If there are blocked tasks or critical/high bugs, add a `Recommended Actions` se
 
 ### Step 6: Write Full Report
 
-Generate a full written report using the template at `.claude/skills/status-report/assets/progress-report.md`.
-Save it to `project/docs/reports/progress-report-[today's date].md`.
-Create `project/docs/reports/` first if it does not exist.
+Run the CLI report command from the repository root:
+
+```bash
+ai-team report
+```
+
+By default, it writes `project/docs/reports/progress-report-[today's date].md` and creates `project/docs/reports/` if needed.
 The full report includes completed tasks, in-progress details, blocked items with action needed, bug listing, next actions, and risks or concerns.
 
 ## Output Format
