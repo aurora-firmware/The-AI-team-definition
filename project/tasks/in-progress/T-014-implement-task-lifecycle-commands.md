@@ -48,6 +48,23 @@ cd cli && uv run pytest tests/test_task_lifecycle.py -q
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Implemented T-014 lifecycle commands in `ai_team.commands.task` using TDD cycles.
+
+Completed work:
+- Added `task start`, `task complete`, `task block`, and `task unblock`.
+- Implemented shared transition logic for task state moves using `update_status` and `move_artifact`.
+- Added idempotency handling: when a task is already in the destination state, command exits zero with a clear `already in <state>` message and makes no filesystem changes.
+- Added not-found handling with non-zero exit and a message naming searched task folders (`pending`, `in-progress`, `completed`, `blocked`).
+- Implemented block reason logging by appending a new Work Log session entry dated today, with monotonically increasing session number, before moving to `blocked/`.
+
+What was tried and rejected:
+- Initial not-found test setup invoked commands outside a valid project root and failed with `ProjectRootNotFound`; corrected test fixtures to create project task folders so the command-level not-found behavior is actually exercised.
+
+What remains:
+- No known implementation work remains for this task scope; ready for reviewer handoff.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
