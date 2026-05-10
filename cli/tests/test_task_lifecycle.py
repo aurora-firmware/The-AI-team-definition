@@ -52,3 +52,43 @@ def test_task_start_moves_pending_task_to_in_progress_and_updates_status(
     assert not pending.exists()
     assert destination.exists()
     assert parse_task(destination).status == "in-progress"
+
+
+def test_task_complete_moves_in_progress_task_to_completed_and_updates_status(
+    monkeypatch, tmp_path
+):
+    """`task complete` moves in-progress->completed and sets frontmatter status."""
+    from ai_team.cli import app
+
+    source = tmp_path / "project" / "tasks" / "in-progress" / "T-043-demo-task.md"
+    _write_task(source, "T-043", "Demo Task", "in-progress")
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["task", "complete", "T-043"])
+
+    destination = tmp_path / "project" / "tasks" / "completed" / "T-043-demo-task.md"
+    assert result.exit_code == 0
+    assert not source.exists()
+    assert destination.exists()
+    assert parse_task(destination).status == "completed"
+
+
+def test_task_unblock_moves_blocked_task_to_in_progress_and_updates_status(
+    monkeypatch, tmp_path
+):
+    """`task unblock` moves blocked->in-progress and sets frontmatter status."""
+    from ai_team.cli import app
+
+    source = tmp_path / "project" / "tasks" / "blocked" / "T-044-demo-task.md"
+    _write_task(source, "T-044", "Demo Task", "blocked")
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["task", "unblock", "T-044"])
+
+    destination = (
+        tmp_path / "project" / "tasks" / "in-progress" / "T-044-demo-task.md"
+    )
+    assert result.exit_code == 0
+    assert not source.exists()
+    assert destination.exists()
+    assert parse_task(destination).status == "in-progress"
