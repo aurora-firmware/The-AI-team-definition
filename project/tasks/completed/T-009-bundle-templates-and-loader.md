@@ -1,7 +1,7 @@
 ---
 id: "T-009"
 title: "Bundle artifact markdown templates and implement template loader"
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: 2026-05-10
