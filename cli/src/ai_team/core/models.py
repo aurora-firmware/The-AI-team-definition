@@ -19,7 +19,7 @@ comments and key order are preserved when the caller rewrites a file.
 from __future__ import annotations
 
 import io
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -45,8 +45,11 @@ class FrontmatterError(ValueError):
 # ---------------------------------------------------------------------------
 
 
-def _parse_yaml_frontmatter(path: Path) -> dict[str, Any]:
-    """Extract the YAML frontmatter block from *path* and return it as a dict.
+def _parse_yaml_frontmatter(path: Path) -> CommentedMap:
+    """Extract the YAML frontmatter block from *path* and return it as a CommentedMap.
+
+    Returns a ``CommentedMap`` (the ruamel.yaml round-trip type) so that inline
+    comments and key order are preserved for later use by ``dump_frontmatter``.
 
     Raises
     ------
@@ -78,11 +81,12 @@ def _parse_yaml_frontmatter(path: Path) -> dict[str, Any]:
         ) from exc
 
     if data is None:
-        return {}
-    return dict(data)
+        return CommentedMap()
+    # Return the CommentedMap directly so comments and key order are preserved.
+    return data
 
 
-def _require(data: dict[str, Any], key: str, path: Path) -> Any:
+def _require(data: CommentedMap, key: str, path: Path) -> Any:
     """Return ``data[key]`` or raise :class:`FrontmatterError` naming *key* and *path*.
 
     The raw YAML key (e.g. ``"assigned-role"``) is used directly in the error
@@ -111,6 +115,11 @@ class Task:
     assigned_role: str  # YAML key: assigned-role
     created: str
     spec: str | None = None  # Optional reference to a spec slug
+    # Holds the original CommentedMap from parsing so comments survive dump.
+    # Excluded from equality and repr so it does not affect model comparisons.
+    _source_map: CommentedMap | None = field(
+        default=None, compare=False, repr=False
+    )
 
 
 @dataclass
@@ -123,6 +132,10 @@ class Bug:
     status: str
     created: str
     task: str | None = None  # Optional reference to a related task ID
+    # Holds the original CommentedMap from parsing so comments survive dump.
+    _source_map: CommentedMap | None = field(
+        default=None, compare=False, repr=False
+    )
 
 
 @dataclass
@@ -134,6 +147,10 @@ class Spec:
     status: str
     created: str
     author: str
+    # Holds the original CommentedMap from parsing so comments survive dump.
+    _source_map: CommentedMap | None = field(
+        default=None, compare=False, repr=False
+    )
 
 
 @dataclass
@@ -145,6 +162,10 @@ class Adr:
     status: str
     created: str
     supersedes: str | None = None  # Optional reference to a superseded ADR ID
+    # Holds the original CommentedMap from parsing so comments survive dump.
+    _source_map: CommentedMap | None = field(
+        default=None, compare=False, repr=False
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -176,6 +197,7 @@ def parse_task(path: Path) -> Task:
         assigned_role=str(_require(data, "assigned-role", path)),
         created=str(_require(data, "created", path)),
         spec=str(data["spec"]) if data.get("spec") is not None else None,
+        _source_map=data,
     )
 
 
@@ -196,6 +218,7 @@ def parse_bug(path: Path) -> Bug:
         status=str(_require(data, "status", path)),
         created=str(_require(data, "created", path)),
         task=str(data["task"]) if data.get("task") is not None else None,
+        _source_map=data,
     )
 
 
@@ -218,6 +241,7 @@ def parse_spec(path: Path) -> Spec:
         status=str(_require(data, "status", path)),
         created=str(_require(data, "created", path)),
         author=str(_require(data, "author", path)),
+        _source_map=data,
     )
 
 
@@ -237,6 +261,7 @@ def parse_adr(path: Path) -> Adr:
         status=str(_require(data, "status", path)),
         created=str(_require(data, "created", path)),
         supersedes=str(data["supersedes"]) if data.get("supersedes") is not None else None,
+        _source_map=data,
     )
 
 
@@ -302,12 +327,17 @@ def dump_frontmatter(model: Task | Bug | Spec | Adr, body: str) -> str:
 
         <body>
 
+    When the model was produced by a ``parse_*`` function it carries an
+    internal ``_source_map`` holding the original ``CommentedMap`` from
+    ruamel.yaml.  In that case, ``dump_frontmatter`` updates field values
+    in-place on the source map and dumps it, so that inline comments survive
+    the parse→dump cycle.  If no source map is available (e.g. the model was
+    constructed by hand), a fresh ``CommentedMap`` is built from the
+    ``_*_FIELDS`` ordering, preserving key order but not carrying any comments.
+
     Optional fields (those whose value is ``None``) are omitted from the
     output so that round-tripping a file with no optional fields produces
     clean output without extra null keys.
-
-    The key order matches the canonical order defined in the module-level
-    ``_*_FIELDS`` lists, which mirrors the template order.
 
     Parameters
     ----------
@@ -333,15 +363,28 @@ def dump_frontmatter(model: Task | Bug | Spec | Adr, body: str) -> str:
         )
 
     ordered_fields = _MODEL_FIELDS[model_type]
+    source_map: CommentedMap | None = getattr(model, "_source_map", None)
 
-    # Build a ruamel.yaml CommentedMap to preserve insertion order.
-    cm: CommentedMap = CommentedMap()
-    for yaml_key, attr_name in ordered_fields:
-        value = getattr(model, attr_name)
-        if value is None:
-            # Omit optional fields when they are None.
-            continue
-        cm[yaml_key] = value
+    if source_map is not None:
+        # Update the original CommentedMap in-place so comments are preserved.
+        # Apply current field values; remove optional keys that became None.
+        for yaml_key, attr_name in ordered_fields:
+            value = getattr(model, attr_name)
+            if value is None:
+                # Remove the key if it is now None (optional field cleared).
+                source_map.pop(yaml_key, None)
+            else:
+                source_map[yaml_key] = value
+        cm = source_map
+    else:
+        # No source map: build a fresh CommentedMap with canonical key order.
+        cm = CommentedMap()
+        for yaml_key, attr_name in ordered_fields:
+            value = getattr(model, attr_name)
+            if value is None:
+                # Omit optional fields when they are None.
+                continue
+            cm[yaml_key] = value
 
     # Serialise to a YAML string.
     yaml = YAML(typ="rt")

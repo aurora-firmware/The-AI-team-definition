@@ -563,3 +563,25 @@ def test_dump_frontmatter_task_optional_field_present_when_set(tmp_path):
     model = parse_task(path)
     dumped = dump_frontmatter(model, "Body.\n")
     assert "spec:" in dumped
+
+
+def test_dump_frontmatter_preserves_inline_comments(tmp_path):
+    """
+    dump_frontmatter preserves inline YAML comments from the original file
+    so that comments survive a parse -> dump cycle.
+    """
+    content = """\
+---
+id: "T-010"
+title: "Comment Test"
+status: pending  # workflow state
+priority: high
+assigned-role: developer
+created: 2026-05-10
+---
+Body.
+"""
+    path = write_file(tmp_path, "T-010-comment.md", content)
+    model = parse_task(path)
+    dumped = dump_frontmatter(model, "Body.\n")
+    assert "# workflow state" in dumped
