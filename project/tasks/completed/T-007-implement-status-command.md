@@ -1,7 +1,7 @@
 ---
 id: "T-007"
 title: "Implement ai-team status command"
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: 2026-05-10
