@@ -110,6 +110,14 @@ def _check_stateful_filename(
     )
 
 
+def _spec_reference_exists(reference: str, spec_slugs: set[str]) -> bool:
+    if reference in spec_slugs:
+        return True
+    if reference.endswith(".md"):
+        return reference[:-3] in spec_slugs
+    return False
+
+
 def validate_project(
     root: ProjectRoot,
     *,
@@ -167,7 +175,7 @@ def validate_project(
                             ),
                         )
                     )
-                if task.spec and task.spec not in spec_slugs:
+                if task.spec and not _spec_reference_exists(task.spec, spec_slugs):
                     findings.append(
                         _finding(
                             path,

@@ -215,3 +215,97 @@ def test_validate_emits_error_when_cross_references_do_not_resolve(
         and "ADR-999" in finding["message"]
         for finding in findings
     )
+
+
+def test_validate_json_outputs_plain_list_without_rich_table(monkeypatch, tmp_path):
+    """`validate --json` prints only a JSON list and no Rich table/frame output."""
+    from ai_team.cli import app
+
+    _seed_valid_project(tmp_path)
+    _write(
+        tmp_path / "project" / "tasks" / "pending" / "T-010-bad-status.md",
+        _task("T-010", "Bad status", "completed"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--json"])
+
+    assert result.exit_code != 0
+    parsed = json.loads(result.output)
+    assert isinstance(parsed, list)
+    assert "┏" not in result.output
+    assert "Validation Findings" not in result.output
+
+
+def test_validate_exits_non_zero_when_any_error_finding_exists(monkeypatch, tmp_path):
+    """Any error-level finding causes a non-zero exit code."""
+    from ai_team.cli import app
+
+    _seed_valid_project(tmp_path)
+    _write(
+        tmp_path / "project" / "bugs" / "open" / "B-010-status-mismatch.md",
+        _bug("B-010", "Bad bug status", "resolved"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate"])
+
+    assert result.exit_code != 0
+    assert "status-mismatch" in result.output
+
+
+def test_validate_detects_frontmatter_id_and_filename_violations(
+    monkeypatch, tmp_path
+):
+    """Validation reports required-frontmatter, id pattern, and filename issues."""
+    from ai_team.cli import app
+
+    _seed_valid_project(tmp_path)
+    _write(
+        tmp_path / "project" / "tasks" / "pending" / "not-task.md",
+        _task("TASK-001", "Bad Task ID", "pending"),
+    )
+    _write(
+        tmp_path / "project" / "specs" / "Bad Spec Name.md",
+        """\
+---
+title: "Bad Spec"
+version: "0.1"
+status: approved
+created: 2026-05-10
+---
+
+Body.
+""",
+    )
+    _write(
+        tmp_path / "project" / "decisions" / "ADR-010.md",
+        _adr("ADR-010", "Missing Slug"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--json"])
+
+    assert result.exit_code != 0
+    findings = json.loads(result.output)
+    codes = {finding["code"] for finding in findings}
+    assert "frontmatter-invalid" in codes
+    assert "id-pattern" in codes
+    assert "filename-pattern" in codes
+
+
+def test_validate_scope_flags_limit_checked_artifact_kinds(monkeypatch, tmp_path):
+    """Selecting `--tasks` excludes unrelated bug validation findings."""
+    from ai_team.cli import app
+
+    _seed_valid_project(tmp_path)
+    _write(
+        tmp_path / "project" / "bugs" / "open" / "B-010-status-mismatch.md",
+        _bug("B-010", "Bad bug status", "resolved"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--tasks", "--json"])
+
+    assert result.exit_code == 0
+    assert json.loads(result.output) == []
