@@ -1,0 +1,54 @@
+---
+id: "T-009"
+title: "Bundle artifact markdown templates and implement template loader"
+status: pending
+priority: medium
+assigned-role: developer
+created: 2026-05-10
+---
+
+# Bundle artifact markdown templates and implement template loader
+
+## Description
+
+Bundle the four artifact templates as package data and implement a loader. Copy the existing skill-bundled templates verbatim into `cli/src/ai_team/templates/` as `task.md`, `bug.md`, `spec.md`, `adr.md`. Sources to copy from:
+
+- `task.md` ← `.claude/skills/new-task/assets/TEMPLATE-task.md`
+- `bug.md` ← `.claude/skills/new-bug/assets/TEMPLATE-bug.md`
+- `spec.md` ← `.claude/skills/new-spec/assets/TEMPLATE-specification.md`
+- `adr.md` ← `.claude/skills/new-adr/assets/TEMPLATE-adr.md`
+
+Implement `ai_team.core.templates` exposing `load_template(kind: Literal["task","bug","spec","adr"]) -> str` using `importlib.resources.files("ai_team.templates")`. The loader must work both when the package is installed and when run from source (via `uv run`).
+
+The package-data configuration in `pyproject.toml` was already laid down by T-001; this task only adds files into the existing data directory.
+
+## Acceptance Criteria
+
+AC-1: WHEN `load_template("task")` runs THE SYSTEM SHALL return the byte-equal contents of `.claude/skills/new-task/assets/TEMPLATE-task.md` at the time of bundling.
+AC-2: WHEN `load_template(<kind>)` runs for each of the four artifact kinds THE SYSTEM SHALL return a non-empty string starting with `---`.
+AC-3: WHEN the package is built with `uv build` THE SYSTEM SHALL include all four template files in the resulting wheel.
+AC-4: IF `load_template` is called with an unknown kind THEN THE SYSTEM SHALL raise `ValueError` naming the supported kinds.
+
+## Dependencies
+
+- `T-001` — needs the package skeleton and package-data config
+
+## Files to Touch
+
+- `cli/src/ai_team/templates/{task,bug,spec,adr}.md` — bundled templates (4 files)
+- `cli/src/ai_team/core/templates.py` — `load_template`
+- `cli/tests/test_templates.py` — covers all four kinds and the unknown-kind error
+
+## Verification
+
+```bash
+cd cli && uv run pytest tests/test_templates.py -q && uv build && unzip -l dist/*.whl | grep templates/
+```
+
+## Work Log
+
+<!-- Mandatory. Append one entry per session boundary. -->
+
+## Review
+
+<!-- Reviewer: append verdict here after each review cycle. -->

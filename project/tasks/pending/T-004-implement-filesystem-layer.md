@@ -1,0 +1,52 @@
+---
+id: "T-004"
+title: "Implement filesystem layer for artifact reads, writes, and atomic moves"
+status: pending
+priority: high
+assigned-role: developer
+created: 2026-05-10
+---
+
+# Implement filesystem layer for artifact reads, writes, and atomic moves
+
+## Description
+
+Implement `ai_team.core.fs` as the single chokepoint for filesystem mutation across the CLI. Every command that reads or writes an artifact must go through this module so atomicity, idempotency, and error handling stay consistent.
+
+Public functions:
+- `read_artifact(path) -> tuple[Model, str]` — delegates parsing to `ai_team.core.models` and returns `(model, body)`.
+- `write_artifact(path, model, body)` — writes via `ai_team.core.models.dump_frontmatter`; refuses to overwrite an existing path unless `overwrite=True` is passed.
+- `move_artifact(src, dest)` — atomic `os.replace`; refuses if `dest` exists; no-op if `src == dest`.
+- `update_status(path, new_status)` — rewrites frontmatter `status` field while preserving all other frontmatter content and the body verbatim.
+
+Errors: `ArtifactNotFound`, `ArtifactExists`. Operations are idempotent where reasonable (already-at-target moves succeed silently with a clear message).
+
+## Acceptance Criteria
+
+AC-1: WHEN `move_artifact(src, dest)` runs and `src != dest` and `dest` does not exist THE SYSTEM SHALL atomically rename the file using `os.replace`.
+AC-2: IF `move_artifact` is called with a `dest` that already exists THEN THE SYSTEM SHALL raise `ArtifactExists` and leave the filesystem unchanged.
+AC-3: WHEN `update_status(path, new_status)` runs THE SYSTEM SHALL rewrite only the `status` frontmatter field and preserve all other frontmatter and body bytes.
+AC-4: WHEN `move_artifact(src, dest)` runs with `src == dest` THE SYSTEM SHALL return without error and without mutating the filesystem.
+
+## Dependencies
+
+- `T-003` — uses `ai_team.core.models` for parse/dump
+
+## Files to Touch
+
+- `cli/src/ai_team/core/fs.py` — read/write/move/update functions and error classes
+- `cli/tests/test_fs.py` — covers atomic move, refuse-overwrite, idempotent self-move, status-rewrite preservation
+
+## Verification
+
+```bash
+cd cli && uv run pytest tests/test_fs.py -q
+```
+
+## Work Log
+
+<!-- Mandatory. Append one entry per session boundary. -->
+
+## Review
+
+<!-- Reviewer: append verdict here after each review cycle. -->
