@@ -1,7 +1,7 @@
 ---
 id: "T-018"
 title: "Implement ai-team report command and bundle progress-report template"
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: 2026-05-10
