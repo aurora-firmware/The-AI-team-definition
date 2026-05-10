@@ -45,6 +45,18 @@ cd cli && uv run pytest tests/test_show.py -q
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Implemented `T-006` end-to-end in four small TDD cycles on `task/T-006-implement-show-command`.
+
+I started by adding a failing test for `ai-team show T-001` and then created `ai_team.commands.show` with `NAME = "show"` and a default command path that renders markdown through Rich. I then added a failing `--json` test and implemented JSON output as `{"path","frontmatter","body"}` using the core read/model path so frontmatter keys stay canonical (including `assigned-role`).
+
+While implementing `--json`, I first tried a straightforward callback shape and hit Typer parsing issues for `show <id> --json`. I rejected an empty-name command approach because it broke invocation under mounted sub-typers. I fixed this by keeping callback mode and using a custom Typer group class with `allow_interspersed_args = True`, which preserves `show <id> --json`.
+
+Next, I added failing tests for ambiguous matches and not-found behavior. I updated resolution to scan canonical artifact roots from locator (`tasks/*`, `bugs/*`, `specs`, `decisions`), return non-zero for multi/no matches, print candidate paths to stderr for ambiguity, and print a clear not-found message with searched roots. I also added explicit slug-fragment success coverage.
+
+All task verification tests now pass, and there is no remaining implementation work on this task branch.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
