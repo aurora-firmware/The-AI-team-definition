@@ -48,6 +48,34 @@ cd cli && uv sync && uv run ai-team --version && uv build
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+**What was done**
+
+Implemented T-001 in full from scratch on branch `task/T-001-bootstrap-cli-uv-project`. Both uv 0.10.8 and Python 3.14.3 were available locally, so no environment blockers.
+
+Created `cli/` with the following deliverables:
+
+- `cli/pyproject.toml` — uv/Hatch project declaring `requires-python = ">=3.14"`, all five runtime deps (`typer`, `rich`, `ruamel.yaml`, `tomli-w`, `python-slugify`), `pytest` as a dev dep, the `ai-team = "ai_team.cli:app"` console-script entry, and `force-include` stanzas to ship `.gitkeep` markers in `templates/` and `init/scaffolds/` so those dirs appear in the wheel for later tasks.
+- `cli/uv.lock` — committed for reproducible installs.
+- `cli/src/ai_team/cli.py` — root Typer app with `--version` / `-V` eager callback reading from `importlib.metadata`, and a top-level call to `discover_and_mount(app)`.
+- `cli/src/ai_team/commands/__init__.py` — `discover_and_mount(parent, modules=None)` function. When `modules` is `None` it walks sibling modules via `pkgutil.iter_modules`; when passed an explicit iterable it uses that (used in tests). Modules missing either `NAME` or `app` are silently skipped. Import failures inside a command module are suppressed so a broken module cannot crash the whole CLI.
+- `cli/src/ai_team/render.py` — shared `Console` instance and `print_json(obj)` helper that writes JSON + newline to `sys.stdout`.
+- `cli/tests/test_cli_bootstrap.py` — 6 tests covering all five acceptance criteria.
+
+**TDD cycle**
+
+Tests were written first and confirmed red before any production code was added. One test had to be revised mid-cycle: the original `test_auto_discovery_skips_module_without_name_attribute` invoked `--help` on an empty Typer app, which Typer 0.25 raises `RuntimeError` for (no commands registered). Fixed by asserting `len(parent_app.registered_groups) == 0` instead, which is the correct behavioral check.
+
+**Approaches considered and rejected**
+
+- `hatch.build.targets.wheel.packages` alone would not include empty dirs. Using `force-include` with `.gitkeep` files was chosen as the simplest portable approach — no Hatch plugin required, and `.gitkeep` files are a well-understood convention.
+- Separating `discover_and_mount` into two separate functions (production vs. test variant) was considered but rejected — the optional `modules` parameter is cleaner and keeps the public API surface minimal.
+
+**What remains**
+
+Nothing for T-001 specifically. The scaffold is in place; later tasks T-002 onward simply drop command modules under `ai_team/commands/` and core modules under `ai_team/core/`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
