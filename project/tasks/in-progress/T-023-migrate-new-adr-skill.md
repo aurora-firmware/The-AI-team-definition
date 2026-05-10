@@ -49,3 +49,33 @@ Migrated the `new-adr` skill from local template/script generation to CLI-based 
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
+
+### Review Verdict — 2026-05-10
+
+PASS
+
+Result: PASS
+
+Summary:
+- Reviewed `task/T-023-migrate-new-adr-skill` against all T-023 acceptance criteria and Stage 2 quality checks; both stages passed.
+
+Artifacts:
+- Canonical task file updated: `project/tasks/in-progress/T-023-migrate-new-adr-skill.md`.
+- Diff reviewed: `M .claude/skills/new-adr/SKILL.md`, `D .claude/skills/new-adr/assets/TEMPLATE-adr.md`, `D .claude/skills/new-adr/assets/next-adr-number.sh`.
+- Primary file inspected: `.claude/skills/new-adr/SKILL.md` on `task/T-023-migrate-new-adr-skill`.
+
+Evidence:
+- Stage 1 (scope): `git diff --name-status dev-agent..task/T-023-migrate-new-adr-skill` matched the expected three-file tracked diff.
+- Stage 1 (AC-1): branch `SKILL.md` now invokes `ai-team adr new "<title>" --status "<status>" --json` with optional `--supersedes`, and no longer references bundled template/helper scripts.
+- Stage 1 (AC-2): both previously bundled asset files are deleted on the task branch (`TEMPLATE-adr.md`, `next-adr-number.sh`).
+- Stage 1 (AC-3): `git grep -n -E "TEMPLATE-adr.md|next-adr-id.sh|next-adr-number.sh" task/T-023-migrate-new-adr-skill -- .claude/ || echo OK` returned `OK`.
+- Stage 2 (quality): checked correctness/readability/security/performance for this migration-only change; no blocking issues found.
+
+Obstacles Encountered:
+- none
+
+Next Owner:
+- Development Loop
+
+Next Action:
+- none
