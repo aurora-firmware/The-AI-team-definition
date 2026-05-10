@@ -44,6 +44,14 @@ grep -rn "TEMPLATE-specification.md\|new-spec/assets/slugify.sh" .claude/ || ech
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Implemented T-022 by migrating `.claude/skills/new-spec/SKILL.md` from local template/script creation to an `ai-team spec new --json` procedure. I kept the same required input semantics (title/description required, author/status optional, `$ARGUMENTS` fallback for title) and changed execution steps to build the CLI command, parse returned `id`/`path`, and then fill body sections from the supplied description while preserving `[TODO]` guidance for unresolved sections. I removed the obsolete assets `TEMPLATE-specification.md` and `slugify.sh` from `.claude/skills/new-spec/assets/`.
+
+For TDD-style verification, I first ran the task grep command to confirm a failing pre-change state (reference present in `SKILL.md`), then applied the migration, deleted assets, and reran the same grep to reach green (`OK`). I also ran a broader sanity grep for both file names to ensure no lingering references under `.claude/`. Considered keeping default values explicitly in the CLI command, but rejected that in favor of honoring CLI defaults when optional fields are not provided, matching the migration intent to delegate file creation behavior to the CLI.
+
+Remaining work in this session: none on the task branch; ready for reviewer pass and lifecycle update on `dev-agent`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
