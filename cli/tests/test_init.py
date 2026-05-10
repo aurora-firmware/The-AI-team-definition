@@ -33,3 +33,23 @@ def test_init_defaults_to_cwd_and_scaffolds_project_claude_and_marker(
     assert data["init"]["include_ai_process"] is False
     assert isinstance(data["init"]["framework_version"], str)
     assert data["init"]["framework_version"]
+
+
+def test_init_refuses_to_overwrite_when_force_is_not_set(monkeypatch, tmp_path):
+    """Init exits non-zero and does not write any files when collisions exist."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    target.mkdir()
+
+    existing = target / "project" / "specs" / ".gitkeep"
+    existing.parent.mkdir(parents=True, exist_ok=True)
+    existing.write_text("occupied\n", encoding="utf-8")
+
+    monkeypatch.chdir(target)
+    result = CliRunner().invoke(app, ["init", "--tools", "claude", "--no-interactive"])
+
+    assert result.exit_code != 0
+    assert existing.read_text(encoding="utf-8") == "occupied\n"
+    assert not (target / ".claude" / "agents" / "planner.md").exists()
+    assert not (target / ".ai-team.toml").exists()

@@ -14,14 +14,12 @@ NAME = "init"
 app = typer.Typer(help="Scaffold an AI-team repository.", invoke_without_command=True)
 
 
-def _copy_tree(source: Path, destination: Path) -> None:
-    for path in source.rglob("*"):
-        if path.is_dir():
-            continue
-        relative = path.relative_to(source)
-        target = destination / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(path, target)
+def _iter_files(root: Path) -> list[Path]:
+    return sorted(path for path in root.rglob("*") if path.is_file())
+
+
+def _plan_copies(source: Path, destination: Path) -> list[tuple[Path, Path]]:
+    return [(path, destination / path.relative_to(source)) for path in _iter_files(source)]
 
 
 @app.callback()
@@ -34,7 +32,6 @@ def init_command(
     no_interactive: bool = typer.Option(False, "--no-interactive"),
 ) -> None:
     """Initialize scaffold files in *path*."""
-    del force
     del dry_run
 
     selected_tools = []
@@ -49,13 +46,29 @@ def init_command(
 
     scaffolds = resources.files("ai_team.init") / "scaffolds"
     with resources.as_file(scaffolds) as scaffolds_path:
-        _copy_tree(scaffolds_path / "project", target_root / "project")
+        planned: list[tuple[Path, Path]] = []
+        planned.extend(_plan_copies(scaffolds_path / "project", target_root / "project"))
 
         if "claude" in selected_tools:
-            _copy_tree(scaffolds_path / "claude", target_root / ".claude")
+            planned.extend(_plan_copies(scaffolds_path / "claude", target_root / ".claude"))
 
         if include_ai_process:
-            _copy_tree(scaffolds_path / "ai-process", target_root / "ai-process")
+            planned.extend(
+                _plan_copies(scaffolds_path / "ai-process", target_root / "ai-process")
+            )
+
+        collisions = [destination for _, destination in planned if destination.exists()]
+        if collisions and not force:
+            typer.echo(
+                "Refusing to overwrite existing files without --force:\n"
+                + "\n".join(str(path) for path in collisions),
+                err=True,
+            )
+            raise typer.Exit(code=1)
+
+        for source, destination in planned:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, destination)
 
     marker_data = {
         "project": {"dir": "project"},
