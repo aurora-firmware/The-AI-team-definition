@@ -1,7 +1,7 @@
 ---
 id: "T-004"
 title: "Implement filesystem layer for artifact reads, writes, and atomic moves"
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: 2026-05-10
