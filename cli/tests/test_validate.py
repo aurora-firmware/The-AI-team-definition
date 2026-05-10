@@ -1,5 +1,6 @@
 """Tests for T-017: ai-team validate command."""
 
+import json
 from pathlib import Path
 
 from typer.testing import CliRunner
@@ -135,3 +136,82 @@ def test_validate_exits_zero_and_reports_zero_findings_for_clean_project(
 
     assert result.exit_code == 0
     assert "0 finding" in result.output
+
+
+def test_validate_emits_error_when_status_disagrees_with_state_folder(
+    monkeypatch, tmp_path
+):
+    """Task and bug status fields must match the state folder they live in."""
+    from ai_team.cli import app
+
+    _seed_valid_project(tmp_path)
+    _write(
+        tmp_path / "project" / "tasks" / "pending" / "T-002-status-mismatch.md",
+        _task("T-002", "Mismatch Task", "completed"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--json"])
+
+    assert result.exit_code != 0
+    findings = json.loads(result.output)
+    assert any(
+        finding["code"] == "status-mismatch"
+        and finding["path"].endswith("project/tasks/pending/T-002-status-mismatch.md")
+        for finding in findings
+    )
+
+
+def test_validate_emits_error_when_cross_references_do_not_resolve(
+    monkeypatch, tmp_path
+):
+    """Missing task->spec, bug->task, and ADR supersedes references are errors."""
+    from ai_team.cli import app
+
+    _seed_valid_project(tmp_path)
+    _write(
+        tmp_path / "project" / "tasks" / "pending" / "T-003-missing-spec.md",
+        _task(
+            "T-003",
+            "Task Missing Spec",
+            "pending",
+            extra_frontmatter='spec: "missing-spec"\n',
+        ),
+    )
+    _write(
+        tmp_path / "project" / "bugs" / "open" / "B-002-missing-task.md",
+        _bug(
+            "B-002",
+            "Bug Missing Task",
+            "open",
+            extra_frontmatter='task: "T-999"\n',
+        ),
+    )
+    _write(
+        tmp_path / "project" / "decisions" / "ADR-002-missing-supersedes.md",
+        _adr(
+            "ADR-002",
+            "Missing Supersedes",
+            extra_frontmatter='supersedes: "ADR-999"\n',
+        ),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--json"])
+
+    assert result.exit_code != 0
+    findings = json.loads(result.output)
+    assert any(
+        finding["code"] == "task-spec-missing"
+        and "missing-spec" in finding["message"]
+        for finding in findings
+    )
+    assert any(
+        finding["code"] == "bug-task-missing" and "T-999" in finding["message"]
+        for finding in findings
+    )
+    assert any(
+        finding["code"] == "adr-supersedes-missing"
+        and "ADR-999" in finding["message"]
+        for finding in findings
+    )
