@@ -55,3 +55,33 @@ Remaining work on this branch: none for `T-020`.
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
+
+### Review Verdict — 2026-05-10
+
+PASS
+
+Result: PASS
+
+Summary:
+- Reviewed `task/T-020-migrate-new-task-skill` with the two-stage `code-review` checklist; all acceptance criteria and quality checks passed.
+
+Artifacts:
+- Updated canonical task file: `project/tasks/in-progress/T-020-migrate-new-task-skill.md`.
+- Diff reviewed: `M .claude/skills/new-task/SKILL.md`, `D .claude/skills/new-task/assets/TEMPLATE-task.md`, `D .claude/skills/new-task/assets/next-task-id.sh`.
+- Primary file inspected: `.claude/skills/new-task/SKILL.md` (on `task/T-020-migrate-new-task-skill`).
+
+Evidence:
+- Stage 1 (acceptance): verified `SKILL.md` procedure now calls `ai-team task new "<title>" --priority <priority> [--assigned-role <assigned-role>] --json`, parses `id`/`path`, and no longer references bundled template or ID-allocation script usage.
+- Stage 1 (scope): `git diff --name-status dev-agent...task/T-020-migrate-new-task-skill` matched the expected 3-file diff exactly.
+- Stage 1 (deletions): `git ls-tree -r --name-only task/T-020-migrate-new-task-skill .claude/skills/new-task/assets` returned no tracked files.
+- Stage 1 (grep verification): `git grep -n "TEMPLATE-task.md\\|next-task-id.sh" task/T-020-migrate-new-task-skill -- .claude || echo OK` returned `OK`.
+- Stage 2 (quality): correctness, readability, security, and performance checks passed for this documentation-only migration; no code-level tests were required by task scope.
+
+Obstacles Encountered:
+- Sandbox prevented branch checkout in-place (`.git/index.lock` read-only), so review evidence used branch-ref commands (`git diff`, `git show`, `git grep`, `git ls-tree`) instead of local checkout.
+
+Next Owner:
+- Development Loop
+
+Next Action:
+- Continue lifecycle flow for `T-020` after reviewer PASS (integration-ready).
