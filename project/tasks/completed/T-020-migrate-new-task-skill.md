@@ -1,7 +1,7 @@
 ---
 id: "T-020"
 title: "Migrate new-task skill to invoke ai-team CLI"
-status: pending
+status: completed
 priority: low
 assigned-role: developer
 created: 2026-05-10
