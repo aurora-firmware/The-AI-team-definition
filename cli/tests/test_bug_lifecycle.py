@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from ai_team.core.models import parse_bug
@@ -77,3 +78,29 @@ def test_bug_resolve_moves_in_progress_bug_to_resolved_and_updates_status(
     assert not source.exists()
     assert destination.exists()
     assert parse_bug(destination).status == "resolved"
+
+
+@pytest.mark.parametrize(
+    ("command", "state", "bug_id", "severity"),
+    [
+        ("start", "in-progress", "B-009", "high"),
+        ("resolve", "resolved", "B-010", "low"),
+    ],
+)
+def test_bug_lifecycle_command_is_idempotent_when_bug_already_in_destination_state(
+    monkeypatch, tmp_path, command, state, bug_id, severity
+):
+    """Lifecycle command exits zero and preserves bytes when already in destination."""
+    from ai_team.cli import app
+
+    bug_path = tmp_path / "project" / "bugs" / state / f"{bug_id}-demo-bug.md"
+    _write_bug(bug_path, bug_id, "Demo Bug", severity, state)
+    before_bytes = bug_path.read_bytes()
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["bug", command, bug_id])
+
+    assert result.exit_code == 0
+    assert f"already in {state}" in result.output
+    assert bug_path.exists()
+    assert bug_path.read_bytes() == before_bytes

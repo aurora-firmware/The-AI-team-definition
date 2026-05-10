@@ -25,6 +25,7 @@ NAME = "bug"
 app = typer.Typer(help="Create and manage bug artifacts.")
 
 Severity = Literal["critical", "high", "medium", "low"]
+BugState = Literal["open", "in-progress", "resolved"]
 
 
 def _bug_matches_id(path: Path, bug_id: str) -> bool:
@@ -43,12 +44,39 @@ def _find_bug_file(bug_id: str, folder: Path) -> Path | None:
     return None
 
 
-def _bug_state_folders(root: ProjectRoot) -> dict[str, Path]:
+def _bug_state_folders(root: ProjectRoot) -> dict[BugState, Path]:
     return {
         "open": root.bugs_open,
         "in-progress": root.bugs_in_progress,
         "resolved": root.bugs_resolved,
     }
+
+
+def _transition_bug(
+    bug_id: str,
+    *,
+    source_state: BugState,
+    destination_state: BugState,
+    new_status: BugState,
+) -> None:
+    root = find_project_root(Path.cwd())
+    folders = _bug_state_folders(root)
+
+    in_destination = _find_bug_file(bug_id, folders[destination_state])
+    if in_destination is not None:
+        typer.echo(f"Bug {bug_id} already in {destination_state}.")
+        return
+
+    source = _find_bug_file(bug_id, folders[source_state])
+    if source is None:
+        typer.echo(f"Bug '{bug_id}' not found in {folders[source_state]}", err=True)
+        raise typer.Exit(code=1)
+
+    destination = folders[destination_state] / source.name
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    update_status(source, new_status)
+    move_artifact(source, destination)
+    typer.echo(str(destination.resolve()))
 
 
 def _template_body(template: str) -> str:
@@ -108,35 +136,20 @@ def new_bug(
 @app.command("start")
 def start_bug(bug_id: str) -> None:
     """Move an open bug to in-progress and update status."""
-    root = find_project_root(Path.cwd())
-    folders = _bug_state_folders(root)
-    source = _find_bug_file(bug_id, folders["open"])
-    if source is None:
-        typer.echo(f"Bug '{bug_id}' not found in {folders['open']}", err=True)
-        raise typer.Exit(code=1)
-
-    destination = folders["in-progress"] / source.name
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    update_status(source, "in-progress")
-    move_artifact(source, destination)
-    typer.echo(str(destination.resolve()))
+    _transition_bug(
+        bug_id,
+        source_state="open",
+        destination_state="in-progress",
+        new_status="in-progress",
+    )
 
 
 @app.command("resolve")
 def resolve_bug(bug_id: str) -> None:
     """Move an in-progress bug to resolved and update status."""
-    root = find_project_root(Path.cwd())
-    folders = _bug_state_folders(root)
-    source = _find_bug_file(bug_id, folders["in-progress"])
-    if source is None:
-        typer.echo(
-            f"Bug '{bug_id}' not found in {folders['in-progress']}",
-            err=True,
-        )
-        raise typer.Exit(code=1)
-
-    destination = folders["resolved"] / source.name
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    update_status(source, "resolved")
-    move_artifact(source, destination)
-    typer.echo(str(destination.resolve()))
+    _transition_bug(
+        bug_id,
+        source_state="in-progress",
+        destination_state="resolved",
+        new_status="resolved",
+    )
