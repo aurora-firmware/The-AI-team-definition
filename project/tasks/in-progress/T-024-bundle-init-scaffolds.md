@@ -52,6 +52,14 @@ cd cli && python scripts/sync_init_scaffolds.py && uv build && unzip -l dist/*.w
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Implemented T-024 using a test-first cycle. I first added `cli/tests/test_init_scaffolds.py` with integration-style tests that run the sync helper in a temporary fake repo, assert subtree replacement behavior, and verify the bundled `project/` scaffold is an empty skeleton containing only leaf `.gitkeep` files (and excludes lifecycle artifacts like task/bug/spec content). Those tests failed initially because the sync helper did not exist.
+
+I then implemented `cli/scripts/sync_init_scaffolds.py` to (1) fully replace the generated `project` scaffold with the required empty directory structure, (2) snapshot only `.claude/agents` and `.claude/skills` into `scaffolds/claude`, and (3) snapshot `ai-process/` into `scaffolds/ai-process`. I rejected copying all of `.claude` after noticing it would also include repo-local settings files outside the task's stated snapshot scope; tests were updated to enforce that exclusion.
+
+After implementation, tests passed, I ran the sync helper against the real repository to generate committed scaffold assets, and ran the packaging verification flow (`sync -> uv build -> wheel listing`) to confirm the wheel includes scaffold contents, including all required `project` leaf `.gitkeep` markers. No remaining implementation work is left for this task branch.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
