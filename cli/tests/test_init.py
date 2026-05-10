@@ -37,6 +37,24 @@ def test_init_defaults_to_cwd_and_scaffolds_project_claude_and_marker(
     assert data["init"]["framework_version"]
 
 
+def test_init_scaffolds_explicit_target_path_with_claude_and_marker(tmp_path):
+    """`ai-team init <path> --tools claude --no-interactive` scaffolds target path."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    result = CliRunner().invoke(
+        app,
+        ["init", str(target), "--tools", "claude", "--no-interactive"],
+    )
+
+    marker = target / ".ai-team.toml"
+    assert result.exit_code == 0
+    assert (target / "project" / "bugs" / "open" / ".gitkeep").is_file()
+    assert (target / ".claude" / "skills" / "brainstorm" / "SKILL.md").is_file()
+    assert marker.is_file()
+    assert not (target / "ai-process").exists()
+
+
 def test_init_refuses_to_overwrite_when_force_is_not_set(monkeypatch, tmp_path):
     """Init exits non-zero and does not write any files when collisions exist."""
     from ai_team.cli import app
