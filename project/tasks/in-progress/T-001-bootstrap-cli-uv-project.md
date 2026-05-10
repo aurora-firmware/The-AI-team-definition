@@ -79,3 +79,28 @@ Nothing for T-001 specifically. The scaffold is in place; later tasks T-002 onwa
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
+
+### Review Verdict — 2026-05-10
+
+PASS
+
+**Stage 1 — Acceptance Criteria**
+
+- AC-1 (uv sync succeeds): `cd cli && uv sync` completed without error; all 17 packages including `ai-team==0.1.0` installed cleanly under Python 3.14.3. PASS.
+- AC-2 (--version prints package version): `uv run ai-team --version` printed `0.1.0`, matching `pyproject.toml`. `test_version_output_matches_package_metadata` confirms this via `importlib.metadata`. PASS.
+- AC-3 (console-script entry): `cli/pyproject.toml` declares `ai-team = "ai_team.cli:app"` under `[project.scripts]`; confirmed in the built wheel's `entry_points.txt`. `test_entry_point_resolves_to_cli_app` covers this. PASS.
+- AC-4 (auto-discovery without cli.py changes): `commands/__init__.py` implements `discover_and_mount(parent, modules=None)`. When `modules` is `None`, `pkgutil.iter_modules` walks siblings and imports them; each module exporting both `NAME` and `app` is mounted via `parent.add_typer`. `cli.py` calls `discover_and_mount(app)` once at import time; no modification to `cli.py` is needed when new modules are dropped under `commands/`. `test_auto_discovery_registers_subcommand_from_module` and `test_auto_discovery_skips_module_without_name_attribute` cover the expected paths. PASS.
+- AC-5 (package data dirs in wheel): `pyproject.toml` uses `force-include` to ship `templates/.gitkeep` and `init/scaffolds/.gitkeep`. Wheel inspection confirmed both paths appear as `ai_team/templates/.gitkeep` and `ai_team/init/scaffolds/.gitkeep`. Runtime check via `importlib.resources.files` confirms both directories are traversable. PASS.
+
+No unspecified functionality was added. The Developer's implementation commit (`5e5272a`) touches only files within `cli/` (the 4 stated files plus supporting scaffolding: `__init__.py` stubs, test file, `.gitignore`, `uv.lock`). The T-002–T-026 pending task files and spec were added in a prior planning commit (`af2a4f5`) and are not the Developer's work — out-of-scope concern does not apply.
+
+**Stage 2 — Code Quality**
+
+- *Correctness*: `discover_and_mount` correctly handles the `modules=None` production path and the explicit-iterable test path. Silent skipping of modules missing `NAME` or `app` is correct. `except Exception: pass` in `_iter_command_modules` suppresses broken module imports safely. `--version` uses `importlib.metadata.version("ai-team")` — reads from installed metadata, not a hardcoded string.
+- *Tests*: All 6 tests pass. Success and skip paths are covered for AC-4. Note: `test_package_data_dirs_are_importable_as_packages` asserts only that the `Traversable` objects are not `None` (trivially true); a stronger assertion would call `.is_dir()`. This is a minor observation — the wheel contents were verified separately and the test is non-blocking for this task.
+- *Security*: No hardcoded credentials. No external input consumed by this bootstrap scaffold. No database queries.
+- *Readability*: Names are descriptive and consistent with the project convention. Functions are focused. Docstrings explain the convention expected of command modules. No dead code or debug artifacts.
+- *Performance*: Module discovery runs once at startup. No loops over large data sets.
+- *Project-specific leak check*: No project-specific commands, paths, or assumptions were found in `cli/src/`.
+
+**Verification command executed:** `cd cli && uv sync && uv run ai-team --version && uv build` — all steps passed.
