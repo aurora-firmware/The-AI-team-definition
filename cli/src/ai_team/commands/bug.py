@@ -52,6 +52,15 @@ def _bug_state_folders(root: ProjectRoot) -> dict[BugState, Path]:
     }
 
 
+def _exit_not_found(bug_id: str, folders: list[Path]) -> None:
+    searched = ", ".join(str(path) for path in folders)
+    typer.echo(
+        f"Bug '{bug_id}' not found. Searched folders: {searched}",
+        err=True,
+    )
+    raise typer.Exit(code=1)
+
+
 def _transition_bug(
     bug_id: str,
     *,
@@ -69,8 +78,10 @@ def _transition_bug(
 
     source = _find_bug_file(bug_id, folders[source_state])
     if source is None:
-        typer.echo(f"Bug '{bug_id}' not found in {folders[source_state]}", err=True)
-        raise typer.Exit(code=1)
+        _exit_not_found(
+            bug_id,
+            [folders["open"], folders["in-progress"], folders["resolved"]],
+        )
 
     destination = folders[destination_state] / source.name
     destination.parent.mkdir(parents=True, exist_ok=True)

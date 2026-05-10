@@ -104,3 +104,23 @@ def test_bug_lifecycle_command_is_idempotent_when_bug_already_in_destination_sta
     assert f"already in {state}" in result.output
     assert bug_path.exists()
     assert bug_path.read_bytes() == before_bytes
+
+
+@pytest.mark.parametrize("command", ["start", "resolve"])
+def test_bug_lifecycle_command_reports_not_found_and_names_searched_folders(
+    monkeypatch, tmp_path, command
+):
+    """Missing bug ID returns non-zero and includes searched bug state folders."""
+    from ai_team.cli import app
+
+    for state in ("open", "in-progress", "resolved"):
+        (tmp_path / "project" / "bugs" / state).mkdir(parents=True, exist_ok=True)
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["bug", command, "B-999"])
+
+    assert result.exit_code != 0
+    assert "not found" in result.stderr.lower()
+    assert "bugs/open" in result.stderr
+    assert "bugs/in-progress" in result.stderr
+    assert "bugs/resolved" in result.stderr
