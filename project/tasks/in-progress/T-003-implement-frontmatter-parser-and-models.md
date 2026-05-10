@@ -59,6 +59,22 @@ The `dump_frontmatter` function uses `ruamel.yaml` round-trip mode with a `Comme
 
 All 35 tests pass covering AC-1 through AC-4: parsing all four artifact types, round-trip fidelity, `FrontmatterError` on missing/invalid fields (field name and path in message), and key-order preservation across parse/dump cycles. The full prior test suite (59 total) also passes with no regressions.
 
+### Session 2 — 2026-05-10
+
+Fixed AC-4 comment preservation per the cycle-1 Reviewer FAIL verdict. Two changes in `cli/src/ai_team/core/models.py` and `cli/tests/test_models.py`.
+
+The root cause was `_parse_yaml_frontmatter` returning `dict(data)`, which stripped the `CommentedMap` ruamel.yaml builds in round-trip mode and discarded all inline comments before they could ever reach `dump_frontmatter`.
+
+Fix threads the `CommentedMap` end-to-end:
+1. `_parse_yaml_frontmatter` returns the `CommentedMap` directly. `_require` and dict `.get()` calls work unchanged because `CommentedMap` supports the standard mapping interface.
+2. Each dataclass gains a `_source_map: CommentedMap | None` field declared with `field(default=None, compare=False, repr=False)` so it is invisible to `==` and repr — existing round-trip equality tests are unaffected.
+3. Each `parse_*` function passes `_source_map=data` when constructing the dataclass.
+4. `dump_frontmatter` checks `model._source_map`. When present, it updates field values in-place on the source map (using `source_map.pop(key, None)` for optional fields that are `None`) and dumps that map, so all inline comments survive. When absent (model constructed by hand), the fallback path builds a fresh `CommentedMap` from `_MODEL_FIELDS` ordering — key-order preservation for programmatically-created models is unaffected.
+
+Added `test_dump_frontmatter_preserves_inline_comments` in `tests/test_models.py`: writes a task fixture with `status: pending  # workflow state`, parses it, calls `dump_frontmatter`, asserts `"# workflow state"` appears in the dumped output. Test failed before the fix and passes after.
+
+After fix: 36 `test_models.py` tests pass; 60 total tests pass (no regressions). Commit on task branch: `e464eec fix(core): preserve YAML comments across parse/dump cycles`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
