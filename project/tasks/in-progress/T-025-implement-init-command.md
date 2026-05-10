@@ -49,6 +49,14 @@ cd cli && uv run pytest tests/test_init.py -q
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Implemented `ai-team init` end-to-end in `cli/src/ai_team/commands/init.py` and covered the acceptance criteria with `cli/tests/test_init.py`. The command now scaffolds `project/` always, conditionally scaffolds `.claude/` when `claude` is selected, optionally scaffolds `ai-process/` with `--include-ai-process`, writes `.ai-team.toml` with `tools`, `include_ai_process`, and `framework_version`, refuses collisions unless `--force`, and supports `--dry-run` by listing all planned file writes without mutating the filesystem. It also prints a post-init checklist (`/brainstorm`, `/write-plan`, `/dev-loop`).
+
+I first implemented a basic callback flow and then hit a parsing issue where `ai-team init <path> --tools ...` treated `--tools` as a subcommand. I tried switching to a single-command sub-Typer, but `add_typer` still required subcommand invocation. I rejected that and fixed the root cause by keeping a callback app and enabling `context_settings={"allow_interspersed_args": True}`, which preserves the required invocation form.
+
+Remaining work on this branch: none. Task lifecycle updates and review logging remain for the loop on `dev-agent`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
