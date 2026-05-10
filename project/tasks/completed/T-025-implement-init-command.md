@@ -1,7 +1,7 @@
 ---
 id: T-025
 title: Implement ai-team init command
-status: in-progress
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-05-10'
