@@ -46,6 +46,20 @@ cd cli && uv run pytest tests/test_locator.py -q
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Implemented `ai_team.core.locator` from scratch in a single TDD session.
+
+The test file was written first, covering 18 cases across all four acceptance criteria: upward filesystem walking (AC-1), `AI_TEAM_ROOT` environment variable taking precedence (AC-2), `.ai-team.toml` `[project] dir` override discovered anywhere in the ancestor chain (AC-3), and `ProjectRootNotFound` with diagnostic message and `ai-team init` hint (AC-4).
+
+All tests failed on the first run (import error — `ai_team.core` did not exist). The empty `core/__init__.py` package marker was created, then `locator.py` was implemented.
+
+Design decisions: `ProjectRoot` is a frozen dataclass with one field per artifact directory — this matches the spec's requirement to expose absolute paths to every named folder without any method calls at use-site. Resolution is handled by a single `find_project_root` function that checks strategies in spec order and raises `ProjectRootNotFound` with a `searched_str` of all directories visited. TOML parsing uses stdlib `tomllib` (Python 3.14 ships it); no new dependency was added. A private `_toml_project_dir` helper keeps the main function readable. Strategy 3 (TOML) and strategy 4 (folder-name walk) share a single upward loop rather than two separate passes — this avoids scanning the filesystem twice and keeps the edge-case logic (TOML present but declared folder missing) in one place.
+
+No design alternatives were rejected; the first implementation passed all 18 tests without revision.
+
+Nothing remains for this task: all four acceptance criteria are covered, the verification command passes, and the three files listed under "Files to Touch" are the only files changed.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
