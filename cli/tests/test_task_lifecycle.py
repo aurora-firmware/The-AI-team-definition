@@ -3,6 +3,7 @@
 from datetime import date
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from ai_team.core.fs import read_artifact
@@ -144,3 +145,71 @@ initial setup complete
     assert "### Session 2" in body
     assert date.today().isoformat() in body
     assert reason in body
+
+
+def test_task_block_moves_completed_task_to_blocked(monkeypatch, tmp_path):
+    """`task block` can move a task from completed->blocked."""
+    from ai_team.cli import app
+
+    source = tmp_path / "project" / "tasks" / "completed" / "T-046-demo-task.md"
+    _write_task(source, "T-046", "Demo Task", "completed")
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(
+        app,
+        ["task", "block", "T-046", "--reason", "needs rework"],
+    )
+
+    destination = tmp_path / "project" / "tasks" / "blocked" / "T-046-demo-task.md"
+    assert result.exit_code == 0
+    assert not source.exists()
+    assert destination.exists()
+    assert parse_task(destination).status == "blocked"
+
+
+@pytest.mark.parametrize(
+    ("command", "state", "task_id", "extra_args", "expected_state"),
+    [
+        ("start", "in-progress", "T-050", [], "in-progress"),
+        ("complete", "completed", "T-051", [], "completed"),
+        ("block", "blocked", "T-052", ["--reason", "new reason"], "blocked"),
+        ("unblock", "in-progress", "T-053", [], "in-progress"),
+    ],
+)
+def test_lifecycle_command_is_idempotent_when_task_already_in_destination_state(
+    monkeypatch, tmp_path, command, state, task_id, extra_args, expected_state
+):
+    """Lifecycle commands exit zero and keep file bytes unchanged when already in destination."""
+    from ai_team.cli import app
+
+    task_path = tmp_path / "project" / "tasks" / state / f"{task_id}-demo-task.md"
+    _write_task(task_path, task_id, "Demo Task", state)
+    before_bytes = task_path.read_bytes()
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["task", command, task_id, *extra_args])
+
+    assert result.exit_code == 0
+    assert f"already in {expected_state}" in result.output
+    assert task_path.exists()
+    assert task_path.read_bytes() == before_bytes
+
+
+def test_lifecycle_command_reports_not_found_and_names_searched_folders(
+    monkeypatch, tmp_path
+):
+    """Missing task ID returns non-zero and includes searched lifecycle folders."""
+    from ai_team.cli import app
+
+    for state in ("pending", "in-progress", "completed", "blocked"):
+        (tmp_path / "project" / "tasks" / state).mkdir(parents=True, exist_ok=True)
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["task", "start", "T-999"])
+
+    assert result.exit_code != 0
+    assert "not found" in result.stderr.lower()
+    assert "tasks/pending" in result.stderr
+    assert "tasks/in-progress" in result.stderr
+    assert "tasks/completed" in result.stderr
+    assert "tasks/blocked" in result.stderr
