@@ -120,3 +120,23 @@ def start_bug(bug_id: str) -> None:
     update_status(source, "in-progress")
     move_artifact(source, destination)
     typer.echo(str(destination.resolve()))
+
+
+@app.command("resolve")
+def resolve_bug(bug_id: str) -> None:
+    """Move an in-progress bug to resolved and update status."""
+    root = find_project_root(Path.cwd())
+    folders = _bug_state_folders(root)
+    source = _find_bug_file(bug_id, folders["in-progress"])
+    if source is None:
+        typer.echo(
+            f"Bug '{bug_id}' not found in {folders['in-progress']}",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+    destination = folders["resolved"] / source.name
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    update_status(source, "resolved")
+    move_artifact(source, destination)
+    typer.echo(str(destination.resolve()))
