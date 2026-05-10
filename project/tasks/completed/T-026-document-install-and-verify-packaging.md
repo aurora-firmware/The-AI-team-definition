@@ -1,7 +1,7 @@
 ---
 id: T-026
 title: Document install in setup-guide and verify end-to-end packaging
-status: in-progress
+status: completed
 priority: low
 assigned-role: developer
 created: '2026-05-10'
