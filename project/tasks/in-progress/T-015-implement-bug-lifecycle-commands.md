@@ -46,6 +46,10 @@ cd cli && uv run pytest tests/test_bug_lifecycle.py -q
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Implemented T-015 with strict TDD across four red→green→refactor cycles. First cycle introduced `bug start` and verified open→in-progress movement plus frontmatter status rewrite. Second cycle added `bug resolve` for in-progress→resolved with status rewrite. Third cycle added idempotency checks for both commands and refactored shared transition logic so commands return zero with an "already in <state>" message and no file mutation when already in destination. Fourth cycle added not-found behavior checks and updated error handling to return non-zero with a message that names all searched lifecycle folders (`bugs/open`, `bugs/in-progress`, `bugs/resolved`). I considered keeping separate implementations for `start` and `resolve`, but rejected that due duplicated state-transition logic and higher risk of drift; replaced with a shared helper. Final verification command passed. No remaining implementation work for this task branch.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
