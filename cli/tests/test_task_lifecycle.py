@@ -1,9 +1,11 @@
 """Tests for T-014: task lifecycle commands."""
 
+from datetime import date
 from pathlib import Path
 
 from typer.testing import CliRunner
 
+from ai_team.core.fs import read_artifact
 from ai_team.core.models import parse_task
 
 
@@ -92,3 +94,53 @@ def test_task_unblock_moves_blocked_task_to_in_progress_and_updates_status(
     assert not source.exists()
     assert destination.exists()
     assert parse_task(destination).status == "in-progress"
+
+
+def test_task_block_moves_task_to_blocked_updates_status_and_appends_reason(
+    monkeypatch, tmp_path
+):
+    """`task block --reason` moves task, sets blocked status, and logs reason entry."""
+    from ai_team.cli import app
+
+    source = tmp_path / "project" / "tasks" / "pending" / "T-045-demo-task.md"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_text(
+        """\
+---
+id: "T-045"
+title: "Demo Task"
+status: pending
+priority: medium
+assigned-role: developer
+created: 2026-05-10
+---
+
+## Description
+
+Task body.
+
+## Work Log
+
+### Session 1 — 2026-05-09
+initial setup complete
+""",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+    reason = "waiting on architect decision"
+    result = CliRunner().invoke(
+        app,
+        ["task", "block", "T-045", "--reason", reason],
+    )
+
+    destination = tmp_path / "project" / "tasks" / "blocked" / "T-045-demo-task.md"
+    assert result.exit_code == 0
+    assert not source.exists()
+    assert destination.exists()
+    assert parse_task(destination).status == "blocked"
+
+    _, body = read_artifact(destination, "task")
+    assert "### Session 2" in body
+    assert date.today().isoformat() in body
+    assert reason in body

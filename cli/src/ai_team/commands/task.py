@@ -4,12 +4,19 @@ from __future__ import annotations
 
 from datetime import date
 from pathlib import Path
-from typing import Literal
+import re
+from typing import Callable, Literal
 
 import typer
 from slugify import slugify
 
-from ai_team.core.fs import ArtifactExists, move_artifact, update_status, write_artifact
+from ai_team.core.fs import (
+    ArtifactExists,
+    move_artifact,
+    read_artifact,
+    update_status,
+    write_artifact,
+)
 from ai_team.core.ids import next_task_id
 from ai_team.core.locator import ProjectRoot, find_project_root
 from ai_team.core.models import Task
@@ -58,12 +65,47 @@ def _exit_not_found(task_id: str, folders: list[Path]) -> None:
     raise typer.Exit(code=1)
 
 
+def _append_work_log_entry(path: Path, reason: str) -> None:
+    model, body = read_artifact(path, "task")
+    lines = body.splitlines()
+    heading = "## Work Log"
+
+    try:
+        start = lines.index(heading)
+    except ValueError:
+        lines.extend(["", heading, ""])
+        start = len(lines) - 3
+
+    end = len(lines)
+    for idx in range(start + 1, len(lines)):
+        if lines[idx].startswith("## "):
+            end = idx
+            break
+
+    session_numbers: list[int] = []
+    for line in lines[start:end]:
+        match = re.match(r"^### Session (\d+)\b", line)
+        if match is not None:
+            session_numbers.append(int(match.group(1)))
+    next_session = max(session_numbers, default=0) + 1
+
+    entry = [
+        "",
+        f"### Session {next_session} — {date.today().isoformat()}",
+        f"Blocked: {reason}",
+    ]
+    lines = lines[:end] + entry + lines[end:]
+    new_body = "\n".join(lines).rstrip() + "\n"
+    write_artifact(path, model, new_body, overwrite=True)
+
+
 def _transition_task(
     task_id: str,
     *,
     source_states: list[TaskState],
     destination_state: TaskState,
     new_status: TaskState,
+    before_transition: Callable[[Path], None] | None = None,
 ) -> None:
     root = find_project_root(Path.cwd())
     folders = _task_state_folders(root)
@@ -80,6 +122,9 @@ def _transition_task(
             task_id,
             [folders["pending"], folders["in-progress"], folders["completed"], folders["blocked"]],
         )
+
+    if before_transition is not None:
+        before_transition(source)
 
     destination = destination_folder / source.name
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -174,4 +219,19 @@ def unblock_task(task_id: str) -> None:
         source_states=["blocked"],
         destination_state="in-progress",
         new_status="in-progress",
+    )
+
+
+@app.command("block")
+def block_task(
+    task_id: str,
+    reason: str = typer.Option(..., "--reason"),
+) -> None:
+    """Move a task to blocked, update status, and append blocking reason."""
+    _transition_task(
+        task_id,
+        source_states=["pending", "in-progress", "completed", "blocked"],
+        destination_state="blocked",
+        new_status="blocked",
+        before_transition=lambda source: _append_work_log_entry(source, reason),
     )
