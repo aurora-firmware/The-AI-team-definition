@@ -55,3 +55,34 @@ Remaining work in this session: none on the task branch; ready for reviewer pass
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
+
+### Review Verdict — 2026-05-10
+
+PASS
+
+Result: PASS
+
+Summary:
+- Reviewed `task/T-022-migrate-new-spec-skill` against T-022 acceptance criteria and Stage 2 quality checks; both stages passed.
+
+Artifacts:
+- Canonical task updated: `project/tasks/in-progress/T-022-migrate-new-spec-skill.md` (Review section).
+- Diff reviewed on implementation branch: `M .claude/skills/new-spec/SKILL.md`, `D .claude/skills/new-spec/assets/TEMPLATE-specification.md`, `D .claude/skills/new-spec/assets/slugify.sh`.
+- Primary file inspected: `.claude/skills/new-spec/SKILL.md` on `task/T-022-migrate-new-spec-skill`.
+
+Evidence:
+- `git diff --name-status dev-agent...task/T-022-migrate-new-spec-skill`
+- `git diff dev-agent...task/T-022-migrate-new-spec-skill -- .claude/skills/new-spec/SKILL.md`
+- `git show --name-status --oneline task/T-022-migrate-new-spec-skill -- .claude/skills/new-spec`
+- `git grep -n "TEMPLATE-specification.md\\|new-spec/assets/slugify.sh" task/T-022-migrate-new-spec-skill -- .claude || true` (no matches)
+- `git cat-file -e task/T-022-migrate-new-spec-skill:.claude/skills/new-spec/assets/TEMPLATE-specification.md` (not present in branch)
+- `git cat-file -e task/T-022-migrate-new-spec-skill:.claude/skills/new-spec/assets/slugify.sh` (not present in branch)
+
+Obstacles Encountered:
+- none
+
+Next Owner:
+- Development Loop
+
+Next Action:
+- none
