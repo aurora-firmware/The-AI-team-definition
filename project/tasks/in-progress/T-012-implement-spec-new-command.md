@@ -50,3 +50,39 @@ Implemented `ai-team spec new` with Typer `NAME = "spec"` and `new` subcommand s
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
+
+### Review Verdict — 2026-05-10
+
+PASS
+
+Result: PASS
+
+Summary:
+- Reviewed `task/T-012-implement-spec-new-command` against T-012 acceptance criteria and Stage 2 code-quality checks; all required checks passed.
+
+Artifacts:
+- Updated canonical task file: `project/tasks/in-progress/T-012-implement-spec-new-command.md`
+- Diff reviewed: `dev-agent..task/T-012-implement-spec-new-command` (expected two added files only)
+- Primary files inspected: `cli/src/ai_team/commands/spec.py`, `cli/tests/test_spec_new.py`
+
+Evidence:
+- Scope check: `git diff --name-status dev-agent..task/T-012-implement-spec-new-command` returned only:
+  - `A cli/src/ai_team/commands/spec.py`
+  - `A cli/tests/test_spec_new.py`
+- Stage 1 acceptance checks:
+  - AC-1 satisfied: creates exactly one `project/specs/<slug>.md` with frontmatter fields populated from title/date/flags.
+  - AC-2 satisfied: non-JSON path output is absolute path on stdout.
+  - AC-3 satisfied: `--json` returns `{"id":"...","path":"..."}` shape with no Rich table output.
+  - AC-4 satisfied: existing destination exits non-zero and does not overwrite.
+- Verification run (task command): `cd cli && uv run pytest tests/test_spec_new.py -q` on exported snapshot of `task/T-012-implement-spec-new-command` → `3 passed`.
+- Stage 2 quality checks passed for correctness, tests, security, readability, and performance within task scope.
+
+Obstacles Encountered:
+- Direct branch checkout in sandbox failed due `.git/index.lock` write restriction; worked around by reviewing via `git show`/`git diff` and running verification on a `git archive` snapshot in `/tmp`.
+- Initial sandbox test run hit restricted network dependency resolution; reran verification with escalated permissions for `uv run pytest`.
+
+Next Owner:
+- Development Loop
+
+Next Action:
+- none
