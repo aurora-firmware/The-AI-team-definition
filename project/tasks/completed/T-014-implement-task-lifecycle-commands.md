@@ -1,7 +1,7 @@
 ---
 id: "T-014"
 title: "Implement task lifecycle commands (start, complete, block, unblock)"
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: 2026-05-10
