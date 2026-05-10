@@ -1,7 +1,7 @@
 ---
 id: "T-024"
 title: "Bundle init scaffold assets and add sync helper"
-status: in-progress
+status: completed
 priority: medium
 assigned-role: developer
 created: 2026-05-10
