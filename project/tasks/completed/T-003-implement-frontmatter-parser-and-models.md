@@ -1,7 +1,7 @@
 ---
 id: "T-003"
 title: "Implement frontmatter parser and artifact data models"
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: 2026-05-10
