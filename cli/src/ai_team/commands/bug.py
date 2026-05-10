@@ -9,9 +9,14 @@ from typing import Literal
 import typer
 from slugify import slugify
 
-from ai_team.core.fs import ArtifactExists, write_artifact
+from ai_team.core.fs import (
+    ArtifactExists,
+    move_artifact,
+    update_status,
+    write_artifact,
+)
 from ai_team.core.ids import next_bug_id
-from ai_team.core.locator import find_project_root
+from ai_team.core.locator import ProjectRoot, find_project_root
 from ai_team.core.models import Bug
 from ai_team.core.templates import load_template
 from ai_team.render import print_json
@@ -20,6 +25,30 @@ NAME = "bug"
 app = typer.Typer(help="Create and manage bug artifacts.")
 
 Severity = Literal["critical", "high", "medium", "low"]
+
+
+def _bug_matches_id(path: Path, bug_id: str) -> bool:
+    stem = path.stem
+    return stem == bug_id or stem.startswith(f"{bug_id}-")
+
+
+def _find_bug_file(bug_id: str, folder: Path) -> Path | None:
+    if not folder.exists():
+        return None
+    for path in sorted(folder.glob("*.md")):
+        if path.name == ".gitkeep" or path.match("TEMPLATE-*.md"):
+            continue
+        if _bug_matches_id(path, bug_id):
+            return path
+    return None
+
+
+def _bug_state_folders(root: ProjectRoot) -> dict[str, Path]:
+    return {
+        "open": root.bugs_open,
+        "in-progress": root.bugs_in_progress,
+        "resolved": root.bugs_resolved,
+    }
 
 
 def _template_body(template: str) -> str:
@@ -74,3 +103,20 @@ def new_bug(
         return
 
     typer.echo(absolute_path)
+
+
+@app.command("start")
+def start_bug(bug_id: str) -> None:
+    """Move an open bug to in-progress and update status."""
+    root = find_project_root(Path.cwd())
+    folders = _bug_state_folders(root)
+    source = _find_bug_file(bug_id, folders["open"])
+    if source is None:
+        typer.echo(f"Bug '{bug_id}' not found in {folders['open']}", err=True)
+        raise typer.Exit(code=1)
+
+    destination = folders["in-progress"] / source.name
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    update_status(source, "in-progress")
+    move_artifact(source, destination)
+    typer.echo(str(destination.resolve()))
