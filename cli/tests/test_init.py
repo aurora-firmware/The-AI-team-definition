@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import tomllib
 
+import importlib.metadata
+
 from typer.testing import CliRunner
 
 
@@ -78,3 +80,55 @@ def test_init_dry_run_lists_files_and_writes_nothing(tmp_path):
     assert str(target / ".claude" / "agents" / "planner.md") in result.output
     assert str(target / ".ai-team.toml") in result.output
     assert not target.exists()
+
+
+def test_init_include_ai_process_copies_snapshot_and_records_marker(tmp_path):
+    """`--include-ai-process` copies ai-process and records the marker flag."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    result = CliRunner().invoke(
+        app,
+        [
+            "init",
+            str(target),
+            "--tools",
+            "claude",
+            "--no-interactive",
+            "--include-ai-process",
+        ],
+    )
+
+    marker = target / ".ai-team.toml"
+    assert result.exit_code == 0
+    assert (target / "ai-process" / "processes" / "workflow-overview.md").is_file()
+    data = tomllib.loads(marker.read_text(encoding="utf-8"))
+    assert data["init"]["include_ai_process"] is True
+    assert data["init"]["tools"] == ["claude"]
+    assert data["init"]["framework_version"] == importlib.metadata.version("ai-team")
+
+
+def test_init_force_allows_overwriting_existing_files(monkeypatch, tmp_path):
+    """`--force` permits init to overwrite scaffold destination files."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    target.mkdir()
+    existing = target / "project" / "specs" / ".gitkeep"
+    existing.parent.mkdir(parents=True, exist_ok=True)
+    existing.write_text("occupied\n", encoding="utf-8")
+
+    marker = target / ".ai-team.toml"
+    marker.write_text("occupied = true\n", encoding="utf-8")
+
+    monkeypatch.chdir(target)
+    result = CliRunner().invoke(
+        app,
+        ["init", "--tools", "claude", "--no-interactive", "--force"],
+    )
+
+    assert result.exit_code == 0
+    assert existing.read_text(encoding="utf-8") == ""
+    assert (target / ".claude" / "skills" / "tdd" / "SKILL.md").is_file()
+    data = tomllib.loads(marker.read_text(encoding="utf-8"))
+    assert data["project"]["dir"] == "project"
