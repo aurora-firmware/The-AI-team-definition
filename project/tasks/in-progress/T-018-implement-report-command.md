@@ -45,6 +45,10 @@ cd cli && uv run pytest tests/test_report.py -q
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Implemented `ai-team report` in TDD cycles. First cycle added command scaffolding, template bundling, loader support, default dated destination, and directory creation. Second cycle added populated rendering based on the same status-summary payload used by `ai-team status`, including counts, in-progress rows, blocked rows with explicit action-needed text, bug table entries, next actions, and risks/concerns; also verified `--out` writes to custom nested paths. Tried keeping report output as raw template only, rejected because it failed population assertions. No remaining implementation work for T-018 on this branch.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
