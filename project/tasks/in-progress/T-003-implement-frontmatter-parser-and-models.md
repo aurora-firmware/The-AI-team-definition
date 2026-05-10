@@ -62,3 +62,41 @@ All 35 tests pass covering AC-1 through AC-4: parsing all four artifact types, r
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
+
+### Review Verdict — 2026-05-10
+
+FAIL
+
+**Stage 1 — Acceptance Criteria**
+
+AC-1 (parse_task returns a Task with all fields): PASS — all common and type-specific fields are populated correctly. All four parse functions are present and work.
+
+AC-2 (dump_frontmatter round-trips to an equal model): PASS — all four artifact types round-trip cleanly. Tests confirm.
+
+AC-3 (FrontmatterError names the field and path): PASS — `_require` includes both the key name and the path in the message. Tests cover missing-field paths for all types.
+
+AC-4 (YAML comments and key order preserved): FAIL — **key order is preserved, but YAML comments are not.**
+
+The root cause is in `_parse_yaml_frontmatter` (line 82 of `cli/src/ai_team/core/models.py`): `return dict(data)` converts the `ruamel.yaml` `CommentedMap` to a plain Python dict, stripping all comment annotations. `dump_frontmatter` then builds a brand-new `CommentedMap` from the dataclass fields, so no comments can ever survive the parse→dump cycle. A manual test confirms: a file with `status: pending  # this is a comment` loses the comment after `dump_frontmatter`.
+
+The test suite does not exercise comment preservation either: all four tests in the AC-4 section check key order and optional-field omission, but none writes a fixture with an inline YAML comment and asserts the comment is present in the dumped output.
+
+**Stage 2 — Code Quality**
+
+Stage 2 is skipped per procedure because Stage 1 has a failing criterion.
+
+**Issues to Fix**
+
+1. **File:** `cli/src/ai_team/core/models.py`, line 82.
+   **What is wrong:** `return dict(data)` discards the `CommentedMap` returned by `ruamel.yaml` round-trip mode, losing all inline comments. AC-4 explicitly requires comment preservation.
+   **What should change:** Return the `CommentedMap` directly (or keep a reference to it), and thread it through to `dump_frontmatter` so the serialiser can re-use the parsed map (with comments) rather than building a fresh one. One approach: `_parse_yaml_frontmatter` returns a `CommentedMap`; `dump_frontmatter` accepts an optional `source_map` argument and uses `yaml.dump(source_map, stream)` after updating field values in-place instead of creating a new `CommentedMap` from scratch.
+
+2. **File:** `cli/tests/test_models.py`, AC-4 section (approximately line 500 onwards).
+   **What is wrong:** No test verifies that inline comments survive a parse→dump cycle, which means the gap in AC-4 was not caught.
+   **What should change:** Add at least one test that writes a fixture file containing an inline comment (e.g., `status: pending  # workflow state`), calls `parse_task` followed by `dump_frontmatter`, and asserts the comment string appears in the dumped output.
+
+**Design Decisions (both acceptable)**
+
+Decision 1 — ADR `id` vs `number`: The Developer's choice to use `id: str` (e.g., `"ADR-001"`) is acceptable. The task description is explicit about `id` being the field name and `id` is consistent across all other artifact types. The existing template uses `number: 0` as a placeholder that was never adopted in practice. No action needed.
+
+Decision 2 — Bug `source_branch` omitted from dataclass: Acceptable for v1 **with an explicit note**. The bug-loop reads `source_branch` directly from the file's raw frontmatter (bug-loop/SKILL.md Step 3), not through the `Bug` dataclass, so this omission does not break the current loop. Future components that need it (T-007, T-017) will need to either extend the `Bug` dataclass or read it via raw frontmatter — the Developer's Work Log already flags this trade-off. No action required for this task.
