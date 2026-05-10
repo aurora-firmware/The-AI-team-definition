@@ -43,6 +43,10 @@ cd cli && uv run pytest tests/test_bug_new.py -q
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Implemented T-011 using TDD on `task/T-011-implement-bug-new-command`. I started by reading the task file (work log was empty) and existing command patterns (`task new`) plus core helpers (`next_bug_id`, `load_template`, `write_artifact`). I then wrote `cli/tests/test_bug_new.py` to cover: default creation to `project/bugs/open/B-NNN-<slug>.md` with correct frontmatter and absolute-path stdout; custom `--severity` + `--task` with `--json` output and no Rich table output; and non-overwrite behavior when the allocated path already exists. Initial test run failed (as expected) because `bug` command did not exist. I implemented `cli/src/ai_team/commands/bug.py` with Typer `app`, `NAME = "bug"`, and `new` subcommand that allocates IDs, slugifies titles, loads the bundled bug template body, writes through `write_artifact(overwrite=False)`, returns JSON when requested, and exits non-zero on existing destination without overwriting. Re-ran verification and all tests passed. I considered extracting shared template-body parsing from `task.py` to avoid duplication, but rejected that in this session to stay within T-011 scope and touched-file boundaries. Nothing remains for this task branch from implementation side; ready for reviewer and lifecycle update on `dev-agent`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
