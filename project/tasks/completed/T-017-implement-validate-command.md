@@ -1,7 +1,7 @@
 ---
 id: "T-017"
 title: "Implement ai-team validate command"
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: 2026-05-10
