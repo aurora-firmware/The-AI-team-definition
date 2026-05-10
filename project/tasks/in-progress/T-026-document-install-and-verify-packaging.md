@@ -1,10 +1,10 @@
 ---
-id: "T-026"
-title: "Document install in setup-guide and verify end-to-end packaging"
-status: pending
+id: T-026
+title: Document install in setup-guide and verify end-to-end packaging
+status: in-progress
 priority: low
 assigned-role: developer
-created: 2026-05-10
+created: '2026-05-10'
 ---
 
 # Document install in setup-guide and verify end-to-end packaging
