@@ -1,7 +1,7 @@
 ---
 id: "T-010"
 title: "Implement ai-team task new command"
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: 2026-05-10
