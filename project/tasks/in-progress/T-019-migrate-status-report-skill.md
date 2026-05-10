@@ -45,6 +45,10 @@ grep -rn "status-summary.sh\|status-report/assets/progress-report.md" .claude/ |
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Read the task file and existing Work Log section first (no prior session entries present), then ran the task verification grep as a red check and confirmed existing references to `status-summary.sh` and the bundled `progress-report.md` path. Updated the `status-report` skill procedure to use `ai-team status` for inline summary generation and `ai-team report` for full report generation, and removed template/script references from input requirements and procedural text. Deleted the obsolete files `.claude/skills/status-report/scripts/status-summary.sh` and `.claude/skills/status-report/assets/progress-report.md`. Re-ran the verification grep and got `OK` with no matches under `.claude/`. Considered keeping wording that depended on a bundled template path for Step 6, but rejected it because the task explicitly requires removing bundled-template references after migration. No remaining implementation work identified for this task branch.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
