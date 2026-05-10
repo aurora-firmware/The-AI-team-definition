@@ -53,3 +53,35 @@ Implemented T-015 with strict TDD across four red→green→refactor cycles. Fir
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
+
+### Review Verdict — 2026-05-10
+
+PASS
+
+Result: PASS
+
+Summary:
+- Stage 1 acceptance checks and Stage 2 quality checks passed for the submitted `task/T-015-implement-bug-lifecycle-commands` diff.
+
+Artifacts:
+- Canonical task file updated: `project/tasks/in-progress/T-015-implement-bug-lifecycle-commands.md`
+- Diff reviewed: `cli/src/ai_team/commands/bug.py`, `cli/tests/test_bug_lifecycle.py`
+- Primary files inspected: `cli/src/ai_team/commands/bug.py`, `cli/tests/test_bug_lifecycle.py`
+
+Evidence:
+- Checked expected diff against `dev-agent..task/T-015-implement-bug-lifecycle-commands`: only `M cli/src/ai_team/commands/bug.py` and `A cli/tests/test_bug_lifecycle.py`.
+- AC-1 verified in code/tests: `bug start` moves `open/ -> in-progress/` and updates frontmatter status to `in-progress`.
+- AC-2 verified in code/tests: `bug resolve` moves `in-progress/ -> resolved/` and updates status to `resolved`.
+- AC-3 verified in code/tests: destination-state idempotency exits zero, prints `already in <state>`, and preserves file bytes.
+- AC-4 verified in code/tests: missing ID exits non-zero with not-found message including searched lifecycle folders.
+- Verification command run on implementation branch: `cd cli && uv run pytest tests/test_bug_lifecycle.py -q` -> `6 passed in 0.09s`.
+- Stage 2 checks passed: correctness, tests, security, readability, and performance for task scope.
+
+Obstacles Encountered:
+- Sandbox blocked branch checkout and uv cache writes (`index.lock` and `~/.cache/uv` read-only); review proceeded after approved escalated command execution.
+
+Next Owner:
+- Development Loop
+
+Next Action:
+- none
