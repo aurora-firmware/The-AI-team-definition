@@ -49,3 +49,32 @@ Implemented T-021 by migrating `.claude/skills/new-bug/SKILL.md` away from bundl
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
+
+### Review Verdict — 2026-05-10
+PASS
+
+Result: PASS
+
+Summary:
+- Reviewed `task/T-021-migrate-new-bug-skill` against all T-021 acceptance criteria using the two-stage code-review checklist; both stages passed.
+
+Artifacts:
+- Canonical task file updated: `project/tasks/in-progress/T-021-migrate-new-bug-skill.md`
+- Diff reviewed: `dev-agent..task/T-021-migrate-new-bug-skill`
+- Primary files inspected: `.claude/skills/new-bug/SKILL.md`, `.claude/skills/new-bug/assets/TEMPLATE-bug.md` (deleted), `.claude/skills/new-bug/assets/next-bug-id.sh` (deleted)
+
+Evidence:
+- Stage 1 (acceptance): `git diff --name-status dev-agent..task/T-021-migrate-new-bug-skill` matched expected tracked diff exactly.
+- Stage 1 (AC-1): `.claude/skills/new-bug/SKILL.md` on the task branch now invokes `ai-team bug new --json` and removes template/helper-script procedure steps.
+- Stage 1 (AC-2): `git ls-tree -r --name-only task/T-021-migrate-new-bug-skill .claude/skills/new-bug/assets` returned no files.
+- Stage 1 (AC-3): `git grep -nE "TEMPLATE-bug.md|next-bug-id.sh" task/T-021-migrate-new-bug-skill -- .claude/ || echo OK` returned `OK`.
+- Stage 2 (quality): checked correctness/readability/scope; no regressions, security concerns, or unnecessary behavior introduced for this migration.
+
+Obstacles Encountered:
+- none
+
+Next Owner:
+- Development Loop
+
+Next Action:
+- none
