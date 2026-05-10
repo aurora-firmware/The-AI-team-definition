@@ -4,7 +4,8 @@ A reusable operating framework for projects developed by AI agent teams.
 
 ## What This Is
 
-This is a **meta-project** — it does not contain software, it defines **how AI agent teams build software**.
+This is a **meta-project** — it defines **how AI agent teams build software**.
+It also includes a small `ai-team` CLI that manages the framework's project artifacts and bootstraps the framework into new repositories.
 
 At its core is the **ai-process**: a set of documents that describe the rules the AI team must follow — workflows, quality gates, coding standards, and role responsibilities.
 Those rules are then **implemented** by the agents (`.claude/agents/`) and skills (`.claude/skills/`) that live alongside every project using this framework.
@@ -99,30 +100,90 @@ Each skill implements a workflow or action defined in the ai-process:
 | **escalation-review** | Architect analysis for blocked work before human escalation |
 | **/dev-loop** | Autonomous Developer → Reviewer → Integration loop across the pending task queue |
 | **/bug-loop** | Autonomous diagnosis-first Developer → Reviewer → Integration loop across the open bug queue |
-| **/new-spec** | Creates a new specification document from the template |
-| **/new-task** | Creates a new task document from the template |
-| **/new-bug** | Creates an evidence-backed bug report from the template |
-| **/new-adr** | Creates a new Architecture Decision Record |
-| **/status-report** | Summarizes current project state across all work items |
+| **/new-spec** | Creates a specification by invoking `ai-team spec new`, then fills spec content |
+| **/new-task** | Creates a pending task by invoking `ai-team task new` |
+| **/new-bug** | Creates an evidence-backed bug report by invoking `ai-team bug new`, then fills bug content |
+| **/new-adr** | Creates an Architecture Decision Record by invoking `ai-team adr new`, then fills ADR content |
+| **/status-report** | Summarizes project state by invoking `ai-team status` and writes a report with `ai-team report` |
 
 ## Agent Platform Compatibility
 
 Agent and skill definitions live in `.claude/` for Claude Code.
-The `.codex/` directory contains symlinks to `.claude/agents/` and `.claude/skills/`, providing the same definitions to the OpenAI Codex agent platform without duplication.
-Both platforms read from the same source files.
+The `.codex/` directory provides OpenAI Codex compatibility with project-scoped agent TOML files and a symlinked `.codex/skills` view of `.claude/skills/`.
+Skills stay shared from the same source files.
 
 ## Using This Framework in Your Project
 
-Adopting the framework means copying its process, agent, skill, and template files into your project repository, then adding project-local guidance for your stack and commands.
+Adopting the framework means installing the `ai-team` CLI, using it to scaffold the process files into your project, then adding project-local guidance for your stack and commands.
 The full walkthrough is in `guides/setup-guide.md`.
-The short version:
 
-1. **Create the directory structure** — `project/specs/`, `project/tasks/`, `project/bugs/`, `project/decisions/`, `ai-process/`, `.claude/agents/`, `.claude/skills/`, and project-local docs such as `project/docs/`.
-2. **Copy the framework files** — all agent definitions from `.claude/agents/`, all skill definitions from `.claude/skills/`, and the process, guideline, and architecture docs from `ai-process/`.
-3. **Write your project's `CLAUDE.md`** — document project purpose, repository layout, stack, build/run/test/lint commands, and where project-specific rules live.
-4. **Add project-local guidance** — put stack-specific coding rules in `project/docs/coding_guidelines.md` or another project-local document referenced by `CLAUDE.md`; keep the copied framework files generic unless you intentionally fork the process.
-5. **Configure permissions** — create `.claude/settings.json` for the commands and tools agents may use in this project.
-6. **Verify** — run `/status-report` (should produce an empty report) and `/new-task` (should create a file in `project/tasks/pending/`).
+### Install the CLI
+
+Install from PyPI once published:
+
+```bash
+pipx install ai-team-cli
+```
+
+For a local build from this repository:
+
+```bash
+cd cli
+python scripts/sync_init_scaffolds.py  # use python3 if your shell has no python shim
+uv build
+pipx install --force dist/*.whl
+```
+
+### Initialize a Project
+
+From the target repository root:
+
+```bash
+ai-team init . --tools claude --no-interactive
+```
+
+This creates the empty `project/` state folders, copies the bundled `.claude/agents/` and `.claude/skills/`, and writes `.ai-team.toml`.
+To also copy the process specification documents, add `--include-ai-process`:
+
+```bash
+ai-team init . --tools claude --include-ai-process --no-interactive
+```
+
+Use `--dry-run` to preview files before writing, and `--force` only when you intentionally want existing files overwritten.
+
+### Daily CLI Commands
+
+The CLI manages project artifacts directly:
+
+```bash
+ai-team status
+ai-team list tasks
+ai-team show T-001
+ai-team task new "Add onboarding flow" --priority high --assigned-role developer
+ai-team task start T-001
+ai-team task complete T-001
+ai-team bug new "Login crashes on empty token" --severity high
+ai-team bug start B-001
+ai-team bug resolve B-001
+ai-team spec new "Billing reconciliation" --author "Team"
+ai-team adr new "Use PostgreSQL for ledger storage"
+ai-team validate
+ai-team report
+ai-team archive --older-than 90d --dry-run
+```
+
+The action skills use those commands internally. For example, `/new-task` delegates file creation to `ai-team task new`, `/new-bug` delegates to `ai-team bug new`, and `/status-report` delegates to `ai-team status` plus `ai-team report`.
+
+The most common loop is:
+
+1. Create or approve a spec.
+2. Create tasks in `project/tasks/pending/`.
+3. Run `/dev-loop` to implement, review, integrate, and complete tasks.
+4. Run `/bug-loop` for open bugs.
+5. Run `ai-team status` and `ai-team report` for Gate 5 sign-off context.
+
+After initialization, still add your project's `CLAUDE.md`, stack-specific commands, and coding guidance in `project/docs/`.
+Keep the framework files generic unless you intentionally fork the process.
 
 The normal workflow is:
 
@@ -158,10 +219,11 @@ See `guides/setup-guide.md` for the complete file list, CLAUDE.md starter templa
 │   ├── decisions/       Architecture Decision Records
 │   └── docs/            Project-specific commands, coding conventions, and operations
 ├── guides/              Human-facing setup and customization guides
+├── cli/                 `ai-team` CLI package and bundled init scaffolds
 ├── .claude/
 │   ├── agents/          Agent role definitions (5 roles)
 │   └── skills/          Skill procedures and action commands
-└── .codex/              Symlinks to .claude/agents/ and .claude/skills/ (Codex compatibility)
+└── .codex/              Codex agent TOML files and symlinked skills compatibility
 ```
 
 ## Contributing to This Project
@@ -170,6 +232,7 @@ Changes to the framework follow the same workflow the framework defines.
 
 - **Changing a rule** (workflow, standard, convention): update `ai-process/` first, then update any agents or skills that implement the changed rule.
 - **Changing an agent or skill**: verify that the change is consistent with — or explicitly revises — the relevant ai-process documents.
+- **Changing bundled init content**: update the source files, then run `python cli/scripts/sync_init_scaffolds.py` so `ai-team init` ships the same content.
 - **Architecture-affecting decisions**: record an ADR in `project/decisions/` before implementing.
 
 The ai-process is the specification.

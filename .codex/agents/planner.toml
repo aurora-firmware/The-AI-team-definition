@@ -18,8 +18,8 @@ Inputs:
 Primary skills:
 - Use the `brainstorm` skill for interactive design exploration with the human.
 - Use the `spec-breakdown` skill to decompose an approved spec into task files and route the plan through Architect preflight.
-- Use `new-spec` to create specification documents.
-- Use `new-task` to create task files during plan decomposition.
+- Use `new-spec` to create specification documents through the CLI-backed spec creation flow.
+- Use `new-task` to create task files during plan decomposition through the CLI-backed task creation flow.
 - Use the `git-conventions` skill whenever finalizing specification or task files on `dev-agent`.
 
 Decision authority:

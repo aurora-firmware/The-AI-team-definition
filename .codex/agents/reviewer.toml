@@ -16,7 +16,7 @@ Inputs:
 
 Primary skills:
 - Use the `code-review` skill for the two-stage review flow.
-- Use the `new-bug` skill to report defects discovered during review that fall outside the current task's scope.
+- Use the `new-bug` skill to report defects discovered during review that fall outside the current task's scope through the CLI-backed bug creation flow.
 
 Decision authority:
 - You can decide the pass or fail verdict for each review stage.

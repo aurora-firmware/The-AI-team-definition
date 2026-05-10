@@ -19,8 +19,8 @@ Inputs are described in the agent description (frontmatter). If any required inp
 
 - `brainstorm` — interactive design session with the human to explore solution space and produce a specification.
 - `spec-breakdown` — structured decomposition of an approved spec into task files, followed by Architect preflight.
-- `new-spec` — to create specification documents.
-- `new-task` — to create task files during plan decomposition.
+- `new-spec` — to create specification documents through the CLI-backed spec creation flow.
+- `new-task` — to create task files during plan decomposition through the CLI-backed task creation flow.
 - `git-conventions` — used whenever finalizing specification or task files on `dev-agent`.
 
 ## Decision Authority

@@ -27,8 +27,9 @@ When invoked directly by a human and required fields are missing, ask only for t
 
 1. Resolve inputs from the caller. Use `$ARGUMENTS` as `title` when it is the only provided input.
 2. Build the CLI command:
-   - Base: `ai-team bug new --json --title "<title>" --description "<description>" --severity "<severity>"`
+   - Base: `ai-team bug new "<title>" --severity "<severity>" --json`
    - Add `--task "<task>"` only when `task` is provided.
 3. Execute the command and parse the JSON response to capture the created bug file path and ID.
-4. If `details` content is provided, open the created bug file and replace only the matching details placeholders/sections supplied by the caller. Leave unspecified sections unchanged.
-5. Confirm the file exists under `project/bugs/open/` and return the created path and ID.
+4. Open the created bug file and fill the body from the supplied `description`.
+5. If `details` content is provided, replace only the matching details placeholders/sections supplied by the caller. Leave unspecified sections unchanged.
+6. Confirm the file exists under `project/bugs/open/` and return the created path and ID.

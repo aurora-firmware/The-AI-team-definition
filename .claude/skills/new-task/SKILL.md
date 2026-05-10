@@ -1,6 +1,6 @@
 ---
 name: new-task
-description: Create a new task from the template
+description: Create a new task via the ai-team CLI
 argument-hint: "[optional: task title]"
 allowed-tools: Read, Write, Bash
 ---

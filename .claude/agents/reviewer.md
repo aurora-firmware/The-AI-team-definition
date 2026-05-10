@@ -18,7 +18,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 ## Skills
 
 - `code-review` — the two-stage review process (task acceptance or bug criteria + code quality).
-- `new-bug` — to report defects discovered during review that fall outside the current task's scope.
+- `new-bug` — to report defects discovered during review that fall outside the current task's scope through the CLI-backed bug creation flow.
 
 ## Decision Authority
 
@@ -44,7 +44,7 @@ The Reviewer enters the escalation chain when the `code-review` skill returns `E
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | canonical task file in `project/tasks/in-progress/` or canonical bug file in `project/bugs/in-progress/` on `dev-agent` (verdict and feedback), `project/bugs/` (to file bug reports via `/new-bug`) |
+| Write / Edit | canonical task file in `project/tasks/in-progress/` or canonical bug file in `project/bugs/in-progress/` on `dev-agent` (verdict and feedback), `project/bugs/` (to file bug reports via the `new-bug` skill) |
 | Never touch | implementation code, `project/specs/`, `project/decisions/`, `project/docs/` |
 
 ## Quality Bar

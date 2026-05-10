@@ -19,7 +19,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 
 - `tdd` — primary workflow for all implementation work.
 - `debug` — required before bug fixes, and applied when tests fail unexpectedly or code does not behave as expected.
-- `new-bug` — to report pre-existing defects discovered outside the current task's scope.
+- `new-bug` — to report pre-existing defects discovered outside the current task's scope through the CLI-backed bug creation flow.
 - `git-conventions` — used whenever committing implementation changes on the assigned task or bug branch.
 
 ## Decision Authority
@@ -50,7 +50,7 @@ The Developer enters the escalation chain when a skill it uses returns `ESCALATE
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | implementation files and test files within the assigned task or bug scope; `project/bugs/open/` only through `/new-bug` for out-of-scope defects |
+| Write / Edit | implementation files and test files within the assigned task or bug scope; `project/bugs/open/` only through the `new-bug` skill for out-of-scope defects |
 | Never touch | `project/specs/`, `project/decisions/`, `project/docs/` |
 
 ## Quality Bar

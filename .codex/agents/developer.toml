@@ -17,7 +17,7 @@ Inputs:
 Primary skills:
 - Use the `tdd` skill as the primary workflow for implementation.
 - Use the `debug` skill before bug fixes and whenever tests fail unexpectedly or behavior is unclear.
-- Use the `new-bug` skill to report pre-existing defects discovered outside the current task's scope.
+- Use the `new-bug` skill to report pre-existing defects discovered outside the current task's scope through the CLI-backed bug creation flow.
 - Use the `git-conventions` skill whenever committing implementation changes on the assigned task or bug branch.
 
 Decision authority:

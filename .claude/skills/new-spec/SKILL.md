@@ -27,7 +27,7 @@ When invoked directly by a human and required fields are missing, ask for the mi
    - If invoked directly and some required fields are missing, ask only for the missing fields.
    - Use `$ARGUMENTS` as the title when it is the only provided input.
 2. Build the CLI command:
-   - Base: `ai-team spec new --json --title "<title>" --description "<description>"`
+   - Base: `ai-team spec new "<title>" --json`
    - Add `--author "<author>"` only when `author` is provided; otherwise allow the CLI default.
    - Add `--status "<status>"` only when `status` is provided; otherwise allow the CLI default.
 3. Execute the command and parse the JSON response to capture:
