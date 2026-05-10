@@ -1,10 +1,10 @@
 ---
-id: "T-025"
-title: "Implement ai-team init command"
-status: pending
+id: T-025
+title: Implement ai-team init command
+status: in-progress
 priority: medium
 assigned-role: developer
-created: 2026-05-10
+created: '2026-05-10'
 ---
 
 # Implement ai-team init command
