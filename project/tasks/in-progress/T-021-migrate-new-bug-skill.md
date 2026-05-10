@@ -42,6 +42,10 @@ grep -rn "TEMPLATE-bug.md\|next-bug-id.sh" .claude/ || echo OK
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Implemented T-021 by migrating `.claude/skills/new-bug/SKILL.md` away from bundled template/script mechanics to CLI invocation via `ai-team bug new --json`. I first ran the acceptance grep and confirmed pre-change references still existed in the skill text (`TEMPLATE-bug.md`, `next-bug-id.sh`), which served as the red phase for this migration. I then rewrote the skill's required inputs to the new narrowed contract (`title`, `description`, `severity`, optional `task`, optional `details`) and replaced the procedure with CLI-command construction/execution plus optional post-create placeholder section filling. After that I deleted the legacy files under `.claude/skills/new-bug/assets/`. Re-ran verification: grep returned no matches and asset directory file scan returned empty. Rejected approach: keeping compatibility fallbacks to local template/script, because the task explicitly requires full migration and deletion of those supports. Remaining work is only lifecycle/log handling on `dev-agent` and reviewer pass.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
