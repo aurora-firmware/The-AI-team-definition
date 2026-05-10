@@ -43,6 +43,10 @@ cd cli && uv run pytest tests/test_adr_new.py -q
 
 <!-- Mandatory. Append one entry per session boundary. -->
 
+### Session 1 — 2026-05-10
+
+Implemented `ai-team adr new` at `ai_team.commands.adr` with `NAME = "adr"` and a `new` subcommand that allocates IDs via `next_adr_id`, slugifies titles, loads the bundled ADR template body, writes `project/decisions/ADR-NNN-<slug>.md`, prints absolute path by default, and emits `{"id":"...","path":"..."}` under `--json` with no Rich rendering. Added tests for default creation/output, custom `--status` + `--supersedes` with JSON output, and non-overwrite behavior when the allocated path already exists. Considered reusing richer template-frontmatter parsing (as in `spec`) but rejected it because ADR creation only needs template body and explicit model fields, so the simpler body-extraction path is clearer and consistent with `task`/`bug`. Remaining work: none for this task scope.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle. -->
