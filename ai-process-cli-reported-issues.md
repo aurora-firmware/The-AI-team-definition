@@ -114,3 +114,28 @@ provided title, consistent with how it fills the frontmatter.
 **Notes:**
 - `ai-team spec new --json` output format worked as expected: `{"id": "S-001", "path": "..."}`.
 - Reproduced on branch `pi-agent-design`, 2026-05-14.
+
+### I-005 — CLI test suite has a failing test: bundled task template source missing
+
+- **Severity:** medium
+- **Status:** confirmed
+- **Observed during:** `/bug-loop`, B-001 implementation/verification, 2026-05-14.
+- **Where:** `cli/tests/test_templates.py::test_load_template_task_matches_bundled_source`.
+
+**Observed:** Running the CLI test suite (`uv run pytest` in `cli/`) produces one
+failing test: `test_load_template_task_matches_bundled_source`. It fails because the
+bundled source it compares against, `.claude/skills/new-task/assets/TEMPLATE-task.md`,
+does not exist in the repo.
+
+**Impact:** The CLI test suite is not green on `dev-agent` — 210 pass, 1 fail. This
+is not a regression (confirmed pre-existing via a `git stash` round-trip while
+working B-001), but it means `integrate`'s regression check starts from a non-clean
+baseline and any future genuine regression in `test_templates.py` is harder to spot.
+
+**Expected:** Either the bundled task template source file should exist at the path
+the test expects, or the test should point at the correct source location. The CLI
+test suite should be green.
+
+**Notes:**
+- Discovered while fixing B-001; out of scope for B-001, logged here for triage.
+- Not yet filed as a bug — needs triage to decide CLI-side vs. skill-asset-side fix.
