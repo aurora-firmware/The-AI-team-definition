@@ -1,7 +1,7 @@
 ---
 id: T-035
 title: Implement package-owned scaffold source generator
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-05-14'
