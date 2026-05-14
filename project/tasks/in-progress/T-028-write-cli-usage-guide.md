@@ -64,3 +64,31 @@ One pre-existing test failure exists: `tests/test_templates.py::test_load_templa
 Nothing remains to do for this task.
 
 ## Review
+
+### Review Verdict — 2026-05-14
+
+PASS
+
+**Stage 1 — Spec compliance**
+
+All five acceptance criteria are met:
+
+- AC-1: `cli/docs/usage.md` exists and covers installation (pipx and local-build paths, Python 3.14 requirement), `ai-team init` (all five flags), daily workflows (create-and-ship task, file-and-resolve bug, Gate 5 report, validate, archive), project folder structure, and a maintainer section.
+- AC-2: The folder structure section documents `specs/` + `archive/`, all four task state subfolders (`pending/`, `in-progress/`, `completed/`, `blocked/`), all three bug state subfolders (`open/`, `in-progress/`, `resolved/`), `decisions/`, `docs/`, `.ai-team.toml` (with a TOML example), and the locator's four-strategy resolution order including `AI_TEAM_ROOT` env var.
+- AC-3: The maintainer section contains a full module-map table (`ai_team.cli`, `commands/`, `core/`, `templates/`, `init/`, `render`), a 3-step "how to add a command" procedure, `uv run pytest` for tests, `uv build` / `uv publish` for build and release, and `bash cli/scripts/gen_docs.sh` for regenerating `commands.md`.
+- AC-4: The very first sentence of the guide links to `commands.md`.
+- AC-5: Every flag referenced in `usage.md` (`--tools`, `--include-ai-process`, `--dry-run`, `--force`, `--no-interactive`, `--priority`, `--assigned-role`, `--severity`, `--reason`, `--state`, `--out`, `--all`, `--tasks`, `--bugs`, `--older-than`, `--author`, `--status`, `--json`, `--version`) is present in `commands.md`. No phantom flags found.
+
+Only the specified file (`cli/docs/usage.md`) and its test (`cli/tests/test_usage_guide.py`) were added. No files outside the task scope were modified.
+
+**Stage 2 — Code quality**
+
+- Correctness: The guide accurately reflects the CLI source. The locator four-strategy order, init flags, and module layout match the source as read by the Developer and cross-verified here against `commands.md` and the diff.
+- Tests: 37 tests in `cli/tests/test_usage_guide.py` cover all five ACs, with both positive parametrized cross-checks (AC-5) and a negative guard test for nonexistent flags. Tests are independent.
+- Security: Documentation file; not applicable.
+- Readability: Clear ToC, consistent heading hierarchy, all commands in fenced code blocks, prose is accurate and focused.
+- Performance: Documentation file; not applicable.
+
+**Pre-existing test failure**
+
+`tests/test_templates.py::test_load_template_task_matches_bundled_source` fails because `.claude/skills/new-task/assets/TEMPLATE-task.md` does not exist on this branch. Confirmed pre-existing: the file is absent on both `dev-agent` and every commit preceding the T-028 work (`2d9bbde`). This failure is outside T-028's scope and does not affect this verdict.
