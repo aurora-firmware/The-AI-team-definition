@@ -53,3 +53,22 @@ Ran the task's four verification commands as a red-phase check — all failed as
 Nothing was tried and rejected; the task was unambiguous. Nothing remains.
 
 ## Review
+
+### Review Verdict — 2026-05-14
+
+PASS
+
+**Stage 1 — Spec compliance**
+
+- AC-1: The file `project/specs/ai-team-python-cli.md` is absent from `project/specs/` and present at `project/specs/archive/ai-team-python-cli.md` on the task branch. Confirmed via `git ls-tree`.
+- AC-2: The frontmatter `status` field reads `superseded`. Confirmed via `git show` on the archived file.
+- AC-3: The Amendment Log contains a table row dated 2026-05-14 citing `cli/docs/commands.md` and `cli/docs/usage.md` as the current source of truth. Confirmed via `git show`.
+- AC-4: The commit diff (R098 rename with 5 lines changed across the whole file) shows exactly two changes to the file body: `status: approved` → `status: superseded` in the frontmatter, and the Amendment Log HTML comment block replaced with the live table row. No other body content was modified.
+
+Git rename was performed with `git mv`: the commit records `R098` (98% similarity), confirming history is preserved.
+
+Only the stated file (`project/specs/ai-team-python-cli.md` → `project/specs/archive/ai-team-python-cli.md`) was touched. No other files were modified.
+
+**Stage 2 — Code quality**
+
+Not applicable: this task involves no code. The checklist items for tests, security, and performance do not apply to a markdown archival operation. Readability and correctness checks on the Amendment Log entry pass — the entry is accurate, complete, and scoped exactly to what was done.
