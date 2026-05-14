@@ -1,7 +1,7 @@
 ---
 title: "ai-team Python CLI"
 version: "0.1"
-status: approved
+status: superseded
 created: 2026-05-10
 author: planner
 ---
@@ -289,7 +289,6 @@ The locator's resolution order:
 
 ## Amendment Log
 
-<!--
 | Date | What changed | Why | Affected tasks |
 |------|-------------|-----|----------------|
--->
+| 2026-05-14 | Spec archived; status set to `superseded`. `cli/docs/` (`cli/docs/commands.md`, `cli/docs/usage.md`) is now the current source of truth for CLI behaviour. | T-027 and T-028 delivered the authoritative docs in `cli/docs/`; keeping this spec active would leave two contradictory descriptions of the CLI. | T-030 |
