@@ -236,3 +236,29 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-14
+
+PASS
+
+**Stage 1 — Bug Criteria**
+
+- Diagnosis Log present and complete before the Work Log. Reproduction status is explicitly "confirmed" with concrete evidence (T-027 commit contamination, T-031 wrong-scope verdict). Isolated fault and root cause are documented precisely: two discrete omissions in `code-review/SKILL.md` Step 2 and Step 5.
+- Fix addresses both isolated faults:
+  - `code-review/SKILL.md` Step 2 now opens with a mandatory `git diff <destination>...<branch>` block and instructs the Reviewer to scope all findings strictly to that diff, forbidding attribution of pre-existing lines.
+  - `code-review/SKILL.md` Step 5 now contains the sentence "Stage only the canonical task or bug lifecycle file for the verdict commit — do not use `git add -A` or `git add .`".
+  - `reviewer.md` Quality Bar carries two new observable-criteria bullets (merge-base diff scoping; lifecycle-file-only staging) and the Folder Scope Read row carries a parenthetical constraint. Both are observable-criteria language, not procedure steps — consistent with agent-vs-skill separation in CLAUDE.md.
+- Fix Verification greps both return matches: grep 1 (`git diff .*\.\.\.|merge base|branch diff`) hits lines 28, 31, 38; grep 2 (`stage only|do not .*git add`) hits line 73.
+- No unrelated behaviour was added. Only the three edits described in the Work Log appear in the diff.
+- Work Log explains why only grep-based and manual verification was possible: this is a process/spec defect with no automatable regression test. Rationale is adequate.
+
+**Stage 2 — Code Quality**
+
+- Correctness: the new Step 2 block uses `<destination>` and `<branch>` as placeholders — no hardcoded branch names. The `(e.g. dev-agent)` example illustrates the placeholder without mandating it. Instructions are unambiguous.
+- Tests: no automated test is possible for a process-level specification defect. The Work Log records this explicitly. Both Fix Verification greps serve as the verifiable checkpoint.
+- Security: no credentials, no external input validation concerns in a prose skill file.
+- Readability: the inserted blocks follow the existing heading structure and bullet style of the skill. The wording is direct and actionable. No dead text or debugging artifacts.
+- Performance: not applicable to a prose specification file.
+- CLAUDE.md compliance: no `ai-process/` paths embedded; no project-specific commands hardcoded; agent additions are observable-criteria language only, not procedural steps; no content duplicated across files.
+
+Both stages passed. Minor non-blocking observation: the `code-review` skill's `allowed-tools` line still permits `Bash(git add *)` without restriction — this is acceptable because the new Step 5 prose now constrains how `git add` is used; no change is required.
