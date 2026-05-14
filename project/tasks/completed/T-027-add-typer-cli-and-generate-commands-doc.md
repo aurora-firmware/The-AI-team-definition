@@ -1,7 +1,7 @@
 ---
 id: "T-027"
 title: "Add typer-cli dependency, gen_docs script, and generate commands.md"
-status: pending
+status: completed
 priority: high
 assigned-role: "unassigned"
 created: 2026-05-14
