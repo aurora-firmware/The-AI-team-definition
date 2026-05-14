@@ -70,6 +70,13 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-14
+Implemented T-037 by adding package-owned agent source assets under `cli/src/ai_team/init/sources/agents/claude/` and `cli/src/ai_team/init/sources/agents/codex/`, plus source-level coverage in `cli/tests/test_init_scaffolds.py` that enforces role parity across both tools and semantic parity with currently exported agent definitions. I followed TDD: first added the new parity test and verified it failed because the source agent trees did not exist; then added the source files and verified the targeted test passed; finally ran full task verification (`pytest`, `ruff`, and scaffold-agent diff check) successfully.
+
+What I tried and rejected: I avoided modifying generated scaffold output trees (`src/ai_team/init/scaffolds/claude/agents/**` and `.../codex/agents/**`) because AC-4 forbids that in this task, and I also rejected copying Claude sources from `.claude/agents` because exported scaffold semantics are currently defined by `scaffolds/claude/agents` and must be preserved exactly for this migration step.
+
+What remains: record this Work Log entry on canonical `dev-agent` task state and proceed to review.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
