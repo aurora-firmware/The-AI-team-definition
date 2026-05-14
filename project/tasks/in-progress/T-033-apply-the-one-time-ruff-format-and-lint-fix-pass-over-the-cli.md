@@ -1,7 +1,7 @@
 ---
 id: T-033
 title: Apply the one-time Ruff format and lint-fix pass over the CLI
-status: pending
+status: in-progress
 priority: medium
 assigned-role: developer
 created: '2026-05-14'
