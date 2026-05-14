@@ -25,7 +25,17 @@ For tasks, understand what was asked, what the acceptance criteria are, and whic
 For bugs, understand the symptom, reproduction status, diagnostic evidence, isolated fault, root cause or fault hypothesis, and Fix Verification steps.
 
 ### Step 2: Stage 1 — Acceptance Or Bug Criteria
-For tasks, check each acceptance criterion against the code:
+Before checking any criteria, obtain the branch diff using the merge-base form:
+
+```
+git diff <destination>...<branch>
+```
+
+where `<destination>` is the integration target (e.g. `dev-agent`) and `<branch>` is the implementation branch being reviewed.
+Scope all findings strictly to lines present in that diff.
+Do not read full working-tree file contents and attribute pre-existing lines to the branch.
+
+For tasks, check each acceptance criterion against the branch diff:
 - Is the criterion met? (yes/no, with evidence)
 - Was any unspecified behavior or functionality added?
 - Were unexpected files modified?
@@ -60,6 +70,7 @@ The Reviewer's self-recovery threshold is **one review cycle** for ESCALATE-wort
 Switch to `dev-agent`.
 Append to the canonical task or bug file under a `### Review Verdict — [date]` heading.
 The first line of the section must be one of: `PASS`, `FAIL`, or `ESCALATE`.
+Stage only the canonical task or bug lifecycle file for the verdict commit — do not use `git add -A` or `git add .`, which can sweep in implementation files that were checked out for inspection.
 Commit the verdict on `dev-agent` using the `git-conventions` skill (commit type `docs` with scope `tasks` or `bugs`, e.g. `docs(tasks): record T-NNN review verdict`).
 
 **On PASS:** Record the verdict with a brief confirmation that both stages passed. Note any minor observations (non-blocking).
