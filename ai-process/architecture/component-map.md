@@ -68,6 +68,18 @@ This document maps the ai-process roles, procedures, processes, and gates to the
 | Architecture Docs | Directory | System design documentation | `ai-process/architecture/` |
 | Action Procedures | Directory | Automation for document creation and status reporting | `.claude/skills/` (with `disable-model-invocation: true` where no model reasoning is needed) |
 
+## CLI Command Mapping
+
+Action skills that create or report on project artifacts invoke `ai-team` CLI commands. The table below maps each action skill to the command(s) it calls.
+
+| Skill | CLI Command(s) | Purpose |
+|---|---|---|
+| `new-spec` | `ai-team spec new` | Create a new specification document |
+| `new-task` | `ai-team task new` | Create a new task file in `project/tasks/pending/` |
+| `new-bug` | `ai-team bug new` | Create a new bug report in `project/bugs/open/` |
+| `new-adr` | `ai-team adr new` | Create a new architecture decision record in `project/decisions/` |
+| `status-report` | `ai-team status`, `ai-team report` | Generate inline Gate 5 summary and full progress report |
+
 ## Interaction Diagram
 
 ```
