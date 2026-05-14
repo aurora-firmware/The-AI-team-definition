@@ -1,7 +1,7 @@
 ---
 id: T-037
 title: Add package-owned Claude and Codex agent scaffolds
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-05-14'
