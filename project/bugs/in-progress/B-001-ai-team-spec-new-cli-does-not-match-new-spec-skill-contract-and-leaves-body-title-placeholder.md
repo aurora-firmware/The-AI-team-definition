@@ -252,3 +252,23 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-14
+
+PASS
+
+Both stages passed.
+
+**Stage 1 — Bug criteria**
+
+- Diagnosis Log is present before the Work Log. Reproduction status is explicit ("both defects confirmed"). Evidence includes command output showing `No such option: --title`, `--help` output, and a live `spec new` invocation demonstrating the missing substitution. Isolated faults and root-cause hypotheses are documented for all three sub-defects (1a already fixed at HEAD, 1b skill-side remnant, 2 missing body substitution).
+- Defect 1 (skill-side): both `.claude/skills/new-spec/SKILL.md` and `.claude/skills/new-bug/SKILL.md` now partition inputs into three labelled groups — Required (CLI), Optional (CLI), and Agent-consumed (NOT CLI). `description` moved to Agent-consumed with an explicit "not a CLI flag" annotation. Step 2 gained a "Do NOT pass `description` to the CLI" line and step 4 was annotated to make the agent-side body-fill timing explicit. Positional-title procedures remain intact. No `ai-process/` paths introduced; skill files contain procedure content only, matching `CLAUDE.md` constraints.
+- Defect 2 (CLI-side): `cli/src/ai_team/commands/spec.py` substitutes `# [Specification Title]` with `# {title}` before calling `write_artifact()`. `cli/src/ai_team/commands/bug.py` mirrors this for `# [Bug Title]`. Both fixes are minimal and scoped to the isolated cause.
+- No unrelated behaviour was added.
+
+**Stage 2 — Code quality**
+
+- Correctness: the `.replace(..., 1)` calls are positionally correct (after body extraction, before `write_artifact`). The `count=1` argument prevents a title containing `[Specification Title]` from double-substituting. No off-by-one or null reference risk introduced.
+- Tests: `test_spec_new_substitutes_body_h1_with_provided_title` and `test_bug_new_substitutes_body_h1_with_provided_title` added. Each asserts the expected H1 is present and the placeholder is absent. Tests are independent (use `tmp_path`). Both pass; full suite is 210 pass, 1 pre-existing unrelated failure (`test_load_template_task_matches_bundled_source` — missing `TEMPLATE-task.md`, logged as I-005, confirmed pre-existing).
+- Fix Verification commands run and confirmed: `spec new --help` and `bug new --help` show positional `TITLE` and no `--description` flag; `ai-team spec new --json "Verification Spec"` produced `# Verification Spec` as body H1; `grep -L` listed the file (placeholder absent).
+- Security, readability, performance: no new inputs from external sources; no secrets; one-liner string replacements are focused and named descriptively; no resource leaks introduced.
