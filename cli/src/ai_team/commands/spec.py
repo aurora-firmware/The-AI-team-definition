@@ -72,6 +72,8 @@ def new_spec(
         _source_map=source_map,
     )
 
+    body = body.replace("# [Specification Title]", f"# {title}", 1)
+
     try:
         write_artifact(dest, model, body, overwrite=False)
     except ArtifactExists as exc:

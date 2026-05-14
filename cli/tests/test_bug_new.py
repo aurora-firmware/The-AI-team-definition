@@ -97,3 +97,21 @@ def test_bug_new_refuses_to_overwrite_when_allocated_path_exists(
     assert result.exit_code != 0
     assert "already exists" in result.stderr.lower()
     assert existing.read_text(encoding="utf-8") == "existing bytes\n"
+
+
+def test_bug_new_substitutes_body_h1_with_provided_title(monkeypatch, tmp_path):
+    """`bug new` replaces the `# [Bug Title]` body placeholder with the given title."""
+    from ai_team.cli import app
+
+    _mkdir(tmp_path / "project" / "bugs" / "open")
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["bug", "new", "Crash on startup"])
+
+    assert result.exit_code == 0
+
+    expected = tmp_path / "project" / "bugs" / "open" / "B-001-crash-on-startup.md"
+    content = expected.read_text(encoding="utf-8")
+
+    assert "# Crash on startup" in content
+    assert "# [Bug Title]" not in content

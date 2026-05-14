@@ -121,6 +121,7 @@ def new_bug(
 
     template = load_template("bug")
     body = _template_body(template)
+    body = body.replace("# [Bug Title]", f"# {title}", 1)
     model = Bug(
         id=bug_id,
         title=title,
