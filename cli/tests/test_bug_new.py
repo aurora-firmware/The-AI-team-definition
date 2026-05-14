@@ -79,7 +79,7 @@ def test_bug_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
 
 
 def test_bug_new_refuses_to_overwrite_when_allocated_path_exists(monkeypatch, tmp_path):
-    """If the allocated output file exists, command exits non-zero and keeps file bytes."""
+    """Existing output path causes non-zero exit and preserves file bytes."""
     from ai_team.cli import app
 
     open_folder = tmp_path / "project" / "bugs" / "open"

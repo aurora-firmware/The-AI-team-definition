@@ -1,10 +1,14 @@
 """
-Tests for T-004: ai_team.core.fs — filesystem layer for artifact reads, writes, and atomic moves.
+Tests for T-004: ai_team.core.fs — filesystem layer for artifact reads,
+writes, and atomic moves.
 
 Covers:
-  AC-1: move_artifact(src, dest) atomically renames when src != dest and dest does not exist.
-  AC-2: move_artifact raises ArtifactExists when dest already exists, leaving filesystem unchanged.
-  AC-3: update_status rewrites only the status frontmatter field, preserving all other content.
+  AC-1: move_artifact(src, dest) atomically renames when src != dest and
+        dest does not exist.
+  AC-2: move_artifact raises ArtifactExists when dest already exists,
+        leaving filesystem unchanged.
+  AC-3: update_status rewrites only the status frontmatter field,
+        preserving all other content.
   AC-4: move_artifact(src, dest) is a no-op when src == dest (after path normalisation).
 """
 
@@ -20,7 +24,6 @@ from ai_team.core.fs import (
     update_status,
     write_artifact,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures / helpers
@@ -352,7 +355,7 @@ def test_move_artifact_no_op_when_src_equals_dest(tmp_path):
 def test_move_artifact_no_op_when_src_equals_dest_after_resolution(tmp_path):
     """move_artifact treats paths as equal after normalisation (resolve)."""
     src = write_file(tmp_path, "T-001-task.md", VALID_TASK_CONTENT)
-    # Construct an equivalent path via a redundant component that resolves to the same file.
+    # Construct an equivalent path via a redundant component.
     src_alt = src.parent / "." / src.name
     move_artifact(src, src_alt)
     assert src.exists()

@@ -5,7 +5,6 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-
 TASK_TEMPLATE = """\
 ---
 id: \"{id}\"
@@ -108,7 +107,7 @@ def _adr(id: str, title: str, status: str) -> str:
 
 
 def test_status_rich_summary_includes_counts_and_key_lists(monkeypatch, tmp_path):
-    """`ai-team status` shows counts, in-progress tasks, blocked tasks, and high/critical bugs."""
+    """`ai-team status` shows counts plus key task and bug lists."""
     from ai_team.cli import app
 
     _write(
@@ -187,7 +186,7 @@ def test_status_rich_summary_includes_counts_and_key_lists(monkeypatch, tmp_path
 
 
 def test_status_json_emits_structured_payload_without_rich_table(monkeypatch, tmp_path):
-    """`ai-team status --json` emits a single JSON object and no Rich frame characters."""
+    """`ai-team status --json` emits JSON and no Rich frame characters."""
     from ai_team.cli import app
 
     _write(
@@ -231,7 +230,7 @@ def test_status_json_emits_structured_payload_without_rich_table(monkeypatch, tm
 def test_status_blocked_task_uses_latest_work_log_when_frontmatter_reason_missing(
     monkeypatch, tmp_path
 ):
-    """Blocked reason falls back to the latest Work Log entry when frontmatter key is absent."""
+    """Blocked reason falls back to latest Work Log entry when missing."""
     from ai_team.cli import app
 
     blocked_body = """\
@@ -274,7 +273,7 @@ stuck on reviewer approval
 def test_status_uses_latest_integration_commit_subject_when_available(
     monkeypatch, tmp_path
 ):
-    """When integration commit evidence exists, status reports the latest matching subject."""
+    """Status reports latest matching integration commit subject."""
     from ai_team.cli import app
 
     _write(

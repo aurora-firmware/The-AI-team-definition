@@ -3,10 +3,13 @@ Tests for T-027: Add typer-cli dependency, gen_docs script, and generate command
 
 Covers:
   AC-1: typer-cli is declared in the dev dependency group in pyproject.toml.
-  AC-2: bash cli/scripts/gen_docs.sh regenerates cli/docs/commands.md from the Typer app.
+  AC-2: bash cli/scripts/gen_docs.sh regenerates cli/docs/commands.md
+        from the Typer app.
   AC-3: commands.md contains every command group, subcommand, argument, and flag.
-  AC-4: commands.md has a header note stating it is generated and naming the regeneration command.
-  AC-5: Running gen_docs.sh twice with no code change produces a byte-identical commands.md.
+  AC-4: commands.md has a header note stating it is generated and naming
+        the regeneration command.
+  AC-5: Running gen_docs.sh twice with no code change produces a
+        byte-identical commands.md.
 """
 
 from __future__ import annotations
@@ -107,7 +110,7 @@ def test_commands_md_contains_global_flags():
 
 
 def test_commands_md_has_generated_header_note():
-    """commands.md must open with a note that it is generated and must not be hand-edited."""
+    """commands.md starts with a generated-file note."""
     assert COMMANDS_MD.is_file(), "commands.md must exist (run gen_docs.sh first)"
     content = COMMANDS_MD.read_text(encoding="utf-8")
     # The header note should appear near the top.
@@ -155,5 +158,6 @@ def test_gen_docs_is_idempotent():
     content_after_second = COMMANDS_MD.read_bytes()
 
     assert content_after_first == content_after_second, (
-        "commands.md changed between two consecutive gen_docs.sh runs with no code change"
+        "commands.md changed between two consecutive gen_docs.sh runs "
+        "with no code change"
     )

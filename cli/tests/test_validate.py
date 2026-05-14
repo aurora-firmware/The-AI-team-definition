@@ -5,7 +5,6 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-
 TASK_TEMPLATE = """\
 ---
 id: "{id}"
@@ -126,7 +125,7 @@ def _seed_valid_project(root: Path) -> None:
 def test_validate_exits_zero_and_reports_zero_findings_for_clean_project(
     monkeypatch, tmp_path
 ):
-    """`ai-team validate` exits 0 and reports zero findings when all artifacts are valid."""
+    """`ai-team validate` exits 0 with zero findings for valid artifacts."""
     from ai_team.cli import app
 
     _seed_valid_project(tmp_path)

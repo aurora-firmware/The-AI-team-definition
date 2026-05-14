@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import re
 from datetime import date
 from pathlib import Path
-import re
 from typing import Callable, Literal
 
 import typer

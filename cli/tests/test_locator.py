@@ -13,8 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from ai_team.core.locator import ProjectRoot, ProjectRootNotFound, find_project_root
-
+from ai_team.core.locator import ProjectRootNotFound, find_project_root
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -7,7 +7,6 @@ from typer.testing import CliRunner
 
 from ai_team.core.models import parse_bug
 
-
 BUG_TEMPLATE = """\
 ---
 id: "{id}"

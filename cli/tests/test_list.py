@@ -5,7 +5,6 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-
 TASK_TEMPLATE = """\
 ---
 id: \"{id}\"
@@ -104,7 +103,7 @@ def _adr(id: str, title: str, status: str) -> str:
 def test_list_tasks_displays_all_states_in_rich_table_and_skips_templates(
     monkeypatch, tmp_path
 ):
-    """`ai-team list tasks` prints all non-template tasks from every task state folder."""
+    """`ai-team list tasks` prints non-template tasks from every state."""
     from ai_team.cli import app
 
     _write(

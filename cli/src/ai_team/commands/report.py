@@ -85,7 +85,8 @@ def _in_progress_rows(payload: dict[str, object]) -> str:
     for row in in_progress:
         if isinstance(row, dict):
             rows.append(
-                f"| {row['id']} | {row['title']} | {row['assigned_role']} | actively progressing |"
+                f"| {row['id']} | {row['title']} | {row['assigned_role']} | "
+                "actively progressing |"
             )
     return _as_rows(rows, "| none | n/a | n/a | no in-progress tasks |")
 
@@ -98,7 +99,8 @@ def _blocked_rows(payload: dict[str, object]) -> str:
         if isinstance(row, dict):
             reason = str(row["blocking_reason"])
             rows.append(
-                f"| {row['id']} | {row['title']} | {reason} | Resolve blocker: {reason} |"
+                f"| {row['id']} | {row['title']} | {reason} | "
+                f"Resolve blocker: {reason} |"
             )
     return _as_rows(rows, "| none | n/a | n/a | no action needed |")
 
@@ -121,7 +123,8 @@ def _bug_rows(root) -> str:
         for path in _iter_markdown_files(folder):
             bug = parse_bug(path)
             rows.append(
-                f"| {bug.id} | {bug.title} | {bug.severity} | {state} | {_diagnosis_status(state)} |"
+                f"| {bug.id} | {bug.title} | {bug.severity} | {state} | "
+                f"{_diagnosis_status(state)} |"
             )
     return _as_rows(rows, "| none | n/a | n/a | n/a | n/a |")
 
@@ -216,7 +219,11 @@ def _render_report(
         ("| B-001 | Bug title | high | open | not started |", _bug_rows(root)),
         ("| 001 | Decision title | decided |", _decision_rows(root)),
         (
-            "1. Next priority action\n2. Second priority action\n3. Third priority action",
+            (
+                "1. Next priority action\n"
+                "2. Second priority action\n"
+                "3. Third priority action"
+            ),
             _next_actions(payload),
         ),
         ("- Risk or concern 1\n- Risk or concern 2", _risks_and_concerns(payload)),

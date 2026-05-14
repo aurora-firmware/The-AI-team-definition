@@ -5,7 +5,6 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-
 TASK_TEMPLATE = """\
 ---
 id: "{id}"
@@ -85,7 +84,7 @@ def _adr(id: str, title: str, body: str) -> str:
 
 
 def test_show_exact_id_single_match_prints_markdown(monkeypatch, tmp_path):
-    """`ai-team show T-001` prints the artifact markdown when exactly one file matches."""
+    """`ai-team show T-001` prints markdown when exactly one file matches."""
     from ai_team.cli import app
 
     task_path = tmp_path / "project" / "tasks" / "pending" / "T-001-initial-scaffold.md"
@@ -100,7 +99,7 @@ def test_show_exact_id_single_match_prints_markdown(monkeypatch, tmp_path):
 
 
 def test_show_json_outputs_path_frontmatter_and_body(monkeypatch, tmp_path):
-    """`--json` emits a single JSON object with path/frontmatter/body and no Rich output."""
+    """`--json` emits one JSON object and no Rich output."""
     import json
 
     from ai_team.cli import app

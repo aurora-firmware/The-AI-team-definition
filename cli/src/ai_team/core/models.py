@@ -1,5 +1,6 @@
 """
-ai_team.core.models — dataclasses for AI-team artifact types parsed from YAML frontmatter.
+ai_team.core.models — dataclasses for AI-team artifact types parsed from
+YAML frontmatter.
 
 Provides:
   - ``Task``, ``Bug``, ``Spec``, ``Adr`` dataclasses holding frontmatter fields.
@@ -25,7 +26,6 @@ from typing import Any
 
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
-
 
 # ---------------------------------------------------------------------------
 # Error

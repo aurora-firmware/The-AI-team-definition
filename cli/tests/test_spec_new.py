@@ -85,7 +85,7 @@ def test_spec_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
 def test_spec_new_refuses_to_overwrite_when_allocated_path_exists(
     monkeypatch, tmp_path
 ):
-    """If the allocated output file exists, command exits non-zero and keeps file bytes."""
+    """Existing output path causes non-zero exit and preserves file bytes."""
     from ai_team.cli import app
 
     specs = tmp_path / "project" / "specs"
@@ -103,7 +103,7 @@ def test_spec_new_refuses_to_overwrite_when_allocated_path_exists(
 
 
 def test_spec_new_substitutes_body_h1_with_provided_title(monkeypatch, tmp_path):
-    """`spec new` replaces the `# [Specification Title]` body placeholder with the given title."""
+    """`spec new` replaces the body H1 placeholder with the provided title."""
     from ai_team.cli import app
 
     _mkdir(tmp_path / "project" / "specs")

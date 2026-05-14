@@ -135,11 +135,12 @@ def test_usage_md_describes_ai_team_toml_marker():
 def test_usage_md_describes_locator_resolution_order():
     """usage.md must describe the locator resolution order."""
     lower = _lower()
-    # The locator has 4 strategies; at minimum the env var and toml walk must be mentioned.
+    # At minimum, the env var and TOML-walk strategies should be mentioned.
     assert (
         "ai_team_root" in lower or "ai-team-root" in lower or "environment" in lower
     ), (
-        "usage.md must describe the AI_TEAM_ROOT environment-variable resolution strategy"
+        "usage.md must describe the AI_TEAM_ROOT environment-variable "
+        "resolution strategy"
     )
 
 
@@ -238,7 +239,7 @@ def test_commands_mentioned_in_usage_exist_in_commands_md(command):
     commands_content = COMMANDS_MD.read_text(encoding="utf-8")
     # Extract the subcommand portion to check (e.g. "task new" from "ai-team task new")
     parts = command.split()
-    # Check for the subcommand term in commands.md — the generated file has the full form
+    # Check for the subcommand term in commands.md.
     assert command in commands_content or " ".join(parts[1:]) in commands_content, (
         f"'{command}' is documented in usage.md but does not appear in commands.md"
     )

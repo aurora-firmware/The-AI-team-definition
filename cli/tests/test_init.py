@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-import tomllib
-
 import importlib.metadata
+import tomllib
 
 from typer.testing import CliRunner
 

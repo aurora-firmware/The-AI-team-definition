@@ -1,5 +1,6 @@
 """
-Tests for T-001: Bootstrap cli/ uv project with Typer scaffold and command auto-discovery.
+Tests for T-001: Bootstrap cli/ uv project with Typer scaffold and
+command auto-discovery.
 
 Covers:
   AC-2: `ai-team --version` prints the package version.
@@ -11,12 +12,9 @@ Covers:
 import importlib
 import importlib.metadata
 import importlib.util
-import sys
 import types
 
-import pytest
 from typer.testing import CliRunner
-
 
 # ---------------------------------------------------------------------------
 # AC-2 and AC-3: version callback and entry point

@@ -9,7 +9,6 @@ from typer.testing import CliRunner
 from ai_team.core.fs import read_artifact
 from ai_team.core.models import parse_task
 
-
 TASK_TEMPLATE = """\
 ---
 id: "{id}"
@@ -175,7 +174,7 @@ def test_task_block_moves_completed_task_to_blocked(monkeypatch, tmp_path):
 def test_lifecycle_command_is_idempotent_when_task_already_in_destination_state(
     monkeypatch, tmp_path, command, state, task_id, extra_args, expected_state
 ):
-    """Lifecycle commands exit zero and keep file bytes unchanged when already in destination."""
+    """Lifecycle commands are no-ops when task is already in destination."""
     from ai_team.cli import app
 
     task_path = tmp_path / "project" / "tasks" / state / f"{task_id}-demo-task.md"
