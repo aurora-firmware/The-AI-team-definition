@@ -17,7 +17,7 @@ are observations to triage, not confirmed defects unless marked so.
 ### I-001 — Reviewer verdict commit included implementation files (not a CLI bug)
 
 - **Severity:** medium
-- **Status:** not-a-cli-bug (process/agent behavior)
+- **Status:** fixed (via B-002, 2026-05-14)
 - **Tracked by:** B-002
 - **Observed during:** `/dev-loop`, T-027 integration.
 - **What happened:** The Reviewer subagent, when committing its verdict to the canonical
@@ -35,7 +35,7 @@ are observations to triage, not confirmed defects unless marked so.
 ### I-002 — Reviewer reviewed file contents instead of the branch diff (not a CLI bug)
 
 - **Severity:** high
-- **Status:** not-a-cli-bug (process/agent behavior)
+- **Status:** fixed (via B-002, 2026-05-14)
 - **Tracked by:** B-002
 - **Observed during:** `/dev-loop`, T-031 review.
 - **What happened:** The Reviewer evaluated the full current contents of `README.md` and
