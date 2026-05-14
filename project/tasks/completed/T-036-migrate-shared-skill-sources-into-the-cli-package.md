@@ -1,7 +1,7 @@
 ---
 id: T-036
 title: Migrate shared skill sources into the CLI package
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-05-14'
