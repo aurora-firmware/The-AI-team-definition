@@ -18,6 +18,7 @@ are observations to triage, not confirmed defects unless marked so.
 
 - **Severity:** medium
 - **Status:** not-a-cli-bug (process/agent behavior)
+- **Tracked by:** B-002
 - **Observed during:** `/dev-loop`, T-027 integration.
 - **What happened:** The Reviewer subagent, when committing its verdict to the canonical
   task file on `dev-agent`, ran a broad `git add` and swept in three implementation files
@@ -35,6 +36,7 @@ are observations to triage, not confirmed defects unless marked so.
 
 - **Severity:** high
 - **Status:** not-a-cli-bug (process/agent behavior)
+- **Tracked by:** B-002
 - **Observed during:** `/dev-loop`, T-031 review.
 - **What happened:** The Reviewer evaluated the full current contents of `README.md` and
   `CLAUDE.md` rather than `git diff dev-agent...task/T-031-...`. It misattributed
@@ -54,6 +56,7 @@ are observations to triage, not confirmed defects unless marked so.
 
 - **Severity:** high
 - **Status:** confirmed
+- **Tracked by:** B-001
 - **Observed during:** reported by another agent on branch `pi-agent-design`, 2026-05-14.
 - **Where:** `ai-team spec new` vs. `.claude/skills/new-spec/SKILL.md`; `ai-team bug new` vs. `.claude/skills/new-bug/SKILL.md`.
 
@@ -91,6 +94,7 @@ title and to stop requiring a description the CLI cannot consume. The two must a
 
 - **Severity:** medium
 - **Status:** confirmed
+- **Tracked by:** B-001
 - **Observed during:** reported by another agent on branch `pi-agent-design`, 2026-05-14.
 - **Where:** `ai-team spec new` (template population).
 
