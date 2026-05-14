@@ -1,7 +1,7 @@
 ---
 id: "T-028"
 title: "Write cli/docs/usage.md hand-written CLI guide"
-status: pending
+status: completed
 priority: high
 assigned-role: "unassigned"
 created: 2026-05-14
