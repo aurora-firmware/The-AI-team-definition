@@ -93,3 +93,28 @@ Two acceptance criteria failed, and one file-scope constraint was violated.
 - What should change: Revert the CLAUDE.md changes entirely, or justify them explicitly in the Work Log as intentional out-of-scope changes that are coherent with T-031's intent. If the Developer considers these changes necessary context for T-031, they must be documented in the Work Log per the file-scope constraint rule: "Any file created or modified outside the task's stated scope is explicitly justified in the Work Log — otherwise this is a Fail."
 
 **Stage 2 — Code quality:** Not evaluated due to Stage 1 failures.
+
+### Review Verdict — 2026-05-14 (re-review)
+
+PASS
+
+**Stage 1 — Spec compliance:**
+
+All four acceptance criteria are met. The branch diff (`git diff dev-agent...task/T-031-link-docs-and-add-regeneration-rule`) is exactly 4 inserted lines across 2 files. The prior FAIL verdict was factually incorrect: it described pre-existing content on `dev-agent` (the "Install the CLI", "Initialize a Project", "Daily CLI Commands" subsections and the CLAUDE.md changes) that predated this branch entirely. Those lines are not in the diff.
+
+- **AC-1 PASS**: `README.md` gains one sentence linking `cli/docs/usage.md` and `cli/docs/commands.md` after the existing `guides/setup-guide.md` pointer. `guides/setup-guide.md` gains one sentence (2 lines including blank) linking both files using correct relative paths (`../cli/docs/...`).
+- **AC-2 PASS**: Both additions are single sentences functioning as pointers only. No CLI documentation content is duplicated or relocated into either file.
+- **AC-3 PASS**: `README.md` gains one bullet in the "Contributing to This Project" list — "Changing a CLI command or flag: update the source, then run `bash cli/scripts/gen_docs.sh` and commit the updated `cli/docs/commands.md` so the reference stays current." This mirrors the existing `sync_init_scaffolds.py` rule exactly. Placement in README.md alone is explicitly permitted by AC-3 ("README.md and/or CLAUDE.md").
+- **AC-4 PASS**: Both `cli/docs/usage.md` and `cli/docs/commands.md` exist on the branch (confirmed via `git ls-tree`).
+
+File-scope check: only `README.md` and `guides/setup-guide.md` were modified — both are listed in "Files to Touch". No CLAUDE.md change. No unjustified out-of-scope files.
+
+**Stage 2 — Code quality:**
+
+- Correctness: Link paths are correct. `README.md` uses root-relative paths; `guides/setup-guide.md` uses `../cli/docs/...` appropriate for its location in `guides/`. Both resolve to existing files.
+- Tests: No code changes; Verification block commands pass (linked files exist, grep targets present).
+- Security: No concerns in documentation additions.
+- Readability: Wording is clear and consistent with surrounding conventions.
+- Performance: N/A.
+
+No issues found in either stage.
