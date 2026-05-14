@@ -71,6 +71,13 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-14
+Implemented the package-owned scaffold source generator in `cli/scripts/sync_init_scaffolds.py` and rewrote `cli/tests/test_init_scaffolds.py` around package-source fixtures. The generator now reads only `cli/src/ai_team/init/sources/`, regenerates `project/` lifecycle skeleton, generates Claude/Codex skill scaffolds from shared `body.md` plus per-tool TOML headers, copies package-owned Claude/Codex agents into scaffold outputs, and replaces stale generated content on each run.
+
+I worked in two TDD cycles. First cycle added a failing skill-generation/no-root-read test and implemented source-based skill generation plus agent copying; I also removed obsolete root snapshot logic. Second cycle added explicit tests for project skeleton generation and agent subtree replacement. That cycle exposed a real defect where skill regeneration deleted the entire `scaffolds/` root, removing `project/`; I rejected keeping the broad delete and narrowed replacement to per-tool `skills/` directories only. I also rejected relying on hidden-file globbing for `.gitkeep` assertions and switched to `os.walk` for deterministic file collection in tests.
+
+Remaining work in this task branch is complete from a Developer perspective; next step is for the loop to append this entry to the canonical task file on `dev-agent` and proceed to review.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
