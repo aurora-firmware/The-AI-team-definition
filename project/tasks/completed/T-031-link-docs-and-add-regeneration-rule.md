@@ -1,7 +1,7 @@
 ---
 id: "T-031"
 title: "Link README/setup-guide to cli/docs and add regeneration Contributing rule"
-status: pending
+status: completed
 priority: medium
 assigned-role: "unassigned"
 created: 2026-05-14
