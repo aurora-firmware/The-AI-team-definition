@@ -58,3 +58,30 @@ All three verification commands pass. No skill files were modified. Committed as
 Nothing remains for this task.
 
 ## Review
+
+### Review Verdict — 2026-05-14
+
+PASS
+
+**Stage 1 — Spec compliance**
+
+- AC-1: Met. A `## CLI Command Mapping` section was added to `ai-process/architecture/component-map.md` immediately before the `## Interaction Diagram` section.
+- AC-2: Met. All five mappings (`new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`) are present and match the commands named in each skill's `SKILL.md`:
+  - `new-spec` → `ai-team spec new` (confirmed: `new-spec/SKILL.md` line 30)
+  - `new-task` → `ai-team task new` (confirmed: `new-task/SKILL.md` line 30)
+  - `new-bug` → `ai-team bug new` (confirmed: `new-bug/SKILL.md` line 30)
+  - `new-adr` → `ai-team adr new` (confirmed: `new-adr/SKILL.md` line 27)
+  - `status-report` → `ai-team status`, `ai-team report` (confirmed: `status-report/SKILL.md` lines 23 and 91)
+- AC-3: Met. A grep of all `.claude/skills/*/SKILL.md` files for `ai-team` reveals no additional CLI commands beyond those listed. No extra rows are needed.
+- AC-4: Met. `git diff dev-agent...task/T-029-map-cli-to-skills-in-component-map -- '.claude/skills/'` produced no output — no skill files were modified.
+
+No unexpected files were modified. The diff touches only `ai-process/architecture/component-map.md`.
+
+**Stage 2 — Code quality**
+
+This is a documentation-only change (a markdown table). The standard code-quality checklist items for correctness, tests, security, and performance do not apply. Readability criteria do apply:
+
+- The new section heading, table columns, and cell content are clear and consistent with existing table style in the document.
+- No dead content, placeholder text, or debugging artifacts were introduced.
+
+No issues found. Both stages pass.
