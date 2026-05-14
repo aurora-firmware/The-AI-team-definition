@@ -68,6 +68,15 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-14
+Implemented T-036 by migrating every currently exported skill into package-owned canonical sources at `cli/src/ai_team/init/sources/skills/<skill>/` with exactly one `body.md` plus separate `metadata.toml` holding per-tool headers (`[claude].header`, `[codex].header`). The source body text was copied from existing scaffold skill procedure content to preserve behavior semantics, while tool-specific frontmatter moved into metadata for generator consumption.
+
+Used TDD: first added a failing source-level test in `tests/test_init_scaffolds.py` that required the new source tree and validated per-skill body/metadata presence plus parity with existing exported Claude scaffold skill content. Then implemented the source tree migration and made the test pass. Refactor step fixed Ruff line-length issues in the new test without changing behavior.
+
+What I tried and rejected: I did not modify generated scaffold output trees (`scaffolds/claude/skills/**`, `scaffolds/codex/skills/**`) because AC-4 forbids it in this task; I also avoided embedding headers into `body.md` to keep metadata separated per AC-2.
+
+What remains: append this Work Log entry to the canonical task file on `dev-agent`, then proceed to reviewer cycle.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
