@@ -40,5 +40,13 @@ include = [
 [dependency-groups]
 dev = [
     "pytest>=8",
+    "ruff>=0.4",
     "typer-cli>=0.24.0",
 ]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
