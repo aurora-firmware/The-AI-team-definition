@@ -50,6 +50,63 @@ are observations to triage, not confirmed defects unless marked so.
 
 ## ai-team CLI defects
 
-_No confirmed `ai-team` CLI defects observed yet during this dev-loop run. The T-027–T-031
-tasks were documentation-focused and exercised the CLI only indirectly (`gen_docs.sh`
-wrapping `typer ... utils docs`). New entries go here as they are found._
+### I-003 — `spec new` / `bug new` interface does not match the `new-spec` / `new-bug` skills
+
+- **Severity:** high
+- **Status:** confirmed
+- **Observed during:** reported by another agent on branch `pi-agent-design`, 2026-05-14.
+- **Where:** `ai-team spec new` vs. `.claude/skills/new-spec/SKILL.md`; `ai-team bug new` vs. `.claude/skills/new-bug/SKILL.md`.
+
+**Observed:** The `new-spec` skill documents the command as:
+
+```
+ai-team spec new --json --title "<title>" --description "<description>" [--author ...] [--status ...]
+```
+
+The actual CLI signature is:
+
+```
+ai-team spec new [OPTIONS] TITLE
+Options: --author, --status, --json, --help
+```
+
+So:
+- `--title` is not a valid option — the title is a positional argument. Following the skill
+  verbatim fails with `No such option: --title`.
+- `--description` does not exist at all. There is no CLI path to pass a description.
+
+**Impact:** Any caller following the skill's documented procedure fails. The `description`
+field — which the skill lists as a *required* input — is silently unused, because the CLI
+offers nowhere to put it.
+
+**Also affects `bug new`:** `ai-team bug new` has the same shape — positional `TITLE`,
+options limited to `--severity`, `--task`, `--json`, `--help`. The `new-bug` skill likewise
+documents `--title` and `--description`, neither of which the CLI accepts.
+
+**Expected:** Either the CLI should accept `--title` and `--description` (matching the skill
+contracts), or the `new-spec` / `new-bug` skills should be corrected to use the positional
+title and to stop requiring a description the CLI cannot consume. The two must agree.
+
+### I-004 — `spec new` does not substitute the body title placeholder
+
+- **Severity:** medium
+- **Status:** confirmed
+- **Observed during:** reported by another agent on branch `pi-agent-design`, 2026-05-14.
+- **Where:** `ai-team spec new` (template population).
+
+**Observed:** After creating spec `S-001`, the frontmatter `title` was populated correctly,
+but the body still contained the literal placeholder heading:
+
+```
+# [Specification Title]
+```
+
+**Impact:** Every newly created spec has a placeholder H1 that must be fixed by hand. Easy
+to miss.
+
+**Expected:** The CLI should substitute the body `# [Specification Title]` heading with the
+provided title, consistent with how it fills the frontmatter.
+
+**Notes:**
+- `ai-team spec new --json` output format worked as expected: `{"id": "S-001", "path": "..."}`.
+- Reproduced on branch `pi-agent-design`, 2026-05-14.
