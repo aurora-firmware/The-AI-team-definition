@@ -51,4 +51,16 @@ grep -qiE "maintainer|module map|release" cli/docs/usage.md
 
 ## Work Log
 
+### Session 1 — 2026-05-14
+
+Read the task file and the entire CLI source tree before writing a single line. The main risk was documenting behaviour that does not exist — AC-5 required every command and flag in `usage.md` to be present in `commands.md`. To guard against that, I wrote the tests first and structured them to parametrize over a representative set of commands, cross-checking each against the generated `commands.md`.
+
+The test suite covers all five acceptance criteria: 20 content-check tests (file existence, installation, init, workflows, report, folder structure, `.ai-team.toml`, locator resolution, maintainer section, module map, add-a-command, run-tests, build/release, regenerate-docs), one link test (AC-4), 16 parametrized cross-check tests (AC-5 positive), and one nonexistent-flag guard test (AC-5 negative). All 37 pass.
+
+The guide itself was written by reading `init.py` (for the `--tools` / `--include-ai-process` / `--dry-run` / `--force` / `--no-interactive` flags and their semantics), `task.py`, `bug.py`, `adr.py`, `spec.py`, `archive.py`, `report.py`, `status.py`, `validate.py`, `show.py`, `locator.py` (for the four-strategy resolution order), and `commands.md` (the generated reference). Every command, flag, and folder described in the guide was verified against those sources.
+
+One pre-existing test failure exists: `tests/test_templates.py::test_load_template_task_matches_bundled_source` fails because `.claude/skills/new-task/assets/TEMPLATE-task.md` does not exist on this branch. This failure was present before my changes and is outside the scope of T-028.
+
+Nothing remains to do for this task.
+
 ## Review
