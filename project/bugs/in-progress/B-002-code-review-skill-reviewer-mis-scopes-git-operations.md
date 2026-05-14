@@ -192,6 +192,39 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-14
+
+Read the Diagnosis Log in the bug file and both target files before making any
+changes. The diagnosis identified three gaps precisely: Step 2 in the skill had no
+instruction to obtain the merge-base diff before checking criteria; Step 5 had no
+instruction to stage only the lifecycle file; and the reviewer agent had no
+reinforcing observable criteria for either constraint.
+
+The fix was applied in three minimal edits:
+
+1. In `code-review/SKILL.md` Step 2: inserted a block before the criteria checklist
+   instructing the Reviewer to run `git diff <destination>...<branch>` and scope all
+   findings strictly to that diff, explicitly forbidding attribution of pre-existing
+   lines. Placeholder variable names `<destination>` and `<branch>` were used per the
+   framework policy against hardcoding branch names.
+2. In `code-review/SKILL.md` Step 5: added one sentence instructing the Reviewer to
+   stage only the canonical task or bug lifecycle file for the verdict commit and not
+   to use `git add -A` / `git add .`, which can sweep in implementation files checked
+   out for inspection.
+3. In `reviewer.md`: added two bullets to the `### For Reviews` Quality Bar list (one
+   for merge-base diff scoping, one for lifecycle-file-only staging) and a parenthetical
+   "(for inspection only — never stage implementation files)" to the Read row of the
+   Folder Scope table. Both are observable-criteria language, not procedure steps,
+   consistent with the agent-vs-skill separation in CLAUDE.md.
+
+The only course correction was a wording tweak in edit 2 ("Stage exactly … never use"
+→ "Stage only … do not use") so it matches the Fix Verification grep pattern. Both
+verification greps now return matches (`SKILL.md` lines 28/31/38 and line 73). No
+automated test exists for a process/spec defect of this kind; verification was
+grep-based plus manual review of each full file to confirm structural correctness.
+Nothing remains. Fix committed as `38148d0` on
+`bug/B-002-code-review-skill-reviewer-mis-scopes-git-operations`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
