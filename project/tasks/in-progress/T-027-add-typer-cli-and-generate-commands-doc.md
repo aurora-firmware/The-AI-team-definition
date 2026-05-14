@@ -61,3 +61,31 @@ Implemented all five acceptance criteria for T-027 in a single TDD session.
 **What remains.** This task is complete. T-027 covers only Phase 1 (Component 3) of the documentation spec. Subsequent tasks under the same spec (usage.md, component-map.md update, spec archiving, README/guide pointer updates) are out of scope for this task. Note: the Developer observed a pre-existing `test_templates.py` failure unrelated to this task.
 
 ## Review
+
+### Review Verdict — 2026-05-14
+
+PASS
+
+**Stage 1 — Spec compliance**
+
+All five acceptance criteria are met:
+
+- AC-1: `typer-cli>=0.24.0` is added to `[dependency-groups] dev` in `cli/pyproject.toml` and `cli/uv.lock`. It is not present in `[project] dependencies`. Confirmed by `tomllib`-based test and by grep.
+- AC-2: `cli/scripts/gen_docs.sh` exists, runs from the repo root with `bash cli/scripts/gen_docs.sh` (exit 0 verified locally), and regenerates `cli/docs/commands.md` via `uv run typer ai_team.cli utils docs --name "ai-team"` with no manual editing.
+- AC-3: `cli/docs/commands.md` (497 lines) is committed and contains all command groups (`adr`, `archive`, `bug`, `init`, `list`, `report`, `show`, `spec`, `status`, `task`, `validate`), their subcommands, arguments, flags, and global flags (`-V, --version`, `--help`).
+- AC-4: The header comment at the top of `commands.md` reads "GENERATED FILE — do not edit by hand" and names `bash cli/scripts/gen_docs.sh` as the regeneration command.
+- AC-5: Running `gen_docs.sh` twice with no code change produces a byte-identical `commands.md`. Confirmed by `git diff --exit-code` (exit 0) and by the idempotency test.
+
+No unspecified behavior was added. All modified files (`cli/pyproject.toml`, `cli/uv.lock`, `cli/scripts/gen_docs.sh`, `cli/docs/commands.md`, `cli/tests/test_gen_docs.py`) are within the task's stated scope.
+
+**Stage 2 — Code quality**
+
+- Correctness: `gen_docs.sh` uses `set -euo pipefail`, derives `REPO_ROOT` from `BASH_SOURCE`, creates the output directory with `mkdir -p`, writes the header via heredoc, and appends Typer output with `>>`. Logic is correct and handles the script-from-any-path requirement.
+- Tests: 10 tests in `cli/tests/test_gen_docs.py` cover AC-1 through AC-5, including success path, script existence, content verification, header verification, and idempotency. All 10 pass. Tests are independent.
+- Security: No hardcoded secrets. No external input is accepted. No queries.
+- Readability: The script is concise and well-commented. Test file has a clear module docstring mapping each test to its acceptance criterion. Names are descriptive.
+- Performance: No unnecessary loops. Script runs a single external command.
+
+**Pre-existing test failure**
+
+The `test_templates.py::test_load_template_task_matches_bundled_source` failure is confirmed pre-existing and unrelated to T-027. The test references `.claude/skills/new-task/assets/TEMPLATE-task.md`, which does not exist in this framework repository (the path belongs to a consuming project). The `test_templates.py` file was not modified by T-027 — only `test_gen_docs.py` was added. T-027 is not accountable for this failure.
