@@ -1,7 +1,7 @@
 ---
 id: T-034
 title: Add the GitHub Actions CI workflow for the ai-team CLI
-status: in-progress
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-05-14'
