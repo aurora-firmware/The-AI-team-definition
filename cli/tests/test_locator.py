@@ -13,8 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from ai_team.core.locator import ProjectRoot, ProjectRootNotFound, find_project_root
-
+from ai_team.core.locator import ProjectRootNotFound, find_project_root
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -203,9 +202,7 @@ def test_toml_config_overrides_default_project_dir_name(tmp_path):
     """
     custom_name = "myproject"
     make_project_layout(tmp_path, project_dir_name=custom_name)
-    (tmp_path / ".ai-team.toml").write_text(
-        f'[project]\ndir = "{custom_name}"\n'
-    )
+    (tmp_path / ".ai-team.toml").write_text(f'[project]\ndir = "{custom_name}"\n')
 
     result = find_project_root(tmp_path)
     assert result.project_dir == tmp_path / custom_name
@@ -219,9 +216,7 @@ def test_toml_config_found_in_parent_directory(tmp_path):
     """
     custom_name = "custom_proj"
     make_project_layout(tmp_path, project_dir_name=custom_name)
-    (tmp_path / ".ai-team.toml").write_text(
-        f'[project]\ndir = "{custom_name}"\n'
-    )
+    (tmp_path / ".ai-team.toml").write_text(f'[project]\ndir = "{custom_name}"\n')
 
     nested_cwd = tmp_path / "a" / "b" / "c"
     nested_cwd.mkdir(parents=True)

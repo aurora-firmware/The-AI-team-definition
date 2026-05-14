@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-import subprocess
 
 import typer
 from rich.markdown import Markdown
@@ -118,7 +118,7 @@ def _latest_integration_result(root: ProjectRoot) -> str:
             stderr=subprocess.PIPE,
             text=True,
         )
-    except (OSError, subprocess.CalledProcessError):
+    except OSError, subprocess.CalledProcessError:
         return "not found"
 
     value = completed.stdout.strip()

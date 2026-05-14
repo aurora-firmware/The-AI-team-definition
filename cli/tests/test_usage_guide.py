@@ -15,6 +15,7 @@ Covers:
   AC-5: usage.md documents only commands and flags present in commands.md —
         verified by cross-checking a representative set.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -73,9 +74,9 @@ def test_usage_md_covers_daily_workflows():
 def test_usage_md_covers_gate5_report_workflow():
     """usage.md must cover generating a Gate 5 report."""
     lower = _lower()
-    assert "report" in lower and ("gate 5" in lower or "gate5" in lower or "status" in lower), (
-        "usage.md must describe the Gate 5 / status report workflow"
-    )
+    assert "report" in lower and (
+        "gate 5" in lower or "gate5" in lower or "status" in lower
+    ), "usage.md must describe the Gate 5 / status report workflow"
 
 
 # ---------------------------------------------------------------------------
@@ -134,9 +135,12 @@ def test_usage_md_describes_ai_team_toml_marker():
 def test_usage_md_describes_locator_resolution_order():
     """usage.md must describe the locator resolution order."""
     lower = _lower()
-    # The locator has 4 strategies; at minimum the env var and toml walk must be mentioned.
-    assert "ai_team_root" in lower or "ai-team-root" in lower or "environment" in lower, (
-        "usage.md must describe the AI_TEAM_ROOT environment-variable resolution strategy"
+    # At minimum, the env var and TOML-walk strategies should be mentioned.
+    assert (
+        "ai_team_root" in lower or "ai-team-root" in lower or "environment" in lower
+    ), (
+        "usage.md must describe the AI_TEAM_ROOT environment-variable "
+        "resolution strategy"
     )
 
 
@@ -148,9 +152,9 @@ def test_usage_md_describes_locator_resolution_order():
 def test_usage_md_has_maintainer_section():
     """usage.md must contain a maintainer section heading."""
     lower = _lower()
-    assert "maintainer" in lower or "for maintainer" in lower or "contributing" in lower, (
-        "usage.md must have a maintainer section"
-    )
+    assert (
+        "maintainer" in lower or "for maintainer" in lower or "contributing" in lower
+    ), "usage.md must have a maintainer section"
 
 
 def test_usage_md_has_module_map():
@@ -180,9 +184,9 @@ def test_usage_md_explains_how_to_run_tests():
 def test_usage_md_explains_how_to_build_and_release():
     """usage.md must document the build and release process."""
     lower = _lower()
-    assert "build" in lower and ("release" in lower or "publish" in lower or "pypi" in lower), (
-        "usage.md must explain how to build and release"
-    )
+    assert "build" in lower and (
+        "release" in lower or "publish" in lower or "pypi" in lower
+    ), "usage.md must explain how to build and release"
 
 
 def test_usage_md_explains_how_to_regenerate_commands_md():
@@ -200,9 +204,7 @@ def test_usage_md_explains_how_to_regenerate_commands_md():
 
 def test_usage_md_links_to_commands_md():
     """usage.md must contain a link to commands.md."""
-    assert "commands.md" in _content(), (
-        "usage.md must link to commands.md"
-    )
+    assert "commands.md" in _content(), "usage.md must link to commands.md"
 
 
 # ---------------------------------------------------------------------------
@@ -210,31 +212,34 @@ def test_usage_md_links_to_commands_md():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("command", [
-    "ai-team task new",
-    "ai-team task start",
-    "ai-team task complete",
-    "ai-team task block",
-    "ai-team bug new",
-    "ai-team bug start",
-    "ai-team bug resolve",
-    "ai-team init",
-    "ai-team status",
-    "ai-team report",
-    "ai-team validate",
-    "ai-team list",
-    "ai-team show",
-    "ai-team adr new",
-    "ai-team spec new",
-    "ai-team archive",
-])
+@pytest.mark.parametrize(
+    "command",
+    [
+        "ai-team task new",
+        "ai-team task start",
+        "ai-team task complete",
+        "ai-team task block",
+        "ai-team bug new",
+        "ai-team bug start",
+        "ai-team bug resolve",
+        "ai-team init",
+        "ai-team status",
+        "ai-team report",
+        "ai-team validate",
+        "ai-team list",
+        "ai-team show",
+        "ai-team adr new",
+        "ai-team spec new",
+        "ai-team archive",
+    ],
+)
 def test_commands_mentioned_in_usage_exist_in_commands_md(command):
     """Every command mentioned in usage.md must also appear in commands.md."""
     assert COMMANDS_MD.is_file(), "commands.md must exist for cross-checking"
     commands_content = COMMANDS_MD.read_text(encoding="utf-8")
     # Extract the subcommand portion to check (e.g. "task new" from "ai-team task new")
     parts = command.split()
-    # Check for the subcommand term in commands.md — the generated file has the full form
+    # Check for the subcommand term in commands.md.
     assert command in commands_content or " ".join(parts[1:]) in commands_content, (
         f"'{command}' is documented in usage.md but does not appear in commands.md"
     )

@@ -66,11 +66,7 @@ def test_task_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
     )
 
     expected = (
-        tmp_path
-        / "project"
-        / "tasks"
-        / "pending"
-        / "T-001-build-auth-gateway.md"
+        tmp_path / "project" / "tasks" / "pending" / "T-001-build-auth-gateway.md"
     )
     payload = json.loads(result.output)
 
@@ -91,7 +87,7 @@ def test_task_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
 def test_task_new_refuses_to_overwrite_when_allocated_path_exists(
     monkeypatch, tmp_path
 ):
-    """If the allocated output file exists, command exits non-zero and keeps file bytes."""
+    """Existing output path causes non-zero exit and preserves file bytes."""
     from ai_team.cli import app
 
     pending = tmp_path / "project" / "tasks" / "pending"

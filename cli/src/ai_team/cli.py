@@ -1,4 +1,5 @@
 """Root Typer application and console-script entry point for ai-team."""
+
 from __future__ import annotations
 
 import importlib.metadata

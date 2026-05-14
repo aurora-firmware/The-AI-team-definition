@@ -2,9 +2,12 @@
 Tests for T-003: ai_team.core.models — frontmatter dataclasses, parsers, and dumper.
 
 Covers:
-  AC-1: parse_task(path) returns a Task with all fields populated from valid frontmatter.
-  AC-2: dump_frontmatter(model, body) round-trips through the matching parse_* to an equal model.
-  AC-3: Missing or invalid required field raises FrontmatterError naming the field and path.
+  AC-1: parse_task(path) returns a Task with all fields populated from
+        valid frontmatter.
+  AC-2: dump_frontmatter(model, body) round-trips through the matching
+        parse_* to an equal model.
+  AC-3: Missing or invalid required field raises FrontmatterError naming
+        the field and path.
   AC-4: YAML comments and key order are preserved across parse/dump cycles.
 """
 
@@ -24,7 +27,6 @@ from ai_team.core.models import (
     parse_spec,
     parse_task,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures: minimal valid frontmatter files for each artifact type
@@ -240,7 +242,7 @@ def test_parse_adr_populates_all_fields(tmp_path):
 
 
 def test_parse_adr_supersedes_is_none_when_absent(tmp_path):
-    """parse_adr sets supersedes to None when the frontmatter has no supersedes field."""
+    """parse_adr sets supersedes to None when frontmatter omits it."""
     path = write_file(tmp_path, "ADR-001.md", VALID_ADR_CONTENT)
     result = parse_adr(path)
     assert result.supersedes is None
@@ -315,7 +317,7 @@ def test_dump_frontmatter_adr_round_trips(tmp_path):
 
 
 def test_dump_frontmatter_adr_with_supersedes_round_trips(tmp_path):
-    """dump_frontmatter round-trips an Adr that includes an optional supersedes field."""
+    """dump_frontmatter round-trips an Adr with optional supersedes."""
     path = write_file(tmp_path, "ADR-002.md", VALID_ADR_WITH_SUPERSEDES_CONTENT)
     original = parse_adr(path)
     dumped = dump_frontmatter(original, "Body.\n")
@@ -486,7 +488,7 @@ Body.
 
 
 def test_frontmatter_error_raised_when_no_frontmatter_block(tmp_path):
-    """parse_task raises FrontmatterError when the file has no YAML frontmatter block."""
+    """parse_task raises FrontmatterError when YAML frontmatter is missing."""
     content = "Just a plain markdown file with no frontmatter.\n"
     path = write_file(tmp_path, "no-frontmatter.md", content)
     with pytest.raises(FrontmatterError):
@@ -523,9 +525,7 @@ Body.
     # Extract the frontmatter section from the dumped output.
     fm_block = dumped.split("---")[1]
     keys_in_order = [
-        line.split(":")[0].strip()
-        for line in fm_block.splitlines()
-        if ":" in line
+        line.split(":")[0].strip() for line in fm_block.splitlines() if ":" in line
     ]
     expected_order = ["id", "title", "status", "priority", "assigned-role", "created"]
     assert keys_in_order == expected_order

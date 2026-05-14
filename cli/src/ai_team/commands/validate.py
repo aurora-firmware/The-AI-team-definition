@@ -12,7 +12,9 @@ from ai_team.core.validate import validate_project
 from ai_team.render import console, print_json
 
 NAME = "validate"
-app = typer.Typer(help="Validate artifact metadata and cross-references.", invoke_without_command=True)
+app = typer.Typer(
+    help="Validate artifact metadata and cross-references.", invoke_without_command=True
+)
 
 
 def _selected_scopes(
@@ -41,7 +43,9 @@ def _render_findings_table(findings: list[dict[str, str]]) -> None:
 
 @app.callback()
 def default(
-    all_scopes: bool = typer.Option(False, "--all", help="Validate all artifact types."),
+    all_scopes: bool = typer.Option(
+        False, "--all", help="Validate all artifact types."
+    ),
     tasks: bool = typer.Option(False, "--tasks", help="Validate tasks only."),
     bugs: bool = typer.Option(False, "--bugs", help="Validate bugs only."),
     specs: bool = typer.Option(False, "--specs", help="Validate specs only."),

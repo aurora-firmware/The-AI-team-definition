@@ -28,4 +28,6 @@ def load_template(kind: TemplateKind) -> str:
             f"Unsupported template kind '{kind}'. Supported kinds: {supported}"
         )
 
-    return files("ai_team.templates").joinpath(template_path).read_text(encoding="utf-8")
+    return (
+        files("ai_team.templates").joinpath(template_path).read_text(encoding="utf-8")
+    )

@@ -7,7 +7,6 @@ from typer.testing import CliRunner
 
 from ai_team.core.models import parse_bug
 
-
 BUG_TEMPLATE = """\
 ---
 id: "{id}"
@@ -48,9 +47,7 @@ def test_bug_start_moves_open_bug_to_in_progress_and_updates_status(
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["bug", "start", "B-007"])
 
-    destination = (
-        tmp_path / "project" / "bugs" / "in-progress" / "B-007-memory-leak.md"
-    )
+    destination = tmp_path / "project" / "bugs" / "in-progress" / "B-007-memory-leak.md"
     assert result.exit_code == 0
     assert not source.exists()
     assert destination.exists()
@@ -63,17 +60,13 @@ def test_bug_resolve_moves_in_progress_bug_to_resolved_and_updates_status(
     """`bug resolve` moves in-progress->resolved and sets frontmatter status."""
     from ai_team.cli import app
 
-    source = (
-        tmp_path / "project" / "bugs" / "in-progress" / "B-008-timeout-spike.md"
-    )
+    source = tmp_path / "project" / "bugs" / "in-progress" / "B-008-timeout-spike.md"
     _write_bug(source, "B-008", "Timeout spike", "medium", "in-progress")
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["bug", "resolve", "B-008"])
 
-    destination = (
-        tmp_path / "project" / "bugs" / "resolved" / "B-008-timeout-spike.md"
-    )
+    destination = tmp_path / "project" / "bugs" / "resolved" / "B-008-timeout-spike.md"
     assert result.exit_code == 0
     assert not source.exists()
     assert destination.exists()

@@ -1,5 +1,6 @@
 """
-Tests for T-001: Bootstrap cli/ uv project with Typer scaffold and command auto-discovery.
+Tests for T-001: Bootstrap cli/ uv project with Typer scaffold and
+command auto-discovery.
 
 Covers:
   AC-2: `ai-team --version` prints the package version.
@@ -7,15 +8,13 @@ Covers:
   AC-4: Auto-discovery mounts a module's `app` under its `NAME` as a subcommand.
   AC-5: Package data directories are declared in pyproject.toml.
 """
+
 import importlib
 import importlib.metadata
 import importlib.util
-import sys
 import types
 
-import pytest
 from typer.testing import CliRunner
-
 
 # ---------------------------------------------------------------------------
 # AC-2 and AC-3: version callback and entry point

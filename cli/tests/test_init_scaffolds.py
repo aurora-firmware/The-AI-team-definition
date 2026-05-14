@@ -24,7 +24,7 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
     # Source trees in the fake repository.
     _write(repo / ".claude" / "agents" / "planner.md", "planner\n")
     _write(repo / ".claude" / "skills" / "tdd" / "SKILL.md", "tdd\n")
-    _write(repo / ".claude" / "settings.json", "{\"model\":\"x\"}\n")
+    _write(repo / ".claude" / "settings.json", '{"model":"x"}\n')
     _write(repo / "ai-process" / "architecture" / "overview.md", "architecture\n")
     _write(repo / "ai-process" / "processes" / "flow.md", "flow\n")
 
@@ -33,9 +33,25 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
     _write(repo / "project" / "docs" / "coding_guidelines.md", "artifact\n")
 
     # Seed stale generated output to verify replacement behavior.
-    _write(repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "project" / "old.txt", "old\n")
-    _write(repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "claude" / "old.txt", "old\n")
-    _write(repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "ai-process" / "old.txt", "old\n")
+    _write(
+        repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "project" / "old.txt",
+        "old\n",
+    )
+    _write(
+        repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "claude" / "old.txt",
+        "old\n",
+    )
+    _write(
+        repo
+        / "cli"
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "ai-process"
+        / "old.txt",
+        "old\n",
+    )
 
     script = _script_under_test()
     assert script.exists(), "sync helper script is missing"
@@ -46,7 +62,9 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
     return repo
 
 
-def test_sync_script_replaces_generated_subtrees_with_repo_snapshots(tmp_path: Path) -> None:
+def test_sync_script_replaces_generated_subtrees_with_repo_snapshots(
+    tmp_path: Path,
+) -> None:
     repo = _setup_fake_repo(tmp_path)
 
     subprocess.run(
@@ -76,7 +94,9 @@ def test_sync_script_replaces_generated_subtrees_with_repo_snapshots(tmp_path: P
     assert not (scaffolds_root / "ai-process" / "old.txt").exists()
 
 
-def test_sync_script_creates_empty_project_skeleton_with_leaf_gitkeeps(tmp_path: Path) -> None:
+def test_sync_script_creates_empty_project_skeleton_with_leaf_gitkeeps(
+    tmp_path: Path,
+) -> None:
     repo = _setup_fake_repo(tmp_path)
 
     subprocess.run(

@@ -23,7 +23,9 @@ def _iter_markdown_files(folder: Path) -> list[Path]:
     return sorted(
         path
         for path in folder.glob("*.md")
-        if path.is_file() and path.name != ".gitkeep" and not path.match("TEMPLATE-*.md")
+        if path.is_file()
+        and path.name != ".gitkeep"
+        and not path.match("TEMPLATE-*.md")
     )
 
 
@@ -59,7 +61,11 @@ def _spec_rows(root) -> str:
     rows: list[str] = []
     for path in _iter_markdown_files(root.specs):
         spec = parse_spec(path)
-        note = "Current Gate 5 target" if spec.status == "approved" else "Review in progress"
+        note = (
+            "Current Gate 5 target"
+            if spec.status == "approved"
+            else "Review in progress"
+        )
         rows.append(f"| {path.name} | {spec.status} | {note} |")
     return _as_rows(rows, "| none | n/a | No active specs |")
 
@@ -79,7 +85,8 @@ def _in_progress_rows(payload: dict[str, object]) -> str:
     for row in in_progress:
         if isinstance(row, dict):
             rows.append(
-                f"| {row['id']} | {row['title']} | {row['assigned_role']} | actively progressing |"
+                f"| {row['id']} | {row['title']} | {row['assigned_role']} | "
+                "actively progressing |"
             )
     return _as_rows(rows, "| none | n/a | n/a | no in-progress tasks |")
 
@@ -92,7 +99,8 @@ def _blocked_rows(payload: dict[str, object]) -> str:
         if isinstance(row, dict):
             reason = str(row["blocking_reason"])
             rows.append(
-                f"| {row['id']} | {row['title']} | {reason} | Resolve blocker: {reason} |"
+                f"| {row['id']} | {row['title']} | {reason} | "
+                f"Resolve blocker: {reason} |"
             )
     return _as_rows(rows, "| none | n/a | n/a | no action needed |")
 
@@ -115,7 +123,8 @@ def _bug_rows(root) -> str:
         for path in _iter_markdown_files(folder):
             bug = parse_bug(path)
             rows.append(
-                f"| {bug.id} | {bug.title} | {bug.severity} | {state} | {_diagnosis_status(state)} |"
+                f"| {bug.id} | {bug.title} | {bug.severity} | {state} | "
+                f"{_diagnosis_status(state)} |"
             )
     return _as_rows(rows, "| none | n/a | n/a | n/a | n/a |")
 
@@ -173,18 +182,35 @@ def _replace(text: str, old: str, new: str) -> str:
     return text.replace(old, new)
 
 
-def _render_report(template: str, payload: dict[str, object], report_date: str, root) -> str:
+def _render_report(
+    template: str, payload: dict[str, object], report_date: str, root
+) -> str:
     report = template
     replacements: list[tuple[str, str]] = [
-        ('title: "Progress Report — [Date or Sprint]"', f'title: "Progress Report — {report_date}"'),
+        (
+            'title: "Progress Report — [Date or Sprint]"',
+            f'title: "Progress Report — {report_date}"',
+        ),
         ("created: YYYY-MM-DD", f"created: {report_date}"),
         ("# Progress Report — [Date or Sprint]", f"# Progress Report — {report_date}"),
         ("One-paragraph overview of current project state.", _summary_line(payload)),
-        ("| specification-name.md | approved | Current Gate 5 target |", _spec_rows(root)),
-        ("- Latest integration-test result:", f"- Latest integration-test result: {payload['latest_integration_result']}"),
-        ("- Source:", "- Source: git log --all --grep=merge|integration|verification|test -n 1"),
+        (
+            "| specification-name.md | approved | Current Gate 5 target |",
+            _spec_rows(root),
+        ),
+        (
+            "- Latest integration-test result:",
+            f"- Latest integration-test result: {payload['latest_integration_result']}",
+        ),
+        (
+            "- Source:",
+            "- Source: git log --all --grep=merge|integration|verification|test -n 1",
+        ),
         ("- Date:", f"- Date: {report_date}"),
-        ("| T-001 | Task title | Role |\n| T-002 | Task title | Role |", _completed_rows(root)),
+        (
+            "| T-001 | Task title | Role |\n| T-002 | Task title | Role |",
+            _completed_rows(root),
+        ),
         ("| T-003 | Task title | Role | Current state |", _in_progress_rows(payload)),
         (
             "| T-004 | Task title | What is blocking | What must happen to unblock |",
@@ -193,7 +219,11 @@ def _render_report(template: str, payload: dict[str, object], report_date: str, 
         ("| B-001 | Bug title | high | open | not started |", _bug_rows(root)),
         ("| 001 | Decision title | decided |", _decision_rows(root)),
         (
-            "1. Next priority action\n2. Second priority action\n3. Third priority action",
+            (
+                "1. Next priority action\n"
+                "2. Second priority action\n"
+                "3. Third priority action"
+            ),
             _next_actions(payload),
         ),
         ("- Risk or concern 1\n- Risk or concern 2", _risks_and_concerns(payload)),
@@ -219,11 +249,7 @@ def default(
 
     destination = out
     if destination is None:
-        destination = (
-            root.docs
-            / "reports"
-            / f"progress-report-{report_date}.md"
-        )
+        destination = root.docs / "reports" / f"progress-report-{report_date}.md"
 
     destination.parent.mkdir(parents=True, exist_ok=True)
     template = load_template("report")

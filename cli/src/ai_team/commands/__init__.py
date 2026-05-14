@@ -11,6 +11,7 @@ Every module placed directly under this package must export:
 The ``discover_and_mount`` function is called once from ``ai_team.cli`` at
 startup.  Later tasks drop a new module here; ``cli.py`` requires no changes.
 """
+
 from __future__ import annotations
 
 import importlib

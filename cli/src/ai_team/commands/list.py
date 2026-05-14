@@ -64,7 +64,9 @@ def _render_table(title: str, columns: list[str], rows: list[dict[str, str]]) ->
 
 @app.command()
 def tasks(
-    state: str | None = typer.Option(None, "--state", help="Filter by task state folder."),
+    state: str | None = typer.Option(
+        None, "--state", help="Filter by task state folder."
+    ),
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     """List tasks from the project task folders."""
@@ -94,7 +96,9 @@ def tasks(
 
 @app.command()
 def bugs(
-    state: str | None = typer.Option(None, "--state", help="Filter by bug state folder."),
+    state: str | None = typer.Option(
+        None, "--state", help="Filter by bug state folder."
+    ),
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     """List bugs from the project bug folders."""
@@ -122,7 +126,9 @@ def bugs(
 
 @app.command()
 def specs(
-    state: str | None = typer.Option(None, "--state", help="Filter by state where applicable."),
+    state: str | None = typer.Option(
+        None, "--state", help="Filter by state where applicable."
+    ),
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     """List specs from the project specs folder."""
@@ -147,7 +153,9 @@ def specs(
 
 @app.command()
 def adrs(
-    state: str | None = typer.Option(None, "--state", help="Filter by state where applicable."),
+    state: str | None = typer.Option(
+        None, "--state", help="Filter by state where applicable."
+    ),
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     """List ADRs from the project decisions folder."""
