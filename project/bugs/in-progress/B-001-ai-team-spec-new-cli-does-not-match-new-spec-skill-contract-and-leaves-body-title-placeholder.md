@@ -3,7 +3,7 @@ id: B-001
 title: ai-team spec new CLI does not match new-spec skill contract and leaves 
   body title placeholder
 severity: medium
-status: open
+status: in-progress
 ---
 
 # ai-team spec new CLI does not match new-spec skill contract and leaves body title placeholder
