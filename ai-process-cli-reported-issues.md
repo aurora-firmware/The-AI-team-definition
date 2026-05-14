@@ -55,8 +55,12 @@ are observations to triage, not confirmed defects unless marked so.
 ### I-003 — `spec new` / `bug new` interface does not match the `new-spec` / `new-bug` skills
 
 - **Severity:** high
-- **Status:** confirmed
+- **Status:** fixed (via B-001, 2026-05-14)
 - **Tracked by:** B-001
+- **Resolution:** skill side corrected — `new-spec` / `new-bug` `## Input Requirements`
+  now separate CLI-passable inputs from agent-consumed inputs; `description` is documented
+  as agent-consumed (not a CLI flag) and the procedures explicitly say not to pass it to
+  the CLI. The CLI positional-title interface was kept as-is.
 - **Observed during:** reported by another agent on branch `pi-agent-design`, 2026-05-14.
 - **Where:** `ai-team spec new` vs. `.claude/skills/new-spec/SKILL.md`; `ai-team bug new` vs. `.claude/skills/new-bug/SKILL.md`.
 
@@ -93,8 +97,12 @@ title and to stop requiring a description the CLI cannot consume. The two must a
 ### I-004 — `spec new` does not substitute the body title placeholder
 
 - **Severity:** medium
-- **Status:** confirmed
+- **Status:** fixed (via B-001, 2026-05-14)
 - **Tracked by:** B-001
+- **Resolution:** `new_spec()` (and `new_bug()`, which had the same `# [Bug Title]`
+  defect) now substitute the body H1 placeholder with the provided title before writing
+  the artifact; regression tests added in `cli/tests/test_spec_new.py` and
+  `cli/tests/test_bug_new.py`.
 - **Observed during:** reported by another agent on branch `pi-agent-design`, 2026-05-14.
 - **Where:** `ai-team spec new` (template population).
 
