@@ -87,6 +87,14 @@ Tried and rejected: relying on Ruff autofix alone for AC-2, because `E501` viola
 
 Remaining work: none from developer side; ready for reviewer. `pyproject.toml` was not modified.
 
+### Session 2 — 2026-05-14
+
+Addressed the review failure by syncing `task/T-033-apply-the-one-time-ruff-format-and-lint-fix-pass-over-the-cli` with `dev-agent` via a non-destructive merge (`git merge --no-edit dev-agent`). This preserved the canonical lifecycle content for `project/tasks/in-progress/T-033-apply-the-one-time-ruff-format-and-lint-fix-pass-over-the-cli.md` (including the existing Work Log and Review sections) without reverting or rewriting implementation commits. I verified the branch diff no longer removes lifecycle entries from the canonical task file.
+
+What I tried and rejected: manually editing the task file to re-add missing blocks was rejected in favor of branch sync, because the requirement is to preserve canonical content from `dev-agent` rather than reconstructing by hand. Also rejected rebase/cherry-pick because a direct merge cleanly preserved both histories in one step.
+
+What remains: no developer-side code changes remain for this fix; branch is ready for the loop to append this Session 2 entry on `dev-agent` and proceed.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
