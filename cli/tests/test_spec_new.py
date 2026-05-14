@@ -100,3 +100,21 @@ def test_spec_new_refuses_to_overwrite_when_allocated_path_exists(
     assert result.exit_code != 0
     assert "already exists" in result.stderr.lower()
     assert existing.read_text(encoding="utf-8") == "existing bytes\n"
+
+
+def test_spec_new_substitutes_body_h1_with_provided_title(monkeypatch, tmp_path):
+    """`spec new` replaces the `# [Specification Title]` body placeholder with the given title."""
+    from ai_team.cli import app
+
+    _mkdir(tmp_path / "project" / "specs")
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["spec", "new", "My New Spec"])
+
+    assert result.exit_code == 0
+
+    expected = tmp_path / "project" / "specs" / "my-new-spec.md"
+    content = expected.read_text(encoding="utf-8")
+
+    assert "# My New Spec" in content
+    assert "# [Specification Title]" not in content
