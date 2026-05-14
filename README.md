@@ -119,6 +119,7 @@ Skills stay shared from the same source files.
 
 Adopting the framework means installing the `ai-team` CLI, using it to scaffold the process files into your project, then adding project-local guidance for your stack and commands.
 The full walkthrough is in `guides/setup-guide.md`.
+For a narrated usage guide see [`cli/docs/usage.md`](cli/docs/usage.md); for an exhaustive command and flag reference see [`cli/docs/commands.md`](cli/docs/commands.md).
 
 ### Install the CLI
 

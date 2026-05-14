@@ -46,6 +46,8 @@ ai-team validate
 ai-team report
 ```
 
+For a full usage walkthrough see [`cli/docs/usage.md`](../cli/docs/usage.md); for an exhaustive command and flag reference see [`cli/docs/commands.md`](../cli/docs/commands.md).
+
 ### Step 2: Create the Directory Structure
 
 In your new project root, create these directories:
