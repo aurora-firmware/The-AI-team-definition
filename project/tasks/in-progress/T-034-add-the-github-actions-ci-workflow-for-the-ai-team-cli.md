@@ -78,6 +78,14 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-14
+
+Read the canonical task file and confirmed the Work Log was empty. Executed a red check first by running the YAML-parse verification command, which failed with `FileNotFoundError` because `.github/workflows/ci.yml` did not exist. Implemented `.github/workflows/ci.yml` with `pull_request` and `push` to `main`, two independent `self-hosted` jobs (`lint`, `test`), and per-job steps: `actions/checkout@v6`, `astral-sh/setup-uv@v8.0.0` with Python `3.14`, `uv sync` in `cli/`, then the required lint/test commands. Re-ran verification commands and all passed.
+
+For the setup-uv version constraint, I used `@v8.0.0` as a defensible interpretation of "current major version" given the v8 immutable-tag change (no moving `@v8` tag). This keeps the workflow pinned within major 8 while remaining valid/actionable.
+
+Tried `apply_patch` first, but it was rejected because the repo root is outside the writable sandbox root; then created the file with an escalated command. Committed the completed red→green→refactor cycle. Nothing remains for this task.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
