@@ -1,7 +1,7 @@
 ---
 id: T-032
 title: Add Ruff tooling configuration to the ai-team CLI
-status: in-progress
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-05-14'
