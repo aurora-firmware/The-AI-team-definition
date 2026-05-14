@@ -75,6 +75,18 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-14
+
+Executed the one-time Ruff cleanup pass for `cli/` in two TDD-style red→green→refactor cycles and committed each cycle on `task/T-033-apply-the-one-time-ruff-format-and-lint-fix-pass-over-the-cli`.
+
+Cycle 1 (format): ran `uv run ruff format --check .` (red, 33 files needed formatting), applied `uv run ruff format .`, re-ran `--check` (green), reviewed diff scope (mechanical formatting only), and committed.
+
+Cycle 2 (lint): ran `uv run ruff check .` (red with import-order issues and E501 line-length violations), applied `uv run ruff check --fix .` (auto-fixed import/unused-import issues), then manually fixed remaining non-auto-fixable E501 violations by wrapping long strings/docstrings/comments without behavior changes. Re-ran `uv run ruff check .` (green), then ran full `uv run pytest` (green, 211 passed), and committed.
+
+Tried and rejected: relying on Ruff autofix alone for AC-2, because `E501` violations remained and required minimal manual wraps.
+
+Remaining work: none from developer side; ready for reviewer. `pyproject.toml` was not modified.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
