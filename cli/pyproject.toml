@@ -40,4 +40,5 @@ include = [
 [dependency-groups]
 dev = [
     "pytest>=8",
+    "typer-cli>=0.24.0",
 ]
