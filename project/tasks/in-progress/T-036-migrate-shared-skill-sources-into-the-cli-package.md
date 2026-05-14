@@ -88,3 +88,9 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-14
+PASS
+
+- Stage 1 (acceptance criteria): All ACs satisfied in `dev-agent...task/T-036-migrate-shared-skill-sources-into-the-cli-package`. New package-owned canonical skill sources were added under `cli/src/ai_team/init/sources/skills/**`, metadata is separated into `metadata.toml`, source-level tests were added for body/metadata presence and parity, no scaffold output files under `scaffolds/claude/skills/**` or `scaffolds/codex/skills/**` were modified, and skill body semantics were preserved by parity with current scaffold exports.
+- Stage 2 (code quality): Test coverage and implementation quality are adequate for scope; verification commands passed (`uv run pytest tests/test_init_scaffolds.py`, `uv run ruff check tests/test_init_scaffolds.py`), and no correctness, security, readability, or performance issues were found in the changed lines.
