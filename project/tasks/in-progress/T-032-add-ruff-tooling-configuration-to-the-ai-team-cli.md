@@ -76,6 +76,33 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-14
+
+This was a pure tooling-configuration task with no production code to write. The Work
+Log was empty at session start.
+
+**What was done.** Three changes were made to `cli/pyproject.toml`: `"ruff>=0.4"` was
+added to the `[dependency-groups] dev` array (alphabetically between `pytest` and
+`typer-cli`); a `[tool.ruff]` section was appended with `target-version = "py314"` and
+`line-length = 88`; and a `[tool.ruff.lint]` section was appended with
+`select = ["E", "F", "I"]`. Running `uv sync` from `cli/` resolved and downloaded
+`ruff 0.15.13` and recorded it in `cli/uv.lock`. All five verification commands from the
+task's Verification block were confirmed failing before the edit and passing after.
+
+**What was tried and rejected.** No alternatives were considered — the task specification
+was fully deterministic. The version constraint `ruff>=0.4` was chosen because it is the
+lowest stable release that supports `py314` as a target, avoiding pinning to a specific
+patch while still being non-trivial.
+
+**TDD note.** This is a configuration task; no unit test was added. The verification role
+was played entirely by the task's own Verification command set (five `grep` + one
+`uv run` check), which constitutes the functional equivalent of a test suite for a config
+change: red before the edit, green after.
+
+**What remains.** Nothing for this task. Implementation commit `fdd50a0` on
+`task/T-032-add-ruff-tooling-configuration-to-the-ai-team-cli`:
+`feat(cli): add ruff as dev dependency with lint configuration`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
