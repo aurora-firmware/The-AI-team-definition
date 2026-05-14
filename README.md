@@ -119,6 +119,7 @@ Skills stay shared from the same source files.
 
 Adopting the framework means installing the `ai-team` CLI, using it to scaffold the process files into your project, then adding project-local guidance for your stack and commands.
 The full walkthrough is in `guides/setup-guide.md`.
+For a narrated usage guide see [`cli/docs/usage.md`](cli/docs/usage.md); for an exhaustive command and flag reference see [`cli/docs/commands.md`](cli/docs/commands.md).
 
 ### Install the CLI
 
@@ -236,6 +237,7 @@ Changes to the framework follow the same workflow the framework defines.
 - **Changing a rule** (workflow, standard, convention): update `ai-process/` first, then update any agents or skills that implement the changed rule.
 - **Changing an agent or skill**: verify that the change is consistent with — or explicitly revises — the relevant ai-process documents.
 - **Changing bundled init content**: update the source files, then run `python cli/scripts/sync_init_scaffolds.py` so `ai-team init` ships the same content.
+- **Changing a CLI command or flag**: update the source, then run `bash cli/scripts/gen_docs.sh` and commit the updated `cli/docs/commands.md` so the reference stays current.
 - **Architecture-affecting decisions**: record an ADR in `project/decisions/` before implementing.
 
 The ai-process is the specification.
