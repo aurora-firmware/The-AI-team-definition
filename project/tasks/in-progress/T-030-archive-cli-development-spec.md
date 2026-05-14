@@ -42,4 +42,14 @@ grep -q "cli/docs" project/specs/archive/ai-team-python-cli.md
 
 ## Work Log
 
+### Session 1 — 2026-05-14
+
+Picked up T-030 with an empty Work Log. The task is purely a file-archival operation: move `project/specs/ai-team-python-cli.md` to `project/specs/archive/` via `git mv`, set `status: superseded` in the frontmatter, and add an Amendment Log entry pointing readers to `cli/docs/` as the current source of truth.
+
+Before starting, confirmed both prerequisite deliverables existed: `cli/docs/commands.md` (T-027) and `cli/docs/usage.md` (T-028) were both present. The `project/specs/archive/` directory already existed, so no directory creation was needed.
+
+Ran the task's four verification commands as a red-phase check — all failed as expected. Then applied the three changes atomically: `git mv` to rename with history preservation, `status: approved` replaced with `status: superseded` in the frontmatter, and the Amendment Log comment block replaced with a live table row citing `cli/docs/commands.md` and `cli/docs/usage.md` and explaining the reason for archival. Re-ran all four verification commands — all passed. Committed as a single cycle on the task branch.
+
+Nothing was tried and rejected; the task was unambiguous. Nothing remains.
+
 ## Review
