@@ -288,3 +288,35 @@ def test_package_owned_skill_sources_include_body_and_required_metadata() -> Non
 
         assert body == scaffold_body
         assert metadata["claude"]["header"].strip() == scaffold_header.strip()
+
+
+def test_package_owned_agent_sources_cover_each_exported_role_for_both_tools() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    framework_root = repo_root.parent
+    sources_root = repo_root / "src" / "ai_team" / "init" / "sources" / "agents"
+    claude_source_root = sources_root / "claude"
+    codex_source_root = sources_root / "codex"
+    claude_scaffold_root = (
+        repo_root / "src" / "ai_team" / "init" / "scaffolds" / "claude" / "agents"
+    )
+    codex_export_root = framework_root / ".codex" / "agents"
+
+    expected_roles = sorted(path.stem for path in claude_scaffold_root.glob("*.md"))
+    claude_source_roles = sorted(path.stem for path in claude_source_root.glob("*.md"))
+    codex_source_roles = sorted(path.stem for path in codex_source_root.glob("*.toml"))
+
+    assert claude_source_roles == expected_roles
+    assert codex_source_roles == expected_roles
+
+    for role_name in expected_roles:
+        claude_source = claude_source_root / f"{role_name}.md"
+        codex_source = codex_source_root / f"{role_name}.toml"
+        claude_scaffold = claude_scaffold_root / f"{role_name}.md"
+        codex_export = codex_export_root / f"{role_name}.toml"
+
+        assert claude_source.read_text(encoding="utf-8") == claude_scaffold.read_text(
+            encoding="utf-8"
+        )
+        assert codex_source.read_text(encoding="utf-8") == codex_export.read_text(
+            encoding="utf-8"
+        )
