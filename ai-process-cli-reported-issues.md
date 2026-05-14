@@ -126,7 +126,7 @@ provided title, consistent with how it fills the frontmatter.
 ### I-005 — CLI test suite has a stale failing test: task template comparison points at a deleted path
 
 - **Severity:** medium
-- **Status:** confirmed
+- **Status:** fixed (2026-05-14) <!-- fixed directly in commit 77af8a8 on dev-agent (no bug filed) -->
 - **Observed during:** `/bug-loop`, B-001 implementation/verification, 2026-05-14.
 - **Where:** `cli/tests/test_templates.py::test_load_template_task_matches_bundled_source`.
 
@@ -156,11 +156,11 @@ deleted path. The sibling parametrized test
 `test_load_template_returns_non_empty_frontmatter_for_each_kind` (task/bug/spec/adr)
 passes, so `load_template("task")` itself works — only the stale path comparison fails.
 
-**Expected / suggested fix (test side):** repoint the test at the CLI's bundled
-template source under `cli/src/ai_team/templates/`, or drop the now-redundant
-comparison. No CLI behaviour change is needed.
+**Fix applied (test side):** the test now repoints at the CLI's bundled template
+source `cli/src/ai_team/templates/task.md` instead of the deleted skill-asset path.
+No CLI behaviour change was needed. Full CLI suite is now green: 211 passed.
 
 **Notes:**
 - Discovered while fixing B-001; out of scope for B-001, logged here for triage.
-- Not yet filed as a bug — straightforward test-side fix; file a bug if it should
-  go through the bug-loop.
+- Fixed directly (no bug filed) in commit `77af8a8` on `dev-agent`:
+  `test(cli): repoint task template comparison at bundled CLI source`.
