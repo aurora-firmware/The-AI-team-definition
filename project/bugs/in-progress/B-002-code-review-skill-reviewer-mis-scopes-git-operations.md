@@ -132,6 +132,56 @@ Root cause or fault hypothesis:
 Planned verification:
 -->
 
+### Diagnosis 1 — 2026-05-14
+
+**Reproduction status:** Confirmed. Both behaviours were directly observed during
+the `/dev-loop` run for the `ai-team-cli-documentation` spec on 2026-05-14 and are
+documented in the bug file with concrete commit and task evidence (T-027 staging
+contamination; T-031 wrong-scope verdict).
+
+**Evidence captured:**
+
+Defect 1 — Review scope (what the Reviewer reviews):
+`.claude/skills/code-review/SKILL.md` lines 21–33 (Step 2) and lines 41–50 (Step 3)
+describe checking "each acceptance criterion against the code" but nowhere instruct
+the Reviewer to obtain the branch diff via `git diff <destination>...<branch>`. The
+only diff-related text is the `allowed-tools` frontmatter (line 4: `Bash(git diff *)`),
+which permits the tool but does not instruct its use. With no constraint on what
+"the code" means, a Reviewer naturally reads full working-tree file contents.
+`.claude/agents/reviewer.md` — zero matches for `git diff`, merge base, branch diff,
+or working-tree scope anywhere in the file.
+
+Defect 2 — Verdict commit staging (what the Reviewer stages):
+`.claude/skills/code-review/SKILL.md` Step 5 (lines 59–67) says "append … and commit"
+the verdict but never says "stage only the canonical task/bug lifecycle file" or
+"do not run `git add -A` / `git add .`". The `allowed-tools` line permits
+`Bash(git add *)` without restriction. `.claude/agents/reviewer.md` Folder Scope
+table (lines 44–48) lists implementation code as `Never touch` for *editing* but
+does not prohibit *staging* implementation files into a commit — a Reviewer that
+only read those files via checkout violates the intent without violating the
+`Never touch` rule as written.
+
+**Isolated fault:** Two discrete omissions in `.claude/skills/code-review/SKILL.md`:
+(1) Step 2 has no instruction to run `git diff <destination>...<branch>` and limit
+review scope to that output; (2) Step 5 has no instruction to stage only the
+canonical lifecycle file. A reinforcing note is also absent from
+`.claude/agents/reviewer.md`.
+
+**Root cause or fault hypothesis:** The `code-review` skill was written at a higher
+level of abstraction than is safe for git operations. It delegates "check the code"
+and "commit the verdict" to the Reviewer's judgment without pinning the exact git
+commands needed to guarantee correct scope. Because the skill is the procedure layer
+that must embed these specifics and it omits them, a model executing the skill
+defaults to the most straightforward interpretation: read the working tree in full,
+then do a broad `git add`. Both defects are specification gaps in the skill, not
+model misbehaviour.
+
+**Planned verification:** After the fix, run the Fix Verification commands from this
+bug file — both greps (`git diff ...` / merge-base instruction; `stage only` /
+`do not git add` instruction) must return at least one match. A subsequent dev-loop
+review cycle should produce a verdict commit containing exactly one changed file and
+a verdict whose findings trace only to lines in `git diff <destination>...<branch>`.
+
 ## Work Log
 
 <!-- Mandatory. Append one entry per session boundary. Format:
