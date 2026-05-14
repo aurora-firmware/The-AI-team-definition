@@ -1,7 +1,7 @@
 ---
 id: "T-029"
 title: "Add CLI-to-skills mapping to component-map.md"
-status: pending
+status: completed
 priority: medium
 assigned-role: "unassigned"
 created: 2026-05-14
