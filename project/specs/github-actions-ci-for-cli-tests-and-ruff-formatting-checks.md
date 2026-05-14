@@ -1,7 +1,7 @@
 ---
 title: GitHub Actions CI for CLI tests and Ruff formatting checks
 version: '0.1'
-status: review  # draft | review | approved | superseded
+status: approved  # draft | review | approved | superseded
 created: '2026-05-14'
 author: planner
 id: S-001

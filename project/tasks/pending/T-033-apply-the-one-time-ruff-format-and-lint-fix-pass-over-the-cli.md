@@ -1,0 +1,88 @@
+---
+id: T-033
+title: Apply the one-time Ruff format and lint-fix pass over the CLI
+status: pending
+priority: medium
+assigned-role: developer
+created: '2026-05-14'
+---
+
+# Apply the one-time Ruff format and lint-fix pass over the CLI
+
+<!--
+Task Quality Rules (see the new-task skill for full details):
+  - Atomic — one clear outcome.
+  - One-shottable — ≤ 3–4 files touched, ≤ 5 ACs, Description ≈ 20 lines.
+  - Verifiable — concrete Verification command or explicit manual steps.
+  - Self-contained — Description is enough to start without follow-up questions.
+  - EARS — every AC matches one of the five EARS patterns below.
+  - Dependency-honest — list every prior task this one reads from or modifies.
+-->
+
+## Description
+
+With Ruff configured by T-032, bring the existing `cli/` codebase into compliance so the
+check-only CI added by T-034 starts green. Per approved spec S-001
+(`project/specs/github-actions-ci-for-cli-tests-and-ruff-formatting-checks.md`, Phase 1).
+
+This is a **mechanical** pass — no hand-editing of logic:
+
+- From `cli/`, run `uv run ruff format .` to apply formatting.
+- Then run `uv run ruff check --fix .` to apply safe lint autofixes (import sorting, etc.).
+- Inspect the resulting diff to confirm it is purely formatting / import-ordering churn
+  with no behavioural change.
+- If `ruff check` reports violations that `--fix` cannot resolve, fix them minimally by
+  hand without changing behaviour.
+- Re-run the test suite to confirm the reformat introduced no regressions.
+
+Do not modify `cli/pyproject.toml` — its Ruff config is owned by T-032. This task
+intentionally stays one task even though it touches many `.py` files: it is a single bulk
+mechanical operation, and splitting it per-file would create artificial fragmentation.
+
+## Acceptance Criteria
+
+AC-1: WHEN `uv run ruff format --check .` is executed in `cli/` THE SYSTEM SHALL exit 0 with no files needing formatting.
+AC-2: WHEN `uv run ruff check .` is executed in `cli/` THE SYSTEM SHALL exit 0 with no reported violations.
+AC-3: WHEN `uv run pytest` is executed in `cli/` THE SYSTEM SHALL pass all tests, with no regressions introduced by the reformat.
+AC-4: The task shall not modify `cli/pyproject.toml`.
+
+## Dependencies
+
+- `T-032` — adds Ruff as a dev dependency and the `[tool.ruff]` config that determines the rules applied here
+
+## Files to Touch
+
+- `cli/src/**/*.py` — mechanical formatting and import-ordering changes only
+- `cli/tests/**/*.py` — mechanical formatting and import-ordering changes only
+
+## Verification
+
+```bash
+cd cli
+uv run ruff format --check .
+uv run ruff check .
+uv run pytest
+# AC-4 is confirmed by the reviewer: the branch diff must show no change to cli/pyproject.toml
+```
+
+## Work Log
+
+<!-- Mandatory. Append one entry per session boundary. Format:
+### Session N — YYYY-MM-DD
+Free-prose body: what was done this session, what was tried and
+rejected, decisions made, what remains for next session.
+
+Start every session by reading the entries below.
+The final entry serves as the handoff to the reviewer. -->
+
+## Review
+
+<!-- Reviewer: append verdict here after each review cycle.
+
+### Review Verdict — YYYY-MM-DD
+PASS | FAIL | ESCALATE
+
+- For FAIL: file, location, what is wrong, what should change.
+- For PASS: brief confirmation that both stages passed.
+- For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
+-->

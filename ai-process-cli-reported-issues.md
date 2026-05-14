@@ -199,3 +199,32 @@ No CLI behaviour change was needed. Full CLI suite is now green: 211 passed.
 - Discovered while fixing B-001; out of scope for B-001, logged here for triage.
 - Fixed directly (no bug filed) in commit `77af8a8` on `dev-agent`:
   `test(cli): repoint task template comparison at bundled CLI source`.
+
+### I-007 — `task new` does not substitute the body title placeholder
+
+- **Severity:** medium
+- **Status:** confirmed
+- **Observed during:** `/write-plan` for S-001, creating tasks T-032/T-033/T-034, 2026-05-14.
+- **Where:** `ai-team task new` (template population) — `cli/src/ai_team/commands/task.py`.
+
+**Observed:** `ai-team task new "<title>"` populates the frontmatter `title` correctly,
+but the document body still contains the literal placeholder heading `# [Task Title]`.
+All three tasks created during the S-001 write-plan run had to have their H1 fixed by
+hand.
+
+**Impact:** Every newly created task has a placeholder H1 that must be fixed manually —
+the same defect class as I-004, easy to miss.
+
+**Root cause (same as I-004/B-001):** B-001 fixed the body-placeholder substitution for
+`spec new` (`# [Specification Title]`) and `bug new` (`# [Bug Title]`) in `spec.py` and
+`bug.py`, but `task new` in `task.py` was not covered — `new_task()` passes the template
+body straight to `write_artifact()` without replacing `# [Task Title]`.
+
+**Expected:** `task new` should substitute the body `# [Task Title]` heading with the
+provided title, consistent with `spec new` / `bug new` after the B-001 fix. A regression
+test analogous to `test_spec_new_substitutes_body_h1_with_provided_title` should be added
+in `cli/tests/test_task_new.py`.
+
+**Notes:**
+- Not yet filed as a bug — straightforward one-line fix mirroring the B-001 change; file
+  a bug if it should go through the bug-loop.
