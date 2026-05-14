@@ -3,7 +3,7 @@ id: B-002
 title: code-review skill reviewer mis-scopes git — stages implementation files
   into the verdict commit and reviews working-tree contents instead of the branch diff
 severity: high
-status: in-progress
+status: resolved
 ---
 
 # code-review skill reviewer mis-scopes git — stages implementation files into the verdict commit and reviews working-tree contents instead of the branch diff
