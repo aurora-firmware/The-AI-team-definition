@@ -47,4 +47,14 @@ git diff --name-only | grep -qv "^.claude/skills/" && echo "no skill files chang
 
 ## Work Log
 
+### Session 1 — 2026-05-14
+
+Read the task file and confirmed the Work Log was empty (first session). Read all five action skill SKILL.md files (`new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`) to confirm the exact CLI commands each invokes before writing anything. The mappings matched what the task anticipated: `new-spec` → `ai-team spec new`, `new-task` → `ai-team task new`, `new-bug` → `ai-team bug new`, `new-adr` → `ai-team adr new`, `status-report` → `ai-team status` + `ai-team report`.
+
+Ran the three task verification commands before the edit to establish the red state: `ai-team` was not present in `component-map.md` (the key failing check). Added a `## CLI Command Mapping` section immediately before the `## Interaction Diagram` section — chosen because it follows the existing `## Documents and Directories` section thematically, and the interaction diagram is the natural closing element of the document. No alternative placements were considered seriously; this position groups architectural metadata together.
+
+All three verification commands pass. No skill files were modified. Committed as `docs(architecture): add CLI command mapping section to component-map` on `task/T-029-map-cli-to-skills-in-component-map`.
+
+Nothing remains for this task.
+
 ## Review
