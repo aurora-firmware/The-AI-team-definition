@@ -123,7 +123,7 @@ provided title, consistent with how it fills the frontmatter.
 - `ai-team spec new --json` output format worked as expected: `{"id": "S-001", "path": "..."}`.
 - Reproduced on branch `pi-agent-design`, 2026-05-14.
 
-### I-005 — CLI test suite has a failing test: bundled task template source missing
+### I-005 — CLI test suite has a stale failing test: task template comparison points at a deleted path
 
 - **Severity:** medium
 - **Status:** confirmed
@@ -136,14 +136,31 @@ bundled source it compares against, `.claude/skills/new-task/assets/TEMPLATE-tas
 does not exist in the repo.
 
 **Impact:** The CLI test suite is not green on `dev-agent` — 210 pass, 1 fail. This
-is not a regression (confirmed pre-existing via a `git stash` round-trip while
-working B-001), but it means `integrate`'s regression check starts from a non-clean
-baseline and any future genuine regression in `test_templates.py` is harder to spot.
+is not a regression, but it means `integrate`'s regression check starts from a
+non-clean baseline and any future genuine regression in `test_templates.py` is
+harder to spot.
 
-**Expected:** Either the bundled task template source file should exist at the path
-the test expects, or the test should point at the correct source location. The CLI
-test suite should be green.
+**Not a regression — confirmed three ways:** (1) the CLI suite was run on `dev-agent`
+*before* the B-001 merge and already showed this failure; (2) the B-001 developer
+confirmed it via a `git stash` round-trip; (3) `.claude/skills/new-task/assets/TEMPLATE-task.md`
+was deleted by commit `6987d7f` ("chore(skills): migrate new-task to ai-team cli"),
+which is an ancestor of the bug-loop session baseline `b1ce7e2` — the deletion
+predates all bug-loop work.
+
+**Root cause — the test is stale, not the code.** `6987d7f` migrated the task
+template into the CLI's bundled templates (`cli/src/ai_team/templates/`) and
+intentionally removed the old skill-asset copy at
+`.claude/skills/new-task/assets/TEMPLATE-task.md`. The migration updated the code
+but left `test_load_template_task_matches_bundled_source` asserting against the
+deleted path. The sibling parametrized test
+`test_load_template_returns_non_empty_frontmatter_for_each_kind` (task/bug/spec/adr)
+passes, so `load_template("task")` itself works — only the stale path comparison fails.
+
+**Expected / suggested fix (test side):** repoint the test at the CLI's bundled
+template source under `cli/src/ai_team/templates/`, or drop the now-redundant
+comparison. No CLI behaviour change is needed.
 
 **Notes:**
 - Discovered while fixing B-001; out of scope for B-001, logged here for triage.
-- Not yet filed as a bug — needs triage to decide CLI-side vs. skill-asset-side fix.
+- Not yet filed as a bug — straightforward test-side fix; file a bug if it should
+  go through the bug-loop.
