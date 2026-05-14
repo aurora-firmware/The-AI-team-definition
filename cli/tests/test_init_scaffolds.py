@@ -1,7 +1,8 @@
-"""Tests for T-024: bundled init scaffolds and sync helper."""
+"""Tests for package-owned init scaffold source generation."""
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
@@ -21,24 +22,86 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    # Source trees in the fake repository.
-    _write(repo / ".claude" / "agents" / "planner.md", "planner\n")
-    _write(repo / ".claude" / "skills" / "tdd" / "SKILL.md", "tdd\n")
-    _write(repo / ".claude" / "settings.json", '{"model":"x"}\n')
-    _write(repo / "ai-process" / "architecture" / "overview.md", "architecture\n")
-    _write(repo / "ai-process" / "processes" / "flow.md", "flow\n")
+    # Trap files at repository root that should never be read by the generator.
+    _write(repo / ".claude", "trap\n")
+    _write(repo / ".codex", "trap\n")
+    _write(repo / "ai-process", "trap\n")
 
-    # Source project contains artifacts that must not be included in scaffold bundle.
-    _write(repo / "project" / "tasks" / "completed" / "T-999.md", "artifact\n")
-    _write(repo / "project" / "docs" / "coding_guidelines.md", "artifact\n")
-
-    # Seed stale generated output to verify replacement behavior.
+    # Package-owned skill source fixture.
     _write(
-        repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "project" / "old.txt",
-        "old\n",
+        repo
+        / "cli"
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "skills"
+        / "tdd"
+        / "body.md",
+        "# Test Skill Body\n\nRun the TDD cycle.\n",
     )
     _write(
-        repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "claude" / "old.txt",
+        repo
+        / "cli"
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "skills"
+        / "tdd"
+        / "metadata.toml",
+        (
+            "[claude]\n"
+            "header = \"\"\"---\n"
+            "name: tdd\n"
+            "description: claude skill\n"
+            "allowed-tools: Read\n"
+            "---\"\"\"\n\n"
+            "[codex]\n"
+            "header = \"\"\"---\n"
+            "name: tdd\n"
+            "description: codex skill\n"
+            "allowed-tools: Read\n"
+            "---\"\"\"\n"
+        ),
+    )
+    _write(
+        repo
+        / "cli"
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "agents"
+        / "claude"
+        / "planner.md",
+        "claude planner\n",
+    )
+    _write(
+        repo
+        / "cli"
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "agents"
+        / "codex"
+        / "planner.toml",
+        "codex planner\n",
+    )
+
+    # Seed stale generated output that should be removed.
+    _write(
+        repo
+        / "cli"
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "claude"
+        / "skills"
+        / "old"
+        / "SKILL.md",
         "old\n",
     )
     _write(
@@ -48,8 +111,45 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
         / "ai_team"
         / "init"
         / "scaffolds"
-        / "ai-process"
+        / "project"
         / "old.txt",
+        "old\n",
+    )
+    _write(
+        repo
+        / "cli"
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "claude"
+        / "agents"
+        / "old.md",
+        "old\n",
+    )
+    _write(
+        repo
+        / "cli"
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "codex"
+        / "agents"
+        / "old.toml",
+        "old\n",
+    )
+    _write(
+        repo
+        / "cli"
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "codex"
+        / "skills"
+        / "old"
+        / "SKILL.md",
         "old\n",
     )
 
@@ -62,7 +162,7 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
     return repo
 
 
-def test_sync_script_replaces_generated_subtrees_with_repo_snapshots(
+def test_sync_script_generates_tool_skill_scaffolds_from_shared_body(
     tmp_path: Path,
 ) -> None:
     repo = _setup_fake_repo(tmp_path)
@@ -74,27 +174,47 @@ def test_sync_script_replaces_generated_subtrees_with_repo_snapshots(
     )
 
     scaffolds_root = repo / "cli" / "src" / "ai_team" / "init" / "scaffolds"
+    shared_body = "# Test Skill Body\n\nRun the TDD cycle.\n"
 
-    assert (scaffolds_root / "claude" / "agents" / "planner.md").read_text(
-        encoding="utf-8"
-    ) == "planner\n"
-    assert (scaffolds_root / "claude" / "skills" / "tdd" / "SKILL.md").read_text(
-        encoding="utf-8"
-    ) == "tdd\n"
-    assert (scaffolds_root / "ai-process" / "architecture" / "overview.md").read_text(
-        encoding="utf-8"
-    ) == "architecture\n"
-    assert (scaffolds_root / "ai-process" / "processes" / "flow.md").read_text(
-        encoding="utf-8"
-    ) == "flow\n"
-    assert not (scaffolds_root / "claude" / "settings.json").exists()
+    claude_text = (
+        scaffolds_root / "claude" / "skills" / "tdd" / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    codex_text = (
+        scaffolds_root / "codex" / "skills" / "tdd" / "SKILL.md"
+    ).read_text(encoding="utf-8")
 
-    assert not (scaffolds_root / "project" / "old.txt").exists()
-    assert not (scaffolds_root / "claude" / "old.txt").exists()
-    assert not (scaffolds_root / "ai-process" / "old.txt").exists()
+    assert claude_text.startswith("---\nname: tdd\ndescription: claude skill\n")
+    assert codex_text.startswith("---\nname: tdd\ndescription: codex skill\n")
+    assert claude_text.split("\n\n", maxsplit=1)[1] == shared_body
+    assert codex_text.split("\n\n", maxsplit=1)[1] == shared_body
+
+    assert not (scaffolds_root / "claude" / "skills" / "old").exists()
+    assert not (scaffolds_root / "codex" / "skills" / "old").exists()
 
 
-def test_sync_script_creates_empty_project_skeleton_with_leaf_gitkeeps(
+def test_sync_script_copies_package_owned_agents_for_each_tool(tmp_path: Path) -> None:
+    repo = _setup_fake_repo(tmp_path)
+
+    subprocess.run(
+        [sys.executable, "cli/scripts/sync_init_scaffolds.py"],
+        cwd=repo,
+        check=True,
+    )
+
+    scaffolds_root = repo / "cli" / "src" / "ai_team" / "init" / "scaffolds"
+
+    assert (
+        scaffolds_root / "claude" / "agents" / "planner.md"
+    ).read_text(encoding="utf-8") == "claude planner\n"
+    assert (
+        scaffolds_root / "codex" / "agents" / "planner.toml"
+    ).read_text(encoding="utf-8") == "codex planner\n"
+
+    assert not (scaffolds_root / "claude" / "agents" / "old.md").exists()
+    assert not (scaffolds_root / "codex" / "agents" / "old.toml").exists()
+
+
+def test_sync_script_replaces_project_with_empty_lifecycle_skeleton(
     tmp_path: Path,
 ) -> None:
     repo = _setup_fake_repo(tmp_path)
@@ -106,7 +226,6 @@ def test_sync_script_creates_empty_project_skeleton_with_leaf_gitkeeps(
     )
 
     project_root = repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "project"
-
     expected_files = {
         Path("specs/.gitkeep"),
         Path("tasks/pending/.gitkeep"),
@@ -120,11 +239,10 @@ def test_sync_script_creates_empty_project_skeleton_with_leaf_gitkeeps(
         Path("docs/.gitkeep"),
     }
     actual_files = {
-        path.relative_to(project_root)
-        for path in project_root.rglob("*")
-        if path.is_file()
+        (Path(root) / file_name).relative_to(project_root)
+        for root, _, file_names in os.walk(project_root)
+        for file_name in file_names
     }
 
     assert actual_files == expected_files
-    assert not (project_root / "tasks" / "completed" / "T-999.md").exists()
-    assert not (project_root / "docs" / "coding_guidelines.md").exists()
+    assert not (project_root / "old.txt").exists()

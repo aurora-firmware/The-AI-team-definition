@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Synchronize bundled init scaffolds from repository sources."""
+"""Generate bundled init scaffolds from package-owned source assets."""
 
 from __future__ import annotations
 
 import shutil
+import tomllib
 from pathlib import Path
 
 PROJECT_LEAF_DIRS = (
@@ -19,12 +20,12 @@ PROJECT_LEAF_DIRS = (
     "docs",
 )
 
-COPY_SUBTREES = (("ai-process", "ai-process"),)
+TOOLS = ("claude", "codex")
 
 
-def _repo_root_from_script(script_path: Path) -> Path:
+def _cli_root_from_script(script_path: Path) -> Path:
     # script lives at <repo>/cli/scripts/sync_init_scaffolds.py
-    return script_path.resolve().parents[2]
+    return script_path.resolve().parents[1]
 
 
 def _replace_tree(source: Path, destination: Path) -> None:
@@ -53,33 +54,79 @@ def _replace_project_skeleton(destination: Path) -> None:
         (leaf_dir / ".gitkeep").write_text("", encoding="utf-8")
 
 
-def _replace_claude_snapshot(source_root: Path, destination: Path) -> None:
-    if destination.exists():
-        shutil.rmtree(destination)
+def _load_skill_metadata(path: Path) -> dict[str, str]:
+    raw = tomllib.loads(path.read_text(encoding="utf-8"))
+    headers: dict[str, str] = {}
+    for tool in TOOLS:
+        tool_config = raw.get(tool, {})
+        header = tool_config.get("header")
+        if not isinstance(header, str) or not header.strip():
+            raise ValueError(f"Missing [{tool}].header in {path}")
+        headers[tool] = header.strip()
+    return headers
 
-    destination.mkdir(parents=True, exist_ok=True)
-    _replace_tree(source_root / "agents", destination / "agents")
-    _replace_tree(source_root / "skills", destination / "skills")
+
+def _replace_generated_skills(source_root: Path, destination_root: Path) -> None:
+    destination_root.mkdir(parents=True, exist_ok=True)
+    for tool in TOOLS:
+        tool_skill_root = destination_root / tool / "skills"
+        if tool_skill_root.exists():
+            shutil.rmtree(tool_skill_root)
+        tool_skill_root.mkdir(parents=True, exist_ok=True)
+
+    if not source_root.is_dir():
+        raise FileNotFoundError(
+            f"Expected skill source directory does not exist: {source_root}"
+        )
+
+    for skill_dir in sorted(path for path in source_root.iterdir() if path.is_dir()):
+        body_path = skill_dir / "body.md"
+        metadata_path = skill_dir / "metadata.toml"
+        if not body_path.is_file():
+            raise FileNotFoundError(
+                f"Expected skill body file does not exist: {body_path}"
+            )
+        if not metadata_path.is_file():
+            raise FileNotFoundError(
+                f"Expected skill metadata file does not exist: {metadata_path}"
+            )
+
+        body = body_path.read_text(encoding="utf-8")
+        headers = _load_skill_metadata(metadata_path)
+
+        for tool in TOOLS:
+            skill_output_dir = destination_root / tool / "skills" / skill_dir.name
+            skill_output_dir.mkdir(parents=True, exist_ok=True)
+            skill_output = headers[tool] + "\n\n" + body
+            (skill_output_dir / "SKILL.md").write_text(skill_output, encoding="utf-8")
 
 
-def sync_init_scaffolds(repo_root: Path) -> None:
-    scaffolds_root = repo_root / "cli" / "src" / "ai_team" / "init" / "scaffolds"
+def sync_init_scaffolds(cli_root: Path) -> None:
+    init_root = cli_root / "src" / "ai_team" / "init"
+    scaffolds_root = init_root / "scaffolds"
+    sources_root = init_root / "sources"
+
     scaffolds_root.mkdir(parents=True, exist_ok=True)
-
     _replace_project_skeleton(scaffolds_root / "project")
-    _replace_claude_snapshot(repo_root / ".claude", scaffolds_root / "claude")
-
-    for source_name, dest_name in COPY_SUBTREES:
-        _replace_tree(repo_root / source_name, scaffolds_root / dest_name)
+    _replace_generated_skills(
+        sources_root / "skills",
+        scaffolds_root,
+    )
+    _replace_tree(
+        sources_root / "agents" / "claude",
+        scaffolds_root / "claude" / "agents",
+    )
+    _replace_tree(
+        sources_root / "agents" / "codex",
+        scaffolds_root / "codex" / "agents",
+    )
 
 
 def main() -> None:
-    repo_root = _repo_root_from_script(Path(__file__))
-    sync_init_scaffolds(repo_root)
-    print(
-        f"Synchronized init scaffolds in {repo_root / 'cli/src/ai_team/init/scaffolds'}"
-    )
-    print("Run this script before `uv build` to refresh bundled scaffold snapshots.")
+    cli_root = _cli_root_from_script(Path(__file__))
+    sync_init_scaffolds(cli_root)
+    print(f"Synchronized init scaffolds in {cli_root / 'src/ai_team/init/scaffolds'}")
+    print("Run this script before `uv build` to refresh bundled scaffold output.")
 
 
 if __name__ == "__main__":
