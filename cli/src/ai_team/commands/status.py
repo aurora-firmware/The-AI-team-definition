@@ -118,7 +118,7 @@ def _latest_integration_result(root: ProjectRoot) -> str:
             stderr=subprocess.PIPE,
             text=True,
         )
-    except (OSError, subprocess.CalledProcessError):
+    except OSError, subprocess.CalledProcessError:
         return "not found"
 
     value = completed.stdout.strip()

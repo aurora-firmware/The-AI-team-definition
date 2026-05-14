@@ -66,9 +66,7 @@ def test_archive_moves_old_completed_tasks_and_resolved_bugs_to_created_month(
     """Default archive run moves artifacts older than 90 days into archive/YYYY-MM."""
     from ai_team.cli import app
 
-    old_task_src = (
-        tmp_path / "project" / "tasks" / "completed" / "T-100-old-task.md"
-    )
+    old_task_src = tmp_path / "project" / "tasks" / "completed" / "T-100-old-task.md"
     old_bug_src = tmp_path / "project" / "bugs" / "resolved" / "B-100-old-bug.md"
     fresh_task_src = (
         tmp_path / "project" / "tasks" / "completed" / "T-101-fresh-task.md"
@@ -102,9 +100,7 @@ def test_archive_dry_run_lists_would_move_without_mutating_filesystem(
     """`archive --dry-run` reports planned moves and leaves source files untouched."""
     from ai_team.cli import app
 
-    old_task_src = (
-        tmp_path / "project" / "tasks" / "completed" / "T-110-old-task.md"
-    )
+    old_task_src = tmp_path / "project" / "tasks" / "completed" / "T-110-old-task.md"
     _write_completed_task(
         old_task_src,
         "T-110",

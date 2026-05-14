@@ -59,9 +59,7 @@ def _parse_yaml_frontmatter(path: Path) -> CommentedMap:
     """
     text = path.read_text(encoding="utf-8")
     if not text.startswith("---"):
-        raise FrontmatterError(
-            f"No YAML frontmatter block found in {path!s}"
-        )
+        raise FrontmatterError(f"No YAML frontmatter block found in {path!s}")
 
     # Find the closing --- fence (must be on its own line after the opener).
     rest = text[3:]
@@ -117,9 +115,7 @@ class Task:
     spec: str | None = None  # Optional reference to a spec slug
     # Holds the original CommentedMap from parsing so comments survive dump.
     # Excluded from equality and repr so it does not affect model comparisons.
-    _source_map: CommentedMap | None = field(
-        default=None, compare=False, repr=False
-    )
+    _source_map: CommentedMap | None = field(default=None, compare=False, repr=False)
 
 
 @dataclass
@@ -133,9 +129,7 @@ class Bug:
     created: str
     task: str | None = None  # Optional reference to a related task ID
     # Holds the original CommentedMap from parsing so comments survive dump.
-    _source_map: CommentedMap | None = field(
-        default=None, compare=False, repr=False
-    )
+    _source_map: CommentedMap | None = field(default=None, compare=False, repr=False)
 
 
 @dataclass
@@ -148,9 +142,7 @@ class Spec:
     created: str
     author: str
     # Holds the original CommentedMap from parsing so comments survive dump.
-    _source_map: CommentedMap | None = field(
-        default=None, compare=False, repr=False
-    )
+    _source_map: CommentedMap | None = field(default=None, compare=False, repr=False)
 
 
 @dataclass
@@ -163,9 +155,7 @@ class Adr:
     created: str
     supersedes: str | None = None  # Optional reference to a superseded ADR ID
     # Holds the original CommentedMap from parsing so comments survive dump.
-    _source_map: CommentedMap | None = field(
-        default=None, compare=False, repr=False
-    )
+    _source_map: CommentedMap | None = field(default=None, compare=False, repr=False)
 
 
 # ---------------------------------------------------------------------------
@@ -260,7 +250,9 @@ def parse_adr(path: Path) -> Adr:
         title=str(_require(data, "title", path)),
         status=str(_require(data, "status", path)),
         created=str(_require(data, "created", path)),
-        supersedes=str(data["supersedes"]) if data.get("supersedes") is not None else None,
+        supersedes=str(data["supersedes"])
+        if data.get("supersedes") is not None
+        else None,
         _source_map=data,
     )
 

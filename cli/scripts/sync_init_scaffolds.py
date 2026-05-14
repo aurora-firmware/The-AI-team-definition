@@ -76,7 +76,9 @@ def sync_init_scaffolds(repo_root: Path) -> None:
 def main() -> None:
     repo_root = _repo_root_from_script(Path(__file__))
     sync_init_scaffolds(repo_root)
-    print(f"Synchronized init scaffolds in {repo_root / 'cli/src/ai_team/init/scaffolds'}")
+    print(
+        f"Synchronized init scaffolds in {repo_root / 'cli/src/ai_team/init/scaffolds'}"
+    )
     print("Run this script before `uv build` to refresh bundled scaffold snapshots.")
 
 

@@ -120,7 +120,12 @@ def _transition_task(
     if source is None:
         _exit_not_found(
             task_id,
-            [folders["pending"], folders["in-progress"], folders["completed"], folders["blocked"]],
+            [
+                folders["pending"],
+                folders["in-progress"],
+                folders["completed"],
+                folders["blocked"],
+            ],
         )
 
     if before_transition is not None:

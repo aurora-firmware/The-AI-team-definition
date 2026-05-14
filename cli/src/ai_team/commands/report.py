@@ -23,7 +23,9 @@ def _iter_markdown_files(folder: Path) -> list[Path]:
     return sorted(
         path
         for path in folder.glob("*.md")
-        if path.is_file() and path.name != ".gitkeep" and not path.match("TEMPLATE-*.md")
+        if path.is_file()
+        and path.name != ".gitkeep"
+        and not path.match("TEMPLATE-*.md")
     )
 
 
@@ -59,7 +61,11 @@ def _spec_rows(root) -> str:
     rows: list[str] = []
     for path in _iter_markdown_files(root.specs):
         spec = parse_spec(path)
-        note = "Current Gate 5 target" if spec.status == "approved" else "Review in progress"
+        note = (
+            "Current Gate 5 target"
+            if spec.status == "approved"
+            else "Review in progress"
+        )
         rows.append(f"| {path.name} | {spec.status} | {note} |")
     return _as_rows(rows, "| none | n/a | No active specs |")
 
@@ -173,18 +179,35 @@ def _replace(text: str, old: str, new: str) -> str:
     return text.replace(old, new)
 
 
-def _render_report(template: str, payload: dict[str, object], report_date: str, root) -> str:
+def _render_report(
+    template: str, payload: dict[str, object], report_date: str, root
+) -> str:
     report = template
     replacements: list[tuple[str, str]] = [
-        ('title: "Progress Report — [Date or Sprint]"', f'title: "Progress Report — {report_date}"'),
+        (
+            'title: "Progress Report — [Date or Sprint]"',
+            f'title: "Progress Report — {report_date}"',
+        ),
         ("created: YYYY-MM-DD", f"created: {report_date}"),
         ("# Progress Report — [Date or Sprint]", f"# Progress Report — {report_date}"),
         ("One-paragraph overview of current project state.", _summary_line(payload)),
-        ("| specification-name.md | approved | Current Gate 5 target |", _spec_rows(root)),
-        ("- Latest integration-test result:", f"- Latest integration-test result: {payload['latest_integration_result']}"),
-        ("- Source:", "- Source: git log --all --grep=merge|integration|verification|test -n 1"),
+        (
+            "| specification-name.md | approved | Current Gate 5 target |",
+            _spec_rows(root),
+        ),
+        (
+            "- Latest integration-test result:",
+            f"- Latest integration-test result: {payload['latest_integration_result']}",
+        ),
+        (
+            "- Source:",
+            "- Source: git log --all --grep=merge|integration|verification|test -n 1",
+        ),
         ("- Date:", f"- Date: {report_date}"),
-        ("| T-001 | Task title | Role |\n| T-002 | Task title | Role |", _completed_rows(root)),
+        (
+            "| T-001 | Task title | Role |\n| T-002 | Task title | Role |",
+            _completed_rows(root),
+        ),
         ("| T-003 | Task title | Role | Current state |", _in_progress_rows(payload)),
         (
             "| T-004 | Task title | What is blocking | What must happen to unblock |",
@@ -219,11 +242,7 @@ def default(
 
     destination = out
     if destination is None:
-        destination = (
-            root.docs
-            / "reports"
-            / f"progress-report-{report_date}.md"
-        )
+        destination = root.docs / "reports" / f"progress-report-{report_date}.md"
 
     destination.parent.mkdir(parents=True, exist_ok=True)
     template = load_template("report")

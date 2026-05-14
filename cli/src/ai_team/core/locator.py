@@ -168,9 +168,7 @@ def find_project_root(
             # TOML present but the declared folder is missing — keep walking.
 
         if (candidate / project_dir).is_dir():
-            return ProjectRoot._from_repo_and_project_dir_name(
-                candidate, project_dir
-            )
+            return ProjectRoot._from_repo_and_project_dir_name(candidate, project_dir)
 
         parent = candidate.parent
         if parent == candidate:
@@ -198,6 +196,6 @@ def _toml_project_dir(directory: Path) -> str | None:
     try:
         with toml_path.open("rb") as fh:
             data = tomllib.load(fh)
-    except (OSError, tomllib.TOMLDecodeError):
+    except OSError, tomllib.TOMLDecodeError:
         return None
     return data.get("project", {}).get("dir")

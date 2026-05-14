@@ -60,7 +60,13 @@ def _write(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
-def _task(id: str, title: str, status: str, priority: str = "medium", assigned_role: str = "developer") -> str:
+def _task(
+    id: str,
+    title: str,
+    status: str,
+    priority: str = "medium",
+    assigned_role: str = "developer",
+) -> str:
     return TASK_TEMPLATE.format(
         id=id,
         title=title,
@@ -95,7 +101,9 @@ def _adr(id: str, title: str, status: str) -> str:
     )
 
 
-def test_list_tasks_displays_all_states_in_rich_table_and_skips_templates(monkeypatch, tmp_path):
+def test_list_tasks_displays_all_states_in_rich_table_and_skips_templates(
+    monkeypatch, tmp_path
+):
     """`ai-team list tasks` prints all non-template tasks from every task state folder."""
     from ai_team.cli import app
 

@@ -1,4 +1,5 @@
 """Shared Rich console and JSON output helpers for the ai-team CLI."""
+
 import json
 import sys
 

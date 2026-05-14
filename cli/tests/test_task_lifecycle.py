@@ -48,9 +48,7 @@ def test_task_start_moves_pending_task_to_in_progress_and_updates_status(
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["task", "start", "T-042"])
 
-    destination = (
-        tmp_path / "project" / "tasks" / "in-progress" / "T-042-demo-task.md"
-    )
+    destination = tmp_path / "project" / "tasks" / "in-progress" / "T-042-demo-task.md"
     assert result.exit_code == 0
     assert not pending.exists()
     assert destination.exists()
@@ -88,9 +86,7 @@ def test_task_unblock_moves_blocked_task_to_in_progress_and_updates_status(
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["task", "unblock", "T-044"])
 
-    destination = (
-        tmp_path / "project" / "tasks" / "in-progress" / "T-044-demo-task.md"
-    )
+    destination = tmp_path / "project" / "tasks" / "in-progress" / "T-044-demo-task.md"
     assert result.exit_code == 0
     assert not source.exists()
     assert destination.exists()

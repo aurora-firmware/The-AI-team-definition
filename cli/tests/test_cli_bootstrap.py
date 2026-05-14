@@ -7,6 +7,7 @@ Covers:
   AC-4: Auto-discovery mounts a module's `app` under its `NAME` as a subcommand.
   AC-5: Package data directories are declared in pyproject.toml.
 """
+
 import importlib
 import importlib.metadata
 import importlib.util

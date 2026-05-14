@@ -76,9 +76,7 @@ def test_adr_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
     assert adr.supersedes == "ADR-010"
 
 
-def test_adr_new_refuses_to_overwrite_when_allocated_path_exists(
-    monkeypatch, tmp_path
-):
+def test_adr_new_refuses_to_overwrite_when_allocated_path_exists(monkeypatch, tmp_path):
     """If the allocated output file exists, command exits non-zero and keeps file bytes."""
     from ai_team.cli import app
 

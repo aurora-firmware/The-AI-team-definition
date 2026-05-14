@@ -23,7 +23,9 @@ _DURATION_RE = re.compile(r"^(?P<amount>\d+)(?P<unit>[dwmy])$")
 def _parse_older_than(value: str) -> timedelta:
     match = _DURATION_RE.fullmatch(value)
     if match is None:
-        raise ValueError(f"Invalid --older-than '{value}'. Expected format: <number><d|w|m|y>.")
+        raise ValueError(
+            f"Invalid --older-than '{value}'. Expected format: <number><d|w|m|y>."
+        )
 
     amount = int(match.group("amount"))
     unit = match.group("unit")

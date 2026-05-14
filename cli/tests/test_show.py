@@ -164,10 +164,22 @@ def test_show_resolves_ids_across_artifact_types_and_states(
     from ai_team.cli import app
 
     if artifact_path[0] == "tasks":
-        path = tmp_path / "project" / artifact_path[0] / artifact_path[1] / artifact_path[2]
+        path = (
+            tmp_path
+            / "project"
+            / artifact_path[0]
+            / artifact_path[1]
+            / artifact_path[2]
+        )
         content = _task(identifier, expected_text, "Task content.")
     elif artifact_path[0] == "bugs":
-        path = tmp_path / "project" / artifact_path[0] / artifact_path[1] / artifact_path[2]
+        path = (
+            tmp_path
+            / "project"
+            / artifact_path[0]
+            / artifact_path[1]
+            / artifact_path[2]
+        )
         content = _bug(identifier, expected_text, artifact_path[1], "Bug content.")
     elif artifact_path[0] == "specs":
         path = tmp_path / "project" / artifact_path[0] / artifact_path[1]

@@ -523,9 +523,7 @@ Body.
     # Extract the frontmatter section from the dumped output.
     fm_block = dumped.split("---")[1]
     keys_in_order = [
-        line.split(":")[0].strip()
-        for line in fm_block.splitlines()
-        if ":" in line
+        line.split(":")[0].strip() for line in fm_block.splitlines() if ":" in line
     ]
     expected_order = ["id", "title", "status", "priority", "assigned-role", "created"]
     assert keys_in_order == expected_order

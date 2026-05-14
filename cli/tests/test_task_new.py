@@ -66,11 +66,7 @@ def test_task_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
     )
 
     expected = (
-        tmp_path
-        / "project"
-        / "tasks"
-        / "pending"
-        / "T-001-build-auth-gateway.md"
+        tmp_path / "project" / "tasks" / "pending" / "T-001-build-auth-gateway.md"
     )
     payload = json.loads(result.output)
 

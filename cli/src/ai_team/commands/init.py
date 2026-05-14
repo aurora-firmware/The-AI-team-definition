@@ -25,7 +25,9 @@ def _iter_files(root: Path) -> list[Path]:
 
 
 def _plan_copies(source: Path, destination: Path) -> list[tuple[Path, Path]]:
-    return [(path, destination / path.relative_to(source)) for path in _iter_files(source)]
+    return [
+        (path, destination / path.relative_to(source)) for path in _iter_files(source)
+    ]
 
 
 def _parse_tools(value: str) -> list[str]:
@@ -88,17 +90,23 @@ def init_command(
         raise typer.Exit(code=1) from exc
 
     if not no_interactive and tools is None and not include_ai_process:
-        include_ai_process = typer.confirm("Include ai-process snapshot?", default=False)
+        include_ai_process = typer.confirm(
+            "Include ai-process snapshot?", default=False
+        )
 
     target_root = path.resolve()
 
     scaffolds = resources.files("ai_team.init") / "scaffolds"
     with resources.as_file(scaffolds) as scaffolds_path:
         planned: list[tuple[Path, Path]] = []
-        planned.extend(_plan_copies(scaffolds_path / "project", target_root / "project"))
+        planned.extend(
+            _plan_copies(scaffolds_path / "project", target_root / "project")
+        )
 
         if "claude" in selected_tools:
-            planned.extend(_plan_copies(scaffolds_path / "claude", target_root / ".claude"))
+            planned.extend(
+                _plan_copies(scaffolds_path / "claude", target_root / ".claude")
+            )
 
         if include_ai_process:
             planned.extend(
@@ -107,7 +115,9 @@ def init_command(
 
     marker = target_root / ".ai-team.toml"
     planned_destinations = [destination for _, destination in planned] + [marker]
-    collisions = [destination for destination in planned_destinations if destination.exists()]
+    collisions = [
+        destination for destination in planned_destinations if destination.exists()
+    ]
 
     if dry_run:
         for destination in planned_destinations:

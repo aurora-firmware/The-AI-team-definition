@@ -34,9 +34,7 @@ def test_next_task_id_uses_highest_number_across_all_task_states(tmp_path):
     """AC-2: allocator scans all task states and increments the max number."""
     root = make_project_root(tmp_path)
     (root.tasks_pending / "T-007-define-parser.md").write_text("", encoding="utf-8")
-    (root.tasks_completed / "T-012-finalize-parser.md").write_text(
-        "", encoding="utf-8"
-    )
+    (root.tasks_completed / "T-012-finalize-parser.md").write_text("", encoding="utf-8")
 
     assert next_task_id(root) == "T-013"
 
@@ -73,9 +71,7 @@ def test_next_spec_id_uses_project_and_archive_as_one_number_space(tmp_path):
     """AC-3: spec IDs scan specs/ and specs/archive/ together."""
     root = make_project_root(tmp_path)
     (root.specs / "S-002-initial-spec.md").write_text("", encoding="utf-8")
-    (root.specs / "archive" / "S-014-legacy-spec.md").write_text(
-        "", encoding="utf-8"
-    )
+    (root.specs / "archive" / "S-014-legacy-spec.md").write_text("", encoding="utf-8")
     (root.specs / "archive" / "template-spec.md").write_text("", encoding="utf-8")
 
     assert next_spec_id(root) == "S-015"

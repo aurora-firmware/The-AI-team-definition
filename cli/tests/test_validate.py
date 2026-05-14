@@ -202,8 +202,7 @@ def test_validate_emits_error_when_cross_references_do_not_resolve(
     assert result.exit_code != 0
     findings = json.loads(result.output)
     assert any(
-        finding["code"] == "task-spec-missing"
-        and "missing-spec" in finding["message"]
+        finding["code"] == "task-spec-missing" and "missing-spec" in finding["message"]
         for finding in findings
     )
     assert any(
@@ -211,8 +210,7 @@ def test_validate_emits_error_when_cross_references_do_not_resolve(
         for finding in findings
     )
     assert any(
-        finding["code"] == "adr-supersedes-missing"
-        and "ADR-999" in finding["message"]
+        finding["code"] == "adr-supersedes-missing" and "ADR-999" in finding["message"]
         for finding in findings
     )
 
@@ -254,9 +252,7 @@ def test_validate_exits_non_zero_when_any_error_finding_exists(monkeypatch, tmp_
     assert "status-mismatch" in result.output
 
 
-def test_validate_detects_frontmatter_id_and_filename_violations(
-    monkeypatch, tmp_path
-):
+def test_validate_detects_frontmatter_id_and_filename_violations(monkeypatch, tmp_path):
     """Validation reports required-frontmatter, id pattern, and filename issues."""
     from ai_team.cli import app
 

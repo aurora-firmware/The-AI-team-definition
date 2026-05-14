@@ -85,7 +85,9 @@ def _matches_identifier(identifier: str, path: Path) -> bool:
 
 
 def _resolve_matches(identifier: str, roots: list[Path]) -> list[Path]:
-    return [path for path in _artifact_files(roots) if _matches_identifier(identifier, path)]
+    return [
+        path for path in _artifact_files(roots) if _matches_identifier(identifier, path)
+    ]
 
 
 def _frontmatter_dict(model: object) -> dict[str, object]:
