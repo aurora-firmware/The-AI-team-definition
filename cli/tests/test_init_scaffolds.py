@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 
@@ -246,3 +247,44 @@ def test_sync_script_replaces_project_with_empty_lifecycle_skeleton(
 
     assert actual_files == expected_files
     assert not (project_root / "old.txt").exists()
+
+
+def test_package_owned_skill_sources_include_body_and_required_metadata() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    sources_root = repo_root / "src" / "ai_team" / "init" / "sources" / "skills"
+    scaffold_root = (
+        repo_root / "src" / "ai_team" / "init" / "scaffolds" / "claude" / "skills"
+    )
+
+    expected_skills = sorted(
+        path.name for path in scaffold_root.iterdir() if path.is_dir()
+    )
+    source_skills = sorted(
+        path.name for path in sources_root.iterdir() if path.is_dir()
+    )
+
+    assert source_skills == expected_skills
+
+    for skill_name in source_skills:
+        skill_source_dir = sources_root / skill_name
+        skill_scaffold_path = scaffold_root / skill_name / "SKILL.md"
+
+        body_files = list(skill_source_dir.glob("body.md"))
+        metadata_files = list(skill_source_dir.glob("metadata.toml"))
+
+        assert len(body_files) == 1
+        assert len(metadata_files) == 1
+
+        body = body_files[0].read_text(encoding="utf-8")
+        metadata = tomllib.loads(metadata_files[0].read_text(encoding="utf-8"))
+
+        assert isinstance(metadata.get("claude", {}).get("header"), str)
+        assert metadata["claude"]["header"].strip()
+        assert isinstance(metadata.get("codex", {}).get("header"), str)
+        assert metadata["codex"]["header"].strip()
+
+        scaffold_text = skill_scaffold_path.read_text(encoding="utf-8")
+        scaffold_header, scaffold_body = scaffold_text.split("\n\n", maxsplit=1)
+
+        assert body == scaffold_body
+        assert metadata["claude"]["header"].strip() == scaffold_header.strip()
