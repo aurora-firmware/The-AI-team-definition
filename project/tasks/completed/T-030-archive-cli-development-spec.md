@@ -1,7 +1,7 @@
 ---
 id: "T-030"
 title: "Archive the ai-team-python-cli development spec"
-status: pending
+status: completed
 priority: medium
 assigned-role: "unassigned"
 created: 2026-05-14
