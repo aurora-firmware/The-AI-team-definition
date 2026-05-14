@@ -48,6 +48,41 @@ are observations to triage, not confirmed defects unless marked so.
   fix: the `code-review` skill must pin review scope to `git diff <dest>...<branch>` (the
   merge base), not working-tree contents.
 
+### I-006 — Specifications tend to embed implementation code instead of descriptions and measurable criteria (not a CLI bug)
+
+- **Severity:** medium
+- **Status:** not-a-cli-bug (process/agent behavior)
+- **Observed during:** `/brainstorm` for S-001 (`github-actions-ci-for-cli-tests-and-ruff-formatting-checks`), 2026-05-14.
+- **Where:** `.claude/skills/brainstorm`, `.claude/skills/new-spec`, and the spec
+  template (`## Configuration` / code-block sections).
+
+**Observed:** When `/brainstorm` produced S-001, the resulting spec included concrete
+implementation artifacts — a near-complete `ci.yml` and `pyproject.toml` snippet. The
+spec template actively invites this: it ships a `## Configuration` section with a YAML
+code block placeholder, so the spec author fills it with real code.
+
+**Why this is a problem:** A specification should describe *what* must be true and how
+success is *measured* — observable behaviour, acceptance criteria, constraints,
+exclusions — not *how* it is built. Implementation code in a spec (a) pre-empts the
+Planner's task decomposition, (b) pre-empts the Developer, who should write the code
+against the project's coding guidelines, and (c) rots: the spec and the eventual code
+drift apart, and reviewers cannot tell which is authoritative. Code belongs mostly in
+**tasks**, as illustrative examples, and the real implementation is the Developer's
+output.
+
+**Expected:** The `brainstorm` / `new-spec` skills and the spec template should steer
+authors toward prose descriptions plus measurable/observable criteria. Code or config
+snippets in a spec should be the rare exception (e.g. a contract that genuinely *is*
+the requirement), clearly marked as illustrative — not a drop-in implementation.
+Concrete example snippets, where useful, belong in the tasks the `spec-breakdown`
+skill produces; the Developer agent writes the actual code per the coding guidelines.
+
+**Notes:**
+- Self-observed: S-001 as written carries this smell (the `ci.yml` and `pyproject.toml`
+  blocks). It can be left as-is for now or trimmed to "shape" descriptions when the
+  spec is revised — logged here so the underlying template/skill nudge gets fixed.
+- Not filed as a bug — needs triage to decide which of template vs. skills to change.
+
 ---
 
 ## ai-team CLI defects
