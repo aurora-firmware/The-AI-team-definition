@@ -72,6 +72,9 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-14
+Read the task file (including an empty Work Log) and verified branch/task context first. I started with a red check by asserting the expected Codex scaffold file existed; it failed because `src/ai_team/init/scaffolds/codex/skills/tdd/SKILL.md` was missing. I then ran the package scaffold sync script and re-ran verification checks for file existence, non-symlink Codex outputs, idempotence across two sync runs, and scaffold tests. I also ran an explicit body-parity check to confirm normalized procedure text matched between each Claude/Codex generated skill file. During execution, I tried the task's `python` command directly but rejected that path because this environment has no `python` on PATH; I switched to `uv run python`. I also had to set `UV_CACHE_DIR=/tmp/uv-cache` after `uv` failed to write in the default cache location. I committed the completed red->green->refactor cycle as `2ee2161`. Remaining work for the loop is only lifecycle handling on `dev-agent` (append this log entry and continue review flow).
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
