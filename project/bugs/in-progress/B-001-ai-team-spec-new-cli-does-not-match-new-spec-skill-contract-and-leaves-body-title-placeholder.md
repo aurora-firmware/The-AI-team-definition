@@ -199,6 +199,48 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-14
+
+Both defects from the Diagnosis Log were addressed.
+
+**Defect 2 (CLI body placeholder)** — handled TDD-style. Baseline: 210 pass, 1
+pre-existing unrelated failure. Added a failing regression test
+`test_spec_new_substitutes_body_h1_with_provided_title` asserting a spec created
+by `spec new "My New Spec"` contains `# My New Spec` and not
+`# [Specification Title]`. Inspecting `bug.md` (line 10) showed the same
+`# [Bug Title]` placeholder pattern and that `new_bug()` also lacked
+substitution, so an analogous test `test_bug_new_substitutes_body_h1_with_provided_title`
+was added. Both failed as expected. Fix: a single `.replace("# [Specification
+Title]", f"# {title}", 1)` in `spec.py` before `write_artifact()`, mirrored by
+`.replace("# [Bug Title]", f"# {title}", 1)` in `bug.py`. Both tests then passed;
+full suite still 210 pass. Committed as `564f7ef`.
+
+**Defect 1 (skill `description` contract mismatch)** — skill-doc-only change; no
+automated test is practical for markdown procedure docs. Both
+`.claude/skills/new-spec/SKILL.md` and `.claude/skills/new-bug/SKILL.md` had
+`## Input Requirements` split into three named groups: required (passed to the
+CLI), optional (passed to the CLI), and agent-consumed (used to fill body
+sections after file creation; NOT passed to the CLI). `description` was moved to
+the agent-consumed group with an explicit "not a CLI flag" note; procedure step 2
+gained a "Do NOT pass `description` to the CLI" line and step 4 was annotated to
+clarify the body-fill happens post-creation by the agent. The positional-title
+procedure form was already correct and left intact. Committed as `d41837a`.
+
+**Fix verification** — `ai-team spec new --json "Verification Spec"` produced
+`# Verification Spec` as the body H1 with no placeholder (`grep -L` listed the
+file); throwaway deleted, not committed. `spec new` / `bug new` `--help` confirm
+the positional `TITLE` argument and no `--description` flag, matching the
+corrected skills.
+
+**Pre-existing failure noted (out of scope for B-001):**
+`tests/test_templates.py::test_load_template_task_matches_bundled_source` fails
+because `.claude/skills/new-task/assets/TEMPLATE-task.md` does not exist.
+Confirmed pre-existing via a `git stash` round-trip — it failed before this
+session's changes. Logged separately in `ai-process-cli-reported-issues.md`.
+
+Nothing remains. Branch `bug/B-001-spec-new-cli-contract-mismatch` ready for
+reviewer handoff (commits `564f7ef`, `d41837a`).
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
