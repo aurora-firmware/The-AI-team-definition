@@ -1,0 +1,15 @@
+[claude]
+header = """---
+name: new-adr
+description: Create a new Architecture Decision Record via the ai-team CLI
+argument-hint: "[optional: decision title]"
+allowed-tools: Read, Write, Bash
+---"""
+
+[codex]
+header = """---
+name: new-adr
+description: Create a new Architecture Decision Record via the ai-team CLI
+argument-hint: "[optional: decision title]"
+allowed-tools: Read, Write, Bash
+---"""
