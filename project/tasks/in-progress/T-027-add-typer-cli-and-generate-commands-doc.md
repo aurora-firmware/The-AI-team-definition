@@ -50,4 +50,14 @@ grep -q "typer-cli" cli/pyproject.toml
 
 ## Work Log
 
+### Session 1 — 2026-05-14
+
+Implemented all five acceptance criteria for T-027 in a single TDD session.
+
+**What was done.** Added `typer-cli` to the `dev` dependency group via `uv add --dev typer-cli`, which updated both `pyproject.toml` and `uv.lock`. Created `cli/scripts/gen_docs.sh` as a shell script that writes a header comment block (marking the file as generated and naming `bash cli/scripts/gen_docs.sh` as the regeneration command) then appends the output of `uv run typer ai_team.cli utils docs --name "ai-team"` to `cli/docs/commands.md`. Ran the script to produce the committed reference (497 lines, all command groups, subcommands, arguments, and flags). Wrote 10 tests in `cli/tests/test_gen_docs.py` covering AC-1 through AC-5 before implementing; all failed first, all pass after implementation.
+
+**What was tried and rejected.** A line-by-line string parser was first used to verify `typer-cli` is in the `[dependency-groups] dev` section and not in `[project] dependencies`; it produced a false positive (flagging typer-cli as a runtime dep). Replaced with `tomllib` structured parsing, which is unambiguous. The `--output` flag on `typer utils docs` writes the file directly but does not allow prepending content; instead the script uses shell redirection to write the header first and appends the typer output with `>>`.
+
+**What remains.** This task is complete. T-027 covers only Phase 1 (Component 3) of the documentation spec. Subsequent tasks under the same spec (usage.md, component-map.md update, spec archiving, README/guide pointer updates) are out of scope for this task. Note: the Developer observed a pre-existing `test_templates.py` failure unrelated to this task.
+
 ## Review
