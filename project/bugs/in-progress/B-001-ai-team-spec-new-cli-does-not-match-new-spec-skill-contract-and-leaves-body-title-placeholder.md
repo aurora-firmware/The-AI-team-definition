@@ -118,6 +118,77 @@ Root cause or fault hypothesis:
 Planned verification:
 -->
 
+### Diagnosis 1 — 2026-05-14
+
+**Reproduction status:** Both defects confirmed.
+
+**Evidence captured:**
+
+Defect 1 — Interface mismatch:
+`ai-team spec new --json --title "Test Spec" --description "A description"` →
+exit 2, `No such option: --title`. `ai-team spec new --help` shows
+`Usage: ai-team spec new [OPTIONS] TITLE`, options `--author`, `--status`,
+`--json`, `--help` — no `--title`, no `--description`. `ai-team bug new --help`
+shows `Usage: ai-team bug new [OPTIONS] TITLE`, options `--severity`, `--task`,
+`--json`, `--help` — no `--title`, no `--description`.
+
+Git history: at commit `cdaef70` both `new-spec` and `new-bug` skills documented
+`--title` and `--description` as CLI flags. At commit `34cb0a5` the skill
+procedure steps were updated to the positional title form, but the `## Input
+Requirements` sections were not — they still list `description` as a required
+input.
+
+Defect 2 — Placeholder not substituted:
+`ai-team spec new --json "Diagnosis Throwaway Spec"` succeeded; the created file
+had `title:` populated in frontmatter but the body heading remained the literal
+`# [Specification Title]`. Throwaway spec deleted after confirmation.
+
+**Isolated fault:**
+
+- *Defect 1a (`--title`)* — already resolved at current HEAD. The skill
+  procedure steps in both `new-spec/SKILL.md` and `new-bug/SKILL.md` already use
+  the positional title form. No `--title` mismatch remains in the procedures.
+- *Defect 1b (`--description`)* — still unresolved. `new-spec/SKILL.md` line 16
+  and `new-bug/SKILL.md` line 16 still list `description` as a required input,
+  but neither CLI command accepts a `--description` flag
+  (`cli/src/ai_team/commands/spec.py` lines 50–54; `cli/src/ai_team/commands/bug.py`
+  lines 110–114). The contract cannot be fulfilled as written.
+- *Defect 2* — `cli/src/ai_team/commands/spec.py` lines 62–76: `_template_parts()`
+  returns the template body containing `# [Specification Title]`
+  (`cli/src/ai_team/templates/spec.md` line 9); `new_spec()` passes that `body`
+  straight to `write_artifact()` (line 76) without substituting the `title`
+  parameter into the body heading.
+
+**Root cause or fault hypothesis:**
+
+- *Defect 1b:* the `description` required-input is a remnant of the pre-CLI
+  design (commit `cdaef70`). When the CLI was implemented, `description` was
+  intentionally handled as an agent post-processing step (skill step 4: open the
+  file and fill body sections) rather than a CLI flag, but the skills'
+  `## Input Requirements` sections were never updated. **Recommended resolution:
+  fix the skill side, not the CLI.** Rationale: (a) spec/bug `description` is
+  free-form prose used to populate rich, section-specific body content that a
+  single CLI string cannot meaningfully carry; (b) the skill procedures already
+  handle it correctly via the body-fill step; (c) the CLI is under development
+  and adding `--description` would be unplanned new scope. Fix: in both skills,
+  demote `description` from a CLI-implying required input to an input the agent
+  uses when filling the body after file creation.
+- *Defect 2:* the body-placeholder substitution step is simply missing from
+  `new_spec()`. Fix: replace `# [Specification Title]` with `# <title>` in the
+  `body` before calling `write_artifact()`.
+
+**Planned verification:**
+
+- Defect 1: after editing the skills, `new-spec` / `new-bug` `## Input
+  Requirements` no longer present `description` as a CLI-passable required input;
+  the positional-title procedures remain intact.
+- Defect 2: add a regression test asserting that `spec new` with title
+  `"My Test Spec"` produces a body starting with `# My Test Spec` and containing
+  no `# [Specification Title]`. Then:
+  `ai-team spec new --json "Verification Spec"` and
+  `grep -L "# \[Specification Title\]" project/specs/verification-spec.md`
+  (the filename should be listed, i.e. placeholder absent).
+
 ## Work Log
 
 <!-- Mandatory. Append one entry per session boundary. Format:
