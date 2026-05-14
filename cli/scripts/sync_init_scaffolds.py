@@ -67,9 +67,12 @@ def _load_skill_metadata(path: Path) -> dict[str, str]:
 
 
 def _replace_generated_skills(source_root: Path, destination_root: Path) -> None:
-    if destination_root.exists():
-        shutil.rmtree(destination_root)
     destination_root.mkdir(parents=True, exist_ok=True)
+    for tool in TOOLS:
+        tool_skill_root = destination_root / tool / "skills"
+        if tool_skill_root.exists():
+            shutil.rmtree(tool_skill_root)
+        tool_skill_root.mkdir(parents=True, exist_ok=True)
 
     if not source_root.is_dir():
         raise FileNotFoundError(
