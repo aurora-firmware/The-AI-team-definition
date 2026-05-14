@@ -43,7 +43,7 @@ The Reviewer enters the escalation chain when the `code-review` skill returns `E
 
 | Access | Paths |
 |---|---|
-| Read | anywhere |
+| Read | anywhere (for inspection only — never stage implementation files) |
 | Write / Edit | canonical task file in `project/tasks/in-progress/` or canonical bug file in `project/bugs/in-progress/` on `dev-agent` (verdict and feedback), `project/bugs/` (to file bug reports via the `new-bug` skill) |
 | Never touch | implementation code, `project/specs/`, `project/decisions/`, `project/docs/` |
 
@@ -55,6 +55,8 @@ The Reviewer enters the escalation chain when the `code-review` skill returns `E
 - Reviews do not include vague feedback like "clean this up" or "improve readability" without specifics.
 - The reviewer checks the task's acceptance criteria, not personal preferences.
 - For bug fixes, the reviewer checks the Diagnosis Log, root-cause alignment, regression test or manual-verification rationale, and Fix Verification evidence.
+- All findings are scoped strictly to the merge-base diff (`git diff <destination>...<branch>`); pre-existing lines must not be attributed to the branch.
+- The verdict commit stages only the canonical task or bug lifecycle file — never a broad `git add -A` / `git add .`.
 
 ### Review Checklist
 
