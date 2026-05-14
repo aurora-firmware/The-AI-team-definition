@@ -46,4 +46,28 @@ test -f cli/docs/usage.md && test -f cli/docs/commands.md
 
 ## Work Log
 
+### Session 1 — 2026-05-14
+
+Picked up T-031 on `task/T-031-link-docs-and-add-regeneration-rule`. Both `cli/docs/usage.md` and `cli/docs/commands.md` existed as expected from the T-027/T-028 dependencies.
+
+**What was done:**
+
+Two TDD cycles for AC-1/AC-2 (one per file), one cycle for AC-3, and AC-4 resolved automatically because the target files already existed.
+
+For `README.md`, I added a single sentence after the existing `guides/setup-guide.md` pointer in the "Using This Framework in Your Project" section, linking `cli/docs/usage.md` as the narrated guide and `cli/docs/commands.md` as the command reference. This keeps the README as a brief pointer without duplicating CLI content.
+
+For `guides/setup-guide.md`, I added a single sentence after the daily-commands code block in Step 1, pointing to both `cli/docs` files using relative paths (`../cli/docs/...`) since the setup guide lives in `guides/`.
+
+For the Contributing rule (AC-3), I added a bullet to README.md's "Contributing to This Project" list, immediately after the existing `sync_init_scaffolds.py` bullet, mirroring its wording exactly: update the source, run the script, commit the generated file. The rule was placed only in README.md (not duplicated into CLAUDE.md) since CLAUDE.md has no Contributing section and the task allowed placement in either or both.
+
+**What was tried and rejected:**
+
+Placing the gen_docs rule in CLAUDE.md was considered but rejected — CLAUDE.md's "How to Work Here" section covers framework maintenance conventions (reviewing, adding agents/skills, changing rules) and does not have a Contributing list analogous to README.md's. Adding it only in README.md is sufficient per the task's "and/or" language and avoids duplication.
+
+An alternative placement for the README link (inside the "Daily CLI Commands" block itself) was considered but adding it above the commands block as part of the framing sentence kept the section structure cleaner.
+
+**What remains:**
+
+Nothing. All four acceptance criteria pass, all verification commands succeed, and two commits are on the implementation branch.
+
 ## Review
