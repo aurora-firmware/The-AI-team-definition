@@ -1,9 +1,10 @@
 # The AI Team Definition
 
-> **This is a META-PROJECT.** Its output is processes, templates, agent definitions, and workflow structures — not software.
+> **This is a META-PROJECT.** Its output is the ai-process (the rules), the agents and skills that implement those rules, and the `ai-team` CLI that supports the skills by managing project artifacts.
 
 The **ai-process** is the authoritative description of the rules the AI team must follow.
 The **skills** (`.claude/skills/`) and **agents** (`.claude/agents/`) are the *implementation* of those rules.
+The **`ai-team` CLI** (`cli/`) is the *tooling* the action skills invoke to scaffold, move, and report on project artifacts.
 When they conflict, the ai-process wins.
 
 ---
@@ -17,6 +18,7 @@ When they conflict, the ai-process wins.
 | `ai-process/guidelines/` | Coding standards, review checklists, markdown conventions |
 | `ai-process/processes/` | Workflow definitions, quality gates, escalation procedures |
 | `guides/` | Human-facing guides for setup and customization (not part of the ai-process itself) |
+| `cli/` | The `ai-team` CLI package — manages project artifacts and bootstraps the framework into new repositories; the action skills invoke it instead of carrying their own scripts and templates |
 | `.claude/agents/` | Agent role definitions (planner, architect, developer, reviewer, integrator) |
 | `.claude/skills/` | Skills: procedures (brainstorm, spec-breakdown, tdd, code-review, debug, merge-conflicts, integrate, escalation-review, spec-breakdown-review), orchestrators (/dev-loop, /bug-loop), and actions (/new-spec, /new-task, /new-bug, /new-adr, /status-report, /git-conventions) |
 | `.codex/` | OpenAI Codex compatibility layer: project-scoped custom agents in `.codex/agents/*.toml` plus a symlinked `.codex/skills/` view of `.claude/skills/` |
@@ -34,9 +36,12 @@ ai-process/          ← specification layer (the rules)
 .claude/             ← implementation layer (the executors)
   agents/            each agent implements a role defined in ai-process
   skills/            each skill implements a procedure defined in ai-process
+
+cli/                 ← tooling layer (supports the skills)
+  ai-team            manages project artifacts; the action skills invoke it
 ```
 
-**Reviewing this project** means checking that every agent and skill faithfully implements what the ai-process specifies.
+**Reviewing this project** means checking that every agent and skill faithfully implements what the ai-process specifies, and that the CLI stays consistent with the artifact lifecycle the ai-process defines.
 **Changing this project** means either updating the ai-process first (the spec), then updating the agents/skills that implement the changed rules — or updating both atomically.
 Never update an agent or skill in a way that contradicts the ai-process without also updating the ai-process.
 

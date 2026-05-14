@@ -5,13 +5,16 @@ A reusable operating framework for projects developed by AI agent teams.
 ## What This Is
 
 This is a **meta-project** — it defines **how AI agent teams build software**.
-It also includes a small `ai-team` CLI that manages the framework's project artifacts and bootstraps the framework into new repositories.
 
 At its core is the **ai-process**: a set of documents that describe the rules the AI team must follow — workflows, quality gates, coding standards, and role responsibilities.
-Those rules are then **implemented** by the agents (`.claude/agents/`) and skills (`.claude/skills/`) that live alongside every project using this framework.
+Those rules are then **implemented** by three things that live alongside every project using this framework:
+
+- the **agents** (`.claude/agents/`) — the roles that carry out the process;
+- the **skills** (`.claude/skills/`) — the procedures the agents follow;
+- the **`ai-team` CLI** (`cli/`) — the tooling that supports the skills by managing project artifacts and bootstrapping the framework into new repositories.
 
 Think of it as a constitution for an AI development team.
-The ai-process is the law; the agents and skills are the institutions that carry it out.
+The ai-process is the law; the agents, skills, and CLI are the institutions that carry it out.
 
 ## The ai-process
 
