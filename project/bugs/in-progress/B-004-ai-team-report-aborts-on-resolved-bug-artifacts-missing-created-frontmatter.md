@@ -175,3 +175,27 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-15
+
+PASS
+
+Both stages passed.
+
+**Stage 1 — Bug criteria**
+
+- Diagnosis Log (Diagnosis 1) records reproduction status (confirmed, fully reproducible), evidence (stack trace with exact call chain and `FrontmatterError` message), isolated fault (`models.py parse_bug` calling `_require` on `created` unconditionally; `Bug.created` declared non-optional), and root cause (field added after B-001 was resolved; strictness misapplied to read paths that do not need `created`). All required elements are present.
+- The fix is scoped to the isolated cause: `Bug.created` changed from `str` to `str | None = None`; `parse_bug` replaced `_require(data, "created", path)` with `data.get("created")` + conditional `str()` conversion. No unrelated behavior was added.
+- `parse_spec`, `parse_adr`, and `parse_task` retain `_require` for `created` — correctly out of scope.
+- `dump_frontmatter` already omits `None`-valued optional fields, so the changed field type does not introduce a write-path regression.
+- `_bug_rows` in `report.py` does not read `bug.created` — confirmed in source, consistent with the diagnosis.
+- Fix Verification steps were executed: `uv --directory cli run ai-team report` exits 0 and writes the dated report file with B-001 listed; recorded in Session 1.
+- The fix branch diff contains exactly `cli/src/ai_team/core/models.py`, `cli/tests/test_models.py`, and `cli/tests/test_report.py`. `project/docs/reports/progress-report-2026-05-15.md` is not modified on the branch.
+
+**Stage 2 — Code quality**
+
+- Correctness: the conditional `str(raw_created) if raw_created is not None else None` correctly handles both the absent-field case (returns `None`) and the present-field case (coerces to `str`, matching prior behavior).
+- Tests: `test_parse_bug_accepts_missing_created` (unit, `test_models.py`) and `test_report_succeeds_with_legacy_bug_missing_created` (integration, `test_report.py`) both cover the failure path (pre-fix) and the success path (post-fix). Tests are independent (use `tmp_path`/`monkeypatch`). Full suite: 231 tests pass per Session 1.
+- Security: no credentials, no unvalidated input beyond what existed before.
+- Readability: inline comment on the dataclass field explains the optionality; function logic is straightforward. No dead code or debug artifacts.
+- Performance: no new loops or blocking paths.
