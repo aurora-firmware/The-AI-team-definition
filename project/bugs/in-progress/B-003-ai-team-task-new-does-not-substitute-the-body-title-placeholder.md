@@ -121,6 +121,20 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-15
+
+The diagnosis from the bug file was accurate and complete: `new_task()` in `cli/src/ai_team/commands/task.py` was passing the raw template body to `write_artifact()` without substituting the `# [Task Title]` placeholder, while the analogous `new_spec()` and `new_bug()` functions both had the one-liner fix applied by B-001.
+
+Following TDD red-green-refactor:
+
+1. Added `test_task_new_substitutes_body_h1_with_provided_title` to `cli/tests/test_task_new.py`, modeled on the existing `test_spec_new_substitutes_body_h1_with_provided_title` in `test_spec_new.py`. The test confirmed the bug by failing before the fix.
+2. Applied the minimal fix: a single line `body = body.replace("# [Task Title]", f"# {title}", 1)` inserted in `new_task()` immediately after `body = _template_body(template)`.
+3. All four tests in `test_task_new.py` pass after the fix.
+4. Ran the full Fix Verification block from the bug file: the end-to-end CLI invocation produced a file containing `# Verify B-003 fix` with no `# [Task Title]` placeholder remaining. The verification task file `T-044-verify-b-003-fix.md` was deleted after capturing the evidence.
+5. Committed on the bug branch with message `fix(cli): substitute body H1 placeholder in task new`.
+
+No alternatives were considered or rejected — the fix was a straightforward one-line addition matching the established pattern. Nothing remains for the next session; the fix is complete and verified.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
