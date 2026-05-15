@@ -228,3 +228,39 @@ in `cli/tests/test_task_new.py`.
 **Notes:**
 - Not yet filed as a bug — straightforward one-line fix mirroring the B-001 change; file
   a bug if it should go through the bug-loop.
+
+### I-008 — `report` aborts when older resolved bug artifacts lack `created` frontmatter
+
+- **Severity:** medium
+- **Status:** confirmed
+- **Observed during:** `/status-report`, 2026-05-15.
+- **Where:** `ai-team report` / `cli/src/ai_team/commands/report.py` bug listing.
+
+**Observed:** `ai-team status` successfully produced the inline project summary, but
+`ai-team report` failed before writing `project/docs/reports/progress-report-2026-05-15.md`.
+Both the installed CLI and the repo-local CLI failed with:
+
+```text
+FrontmatterError: Required frontmatter field 'created' is missing or null in
+project/bugs/resolved/B-001-ai-team-spec-new-cli-does-not-match-new-spec-skill-contract-and-leaves-body-title-placeholder.md
+```
+
+The offending resolved bug artifact has `id`, `title`, `severity`, and `status`
+frontmatter, but no `created` field. The report command parses resolved bugs through
+`parse_bug()`, which requires `created`, so a historical/resolved artifact with older
+frontmatter shape prevents all report generation.
+
+**Impact:** Gate 5 full report generation is blocked even though the project can be
+summarized and there are no open bugs. The status-report skill had to fall back to a
+manual report file.
+
+**Expected:** `ai-team report` should be robust across existing lifecycle artifacts. Good
+options include validating and reporting all malformed artifacts with an actionable error,
+backfilling/migrating older bug frontmatter, or allowing resolved bug rows to render with
+an unknown/missing created date when that field is not needed by the report table.
+
+**Notes:**
+- Manual fallback report was written to
+  `project/docs/reports/progress-report-2026-05-15.md`.
+- Not yet filed as a bug — likely worth a bug-loop item because it blocks the CLI report
+  command on current repository data.
