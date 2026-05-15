@@ -1,7 +1,7 @@
 ---
 id: T-040
 title: Refresh CLI command documentation for init changes
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-05-14'
