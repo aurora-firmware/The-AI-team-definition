@@ -259,3 +259,67 @@ def test_usage_md_does_not_mention_nonexistent_flags():
             pytest.fail(
                 f"usage.md documents flag '{flag}' that does not exist in commands.md"
             )
+
+
+# ---------------------------------------------------------------------------
+# T-040 AC-1: commands.md must not list --include-ai-process
+# ---------------------------------------------------------------------------
+
+
+def test_commands_md_does_not_list_include_ai_process():
+    """commands.md must not contain --include-ai-process after regeneration."""
+    assert COMMANDS_MD.is_file(), "commands.md must exist"
+    assert "--include-ai-process" not in COMMANDS_MD.read_text(encoding="utf-8"), (
+        "commands.md must not list --include-ai-process; regenerate with gen_docs.sh"
+    )
+
+
+# ---------------------------------------------------------------------------
+# T-040 AC-2: usage.md documents codex scaffolding
+# ---------------------------------------------------------------------------
+
+
+def test_usage_md_documents_codex_agents_scaffold():
+    """usage.md must document that --tools codex scaffolds .codex/agents/."""
+    assert ".codex/agents" in _content(), (
+        "usage.md must document that ai-team init --tools codex scaffolds .codex/agents/"
+    )
+
+
+def test_usage_md_documents_codex_skills_scaffold():
+    """usage.md must document that --tools codex scaffolds .codex/skills/."""
+    assert ".codex/skills" in _content(), (
+        "usage.md must document that ai-team init --tools codex scaffolds .codex/skills/"
+    )
+
+
+# ---------------------------------------------------------------------------
+# T-040 AC-3: usage.md states that init never copies ai-process/
+# ---------------------------------------------------------------------------
+
+
+def test_usage_md_states_never_copies_ai_process():
+    """usage.md must contain the literal phrase: never copies `ai-process/`."""
+    assert "never copies `ai-process/`" in _content(), (
+        "usage.md must state explicitly that ai-team init never copies `ai-process/`"
+    )
+
+
+# ---------------------------------------------------------------------------
+# T-040 AC-4: usage.md documents the scaffold source/generator maintenance flow
+# ---------------------------------------------------------------------------
+
+
+def test_usage_md_documents_scaffold_source_maintenance():
+    """usage.md must describe how to maintain the package-owned scaffold sources."""
+    lower = _lower()
+    assert "sync_init_scaffolds" in lower or "scaffold" in lower, (
+        "usage.md must document the scaffold source/generator maintenance flow"
+    )
+
+
+def test_usage_md_documents_scaffold_generator_script():
+    """usage.md must name the scaffold generator script."""
+    assert "sync_init_scaffolds.py" in _content(), (
+        "usage.md must name sync_init_scaffolds.py in the maintainer section"
+    )

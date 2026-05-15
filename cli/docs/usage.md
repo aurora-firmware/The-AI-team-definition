@@ -65,12 +65,14 @@ ai-team init [PATH] [OPTIONS]
 | Flag | Description |
 |---|---|
 | `--tools TEXT` | Comma-separated tool names to scaffold (e.g. `claude`, `codex`, `all`, `none`). |
-| `--include-ai-process` | Also copy the `ai-process/` specification documents. |
 | `--dry-run` | Print what would be written without touching the filesystem. |
 | `--force` | Overwrite existing files. Without this flag the command refuses to overwrite. |
 | `--no-interactive` | Skip all prompts. Requires `--tools` to be provided explicitly. |
 
 ### What gets scaffolded
+
+`ai-team init` never copies `ai-process/`. All scaffolded files come from
+package-owned snapshots bundled inside the `ai_team.init.scaffolds` package.
 
 Running `ai-team init . --tools claude` writes:
 
@@ -94,14 +96,21 @@ project/
 .ai-team.toml
 ```
 
+Running `ai-team init . --tools codex` additionally writes:
+
+```
+.codex/
+  agents/   ← Codex-format .toml agent definitions
+  skills/   ← Codex-format SKILL.md skill definitions
+```
+
+Use `--tools all` (or `--tools claude,codex`) to scaffold both tool sets at once.
+
 Each folder is created with a `.gitkeep` placeholder so git tracks the
 empty directories.
 
 `.ai-team.toml` is the marker file that tells the CLI where the project root
 is. It records the tools selected and the framework version used.
-
-Adding `--include-ai-process` also copies the `ai-process/` specification
-documents (processes, guidelines, architecture).
 
 ### Example: preview then initialise
 
@@ -111,6 +120,9 @@ ai-team init . --tools claude --no-interactive --dry-run
 
 # Initialise for real
 ai-team init . --tools claude --no-interactive
+
+# Initialise with both Claude and Codex tool scaffolds
+ai-team init . --tools all --no-interactive
 ```
 
 ---
@@ -276,7 +288,6 @@ dir = "project"
 
 [init]
 tools = ["claude"]
-include_ai_process = false
 framework_version = "0.1.0"
 ```
 
@@ -332,7 +343,7 @@ The `ai_team` package lives in `cli/src/ai_team/` and is structured as:
 | `ai_team.core.validate` | Artifact metadata validation logic. |
 | `ai_team.templates/` | Bundled Markdown artifact templates (task, bug, spec, adr, report). |
 | `ai_team.init/` | Scaffold data for `ai-team init`. |
-| `ai_team.init.scaffolds/` | Project skeleton, `.claude/` snapshot, and optional `ai-process/`. |
+| `ai_team.init.scaffolds/` | Package-owned snapshots: project skeleton, `.claude/` agents and skills, and `.codex/` agents and skills. |
 | `ai_team.render` | Rich console and JSON output helpers. |
 
 ### How to add a new command
@@ -360,10 +371,40 @@ Run a specific test file:
 uv run pytest tests/test_task_new.py -v
 ```
 
+### How to maintain scaffold sources
+
+The scaffold files shipped inside the package are **package-owned copies** —
+they are not read from the repository's `.claude/` or `.codex/` trees at
+runtime. This means any change to the canonical agent or skill definitions
+must be reflected in the bundled snapshots before the next release.
+
+The generator script `scripts/sync_init_scaffolds.py` keeps the snapshots
+in sync. It reads from:
+
+- `cli/src/ai_team/init/sources/agents/` — source agent definitions for
+  each tool (`.claude/agents/`, `.codex/agents/`)
+- `cli/src/ai_team/init/sources/skills/` — source skill definitions for
+  each tool (`.claude/skills/`, `.codex/skills/`)
+
+and writes the processed output into:
+
+- `cli/src/ai_team/init/scaffolds/claude/` — `.claude/` snapshot (agents and skills)
+- `cli/src/ai_team/init/scaffolds/codex/` — `.codex/` snapshot (agents and skills)
+- `cli/src/ai_team/init/scaffolds/project/` — project skeleton
+
+Run `sync_init_scaffolds.py` whenever the canonical agent or skill files
+change. The script is also run automatically at the start of the local-build
+installation step (see `From a local build` above).
+
+`ai-team init` never copies `ai-process/`. The specification layer is
+intentionally excluded from the scaffold — only the implementation layer
+(agents, skills) and the project skeleton are bundled.
+
 ### How to build and release
 
 Before building, refresh the bundled scaffold snapshots so `ai-team init` ships
-the latest `.claude/agents/` and `.claude/skills/`:
+the latest `.claude/agents/`, `.claude/skills/`, `.codex/agents/`, and
+`.codex/skills/`:
 
 ```bash
 cd cli
