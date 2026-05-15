@@ -170,6 +170,7 @@ def new_task(
 
     template = load_template("task")
     body = _template_body(template)
+    body = body.replace("# [Task Title]", f"# {title}", 1)
     model = Task(
         id=task_id,
         title=title,

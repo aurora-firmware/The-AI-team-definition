@@ -103,3 +103,21 @@ def test_task_new_refuses_to_overwrite_when_allocated_path_exists(
     assert result.exit_code != 0
     assert "already exists" in result.stderr.lower()
     assert existing.read_text(encoding="utf-8") == "existing bytes\n"
+
+
+def test_task_new_substitutes_body_h1_with_provided_title(monkeypatch, tmp_path):
+    """`task new` replaces the body H1 placeholder with the provided title."""
+    from ai_team.cli import app
+
+    _mkdir(tmp_path / "project" / "tasks" / "pending")
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["task", "new", "My New Task"])
+
+    assert result.exit_code == 0
+
+    expected = tmp_path / "project" / "tasks" / "pending" / "T-001-my-new-task.md"
+    content = expected.read_text(encoding="utf-8")
+
+    assert "# My New Task" in content
+    assert "# [Task Title]" not in content
