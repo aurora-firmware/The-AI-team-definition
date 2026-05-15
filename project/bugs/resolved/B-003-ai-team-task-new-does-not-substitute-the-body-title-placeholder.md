@@ -2,7 +2,7 @@
 id: B-003
 title: ai-team task new does not substitute the body title placeholder
 severity: medium
-status: in-progress
+status: resolved
 created: '2026-05-15'
 ---
 
