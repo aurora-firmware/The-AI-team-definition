@@ -126,7 +126,8 @@ class Bug:
     title: str
     severity: str
     status: str
-    created: str
+    # Optional because legacy resolved artifacts pre-date this field requirement.
+    created: str | None = None
     task: str | None = None  # Optional reference to a related task ID
     # Holds the original CommentedMap from parsing so comments survive dump.
     _source_map: CommentedMap | None = field(default=None, compare=False, repr=False)
@@ -201,12 +202,13 @@ def parse_bug(path: Path) -> Bug:
     """
     path = Path(path)
     data = _parse_yaml_frontmatter(path)
+    raw_created = data.get("created")
     return Bug(
         id=str(_require(data, "id", path)),
         title=str(_require(data, "title", path)),
         severity=str(_require(data, "severity", path)),
         status=str(_require(data, "status", path)),
-        created=str(_require(data, "created", path)),
+        created=str(raw_created) if raw_created is not None else None,
         task=str(data["task"]) if data.get("task") is not None else None,
         _source_map=data,
     )

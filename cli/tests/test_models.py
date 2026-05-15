@@ -585,3 +585,35 @@ Body.
     model = parse_task(path)
     dumped = dump_frontmatter(model, "Body.\n")
     assert "# workflow state" in dumped
+
+
+# ---------------------------------------------------------------------------
+# B-004 regression: parse_bug must accept legacy artifacts without 'created'
+# ---------------------------------------------------------------------------
+
+
+def test_parse_bug_accepts_missing_created(tmp_path):
+    """parse_bug does not raise FrontmatterError when 'created' is absent.
+
+    Legacy resolved-bug artifacts (e.g. B-001) were written before 'created'
+    became a field requirement. parse_bug must return a Bug whose 'created' is
+    None rather than aborting with a FrontmatterError.
+    """
+    content = """\
+---
+id: "B-001"
+title: "Legacy resolved bug"
+severity: medium
+status: resolved
+---
+
+# Legacy resolved bug
+"""
+    path = write_file(tmp_path, "B-001-legacy.md", content)
+    bug = parse_bug(path)
+    assert isinstance(bug, Bug)
+    assert bug.created is None
+    assert bug.id == "B-001"
+    assert bug.title == "Legacy resolved bug"
+    assert bug.severity == "medium"
+    assert bug.status == "resolved"
