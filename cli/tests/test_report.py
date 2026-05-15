@@ -145,3 +145,37 @@ def test_report_out_writes_populated_report_with_status_summary_fields(
 
     assert "1. Unblock T-003: waiting on API contract" in content
     assert "- Blocked tasks may delay delivery." in content
+
+
+def test_report_succeeds_with_legacy_bug_missing_created(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """`ai-team report` exits 0 when a resolved bug artifact has no 'created' field.
+
+    B-004 regression: parse_bug used to call _require(data, "created", path)
+    which aborts on legacy artifacts that pre-date the 'created' requirement.
+    The report must complete and write the dated file even when resolved bugs
+    are missing that field.
+    """
+    from ai_team.cli import app
+
+    legacy_bug = """\
+---
+id: "B-001"
+title: "Legacy resolved bug"
+severity: medium
+status: resolved
+---
+
+Body.
+"""
+    _write(tmp_path / "project" / "bugs" / "resolved" / "B-001.md", legacy_bug)
+
+    out_path = tmp_path / "report.md"
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["report", "--out", str(out_path)])
+
+    assert result.exit_code == 0, f"Command failed: {result.output}"
+    assert out_path.exists()
+    content = out_path.read_text(encoding="utf-8")
+    assert "B-001" in content
