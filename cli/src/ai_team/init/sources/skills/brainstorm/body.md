@@ -104,17 +104,13 @@ If the human corrects something, update the summary and confirm again.
 
 Invoke the `new-spec` skill to create the specification file. Provide the full required input set in the invocation text:
 - `title`: the confirmed spec title
-- `description`: a concise summary of the confirmed approach, exclusions, and constraints from Step 6
+- `description`: a concise summary of the confirmed approach, alternatives rejected, exclusions, and constraints from Step 6
 - `author`: `planner` unless the human provided a different author
 - `status`: `draft`
 
-The `new-spec` skill handles template loading, filename slugification, and frontmatter scaffolding. Because all required fields are provided here, it should not ask follow-up questions.
+`new-spec` handles template loading, frontmatter scaffolding, and section-by-section filling. It carries the **content-boundary rule** (no implementation code, config files, or build manifests in the spec body), the **section recipes** for each part of the template, and the **pre-submission checklist** — apply them through that skill rather than re-deriving them here.
 
-Once the file exists, fill it in with:
-- The confirmed approach
-- Alternatives considered and why they were not chosen
-- Explicit exclusions from scope
-- Architecture described with enough detail for the Planner to derive tasks
+When `new-spec` returns, also fill in the alternatives considered and why they were rejected (this is the brainstorm-specific content that the new-spec recipes do not generate).
 
 Mark any remaining open details with `[TODO]`.
 Update the spec `status` to `review`.
@@ -139,3 +135,4 @@ Because the human shaped the spec interactively, Gate 1 should be a quick confir
 - **Solving the wrong problem** — re-read the original request after generating alternatives to verify you are addressing the actual need.
 - **Scope creep** — if an alternative requires significantly more work, record it as an explicit exclusion in the spec's Exclusions section rather than folding it into the current scope.
 - **Missing constraints** — check `project/decisions/` before proposing anything that contradicts a prior decision.
+- **Embedding the implementation in the spec** — pasting near-complete config files, CI manifests, or build files into the spec, instead of describing them as requirements. This pre-empts the task plan and the Developer, and the spec rots when the real code evolves. Describe the contract; the implementation is the Developer's job.

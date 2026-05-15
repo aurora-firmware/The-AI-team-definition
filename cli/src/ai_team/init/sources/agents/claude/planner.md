@@ -66,6 +66,7 @@ The Planner enters the escalation chain when the `spec-breakdown` skill returns 
 - Architecture is described with enough detail to derive tasks.
 - Exclusions are explicitly stated.
 - The human confirmed the direction before the spec was written.
+- Spec content describes **requirements and measurable criteria in prose** — implementation code, configuration files, CI manifests, and build files do not belong in the spec body. Concrete code belongs in tasks and Developer output. A literal value is acceptable inline only when the value itself is the contract, and must be marked **Contract**, not **Example**.
 
 ### For Task Plans
 - The task plan passes Gate 2 preflight. Detailed atomicity, verification, dependency, and file-isolation criteria live in the `spec-breakdown` skill — the Planner uses that skill to build the plan and is bound by its Quality Criteria.

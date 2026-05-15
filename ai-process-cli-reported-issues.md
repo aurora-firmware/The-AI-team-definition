@@ -51,10 +51,24 @@ are observations to triage, not confirmed defects unless marked so.
 ### I-006 — Specifications tend to embed implementation code instead of descriptions and measurable criteria (not a CLI bug)
 
 - **Severity:** medium
-- **Status:** not-a-cli-bug (process/agent behavior)
+- **Status:** fixed (2026-05-15)
+- **Resolution:** added `guides/spec-authoring-guide.md` as the human-readable authoring
+  playbook for specs (content-boundary rule, section-by-section recipes, worked
+  example, pre-submission checklist). The same recipes were embedded into
+  `cli/src/ai_team/init/sources/skills/new-spec/body.md` so the Planner has them
+  in-flight when `/new-spec` fires. `cli/src/ai_team/templates/spec.md` was reworked
+  (the `## Configuration` YAML block became a prose `## Configuration Requirements`
+  section, and every section now carries an authoring hint). `brainstorm` Step 7
+  now hands off to `new-spec` for the recipes. The Planner agent's `## Quality Bar`
+  (Claude + Codex) lists the prose-vs-code rule. `CLAUDE.md` was updated to name
+  `cli/src/ai_team/init/sources/` as the product source-of-truth and clarify that
+  `.claude/` / `.codex/` are local agent configuration for this repo (not
+  authoritative). Scaffolds were regenerated via `cli/scripts/sync_init_scaffolds.py`.
 - **Observed during:** `/brainstorm` for S-001 (`github-actions-ci-for-cli-tests-and-ruff-formatting-checks`), 2026-05-14.
-- **Where:** `.claude/skills/brainstorm`, `.claude/skills/new-spec`, and the spec
-  template (`## Configuration` / code-block sections).
+- **Where (original report):** `.claude/skills/brainstorm`, `.claude/skills/new-spec`,
+  and the spec template `## Configuration` / code-block sections. The fix landed in the
+  authoritative CLI sources; the local `.claude/`/`.codex/` copies in this repo are
+  not part of the framework definition.
 
 **Observed:** When `/brainstorm` produced S-001, the resulting spec included concrete
 implementation artifacts — a near-complete `ci.yml` and `pyproject.toml` snippet. The
