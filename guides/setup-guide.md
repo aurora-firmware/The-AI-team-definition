@@ -73,33 +73,25 @@ done
 touch project/docs/coding_guidelines.md
 ```
 
-### Step 3: Copy the Framework Files
+### Step 3: Export the Framework Files
 
-Copy the following files from this repository into your new project, preserving the directory structure:
+Run `ai-team init` to export the bundled agent definitions, skill definitions, and templates into your project:
 
-**Templates (bundled as skill assets):**
-- `.claude/skills/new-spec/assets/TEMPLATE-specification.md`
-- `.claude/skills/new-task/assets/TEMPLATE-task.md`
-- `.claude/skills/new-bug/assets/TEMPLATE-bug.md`
-- `.claude/skills/new-adr/assets/TEMPLATE-adr.md`
-- `.claude/skills/tdd/assets/test-plan.md`
-- `.claude/skills/tdd/assets/test-report.md`
-- `.claude/skills/status-report/assets/progress-report.md`
+```bash
+ai-team init . --tools claude --no-interactive
+```
 
-**Agent definitions (copy to `.claude/agents/`):**
-- `planner.md`
-- `architect.md`
-- `developer.md`
-- `reviewer.md`
-- `integrator.md`
+This exports from the CLI package scaffold sources:
 
-**Skill definitions (copy to `.claude/skills/<name>/SKILL.md`):**
-- `brainstorm`, `spec-breakdown`, `spec-breakdown-review`, `code-review`, `tdd`, `debug`, `merge-conflicts`
-- `dev-loop`, `integrate`, `bug-loop`
-- `escalation-review`, `git-conventions`
-- `new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`
+- **Agent definitions** into `.claude/agents/`
+- **Skill definitions** into `.claude/skills/<name>/SKILL.md`
+- **Templates** as skill assets under `.claude/skills/*/assets/`
+- **Project state directories** under `project/`
+- **`.ai-team.toml`** configuration file
 
-If you use OpenAI Codex, keep skills available under `.codex/skills` and define project-scoped custom agents as `.codex/agents/*.toml`. Those TOML files should translate each Claude-style agent into Codex's custom-agent schema: `name`, `description`, and `developer_instructions`, with optional Codex-native settings such as `model`, `model_reasoning_effort`, and `sandbox_mode`.
+For OpenAI Codex compatibility, add `--tools codex` (or `--tools claude,codex`) to also export `.codex/agents/*.toml` Codex agent files. Those TOML files translate each Claude-style agent into Codex's custom-agent schema: `name`, `description`, and `developer_instructions`, with optional Codex-native settings such as `model`, `model_reasoning_effort`, and `sandbox_mode`.
+
+The `ai-process/` specification documents are not exported. They live in the AI team definition meta-repository and serve as the authoritative spec for the rules the agents and skills implement. You do not need them in your project.
 
 ### Step 4: Create Your Project's CLAUDE.md
 
@@ -198,6 +190,8 @@ Run these checks to confirm everything is in place:
 5. **Project guidance exists**: Confirm `CLAUDE.md` names the project commands and points to `project/docs/coding_guidelines.md` or equivalent project-local guidance.
 
 ### Step 7: Verify Packaging and Installation End-to-End (Maintainers)
+
+`scripts/sync_init_scaffolds.py` generates the bundled scaffold output in `cli/src/ai_team/init/scaffolds/` from the package-owned source assets in `cli/src/ai_team/init/sources/`. Run this script before every build to ensure `ai-team init` ships up-to-date scaffolds.
 
 Run this sequence from a clean shell to confirm the package builds, installs, and initializes correctly:
 

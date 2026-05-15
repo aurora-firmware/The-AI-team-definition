@@ -63,10 +63,11 @@ This document maps the ai-process roles, procedures, processes, and gates to the
 | Bug Tracker | Directory tree | Bug lifecycle tracking | `project/bugs/{open,in-progress,resolved}/` |
 | Decision Log | Directory | Architecture decision records | `project/decisions/` |
 | Templates | Procedure assets | Reusable document formats | `.claude/skills/*/assets/` |
-| Process Docs | Directory | Workflow and procedure definitions | `ai-process/processes/` |
-| Guidelines | Directory | Standards and checklists | `ai-process/guidelines/` |
-| Architecture Docs | Directory | System design documentation | `ai-process/architecture/` |
+| Process Docs | Directory | Workflow and procedure definitions (spec layer only — not exported by `ai-team init`) | `ai-process/processes/` |
+| Guidelines | Directory | Standards and checklists (spec layer only — not exported by `ai-team init`) | `ai-process/guidelines/` |
+| Architecture Docs | Directory | System design documentation (spec layer only — not exported by `ai-team init`) | `ai-process/architecture/` |
 | Action Procedures | Directory | Automation for document creation and status reporting | `.claude/skills/` (with `disable-model-invocation: true` where no model reasoning is needed) |
+| CLI Scaffold Sources | Package assets | Authoritative source for agents, skills, and templates exported by `ai-team init` | `cli/src/ai_team/init/sources/` |
 
 ## CLI Command Mapping
 

@@ -112,8 +112,9 @@ Each skill implements a workflow or action defined in the ai-process:
 ## Agent Platform Compatibility
 
 Agent and skill definitions live in `.claude/` for Claude Code.
-The `.codex/` directory provides OpenAI Codex compatibility with project-scoped agent TOML files and a symlinked `.codex/skills` view of `.claude/skills/`.
-Skills stay shared from the same source files.
+The `.codex/` directory provides OpenAI Codex compatibility with project-scoped agent TOML files.
+Both `.claude/` and `.codex/` in this repository are local project configuration files.
+The authoritative sources that `ai-team init` exports to adopting projects live in the CLI package under `cli/src/ai_team/init/sources/`.
 
 ## Using This Framework in Your Project
 
@@ -133,7 +134,7 @@ For a local build from this repository:
 
 ```bash
 cd cli
-python scripts/sync_init_scaffolds.py  # use python3 if your shell has no python shim
+python scripts/sync_init_scaffolds.py  # regenerates scaffolds from cli/src/ai_team/init/sources/
 uv build
 pipx install --force dist/*.whl
 ```
@@ -146,12 +147,8 @@ From the target repository root:
 ai-team init . --tools claude --no-interactive
 ```
 
-This creates the empty `project/` state folders, copies the bundled `.claude/agents/` and `.claude/skills/`, and writes `.ai-team.toml`.
-To also copy the process specification documents, add `--include-ai-process`:
-
-```bash
-ai-team init . --tools claude --include-ai-process --no-interactive
-```
+This creates the empty `project/` state folders, copies the bundled `.claude/agents/` and `.claude/skills/` from the CLI package scaffold sources, and writes `.ai-team.toml`.
+The `ai-process/` specification documents are not exported; they live in this meta-repository only and serve as the authoritative spec for the rules the agents and skills implement.
 
 Use `--dry-run` to preview files before writing, and `--force` only when you intentionally want existing files overwritten.
 
@@ -227,7 +224,7 @@ See `guides/setup-guide.md` for the complete file list, CLAUDE.md starter templa
 ├── .claude/
 │   ├── agents/          Agent role definitions (5 roles)
 │   └── skills/          Skill procedures and action commands
-└── .codex/              Codex agent TOML files and symlinked skills compatibility
+└── .codex/              Codex agent TOML files and skills — local project config for this repository
 ```
 
 ## Contributing to This Project
@@ -236,7 +233,7 @@ Changes to the framework follow the same workflow the framework defines.
 
 - **Changing a rule** (workflow, standard, convention): update `ai-process/` first, then update any agents or skills that implement the changed rule.
 - **Changing an agent or skill**: verify that the change is consistent with — or explicitly revises — the relevant ai-process documents.
-- **Changing bundled init content**: update the source files, then run `python cli/scripts/sync_init_scaffolds.py` so `ai-team init` ships the same content.
+- **Changing bundled init content**: update the package-owned source assets in `cli/src/ai_team/init/sources/`, then run `python cli/scripts/sync_init_scaffolds.py` to regenerate the bundled scaffolds in `cli/src/ai_team/init/scaffolds/` so `ai-team init` ships the updated content.
 - **Changing a CLI command or flag**: update the source, then run `bash cli/scripts/gen_docs.sh` and commit the updated `cli/docs/commands.md` so the reference stays current.
 - **Architecture-affecting decisions**: record an ADR in `project/decisions/` before implementing.
 

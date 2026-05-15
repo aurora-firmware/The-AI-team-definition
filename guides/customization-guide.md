@@ -8,20 +8,19 @@ created: 2026-03-10
 
 This guide explains what to adapt when adopting the AI team framework for your project.
 
-## What to Copy As-Is
+## What ai-team init Exports As-Is
 
-These files are generic and work for any project without modification:
+The `ai-team init` command exports these files from the CLI package scaffold sources. They are generic and work for any project without modification:
 
-| Category | Files |
+| Category | Destination in your project |
 |---|---|
-| **Agent definitions** | All files in `.claude/agents/` — roles are universal |
-| **Skill definitions** | All files in `.claude/skills/` — procedures are language-agnostic |
-| **Process docs** | `ai-process/processes/workflow-overview.md`, `quality-gates.md`, `escalation-procedure.md` |
-| **Review checklist** | `ai-process/guidelines/review-checklist.md` |
-| **Markdown conventions** | `ai-process/guidelines/markdown-conventions.md` |
-| **Architecture docs** | `ai-process/architecture/system-overview.md`, `component-map.md` |
-| **All templates** | `TEMPLATE-*.md` files in `.claude/skills/*/assets/` and `ai-process/templates/` |
+| **Agent definitions** | `.claude/agents/` — roles are universal |
+| **Skill definitions** | `.claude/skills/` — procedures are language-agnostic |
+| **All templates** | `TEMPLATE-*.md` files in `.claude/skills/*/assets/` |
 | **Action skills** | Action skills in `.claude/skills/` (with `disable-model-invocation: true`) |
+| **Codex agents** | `.codex/agents/*.toml` (only when `--tools codex` is passed) |
+
+The `ai-process/` specification documents (process docs, guidelines, architecture docs) are **not** exported. They live in the AI team definition meta-repository and serve as the authoritative spec for the rules that agents and skills implement. Your project does not need them; the agent and skill files already embed the rules they need to execute.
 
 ## What to Customize
 
