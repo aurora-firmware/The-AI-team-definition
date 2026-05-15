@@ -106,3 +106,25 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-15
+
+PASS
+
+Both Stage 1 (spec compliance) and Stage 2 (code quality) pass.
+
+**Stage 1 — Spec compliance**
+
+- AC-1 met: `README.md` line 117 explicitly states "The authoritative sources that `ai-team init` exports to adopting projects live in the CLI package under `cli/src/ai_team/init/sources/`." Line 150 clarifies "from the CLI package scaffold sources." The maintainer bullet at line 236 names `cli/src/ai_team/init/sources/` as the correct place to edit bundled init content.
+- AC-2 met: `README.md` removes the `--include-ai-process` flag and its example block. `guides/setup-guide.md` Step 3 removes the flag entirely — no remaining reference. `guides/customization-guide.md` removes the rows listing `ai-process/` docs as items to copy and adds a clear "not exported" paragraph.
+- AC-3 met: `ai-process/architecture/component-map.md` adds "(spec layer only — not exported by `ai-team init`)" to each of Process Docs, Guidelines, and Architecture Docs. `ai-process/architecture/system-overview.md` adds Design Decision #6 explicitly stating `ai-process/` is not exported by `ai-team init`.
+- AC-4 met: `guides/setup-guide.md` replaces the manual file-copy list (Step 3) with an `ai-team init` invocation. The verification `rg` command returned no matches (exit 1), confirming all stale root-copy and removed-flag patterns are gone.
+- AC-5 met: Workflow steps, gate references, CLAUDE.md guidance, `/dev-loop`, `/bug-loop`, and Gate 1–5 descriptions are unchanged in `guides/setup-guide.md`. Process semantics are preserved throughout.
+
+Files modified by commit `01bdc3c` are exactly the five files listed in the task's "Files to Touch" section. No out-of-scope files were modified by this commit.
+
+**Stage 2 — Code quality**
+
+This is a documentation-only task; no executable code was added or modified. Readability is good: wording is precise, section headings accurately reflect the new content, and no dead or contradictory prose remains. No hardcoded credentials, parameterized queries, or performance concerns are applicable.
+
+The Work Log records the `rg` verification result and 228 pytest tests passing. No intentional stale references remain that would require explanation.
