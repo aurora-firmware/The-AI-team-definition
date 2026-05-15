@@ -125,6 +125,23 @@ Root cause or fault hypothesis:
 Planned verification:
 -->
 
+### Diagnosis 1 — 2026-05-15
+
+**Reproduction status:** Confirmed — fully reproducible. Running `uv --directory cli run ai-team report` from the repo root exits with code 1 every time, before writing any output file.
+
+**Evidence captured:** stack trace shows `FrontmatterError: Required frontmatter field 'created' is missing or null in project/bugs/resolved/B-001-...md`. Call chain: `report.py:257 default → _render_report → _bug_rows → parse_bug(path)` (called on B-001) → `models.py:209 _require(data, "created", path)` → `_require` raises. The B-001 resolved artifact has frontmatter `id`, `title`, `severity`, `status` only; `created` is absent (it predates the field's introduction).
+
+**Isolated fault:** `cli/src/ai_team/core/models.py`, inside `parse_bug` (lines 204–212): `created=str(_require(data, "created", path))`. `_require` treats absence of `created` as a fatal error for every bug artifact regardless of context. The `Bug` dataclass declares `created: str` (non-optional, no default), so there is no downstream way to represent a missing date gracefully. The consumer in `report.py` `_bug_rows` (lines 116–129) never reads `bug.created` — only `bug.id`, `bug.title`, and `bug.severity`. `created` is read exclusively by `dump_frontmatter` and by mutation callers (bug lifecycle commands), neither invoked by `report`.
+
+**Root cause or fault hypothesis:** `created` was added as a hard-required field on the `Bug` dataclass after B-001 was already resolved and written. `parse_bug` enforces the requirement unconditionally with no tolerance for legacy artifacts. Because `_bug_rows` iterates over all bug folders including `resolved/`, a single legacy artifact causes `parse_bug` to abort before any report output is written. This is a design mismatch: strictness belongs to write paths (creating or mutating a bug file), not read paths that need a subset of fields for display. Recommended fix is option 3 from the bug file (make `Bug.created` optional). Option 2 (backfilling B-001) fixes the immediate data but leaves the code fragile against future legacy artifacts; option 1 (validate-all up front) still prevents reports from generating when legacy artifacts exist.
+
+**Planned verification:**
+1. Add a failing regression test in `cli/tests/test_report.py`: create a resolved bug fixture whose frontmatter has only `id`, `title`, `severity`, `status` (no `created`), invoke `ai-team report`, assert exit 0 and the output file is written.
+2. Add a unit test in `cli/tests/test_models.py`: `parse_bug` on a file missing `created` returns a `Bug` with `created=None` instead of raising.
+3. Apply the minimal fix: change `Bug.created` to `str | None = None` and read it with `data.get("created")` instead of `_require`.
+4. Run the full test suite; all tests must pass.
+5. Re-run `uv --directory cli run ai-team report` against the real repo (with B-001 present); command must exit 0 and write the dated report file with B-001 listed in the resolved-bugs section.
+
 ## Work Log
 
 <!-- Mandatory. Append one entry per session boundary. Format:
