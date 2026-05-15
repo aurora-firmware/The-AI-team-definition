@@ -1,7 +1,7 @@
 ---
 id: T-042
 title: Regenerate Claude and Codex skill scaffold outputs
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-05-14'
