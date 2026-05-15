@@ -2,7 +2,7 @@
 id: B-004
 title: ai-team report aborts on resolved bug artifacts missing 'created' frontmatter
 severity: medium
-status: open
+status: in-progress
 created: '2026-05-15'
 ---
 
