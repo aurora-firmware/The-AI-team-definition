@@ -1,7 +1,7 @@
 ---
 id: T-039
 title: Update init tests for Codex scaffolds and removed ai-process export
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-05-14'
