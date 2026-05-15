@@ -90,3 +90,24 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-15
+
+PASS
+
+Stage 1 — all five ACs are covered by tests that exist on the branch:
+
+- AC-1: `test_init_tools_codex_scaffolds_codex_agents_and_skills` asserts `.codex/agents/planner.toml` and `.codex/skills/tdd/SKILL.md` exist after `--tools codex`.
+- AC-2: `test_init_tools_codex_scaffolds_real_files_not_symlinks` asserts both files pass `is_file() and not is_symlink()`.
+- AC-3: `test_init_tools_all_scaffolds_both_claude_and_codex` asserts both `.claude/agents/planner.md` and `.codex/agents/planner.toml` exist after `--tools all`.
+- AC-4: `test_init_defaults_to_cwd_and_scaffolds_project_claude_and_marker` and `test_init_tools_all_scaffolds_both_claude_and_codex` both assert `"include_ai_process" not in data["init"]`.
+- AC-5: `test_init_include_ai_process_is_unknown_option` asserts `exit_code != 0` when `--include-ai-process` is passed.
+
+The Developer's argument is validated: AC-1 through AC-5 were already covered by tests that landed with T-038. T-039's diff is legitimately small.
+
+Stage 2 — both changes in the diff are correct and clean:
+
+1. `cli/tests/test_init.py` — removal of unused `import importlib.metadata` resolves the ruff F401 failure. No other changes.
+2. `cli/tests/test_cli_bootstrap.py` — `test_codex_scaffold_package_data_is_reachable` navigates `importlib.resources` to `scaffolds/codex/agents/planner.toml` and `scaffolds/codex/skills/tdd/SKILL.md` and asserts both are files. Logic is correct; assertions have descriptive failure messages; the test is independent.
+
+All 17 tests pass (`uv run pytest tests/test_init.py tests/test_cli_bootstrap.py`). Ruff reports no issues. No production files were touched. No out-of-scope files were modified.
