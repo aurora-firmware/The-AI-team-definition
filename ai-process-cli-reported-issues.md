@@ -217,7 +217,8 @@ No CLI behaviour change was needed. Full CLI suite is now green: 211 passed.
 ### I-007 — `task new` does not substitute the body title placeholder
 
 - **Severity:** medium
-- **Status:** confirmed
+- **Status:** confirmed (tracked by B-003, filed 2026-05-15)
+- **Tracked by:** B-003
 - **Observed during:** `/write-plan` for S-001, creating tasks T-032/T-033/T-034, 2026-05-14.
 - **Where:** `ai-team task new` (template population) — `cli/src/ai_team/commands/task.py`.
 
@@ -246,7 +247,8 @@ in `cli/tests/test_task_new.py`.
 ### I-008 — `report` aborts when older resolved bug artifacts lack `created` frontmatter
 
 - **Severity:** medium
-- **Status:** confirmed
+- **Status:** confirmed (tracked by B-004, filed 2026-05-15)
+- **Tracked by:** B-004
 - **Observed during:** `/status-report`, 2026-05-15.
 - **Where:** `ai-team report` / `cli/src/ai_team/commands/report.py` bug listing.
 
