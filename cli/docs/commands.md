@@ -179,7 +179,6 @@ $ ai-team init [OPTIONS] [PATH] COMMAND [ARGS]...
 **Options**:
 
 * `--tools TEXT`
-* `--include-ai-process`
 * `--force`
 * `--dry-run`
 * `--no-interactive`
