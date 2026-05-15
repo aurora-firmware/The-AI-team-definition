@@ -71,6 +71,18 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-15
+
+The task required populating the Claude and Codex agent scaffold outputs under `cli/src/ai_team/init/scaffolds/claude/agents/` and `cli/src/ai_team/init/scaffolds/codex/agents/` by running the package-owned generator script.
+
+On inspection, the Claude agent scaffolds (`architect.md`, `developer.md`, `integrator.md`, `planner.md`, `reviewer.md`) were already committed — they had been generated in a prior session. The Codex agent scaffolds directory (`codex/agents/`) was missing entirely; only the `codex/skills/` directory existed under scaffolds.
+
+Running `python3 scripts/sync_init_scaffolds.py` created the five Codex agent TOML files as real (non-symlink) files using `shutil.copytree`, which satisfies AC-1 through AC-3 and AC-5 without any generator changes.
+
+For the TDD cycle, I audited the existing tests and found that AC-3 (real files, not symlinks), AC-4 (idempotency), and AC-5 (sources unchanged) had no coverage. I added three new tests to `cli/tests/test_init_scaffolds.py` before verifying that the generator's behaviour already satisfied them — the tests pass because `shutil.copytree` produces real files, the `_replace_tree` helper removes and recreates the destination (idempotent), and the generator only touches `scaffolds/`, never `sources/`. The full task verification commands all confirmed `PASS`. One commit was made on the task branch.
+
+Nothing remains — all five acceptance criteria are satisfied and all 8 tests pass.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
