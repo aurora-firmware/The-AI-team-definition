@@ -152,6 +152,18 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-15
+
+Read the bug file and Diagnosis Log (embedded in the task prompt), then confirmed the fault in `cli/src/ai_team/core/models.py`: `parse_bug` called `_require(data, "created", path)` unconditionally, and `Bug.created` was declared `str` (non-optional). Any resolved artifact written before `created` became a required field caused a `FrontmatterError` that aborted `ai-team report` before it could write any output.
+
+Followed the TDD cycle as directed. Red phase: added `test_parse_bug_accepts_missing_created` to `cli/tests/test_models.py` (fixture with only `id`, `title`, `severity`, `status`; asserts `bug.created is None` and no `FrontmatterError`) and `test_report_succeeds_with_legacy_bug_missing_created` to `cli/tests/test_report.py` (sets up a resolved bug without `created`, invokes `ai-team report --out`, asserts exit code 0 and B-001 in output). Both tests failed against the unfixed code with the exact `FrontmatterError` described in the bug.
+
+Green phase: changed `Bug.created` field type from `str` to `str | None = None` in the dataclass, and replaced `created=str(_require(data, "created", path))` with `raw_created = data.get("created")` followed by `created=str(raw_created) if raw_created is not None else None`. Both new tests passed. No changes made to `parse_task`, `parse_spec`, or `parse_adr` — all out of scope and still enforce `created` as required as specified in the diagnosis.
+
+Full suite: 231 tests pass. Fix Verification: `uv --directory cli run ai-team report` exits 0, writes `project/docs/reports/progress-report-2026-05-15.md`, and B-001 appears in the resolved-bugs section. The generated report file was not committed on the bug branch — it is a runtime output artifact.
+
+Nothing remains for this bug. Ready for review.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
