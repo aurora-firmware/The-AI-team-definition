@@ -75,6 +75,26 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-15
+
+This session implemented T-041 in full. The task was a docs-only update to bring five files in line with S-001's ownership change: the CLI package sources in `cli/src/ai_team/init/sources/` are the authoritative origin for what `ai-team init` exports, not the repository-root `.claude/` or `.codex/` folders, and `ai-process/` is the spec layer only and is never exported by init.
+
+The verification command (`rg` pattern search) was used as the test harness. The initial run found two stale references in `README.md`: both `--include-ai-process` lines (lines 150 and 153). The `symlinked \.codex/skills` pattern also matched the Agent Platform Compatibility section, which needed rephrasing.
+
+Changes made:
+
+- **README.md**: Removed `--include-ai-process` option block and replaced it with a note that `ai-process/` docs are not exported. Updated the Agent Platform Compatibility section to state `.claude/` and `.codex/` are local project configuration, not product export sources. Updated the repository structure comment for `.codex/`. Updated the maintainer "Changing bundled init content" bullet to name the correct source path (`cli/src/ai_team/init/sources/`). Clarified the `sync_init_scaffolds.py` comment in the local build snippet.
+
+- **guides/setup-guide.md**: Replaced Step 3 "Copy the Framework Files" (which listed individual files to copy manually from the repo root) with "Export the Framework Files" directing users to run `ai-team init`. Added a note in Step 7 clarifying what `sync_init_scaffolds.py` reads from.
+
+- **guides/customization-guide.md**: Renamed "What to Copy As-Is" to "What ai-team init Exports As-Is" and removed the rows that incorrectly listed `ai-process/` docs (process docs, guidelines, architecture docs, and `ai-process/templates/`) as things to copy. Added a clear paragraph stating `ai-process/` is not exported.
+
+- **ai-process/architecture/component-map.md**: Added "(spec layer only — not exported by `ai-team init`)" to the Purpose column for Process Docs, Guidelines, and Architecture Docs. Added a new row for CLI Scaffold Sources pointing to `cli/src/ai_team/init/sources/`.
+
+- **ai-process/architecture/system-overview.md**: Added Design Decision #6 "Spec layer vs. export layer" documenting the separation between the `ai-process/` spec layer and the CLI package export layer.
+
+Nothing was rejected or revisited — the scope was clear from the rg pattern and ACs. All 228 existing pytest tests pass. No intentional historical references remain.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
