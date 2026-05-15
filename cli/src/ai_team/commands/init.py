@@ -77,7 +77,6 @@ def _next_steps() -> list[str]:
 def init_command(
     path: Path = typer.Argument(Path(".")),
     tools: str | None = typer.Option(None, "--tools"),
-    include_ai_process: bool = typer.Option(False, "--include-ai-process"),
     force: bool = typer.Option(False, "--force"),
     dry_run: bool = typer.Option(False, "--dry-run"),
     no_interactive: bool = typer.Option(False, "--no-interactive"),
@@ -88,11 +87,6 @@ def init_command(
     except ValueError as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
-
-    if not no_interactive and tools is None and not include_ai_process:
-        include_ai_process = typer.confirm(
-            "Include ai-process snapshot?", default=False
-        )
 
     target_root = path.resolve()
 
@@ -108,9 +102,9 @@ def init_command(
                 _plan_copies(scaffolds_path / "claude", target_root / ".claude")
             )
 
-        if include_ai_process:
+        if "codex" in selected_tools:
             planned.extend(
-                _plan_copies(scaffolds_path / "ai-process", target_root / "ai-process")
+                _plan_copies(scaffolds_path / "codex", target_root / ".codex")
             )
 
     marker = target_root / ".ai-team.toml"
@@ -142,7 +136,6 @@ def init_command(
         "project": {"dir": "project"},
         "init": {
             "tools": selected_tools,
-            "include_ai_process": include_ai_process,
             "framework_version": importlib.metadata.version("ai-team"),
         },
     }
