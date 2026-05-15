@@ -65,6 +65,20 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-15
+
+T-038 had already landed before this session and implemented the Codex init behavior, so all five ACs had existing test coverage in `test_init.py` when I picked up the task. The tests for AC-1 through AC-5 were present and passing.
+
+Two issues remained:
+
+1. `test_init.py` had a stale `import importlib.metadata` left over from an earlier iteration of the file. The import was unused and caused `ruff` to fail with `F401`. I removed it.
+
+2. `test_cli_bootstrap.py`'s `test_package_data_dirs_are_importable_as_packages` only checked that `ai_team.init.scaffolds` was traversable as a root, but did not specifically verify that the codex subdirectory content (agent `.toml` files, skill `SKILL.md` files) was reachable from the installed package. I added `test_codex_scaffold_package_data_is_reachable`, which navigates to `scaffolds/codex/agents/planner.toml` and `scaffolds/codex/skills/tdd/SKILL.md` via `importlib.resources` and asserts both are files. This test passes because the package is installed in editable mode and the codex scaffolds (added by T-042/T-043) exist in the source tree.
+
+No production files were touched. The `cli/docs/commands.md` modification visible in `git status` was a pre-existing uncommitted change from T-038 and was excluded from the commit.
+
+Result: PASS
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
