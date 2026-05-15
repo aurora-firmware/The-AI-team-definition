@@ -99,6 +99,18 @@ Root cause or fault hypothesis:
 Planned verification:
 -->
 
+### Diagnosis 1 — 2026-05-15
+
+**Reproduction status:** Confirmed. Running `uv --directory cli run ai-team task new "Pick any task title" --json` produced `T-044-pick-any-task-title.md` with frontmatter `title: Pick any task title` (correct) but body line `# [Task Title]` (placeholder, not substituted). Artifact cleaned up after capture.
+
+**Evidence captured:** File body line 10 of the created artifact contained the literal string `# [Task Title]` instead of `# Pick any task title`. No error or warning was emitted. The command exited with code 0 and returned valid JSON.
+
+**Isolated fault:** `cli/src/ai_team/commands/task.py`, `new_task()` function, between line 172 (`body = _template_body(template)`) and line 184 (`write_artifact(dest, model, body, overwrite=False)`). The `body.replace("# [Task Title]", f"# {title}", 1)` call is missing entirely.
+
+**Root cause or fault hypothesis:** When B-001 was applied to fix the same placeholder-substitution defect in `new_spec()` (spec.py line 75) and `new_bug()` (bug.py line 124), `new_task()` in task.py was not touched. All three functions share the same pattern: extract template body via `_template_body()`, then pass `body` to `write_artifact()`. In `spec.py` and `bug.py` a `body = body.replace("# [<Type> Title]", f"# {title}", 1)` line was inserted between those two calls; in `task.py` that insertion was simply omitted. The root cause is an incomplete application of the B-001 fix — not a logic error in the existing code, but a missing line.
+
+**Planned verification:** After adding `body = body.replace("# [Task Title]", f"# {title}", 1)` at line 173 (after `body = _template_body(template)` and before the `Task(...)` model construction), re-run the fix verification commands from the bug file: a fresh `ai-team task new` invocation followed by the assertion script, plus `uv run pytest tests/test_task_new.py` after adding the regression test analogous to `test_spec_new_substitutes_body_h1_with_provided_title`.
+
 ## Work Log
 
 <!-- Mandatory. Append one entry per session boundary. Format:
