@@ -97,3 +97,17 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-15
+
+PASS
+
+Stage 1 (spec compliance): All four acceptance criteria are met by the single commit `65d6e20`.
+- AC-1: `--include-ai-process` is absent from `cli/docs/commands.md` — confirmed by text search.
+- AC-2: `cli/docs/usage.md` documents that `--tools codex` scaffolds `.codex/agents/` and `.codex/skills/` — confirmed by the new "Running `ai-team init . --tools codex`" tree block.
+- AC-3: `cli/docs/usage.md` contains the literal phrase "never copies `ai-process/`" in two places (the "What gets scaffolded" section and the "How to maintain scaffold sources" subsection).
+- AC-4: A new "How to maintain scaffold sources" subsection in `cli/docs/usage.md` describes the `sources/` → `scaffolds/` flow via `sync_init_scaffolds.py`.
+
+Files touched are exactly the three stated in the task (`cli/docs/commands.md`, `cli/docs/usage.md`, `cli/tests/test_usage_guide.py`). The test file is the natural home for usage-guide content assertions and is justified by the Work Log.
+
+Stage 2 (code quality): Six new tests were added, each targeting a specific acceptance criterion. Tests are stateless file reads — independent of each other, no shared mutable state. The disjunction in `test_usage_md_documents_scaffold_source_maintenance` (`"sync_init_scaffolds" in lower or "scaffold" in lower`) is broad but harmless because `test_usage_md_documents_scaffold_generator_script` tightly enforces the script name. No dead code, no hardcoded secrets, no security issues. Readability is clear; docstrings accurately describe intent.
