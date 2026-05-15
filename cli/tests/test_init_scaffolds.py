@@ -290,6 +290,97 @@ def test_package_owned_skill_sources_include_body_and_required_metadata() -> Non
         assert metadata["claude"]["header"].strip() == scaffold_header.strip()
 
 
+def test_sync_script_generates_codex_agent_scaffolds_as_real_files_not_symlinks(
+    tmp_path: Path,
+) -> None:
+    """AC-3: Codex agent scaffold files must be real files, not symlinks."""
+    repo = _setup_fake_repo(tmp_path)
+
+    subprocess.run(
+        [sys.executable, "cli/scripts/sync_init_scaffolds.py"],
+        cwd=repo,
+        check=True,
+    )
+
+    codex_agents = (
+        repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "codex" / "agents"
+    )
+    assert codex_agents.is_dir(), "codex agents scaffold directory must exist"
+    for agent_file in codex_agents.iterdir():
+        assert not agent_file.is_symlink(), (
+            f"Expected real file but found symlink: {agent_file}"
+        )
+
+
+def test_sync_script_is_idempotent_for_agent_scaffolds(tmp_path: Path) -> None:
+    """AC-4: Running the generator twice leaves no additional diff."""
+    repo = _setup_fake_repo(tmp_path)
+
+    subprocess.run(
+        [sys.executable, "cli/scripts/sync_init_scaffolds.py"],
+        cwd=repo,
+        check=True,
+    )
+
+    scaffolds_root = repo / "cli" / "src" / "ai_team" / "init" / "scaffolds"
+    claude_agents = scaffolds_root / "claude" / "agents"
+    codex_agents = scaffolds_root / "codex" / "agents"
+
+    def collect_file_contents(directory: Path) -> dict[str, str]:
+        return {
+            str(f.relative_to(directory)): f.read_text(encoding="utf-8")
+            for f in sorted(directory.rglob("*"))
+            if f.is_file()
+        }
+
+    claude_before = collect_file_contents(claude_agents)
+    codex_before = collect_file_contents(codex_agents)
+
+    subprocess.run(
+        [sys.executable, "cli/scripts/sync_init_scaffolds.py"],
+        cwd=repo,
+        check=True,
+    )
+
+    claude_after = collect_file_contents(claude_agents)
+    codex_after = collect_file_contents(codex_agents)
+
+    assert claude_after == claude_before, (
+        "Claude agent scaffold changed on second run — generator is not idempotent"
+    )
+    assert codex_after == codex_before, (
+        "Codex agent scaffold changed on second run — generator is not idempotent"
+    )
+
+
+def test_sync_script_does_not_modify_sources_directory(tmp_path: Path) -> None:
+    """AC-5: Running the generator must not modify source files."""
+    repo = _setup_fake_repo(tmp_path)
+
+    sources_dir = repo / "cli" / "src" / "ai_team" / "init" / "sources" / "agents"
+
+    def collect_file_contents(directory: Path) -> dict[str, str]:
+        return {
+            str(f.relative_to(directory)): f.read_text(encoding="utf-8")
+            for f in sorted(directory.rglob("*"))
+            if f.is_file()
+        }
+
+    sources_before = collect_file_contents(sources_dir)
+
+    subprocess.run(
+        [sys.executable, "cli/scripts/sync_init_scaffolds.py"],
+        cwd=repo,
+        check=True,
+    )
+
+    sources_after = collect_file_contents(sources_dir)
+
+    assert sources_after == sources_before, (
+        "Generator modified source files — sources must remain unchanged"
+    )
+
+
 def test_package_owned_agent_sources_cover_each_exported_role_for_both_tools() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     framework_root = repo_root.parent
