@@ -146,3 +146,27 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-15
+
+PASS
+
+**Stage 1 — Bug criteria:** All checks passed.
+
+- Reproduction status is confirmed and explicit in the Diagnosis Log (confirmed via live `ai-team task new` run on 2026-05-14; artifact cleaned up after capture).
+- Evidence is recorded: body line 10 of the created artifact contained `# [Task Title]` with no error emitted and exit code 0.
+- Isolated fault is pinpointed: `cli/src/ai_team/commands/task.py`, `new_task()`, missing `body.replace("# [Task Title]", f"# {title}", 1)` between `_template_body()` call and `write_artifact()` call.
+- Root cause is documented: the B-001 fix was applied to `spec.py` and `bug.py` but not to `task.py` — an incomplete application of the prior fix.
+- Fix is scoped strictly to the isolated cause: one line added to `new_task()`, no unrelated behavior.
+- The fix matches the established pattern in `spec.py` (line 75) and `bug.py` (line 124).
+- Fix Verification steps were followed: end-to-end CLI invocation confirmed the placeholder is absent and the expected H1 is present; verification artifact deleted after capture.
+- Regression test `test_task_new_substitutes_body_h1_with_provided_title` added to `cli/tests/test_task_new.py` and confirmed to fail before the fix and pass after.
+- Only two files modified (`cli/src/ai_team/commands/task.py`, `cli/tests/test_task_new.py`), both within the stated scope.
+
+**Stage 2 — Code quality:** All checks passed.
+
+- Correctness: the replace call uses `count=1` to limit substitution to the first occurrence, consistent with the pattern in `spec.py` and `bug.py`. Logic is correct.
+- Tests: the new test uses `monkeypatch` and `tmp_path` for isolation, asserts both presence of the substituted H1 and absence of the placeholder, and is independent of all other tests. Success and implicit failure paths are covered.
+- Security: no secrets, no external input passed unsanitized beyond what the existing pattern already does.
+- Readability: the fix is a single focused line; no dead code or artifacts introduced.
+- Performance: no concerns for a single string replace on a small template body.
