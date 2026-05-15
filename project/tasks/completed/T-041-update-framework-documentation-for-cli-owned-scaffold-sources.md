@@ -1,7 +1,7 @@
 ---
 id: T-041
 title: Update framework documentation for CLI-owned scaffold sources
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-05-14'
