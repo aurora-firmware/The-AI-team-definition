@@ -1,7 +1,7 @@
 ---
 id: T-038
 title: Remove ai-process export behavior from init
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-05-14'
