@@ -7,11 +7,13 @@ A reusable operating framework for projects developed by AI agent teams.
 This is a **meta-project** — it defines **how AI agent teams build software**.
 
 At its core is the **ai-process**: a set of documents that describe the rules the AI team must follow — workflows, quality gates, coding standards, and role responsibilities.
-Those rules are then **implemented** by three things that live alongside every project using this framework:
+Those rules are then **implemented** by three things, all packaged inside the `ai-team` CLI and exported into a target project by `ai-team init`:
 
-- the **agents** (`.claude/agents/`) — the roles that carry out the process;
-- the **skills** (`.claude/skills/`) — the procedures the agents follow;
+- the **agents** — the roles that carry out the process (authored under `cli/src/ai_team/init/sources/agents/`);
+- the **skills** — the procedures the agents follow (authored under `cli/src/ai_team/init/sources/skills/`);
 - the **`ai-team` CLI** (`cli/`) — the tooling that supports the skills by managing project artifacts and bootstrapping the framework into new repositories.
+
+When a project runs `ai-team init`, the CLI writes the exported agents and skills into that project's `.claude/` and/or `.codex/` directory. Those folders are **per-project local configuration** — they are not part of this meta-project's deliverable and, in this repository, are git-ignored and used only when running agents *inside this repo*.
 
 Think of it as a constitution for an AI development team.
 The ai-process is the law; the agents, skills, and CLI are the institutions that carry it out.
@@ -27,7 +29,7 @@ The ai-process lives in `ai-process/` and has three layers:
 | Structure | `ai-process/architecture/` | How the AI team itself is organized: agent roles, skill boundaries, component responsibilities |
 
 Everything in `ai-process/` is the **specification layer** — the authoritative source of truth.
-The agents and skills in `.claude/` are the **implementation layer** — they must faithfully execute what the ai-process defines.
+The agents and skills authored under `cli/src/ai_team/init/sources/` are the **implementation layer** — they must faithfully execute what the ai-process defines, and they are what `ai-team init` exports into a target project.
 
 ## Process Overview
 
@@ -111,10 +113,14 @@ Each skill implements a workflow or action defined in the ai-process:
 
 ## Agent Platform Compatibility
 
-Agent and skill definitions live in `.claude/` for Claude Code.
-The `.codex/` directory provides OpenAI Codex compatibility with project-scoped agent TOML files.
-Both `.claude/` and `.codex/` in this repository are local project configuration files.
-The authoritative sources that `ai-team init` exports to adopting projects live in the CLI package under `cli/src/ai_team/init/sources/`.
+The framework ships agent and skill definitions for two tools:
+
+- **Claude Code** — Markdown agents and skills.
+- **OpenAI Codex** — TOML agents plus the same Markdown skills.
+
+Both variants are authored once under `cli/src/ai_team/init/sources/` and exported by `ai-team init` into the target project's `.claude/` (for Claude Code) and/or `.codex/` (for Codex) directory, selected with `--tools claude`, `--tools codex`, or `--tools all`.
+
+This repository may also contain `.claude/` and `.codex/` folders at its root — those are **local agent configuration for this repository only**, are git-ignored, and are **not** part of the framework deliverable. They mirror what `ai-team init` would write into a target project, but the CLI, the test suite, and the bundled scaffolds never read from them.
 
 ## Using This Framework in Your Project
 
@@ -147,7 +153,7 @@ From the target repository root:
 ai-team init . --tools claude --no-interactive
 ```
 
-This creates the empty `project/` state folders, copies the bundled `.claude/agents/` and `.claude/skills/` from the CLI package scaffold sources, and writes `.ai-team.toml`.
+This creates the empty `project/` state folders, copies the bundled agents and skills from the CLI package scaffold sources into the target project's `.claude/agents/` and `.claude/skills/` directories (or `.codex/` equivalents when `--tools codex`/`--tools all`), and writes `.ai-team.toml`.
 The `ai-process/` specification documents are not exported; they live in this meta-repository only and serve as the authoritative spec for the rules the agents and skills implement.
 
 Use `--dry-run` to preview files before writing, and `--force` only when you intentionally want existing files overwritten.
@@ -220,12 +226,11 @@ See `guides/setup-guide.md` for the complete file list, CLAUDE.md starter templa
 │   ├── decisions/       Architecture Decision Records
 │   └── docs/            Project-specific commands, coding conventions, and operations
 ├── guides/              Human-facing setup and customization guides
-├── cli/                 `ai-team` CLI package and bundled init scaffolds
-├── .claude/
-│   ├── agents/          Agent role definitions (5 roles)
-│   └── skills/          Skill procedures and action commands
-└── .codex/              Codex agent TOML files and skills — local project config for this repository
+└── cli/                 `ai-team` CLI package and bundled init scaffolds (authoritative agent
+                         and skill sources live under cli/src/ai_team/init/sources/)
 ```
+
+> Not shown above: `.claude/` and `.codex/` may exist at the repo root as **local-only, git-ignored** agent configuration used when running agents inside this meta-repo. They are not part of the framework deliverable.
 
 ## Contributing to This Project
 

@@ -8,7 +8,7 @@ The **CLI package sources** (`cli/src/ai_team/init/sources/`) are the *product s
 The **`ai-team` CLI** itself (`cli/`) is the *tooling* the action skills invoke to scaffold, move, and report on project artifacts.
 When they conflict: the ai-process wins for *rules*; `guides/` wins for *authoring contracts*; the CLI sources are the *implementation* that must satisfy both.
 
-> The `.claude/` and `.codex/` folders at the repository root are **local agent configuration for this repo only** — they are this project's own consumed copy of the exported scaffolds, used when running agents *in* this repo. They are **not** part of the AI team definition and are not the source-of-truth for any rule, skill, or agent. Treat them as drifted artefacts: do not edit them to change framework behavior, and do not cite them as authoritative. If you need this repo's local copy refreshed, re-export from the CLI sources.
+> The `.claude/` and `.codex/` folders at the repository root are **local agent configuration for this repo only** — they are this project's own consumed copy of the exported scaffolds, used when running agents *in* this repo. They are **git-ignored** (see `.gitignore`), **not part of the AI team definition**, and **not the source-of-truth for any rule, skill, or agent**. Treat them the same way `ai-process/` is treated: a private local concern that the framework's CLI, tests, and packaged scaffolds must never depend on. Do not edit them to change framework behavior, do not cite them as authoritative, and do not write tests or CLI code that reads from them. If you need this repo's local copy refreshed, re-export from the CLI sources.
 
 ---
 
@@ -24,7 +24,7 @@ When they conflict: the ai-process wins for *rules*; `guides/` wins for *authori
 | `cli/src/ai_team/init/sources/` | **Product source-of-truth.** Authoritative agents, skills, and assets that `ai-team init` exports to adopting projects. Edit here to change framework behavior |
 | `cli/src/ai_team/templates/` | **Product source-of-truth.** Authoritative templates the CLI uses when creating new artifacts (spec, task, bug, adr, progress report) |
 | `cli/` (rest) | The `ai-team` CLI package itself — manages project artifacts and bootstraps the framework into new repositories; the action skills invoke it instead of carrying their own scripts and templates |
-| `.claude/`, `.codex/` | **Local agent configuration for this repo only.** Not part of the framework definition. Not authoritative. Do not edit to change framework behavior — change the CLI sources and re-export instead |
+| `.claude/`, `.codex/` | **Local agent configuration for this repo only — git-ignored.** Not part of the framework definition. Not authoritative. The CLI, the test suite, and the packaged scaffolds must not read from these folders. Do not edit them to change framework behavior — change the CLI sources and re-export instead |
 
 ---
 
@@ -53,7 +53,8 @@ cli/src/ai_team/templates/           ← product source-of-truth (artifact templ
 cli/                                 ← tooling layer
   ai-team                            CLI that the action skills invoke
 
-.claude/, .codex/                    ← local agent config for THIS repo only — not authoritative
+.claude/, .codex/                    ← local agent config for THIS repo only — git-ignored, not authoritative,
+                                       not read by CLI/tests/scaffolds
 ```
 
 **Reviewing this project** means checking that the CLI sources (agents, skills, templates) faithfully implement what `ai-process/` rules and `guides/` contracts specify, and that the CLI tooling stays consistent with the artifact lifecycle the ai-process defines.
@@ -255,9 +256,23 @@ Referential mentions (describing what a downstream caller will do) do not requir
 4. If the rule was duplicated (shouldn't happen, but may), fix the duplication: pick an owner, delete the copies, and insert cross-references.
 5. Regenerate scaffold outputs with `cli/scripts/sync_init_scaffolds.py`.
 
+### Verifying changes
+
+After any code, test, or scaffold-source change, run the test suite and the formatter from `cli/` before reporting the task as done:
+
+```bash
+cd cli
+uv run pytest
+uv run ruff format
+uv run ruff check
+```
+
+The whole suite must pass green; `ruff format` and `ruff check` must report clean. If you regenerated `cli/src/ai_team/init/scaffolds/` via `cli/scripts/sync_init_scaffolds.py`, re-run pytest after the regeneration too — the scaffold-coverage tests compare sources against the regenerated output.
+
 ### Don't
 
 - Don't edit `.claude/` or `.codex/` to change framework behavior — those are local config. Edit the CLI sources.
+- Don't write CLI code or tests that read from the repo-local `.claude/` or `.codex/` folders. They are git-ignored and not guaranteed to exist; treat them the same way you treat `ai-process/` (never read by the CLI or its tests).
 - Don't add a rule to `ai-process/` without also updating the CLI sources so the implementation stays consistent (or vice versa — update both atomically).
 - Don't embed `ai-process/` or `guides/` paths in agent/skill files under `cli/src/ai_team/init/sources/`.
 - Don't duplicate spec content across multiple CLI source files.

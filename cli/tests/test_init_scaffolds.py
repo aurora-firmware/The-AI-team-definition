@@ -53,17 +53,17 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
         / "metadata.toml",
         (
             "[claude]\n"
-            "header = \"\"\"---\n"
+            'header = """---\n'
             "name: tdd\n"
             "description: claude skill\n"
             "allowed-tools: Read\n"
-            "---\"\"\"\n\n"
+            '---"""\n\n'
             "[codex]\n"
-            "header = \"\"\"---\n"
+            'header = """---\n'
             "name: tdd\n"
             "description: codex skill\n"
             "allowed-tools: Read\n"
-            "---\"\"\"\n"
+            '---"""\n'
         ),
     )
     _write(
@@ -106,14 +106,7 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
         "old\n",
     )
     _write(
-        repo
-        / "cli"
-        / "src"
-        / "ai_team"
-        / "init"
-        / "scaffolds"
-        / "project"
-        / "old.txt",
+        repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "project" / "old.txt",
         "old\n",
     )
     _write(
@@ -177,12 +170,12 @@ def test_sync_script_generates_tool_skill_scaffolds_from_shared_body(
     scaffolds_root = repo / "cli" / "src" / "ai_team" / "init" / "scaffolds"
     shared_body = "# Test Skill Body\n\nRun the TDD cycle.\n"
 
-    claude_text = (
-        scaffolds_root / "claude" / "skills" / "tdd" / "SKILL.md"
-    ).read_text(encoding="utf-8")
-    codex_text = (
-        scaffolds_root / "codex" / "skills" / "tdd" / "SKILL.md"
-    ).read_text(encoding="utf-8")
+    claude_text = (scaffolds_root / "claude" / "skills" / "tdd" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    codex_text = (scaffolds_root / "codex" / "skills" / "tdd" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
 
     assert claude_text.startswith("---\nname: tdd\ndescription: claude skill\n")
     assert codex_text.startswith("---\nname: tdd\ndescription: codex skill\n")
@@ -204,12 +197,12 @@ def test_sync_script_copies_package_owned_agents_for_each_tool(tmp_path: Path) -
 
     scaffolds_root = repo / "cli" / "src" / "ai_team" / "init" / "scaffolds"
 
-    assert (
-        scaffolds_root / "claude" / "agents" / "planner.md"
-    ).read_text(encoding="utf-8") == "claude planner\n"
-    assert (
-        scaffolds_root / "codex" / "agents" / "planner.toml"
-    ).read_text(encoding="utf-8") == "codex planner\n"
+    assert (scaffolds_root / "claude" / "agents" / "planner.md").read_text(
+        encoding="utf-8"
+    ) == "claude planner\n"
+    assert (scaffolds_root / "codex" / "agents" / "planner.toml").read_text(
+        encoding="utf-8"
+    ) == "codex planner\n"
 
     assert not (scaffolds_root / "claude" / "agents" / "old.md").exists()
     assert not (scaffolds_root / "codex" / "agents" / "old.toml").exists()
@@ -383,14 +376,15 @@ def test_sync_script_does_not_modify_sources_directory(tmp_path: Path) -> None:
 
 def test_package_owned_agent_sources_cover_each_exported_role_for_both_tools() -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    framework_root = repo_root.parent
     sources_root = repo_root / "src" / "ai_team" / "init" / "sources" / "agents"
     claude_source_root = sources_root / "claude"
     codex_source_root = sources_root / "codex"
     claude_scaffold_root = (
         repo_root / "src" / "ai_team" / "init" / "scaffolds" / "claude" / "agents"
     )
-    codex_export_root = framework_root / ".codex" / "agents"
+    codex_scaffold_root = (
+        repo_root / "src" / "ai_team" / "init" / "scaffolds" / "codex" / "agents"
+    )
 
     expected_roles = sorted(path.stem for path in claude_scaffold_root.glob("*.md"))
     claude_source_roles = sorted(path.stem for path in claude_source_root.glob("*.md"))
@@ -403,11 +397,11 @@ def test_package_owned_agent_sources_cover_each_exported_role_for_both_tools() -
         claude_source = claude_source_root / f"{role_name}.md"
         codex_source = codex_source_root / f"{role_name}.toml"
         claude_scaffold = claude_scaffold_root / f"{role_name}.md"
-        codex_export = codex_export_root / f"{role_name}.toml"
+        codex_scaffold = codex_scaffold_root / f"{role_name}.toml"
 
         assert claude_source.read_text(encoding="utf-8") == claude_scaffold.read_text(
             encoding="utf-8"
         )
-        assert codex_source.read_text(encoding="utf-8") == codex_export.read_text(
+        assert codex_source.read_text(encoding="utf-8") == codex_scaffold.read_text(
             encoding="utf-8"
         )

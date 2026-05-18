@@ -1,6 +1,6 @@
 [project]
 name = "ai-team"
-version = "0.2.0"
+version = "0.3.0"
 description = "AI-team CLI: manage specs, tasks, bugs, and ADRs from the terminal."
 requires-python = ">=3.14"
 dependencies = [
