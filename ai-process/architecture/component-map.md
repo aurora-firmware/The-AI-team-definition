@@ -63,10 +63,23 @@ This document maps the ai-process roles, procedures, processes, and gates to the
 | Bug Tracker | Directory tree | Bug lifecycle tracking | `project/bugs/{open,in-progress,resolved}/` |
 | Decision Log | Directory | Architecture decision records | `project/decisions/` |
 | Templates | Procedure assets | Reusable document formats | `.claude/skills/*/assets/` |
-| Process Docs | Directory | Workflow and procedure definitions | `ai-process/processes/` |
-| Guidelines | Directory | Standards and checklists | `ai-process/guidelines/` |
-| Architecture Docs | Directory | System design documentation | `ai-process/architecture/` |
+| Process Docs | Directory | Workflow and procedure definitions (spec layer only — not exported by `ai-team init`) | `ai-process/processes/` |
+| Guidelines | Directory | Standards and checklists (spec layer only — not exported by `ai-team init`) | `ai-process/guidelines/` |
+| Architecture Docs | Directory | System design documentation (spec layer only — not exported by `ai-team init`) | `ai-process/architecture/` |
 | Action Procedures | Directory | Automation for document creation and status reporting | `.claude/skills/` (with `disable-model-invocation: true` where no model reasoning is needed) |
+| CLI Scaffold Sources | Package assets | Authoritative source for agents, skills, and templates exported by `ai-team init` | `cli/src/ai_team/init/sources/` |
+
+## CLI Command Mapping
+
+Action skills that create or report on project artifacts invoke `ai-team` CLI commands. The table below maps each action skill to the command(s) it calls.
+
+| Skill | CLI Command(s) | Purpose |
+|---|---|---|
+| `new-spec` | `ai-team spec new` | Create a new specification document |
+| `new-task` | `ai-team task new` | Create a new task file in `project/tasks/pending/` |
+| `new-bug` | `ai-team bug new` | Create a new bug report in `project/bugs/open/` |
+| `new-adr` | `ai-team adr new` | Create a new architecture decision record in `project/decisions/` |
+| `status-report` | `ai-team status`, `ai-team report` | Generate inline Gate 5 summary and full progress report |
 
 ## Interaction Diagram
 

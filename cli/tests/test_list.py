@@ -1,0 +1,302 @@
+"""Tests for T-005: ai-team list command."""
+
+import json
+from pathlib import Path
+
+from typer.testing import CliRunner
+
+TASK_TEMPLATE = """\
+---
+id: \"{id}\"
+title: \"{title}\"
+status: {status}
+priority: {priority}
+assigned-role: {assigned_role}
+created: 2026-05-10
+---
+
+Body.
+"""
+
+BUG_TEMPLATE = """\
+---
+id: "{id}"
+title: "{title}"
+severity: {severity}
+status: {status}
+created: 2026-05-10
+---
+
+Body.
+"""
+
+SPEC_TEMPLATE = """\
+---
+title: "{title}"
+version: "{version}"
+status: {status}
+created: 2026-05-10
+author: planner
+---
+
+Body.
+"""
+
+ADR_TEMPLATE = """\
+---
+id: "{id}"
+title: "{title}"
+status: {status}
+created: 2026-05-10
+---
+
+Body.
+"""
+
+
+def _write(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
+def _task(
+    id: str,
+    title: str,
+    status: str,
+    priority: str = "medium",
+    assigned_role: str = "developer",
+) -> str:
+    return TASK_TEMPLATE.format(
+        id=id,
+        title=title,
+        status=status,
+        priority=priority,
+        assigned_role=assigned_role,
+    )
+
+
+def _bug(id: str, title: str, severity: str, status: str) -> str:
+    return BUG_TEMPLATE.format(
+        id=id,
+        title=title,
+        severity=severity,
+        status=status,
+    )
+
+
+def _spec(title: str, version: str, status: str) -> str:
+    return SPEC_TEMPLATE.format(
+        title=title,
+        version=version,
+        status=status,
+    )
+
+
+def _adr(id: str, title: str, status: str) -> str:
+    return ADR_TEMPLATE.format(
+        id=id,
+        title=title,
+        status=status,
+    )
+
+
+def test_list_tasks_displays_all_states_in_rich_table_and_skips_templates(
+    monkeypatch, tmp_path
+):
+    """`ai-team list tasks` prints non-template tasks from every state."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "tasks" / "pending" / "T-001.md",
+        _task("T-001", "Pending task", "pending", "high"),
+    )
+    _write(
+        tmp_path / "project" / "tasks" / "in-progress" / "T-002.md",
+        _task("T-002", "In-progress task", "in-progress"),
+    )
+    _write(
+        tmp_path / "project" / "tasks" / "completed" / "T-003.md",
+        _task("T-003", "Completed task", "completed", "low", "reviewer"),
+    )
+    _write(tmp_path / "project" / "tasks" / "blocked" / ".gitkeep", "")
+    _write(
+        tmp_path / "project" / "tasks" / "pending" / "TEMPLATE-task.md",
+        _task("T-000", "Template task", "pending"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["list", "tasks"])
+
+    assert result.exit_code == 0
+    assert "ID" in result.output
+    assert "Title" in result.output
+    assert "State" in result.output
+    assert "Priority" in result.output
+    assert "Assigned-Role" in result.output
+    assert "T-001" in result.output
+    assert "T-002" in result.output
+    assert "T-003" in result.output
+    assert "Template task" not in result.output
+    assert "T-000" not in result.output
+
+
+def test_list_tasks_state_filter_only_includes_matching_folder(monkeypatch, tmp_path):
+    """`--state` filters tasks by task state folder name."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "tasks" / "pending" / "T-001.md",
+        _task("T-001", "Pending task", "pending"),
+    )
+    _write(
+        tmp_path / "project" / "tasks" / "in-progress" / "T-002.md",
+        _task("T-002", "In-progress task", "in-progress"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["list", "tasks", "--state", "pending"])
+
+    assert result.exit_code == 0
+    assert "T-001" in result.output
+    assert "Pending task" in result.output
+    assert "T-002" not in result.output
+    assert "In-progress task" not in result.output
+
+
+def test_list_tasks_json_outputs_plain_list_without_rich_table(monkeypatch, tmp_path):
+    """`--json` emits a JSON list with task fields and no table title/header."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "tasks" / "pending" / "T-001.md",
+        _task("T-001", "Pending task", "pending", "high", "developer"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["list", "tasks", "--json"])
+
+    assert result.exit_code == 0
+    parsed = json.loads(result.output)
+    assert parsed == [
+        {
+            "id": "T-001",
+            "title": "Pending task",
+            "state": "pending",
+            "priority": "high",
+            "assigned-role": "developer",
+        }
+    ]
+    assert "Tasks" not in result.output
+    assert "┏" not in result.output
+
+
+def test_list_bugs_renders_table_and_json_and_skips_templates(monkeypatch, tmp_path):
+    """`list bugs` shows id/title/state/severity and supports JSON output."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "bugs" / "open" / "B-001.md",
+        _bug("B-001", "Open bug", "high", "open"),
+    )
+    _write(
+        tmp_path / "project" / "bugs" / "in-progress" / "B-002.md",
+        _bug("B-002", "In-progress bug", "low", "in-progress"),
+    )
+    _write(
+        tmp_path / "project" / "bugs" / "open" / "TEMPLATE-bug.md",
+        _bug("B-000", "Template bug", "low", "open"),
+    )
+    _write(tmp_path / "project" / "bugs" / "resolved" / ".gitkeep", "")
+
+    monkeypatch.chdir(tmp_path)
+
+    table_result = CliRunner().invoke(app, ["list", "bugs"])
+    assert table_result.exit_code == 0
+    assert "ID" in table_result.output
+    assert "Title" in table_result.output
+    assert "State" in table_result.output
+    assert "Severity" in table_result.output
+    assert "B-001" in table_result.output
+    assert "B-002" in table_result.output
+    assert "Template bug" not in table_result.output
+
+    json_result = CliRunner().invoke(app, ["list", "bugs", "--json"])
+    assert json_result.exit_code == 0
+    parsed = json.loads(json_result.output)
+    assert parsed == [
+        {
+            "id": "B-001",
+            "title": "Open bug",
+            "state": "open",
+            "severity": "high",
+        },
+        {
+            "id": "B-002",
+            "title": "In-progress bug",
+            "state": "in-progress",
+            "severity": "low",
+        },
+    ]
+    assert "Bugs" not in json_result.output
+
+
+def test_list_specs_and_adrs_include_expected_columns_and_fields(monkeypatch, tmp_path):
+    """`list specs` and `list adrs` expose required columns and JSON fields."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "specs" / "ai-team-cli.md",
+        _spec("CLI Spec", "0.1", "approved"),
+    )
+    _write(
+        tmp_path / "project" / "specs" / "TEMPLATE-spec.md",
+        _spec("Template spec", "0.0", "draft"),
+    )
+    _write(
+        tmp_path / "project" / "decisions" / "ADR-001.md",
+        _adr("ADR-001", "Use Rich tables", "accepted"),
+    )
+    _write(
+        tmp_path / "project" / "decisions" / "TEMPLATE-adr.md",
+        _adr("ADR-000", "Template adr", "proposed"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+
+    specs_table = CliRunner().invoke(app, ["list", "specs"])
+    assert specs_table.exit_code == 0
+    assert "ID" in specs_table.output
+    assert "Title" in specs_table.output
+    assert "Status" in specs_table.output
+    assert "Version" in specs_table.output
+    assert "ai-team-cli" in specs_table.output
+    assert "Template spec" not in specs_table.output
+
+    specs_json = CliRunner().invoke(app, ["list", "specs", "--json"])
+    assert specs_json.exit_code == 0
+    assert json.loads(specs_json.output) == [
+        {
+            "id": "ai-team-cli",
+            "title": "CLI Spec",
+            "status": "approved",
+            "version": "0.1",
+        }
+    ]
+
+    adrs_table = CliRunner().invoke(app, ["list", "adrs"])
+    assert adrs_table.exit_code == 0
+    assert "ID" in adrs_table.output
+    assert "Title" in adrs_table.output
+    assert "Status" in adrs_table.output
+    assert "ADR-001" in adrs_table.output
+    assert "Template adr" not in adrs_table.output
+
+    adrs_json = CliRunner().invoke(app, ["list", "adrs", "--json"])
+    assert adrs_json.exit_code == 0
+    assert json.loads(adrs_json.output) == [
+        {
+            "id": "ADR-001",
+            "title": "Use Rich tables",
+            "status": "accepted",
+        }
+    ]

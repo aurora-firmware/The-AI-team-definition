@@ -12,10 +12,43 @@ This guide walks you through bootstrapping a new project using the AI team frame
 
 - A git repository for your new project.
 - Claude Code (or another AI agent platform that reads `CLAUDE.md`).
+- `pipx` installed (`python -m pip install --user pipx` if needed).
 
 ## Setup Steps
 
-### Step 1: Create the Directory Structure
+### Step 1: Install the `ai-team` CLI
+
+Install from PyPI once published:
+
+```bash
+pipx install ai-team-cli
+```
+
+Install from a local wheel build while developing this repository:
+
+```bash
+pipx install /path/to/The-AI-team-definition/cli/dist/*.whl
+```
+
+Initialize the AI team structure in your target repository:
+
+```bash
+ai-team init . --tools claude --no-interactive
+```
+
+Daily commands you will use most often:
+
+```bash
+ai-team status
+ai-team task new
+ai-team task start <task-id>
+ai-team validate
+ai-team report
+```
+
+For a full usage walkthrough see [`cli/docs/usage.md`](../cli/docs/usage.md); for an exhaustive command and flag reference see [`cli/docs/commands.md`](../cli/docs/commands.md).
+
+### Step 2: Create the Directory Structure
 
 In your new project root, create these directories:
 
@@ -40,36 +73,27 @@ done
 touch project/docs/coding_guidelines.md
 ```
 
-### Step 2: Copy the Framework Files
+### Step 3: Export the Framework Files
 
-Copy the following files from this repository into your new project, preserving the directory structure:
+Run `ai-team init` to export the bundled agent definitions, skill definitions, and templates into your project:
 
-**Templates (bundled as skill assets):**
-- `.claude/skills/new-spec/assets/TEMPLATE-specification.md`
-- `.claude/skills/new-task/assets/TEMPLATE-task.md`
-- `.claude/skills/new-bug/assets/TEMPLATE-bug.md`
-- `.claude/skills/new-adr/assets/TEMPLATE-adr.md`
-- `.claude/skills/spec-breakdown/assets/roadmap.md`
-- `.claude/skills/tdd/assets/test-plan.md`
-- `.claude/skills/tdd/assets/test-report.md`
-- `.claude/skills/status-report/assets/progress-report.md`
+```bash
+ai-team init . --tools claude --no-interactive
+```
 
-**Agent definitions (copy to `.claude/agents/`):**
-- `planner.md`
-- `architect.md`
-- `developer.md`
-- `reviewer.md`
-- `integrator.md`
+This exports from the CLI package scaffold sources:
 
-**Skill definitions (copy to `.claude/skills/<name>/SKILL.md`):**
-- `brainstorm`, `spec-breakdown`, `spec-breakdown-review`, `code-review`, `tdd`, `debug`, `merge-conflicts`
-- `dev-loop`, `integrate`, `bug-loop`
-- `escalation-review`, `git-conventions`
-- `new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`
+- **Agent definitions** into `.claude/agents/`
+- **Skill definitions** into `.claude/skills/<name>/SKILL.md`
+- **Templates** as skill assets under `.claude/skills/*/assets/`
+- **Project state directories** under `project/`
+- **`.ai-team.toml`** configuration file
 
-If you use OpenAI Codex, keep skills available under `.codex/skills` and define project-scoped custom agents as `.codex/agents/*.toml`. Those TOML files should translate each Claude-style agent into Codex's custom-agent schema: `name`, `description`, and `developer_instructions`, with optional Codex-native settings such as `model`, `model_reasoning_effort`, and `sandbox_mode`.
+For OpenAI Codex compatibility, add `--tools codex` (or `--tools claude,codex`) to also export `.codex/agents/*.toml` Codex agent files. Those TOML files translate each Claude-style agent into Codex's custom-agent schema: `name`, `description`, and `developer_instructions`, with optional Codex-native settings such as `model`, `model_reasoning_effort`, and `sandbox_mode`.
 
-### Step 3: Create Your Project's CLAUDE.md
+The `ai-process/` specification documents are not exported. They live in the AI team definition meta-repository and serve as the authoritative spec for the rules the agents and skills implement. You do not need them in your project.
+
+### Step 4: Create Your Project's CLAUDE.md
 
 Create a `CLAUDE.md` in your project root. Start with this structure and customize the first section:
 
@@ -124,7 +148,7 @@ Create a `CLAUDE.md` in your project root. Start with this structure and customi
 - Follow project-specific coding rules in `project/docs/coding_guidelines.md`.
 ```
 
-### Step 4: Customize for Your Stack
+### Step 5: Customize for Your Stack
 
 **`project/docs/coding_guidelines.md`** — Add project-specific rules:
 - Stack and framework conventions.
@@ -145,7 +169,7 @@ Keep `ai-process/guidelines/coding-standards.md` as the framework's general, lan
 }
 ```
 
-### Step 5: Verify the Setup
+### Step 6: Verify the Setup
 
 Run these checks to confirm everything is in place:
 
@@ -165,7 +189,21 @@ Run these checks to confirm everything is in place:
 
 5. **Project guidance exists**: Confirm `CLAUDE.md` names the project commands and points to `project/docs/coding_guidelines.md` or equivalent project-local guidance.
 
-### Step 6: Start Working
+### Step 7: Verify Packaging and Installation End-to-End (Maintainers)
+
+`scripts/sync_init_scaffolds.py` generates the bundled scaffold output in `cli/src/ai_team/init/scaffolds/` from the package-owned source assets in `cli/src/ai_team/init/sources/`. Run this script before every build to ensure `ai-team init` ships up-to-date scaffolds.
+
+Run this sequence from a clean shell to confirm the package builds, installs, and initializes correctly:
+
+```bash
+cd cli && python scripts/sync_init_scaffolds.py && uv build \
+  && pipx install --force dist/*.whl \
+  && d=$(mktemp -d) && ai-team init "$d" --tools claude --no-interactive \
+  && ai-team --version && ai-team status \
+  && test -d "$d/project" && test -d "$d/.claude" && test -f "$d/.ai-team.toml"
+```
+
+### Step 8: Start Working
 
 Your project is ready. The typical workflow is:
 

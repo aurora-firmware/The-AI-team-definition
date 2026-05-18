@@ -1,10 +1,14 @@
 # The AI Team Definition
 
-> **This is a META-PROJECT.** Its output is processes, templates, agent definitions, and workflow structures — not software.
+> **This is a META-PROJECT.** Its output is the ai-process (the rules), the agents and skills that implement those rules, and the `ai-team` CLI that supports the skills by managing project artifacts.
 
 The **ai-process** is the authoritative description of the rules the AI team must follow.
-The **skills** (`.claude/skills/`) and **agents** (`.claude/agents/`) are the *implementation* of those rules.
-When they conflict, the ai-process wins.
+The **`guides/`** folder holds human-readable specifications for cross-cutting authoring contracts (agent shape, skill shape, spec content). They specify *what good output looks like* in domains the ai-process does not own at that level of detail.
+The **CLI package sources** (`cli/src/ai_team/init/sources/`) are the *product source-of-truth* for the agents, skills, and templates exported by `ai-team init`. Editing those files (and regenerating scaffolds) is how you change framework behavior.
+The **`ai-team` CLI** itself (`cli/`) is the *tooling* the action skills invoke to scaffold, move, and report on project artifacts.
+When they conflict: the ai-process wins for *rules*; `guides/` wins for *authoring contracts*; the CLI sources are the *implementation* that must satisfy both.
+
+> The `.claude/` and `.codex/` folders at the repository root are **local agent configuration for this repo only** — they are this project's own consumed copy of the exported scaffolds, used when running agents *in* this repo. They are **git-ignored** (see `.gitignore`), **not part of the AI team definition**, and **not the source-of-truth for any rule, skill, or agent**. Treat them the same way `ai-process/` is treated: a private local concern that the framework's CLI, tests, and packaged scaffolds must never depend on. Do not edit them to change framework behavior, do not cite them as authoritative, and do not write tests or CLI code that reads from them. If you need this repo's local copy refreshed, re-export from the CLI sources.
 
 ---
 
@@ -16,39 +20,55 @@ When they conflict, the ai-process wins.
 | `ai-process/architecture/` | System architecture documentation (skills and agents scope) |
 | `ai-process/guidelines/` | Coding standards, review checklists, markdown conventions |
 | `ai-process/processes/` | Workflow definitions, quality gates, escalation procedures |
-| `guides/` | Human-facing guides for setup and customization (not part of the ai-process itself) |
-| `.claude/agents/` | Agent role definitions (planner, architect, developer, reviewer, integrator) |
-| `.claude/skills/` | Skills: procedures (brainstorm, spec-breakdown, tdd, code-review, debug, merge-conflicts, integrate, escalation-review, spec-breakdown-review), orchestrators (/dev-loop, /bug-loop), and actions (/new-spec, /new-task, /new-bug, /new-adr, /status-report, /git-conventions) |
-| `.codex/` | OpenAI Codex compatibility layer: project-scoped custom agents in `.codex/agents/*.toml` plus a symlinked `.codex/skills/` view of `.claude/skills/` |
+| `guides/` | Human-facing specifications and reference docs: setup, customization, agent/skill/spec authoring contracts. The CLI sources implement these contracts |
+| `cli/src/ai_team/init/sources/` | **Product source-of-truth.** Authoritative agents, skills, and assets that `ai-team init` exports to adopting projects. Edit here to change framework behavior |
+| `cli/src/ai_team/templates/` | **Product source-of-truth.** Authoritative templates the CLI uses when creating new artifacts (spec, task, bug, adr, progress report) |
+| `cli/` (rest) | The `ai-team` CLI package itself — manages project artifacts and bootstraps the framework into new repositories; the action skills invoke it instead of carrying their own scripts and templates |
+| `.claude/`, `.codex/` | **Local agent configuration for this repo only — git-ignored.** Not part of the framework definition. Not authoritative. The CLI, the test suite, and the packaged scaffolds must not read from these folders. Do not edit them to change framework behavior — change the CLI sources and re-export instead |
 
 ---
 
 ## The Spec–Implementation Relationship
 
 ```
-ai-process/          ← specification layer (the rules)
-  processes/         defines workflows, gates, transitions
-  guidelines/        defines coding, git, and markdown standards
-  architecture/      describes the AI team's structure
+ai-process/                          ← rules layer (workflow + gates + standards)
+  processes/                         workflows, gates, transitions
+  guidelines/                        coding, git, markdown standards
+  architecture/                      AI team's structure
 
-.claude/             ← implementation layer (the executors)
-  agents/            each agent implements a role defined in ai-process
-  skills/            each skill implements a procedure defined in ai-process
+guides/                              ← authoring-contract layer (human-readable specs)
+  agent_template.md                  shape every agent file must follow
+  skill_template.md                  shape every skill file must follow
+  spec-authoring-guide.md            what belongs in a specification document
+  setup-guide.md / customization-guide.md   adoption guidance
+
+cli/src/ai_team/init/sources/        ← product source-of-truth (implements the contracts)
+  agents/claude/                     authoritative agent role files
+  agents/codex/                      authoritative codex agent files
+  skills/                            authoritative skill procedure files
+
+cli/src/ai_team/templates/           ← product source-of-truth (artifact templates)
+  spec.md, task.md, bug.md, adr.md, progress-report.md
+
+cli/                                 ← tooling layer
+  ai-team                            CLI that the action skills invoke
+
+.claude/, .codex/                    ← local agent config for THIS repo only — git-ignored, not authoritative,
+                                       not read by CLI/tests/scaffolds
 ```
 
-**Reviewing this project** means checking that every agent and skill faithfully implements what the ai-process specifies.
-**Changing this project** means either updating the ai-process first (the spec), then updating the agents/skills that implement the changed rules — or updating both atomically.
-Never update an agent or skill in a way that contradicts the ai-process without also updating the ai-process.
+**Reviewing this project** means checking that the CLI sources (agents, skills, templates) faithfully implement what `ai-process/` rules and `guides/` contracts specify, and that the CLI tooling stays consistent with the artifact lifecycle the ai-process defines.
+**Changing framework behavior** means updating either the rules (`ai-process/`), the authoring contracts (`guides/`), or the implementation (`cli/src/ai_team/init/sources/` and `cli/src/ai_team/templates/`), then bringing the others into alignment atomically. Never update a CLI source in a way that contradicts an ai-process rule or a guides contract without updating the spec first.
 
-### `.claude/` must be self-contained
+### CLI sources must be self-contained
 
-The `.claude/` folder must not reference paths under `ai-process/`. The spec layer documents the *intent* of the rules; the implementation layer must *embed* the rules so that an agent or skill can execute without reading outside `.claude/`.
+A skill or agent file under `cli/src/ai_team/init/sources/` must not reference paths under `ai-process/` or `guides/`. The rules and contracts document the *intent*; the implementation must *embed* the rules so that an agent or skill can execute without reading outside the exported scaffold tree.
 
-When an ai-process rule applies:
+When an ai-process rule or guides contract applies:
 
 - **If a single agent uses it** → embed it in that agent's `## Quality Bar` (example: coding standards in `developer.md`, review checklist in `reviewer.md`).
 - **If multiple agents or skills use it** → extract it as its own skill and have callers reference the skill by name (example: `git-conventions/SKILL.md` is invoked from `integrate`, `code-review`, `dev-loop`, and `bug-loop`).
-- **Do not duplicate content across `.claude/` files.** Duplication causes drift. Either pick a single owning file and cross-reference, or extract to a skill.
+- **Do not duplicate content across source files.** Duplication causes drift. Either pick a single owning file and cross-reference, or extract to a skill.
 
 ---
 
@@ -57,7 +77,7 @@ When an ai-process rule applies:
 This repository defines a reusable process framework.
 Its agents and skills must not hardcode details that belong to a consuming software project.
 
-Do **not** put project-specific values in `.claude/agents/`, `.claude/skills/`, or `ai-process/`, including:
+Do **not** put project-specific values in the CLI sources (`cli/src/ai_team/init/sources/agents/`, `cli/src/ai_team/init/sources/skills/`, `cli/src/ai_team/templates/`) or in `ai-process/`, including:
 - Specific test commands such as `npm test`, `pytest`, `cargo test`, or project-specific CI commands.
 - Specific build, run, dev-server, deploy, or package-manager commands.
 - Stack-specific coding rules beyond the framework's general standards.
@@ -75,7 +95,7 @@ If a required project-specific command or rule cannot be found, the agent or ski
 Agents are **roles** (who).
 Skills are **procedures** (how).
 
-### Agent files (`.claude/agents/`)
+### Agent files (`cli/src/ai_team/init/sources/agents/claude/`)
 
 An agent file defines the **identity and authority** of a role — the context an AI model needs to act as that role.
 It answers: *Who am I? What can I decide? When must I stop and escalate? What does "done" look like for my work?*
@@ -103,7 +123,7 @@ An agent *references* skills ("use the `tdd` skill for implementation") but does
 
 Full template: [`guides/agent_template.md`](guides/agent_template.md).
 
-### Skill files (`.claude/skills/`)
+### Skill files (`cli/src/ai_team/init/sources/skills/`)
 
 A skill file defines a **procedure** — a repeatable sequence of steps that any agent (or human) can invoke.
 It answers: *What are the steps? In what order? What are the inputs and outputs? What can go wrong?*
@@ -134,7 +154,7 @@ Full template: [`guides/skill_template.md`](guides/skill_template.md).
 
 ## Settled Conventions
 
-These are the conventions applied across `.claude/` after the 2026-04 review. New files should follow them; existing files were brought into compliance.
+These are the conventions applied across the CLI sources after the 2026-04 review. New files should follow them; existing files were brought into compliance. The conventions describe the *exported* agents and skills under `cli/src/ai_team/init/sources/` — not the local `.claude/`/`.codex/` config in this repo.
 
 ### Escalation chain
 
@@ -202,39 +222,60 @@ Referential mentions (describing what a downstream caller will do) do not requir
 
 ### Reviewing this repo
 
-1. Read `CLAUDE.md` (this file) and `guides/agent_template.md` / `guides/skill_template.md`.
-2. Spot-check that every agent has the nine canonical sections in order and no forbidden sections.
-3. Spot-check that skills never embed role identity; never reference `ai-process/`; carry the 4-field escalation block whenever they can return `ESCALATE`.
-4. Grep for verdict drift: `grep -rn "Gate 2 Verdict:\|Verdict:" .claude/` should surface only aligned uses of `Result:`.
-5. Grep for spawn drift: `grep -rn "Spawn the" .claude/skills/` should only show `**Spawn the <Role> subagent**`.
+1. Read `CLAUDE.md` (this file), `guides/agent_template.md`, `guides/skill_template.md`, and `guides/spec-authoring-guide.md`.
+2. Spot-check that every agent under `cli/src/ai_team/init/sources/agents/claude/` has the nine canonical sections in order and no forbidden sections.
+3. Spot-check that skills under `cli/src/ai_team/init/sources/skills/` never embed role identity; never reference `ai-process/` or `guides/`; carry the 4-field escalation block whenever they can return `ESCALATE`.
+4. Grep for verdict drift: `grep -rn "Gate 2 Verdict:\|Verdict:" cli/src/ai_team/init/sources/` should surface only aligned uses of `Result:`.
+5. Grep for spawn drift: `grep -rn "Spawn the" cli/src/ai_team/init/sources/skills/` should only show `**Spawn the <Role> subagent**`.
+6. Spot-check `cli/src/ai_team/templates/spec.md` against `guides/spec-authoring-guide.md` — the template must steer authors toward prose + measurable criteria, not implementation code.
 
 ### Adding a new agent
 
 1. Copy the template from `guides/agent_template.md`.
-2. Decide whether the role needs a new skill or invokes existing ones. New skills: create them first.
-3. Keep the `## Escalation` section to one paragraph pointing at the skill(s). If a threshold or trigger does not yet exist in a skill, add it to the skill rather than inlining it in the agent.
-4. Add the agent to the "Canonical Agents In This Repo" table in `guides/agent_template.md`.
+2. Place the new agent under `cli/src/ai_team/init/sources/agents/claude/` (and the Codex `.toml` under `cli/src/ai_team/init/sources/agents/codex/` if applicable).
+3. Decide whether the role needs a new skill or invokes existing ones. New skills: create them first.
+4. Keep the `## Escalation` section to one paragraph pointing at the skill(s). If a threshold or trigger does not yet exist in a skill, add it to the skill rather than inlining it in the agent.
+5. Add the agent to the "Canonical Agents In This Repo" table in `guides/agent_template.md`.
+6. Regenerate scaffold outputs with `cli/scripts/sync_init_scaffolds.py`.
 
 ### Adding a new skill
 
 1. Copy the template from `guides/skill_template.md` matching the category (procedure, orchestrator, action).
-2. If the skill can return `ESCALATE`, include a `## Escalation` section with the 4-field block.
-3. If the skill invokes another skill in-process, declare `Skill(other-skill)` in `allowed-tools`.
-4. If the skill spawns subagents, declare `Agent` in `allowed-tools` and use `**Spawn the <Role> subagent**` wording.
-5. If the skill is human-triggered only, set `disable-model-invocation: true`.
+2. Place the new skill under `cli/src/ai_team/init/sources/skills/<skill-name>/` as `body.md` + `metadata.toml`.
+3. If the skill can return `ESCALATE`, include a `## Escalation` section with the 4-field block.
+4. If the skill invokes another skill in-process, declare `Skill(other-skill)` in `allowed-tools`.
+5. If the skill spawns subagents, declare `Agent` in `allowed-tools` and use `**Spawn the <Role> subagent**` wording.
+6. If the skill is human-triggered only, set `disable-model-invocation: true`.
+7. Regenerate scaffold outputs with `cli/scripts/sync_init_scaffolds.py`.
 
 ### Changing an existing rule
 
-1. Find its single owning file in `.claude/` (an agent's `Quality Bar`, or a dedicated skill).
+1. Find its single owning file in the CLI sources (an agent's `Quality Bar`, or a dedicated skill).
 2. Change it there.
 3. Grep for stale references — consumers reference owners by name (e.g., `` `git-conventions` skill ``), so the change propagates without content duplication.
 4. If the rule was duplicated (shouldn't happen, but may), fix the duplication: pick an owner, delete the copies, and insert cross-references.
+5. Regenerate scaffold outputs with `cli/scripts/sync_init_scaffolds.py`.
+
+### Verifying changes
+
+After any code, test, or scaffold-source change, run the test suite and the formatter from `cli/` before reporting the task as done:
+
+```bash
+cd cli
+uv run pytest
+uv run ruff format
+uv run ruff check
+```
+
+The whole suite must pass green; `ruff format` and `ruff check` must report clean. If you regenerated `cli/src/ai_team/init/scaffolds/` via `cli/scripts/sync_init_scaffolds.py`, re-run pytest after the regeneration too — the scaffold-coverage tests compare sources against the regenerated output.
 
 ### Don't
 
-- Don't add a rule to `ai-process/` without also updating `.claude/` so the implementation stays consistent (or vice versa — update both atomically).
-- Don't embed `ai-process/` paths in `.claude/` files.
-- Don't duplicate spec content across multiple `.claude/` files.
+- Don't edit `.claude/` or `.codex/` to change framework behavior — those are local config. Edit the CLI sources.
+- Don't write CLI code or tests that read from the repo-local `.claude/` or `.codex/` folders. They are git-ignored and not guaranteed to exist; treat them the same way you treat `ai-process/` (never read by the CLI or its tests).
+- Don't add a rule to `ai-process/` without also updating the CLI sources so the implementation stays consistent (or vice versa — update both atomically).
+- Don't embed `ai-process/` or `guides/` paths in agent/skill files under `cli/src/ai_team/init/sources/`.
+- Don't duplicate spec content across multiple CLI source files.
 - Don't add procedural steps to an agent.
 - Don't add role identity or authority to a skill.
 - Don't invent a new verdict vocabulary for a new skill.
