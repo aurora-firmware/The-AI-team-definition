@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+-*"
 
 jobs:
   lint:
@@ -23,6 +26,13 @@ jobs:
       - name: Run ruff lint
         working-directory: cli
         run: uv run ruff check .
+      - name: Check generated docs are up to date
+        run: |
+          bash cli/scripts/gen_docs.sh
+          if ! git diff --exit-code cli/docs/commands.md; then
+            echo "::error::cli/docs/commands.md is out of date. Run 'bash cli/scripts/gen_docs.sh' and commit the result."
+            exit 1
+          fi
 
   test:
     runs-on: self-hosted
@@ -37,3 +47,43 @@ jobs:
       - name: Run pytest
         working-directory: cli
         run: uv run pytest
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [lint, test]
+    runs-on: self-hosted
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v8.0.0
+        with:
+          python-version: "3.14"
+      - name: Resolve version from tag
+        id: version
+        run: |
+          # Map `1.2.3` -> `1.2.3`, and `1.2.3-label.foo.bar` -> `1.2.3+label.foo.bar`.
+          # The `+` segment is a PEP 440 local version, kept in the wheel filename.
+          PEP440_VERSION="${GITHUB_REF_NAME/-/+}"
+          echo "value=${PEP440_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Building version: ${PEP440_VERSION}"
+      - name: Build wheel and sdist
+        working-directory: cli
+        env:
+          SETUPTOOLS_SCM_PRETEND_VERSION: ${{ steps.version.outputs.value }}
+        run: uv build
+      - name: Show built artifacts
+        working-directory: cli
+        run: ls -la dist/
+      - name: Regenerate command reference
+        run: bash cli/scripts/gen_docs.sh
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            cli/dist/*.whl cli/dist/*.tar.gz cli/docs/commands.md \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes
