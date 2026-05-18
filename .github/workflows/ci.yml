@@ -80,10 +80,11 @@ jobs:
       - name: Regenerate command reference
         run: bash cli/scripts/gen_docs.sh
       - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create "${GITHUB_REF_NAME}" \
-            cli/dist/*.whl cli/dist/*.tar.gz cli/docs/commands.md \
-            --title "${GITHUB_REF_NAME}" \
-            --generate-notes
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            cli/dist/*.whl
+            cli/dist/*.tar.gz
+            cli/docs/commands.md
