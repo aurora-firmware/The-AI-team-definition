@@ -2,7 +2,7 @@
 id: B-005
 title: ai-team spec new duplicate-ID allocation ignores existing spec IDs
 severity: medium
-status: open
+status: in-progress
 created: '2026-05-19'
 ---
 
