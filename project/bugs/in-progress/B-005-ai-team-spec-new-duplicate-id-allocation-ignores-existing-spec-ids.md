@@ -182,3 +182,12 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-19
+PASS
+
+- Stage 1 passed: Diagnosis Log records reproduction status, concrete evidence, isolated fault, and root cause aligned to `next_spec_id()` filename-only scanning.
+- Stage 1 passed: Fix in `cli/src/ai_team/core/ids.py` addresses the isolated cause by incorporating spec frontmatter IDs into allocation while preserving legacy filename matching.
+- Stage 1 passed: Fix Verification checks passed in review (`ai-team spec new --json` allocated `S-003` for a fresh verification title; `UV_CACHE_DIR=/tmp/uv-cache uv --directory cli run pytest tests/test_ids.py tests/test_spec_new.py` passed).
+- Stage 2 passed: Regression coverage exists in `cli/tests/test_spec_new.py` for slug-named existing specs with `id: S-001` and `id: S-002`, asserting new allocation `S-003`.
+- Minor note: the exact verification title `"Verification Spec"` was pre-existing as an untracked file in this workspace, so equivalent verification used a fresh title to avoid path-collision side effects.
