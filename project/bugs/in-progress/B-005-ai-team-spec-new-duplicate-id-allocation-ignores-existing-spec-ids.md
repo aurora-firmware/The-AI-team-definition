@@ -111,6 +111,46 @@ Root cause or fault hypothesis:
 Planned verification:
 -->
 
+### Diagnosis 1 — 2026-05-19
+
+Reproduction status:
+Confirmed.
+
+Evidence captured:
+- Ran:
+  `UV_CACHE_DIR=/tmp/uv-cache uv --directory cli run ai-team spec new --json --author planner --status draft "B005 Repro Spec"`
+  Output:
+  `{"id": "S-001", "path": "/home/daneel/projects/The-AI-team-definition/project/specs/b005-repro-spec.md"}`
+  while existing specs already had `id: S-001`.
+- Verified allocator behavior directly:
+  `UV_CACHE_DIR=/tmp/uv-cache uv --directory cli run python - <<'PY' ... next_spec_id(root) ...`
+  Output included:
+  `next_spec_id: S-001`
+  and all spec filenames reported `filename_match=False` against `_SPEC_PATTERN`.
+- Built isolated temp repro with canonical-style filenames and frontmatter IDs `S-001` and `S-002`, then invoked `spec new` via `CliRunner` from that temp cwd.
+  Output:
+  `{"id": "S-001", ...}`
+  and created file frontmatter:
+  `new_spec_frontmatter_id: S-001`.
+
+Isolated fault:
+- `next_spec_id()` delegates to `_next_id()` with `_SPEC_PATTERN = ^S-(\d{3})-.*\.md$`.
+- `_max_matching_number()` only matches `path.name` and never reads file content/frontmatter.
+- `spec new` uses slug filenames (`<slug>.md`), so existing spec files do not match `_SPEC_PATTERN`, keeping max at `0` and reissuing `S-001`.
+
+Root cause or fault hypothesis:
+- Root cause: spec ID allocation for `spec new` is incorrectly coupled to filename conventions that are not used by spec artifacts. Because specs are stored as slug filenames, frontmatter IDs are invisible to `_SPEC_PATTERN` filename scanning, causing duplicate ID allocation.
+
+Planned verification:
+- Add regression tests that create slug-named specs with frontmatter IDs (`S-001`, `S-002`) in `project/specs`/`archive` and assert `next_spec_id()` returns `S-003`.
+- Add command-level regression in `test_spec_new.py` to assert `spec new` allocates next ID from existing spec frontmatter.
+- Run:
+  `UV_CACHE_DIR=/tmp/uv-cache uv --directory cli run pytest tests/test_ids.py tests/test_spec_new.py`
+  and confirm no duplicate `S-001` allocation in the reproduced scenarios.
+
+Obstacles Encountered:
+- Initial temp repro attempt used `uv --directory cli` without changing process cwd inside the Python runner, so it resolved project root to this repo. Corrected by `os.chdir(tmpdir)` before invoking `CliRunner`.
+
 ## Work Log
 
 <!-- Mandatory. Append one entry per session boundary. Format:
