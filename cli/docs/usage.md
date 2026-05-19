@@ -20,10 +20,10 @@ of every command, flag, and argument, see [commands.md](commands.md).
 
 **Requirements:** Python 3.14 or later.
 
-### From PyPI (once published)
+### From GitHub Releases
 
 ```bash
-pipx install ai-team-cli
+pipx install https://github.com/<org>/<repo>/releases/download/<tag>/ai_team-<version>-py3-none-any.whl
 ```
 
 ### From a local build
@@ -412,10 +412,11 @@ python scripts/sync_init_scaffolds.py
 uv build
 ```
 
-The wheel and source distribution land in `cli/dist/`. To publish to PyPI:
+The wheel and source distribution land in `cli/dist/`. To publish a release on
+GitHub:
 
 ```bash
-uv publish
+gh release create <tag> cli/dist/*.whl cli/dist/*.tar.gz cli/docs/commands.md
 ```
 
 To install the local wheel for manual testing:

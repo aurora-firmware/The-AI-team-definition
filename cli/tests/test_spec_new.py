@@ -118,3 +118,51 @@ def test_spec_new_substitutes_body_h1_with_provided_title(monkeypatch, tmp_path)
 
     assert "# My New Spec" in content
     assert "# [Specification Title]" not in content
+
+
+def test_spec_new_allocates_next_id_from_existing_spec_frontmatter(
+    monkeypatch, tmp_path
+):
+    """Allocator should use existing spec frontmatter IDs, not filename patterns."""
+    from ai_team.cli import app
+
+    specs_dir = tmp_path / "project" / "specs"
+    _mkdir(specs_dir)
+    (specs_dir / "the-intern-agent-service-architecture.md").write_text(
+        """---
+id: S-001
+title: "The Intern Agent Service Architecture"
+version: "0.1"
+status: approved
+created: 2026-05-16
+author: planner
+---
+
+# The Intern Agent Service Architecture
+""",
+        encoding="utf-8",
+    )
+    (specs_dir / "bob-service-shell-architecture.md").write_text(
+        """---
+id: S-002
+title: "Bob Service Shell Architecture"
+version: "0.1"
+status: approved
+created: 2026-05-16
+author: planner
+---
+
+# Bob Service Shell Architecture
+""",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["spec", "new", "Verification Spec", "--json"])
+
+    expected = specs_dir / "verification-spec.md"
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload == {"id": "S-003", "path": str(expected)}
+    assert "id: S-003" in expected.read_text(encoding="utf-8")

@@ -13,6 +13,10 @@ _TASK_PATTERN = re.compile(r"^T-(\d{3})-.*\.md$")
 _BUG_PATTERN = re.compile(r"^B-(\d{3})-.*\.md$")
 _SPEC_PATTERN = re.compile(r"^S-(\d{3})-.*\.md$")
 _ADR_PATTERN = re.compile(r"^ADR-(\d{3})-.*\.md$")
+_SPEC_FRONTMATTER_ID_PATTERN = re.compile(
+    r'^id:\s*["\']?S-(\d{3})["\']?\s*(?:#.*)?$',
+    re.MULTILINE,
+)
 
 
 def next_task_id(project_root: ProjectRoot) -> str:
@@ -44,11 +48,12 @@ def next_bug_id(project_root: ProjectRoot) -> str:
 
 def next_spec_id(project_root: ProjectRoot) -> str:
     """Return the next spec ID in S-NNN format across specs/ and specs/archive/."""
-    return _next_id(
-        prefix="S",
-        directories=(project_root.specs, project_root.specs / "archive"),
-        pattern=_SPEC_PATTERN,
+    directories = (project_root.specs, project_root.specs / "archive")
+    max_number = max(
+        _max_matching_number(directories=directories, pattern=_SPEC_PATTERN),
+        _max_spec_frontmatter_id_number(directories=directories),
     )
+    return f"S-{max_number + 1:03d}"
 
 
 def next_adr_id(project_root: ProjectRoot) -> str:
@@ -80,6 +85,30 @@ def _max_matching_number(
             if not path.is_file():
                 continue
             match = pattern.match(path.name)
+            if match is None:
+                continue
+            max_number = max(max_number, int(match.group(1)))
+    return max_number
+
+
+def _max_spec_frontmatter_id_number(directories: tuple[Path, ...]) -> int:
+    """Return the largest S-NNN id found in spec frontmatter across directories."""
+    max_number = 0
+    for directory in directories:
+        if not directory.exists():
+            continue
+        for path in directory.iterdir():
+            if not path.is_file():
+                continue
+            text = path.read_text(encoding="utf-8")
+            if not text.startswith("---"):
+                continue
+            rest = text[3:]
+            close_idx = rest.find("\n---")
+            if close_idx == -1:
+                continue
+            frontmatter = rest[:close_idx]
+            match = _SPEC_FRONTMATTER_ID_PATTERN.search(frontmatter)
             if match is None:
                 continue
             max_number = max(max_number, int(match.group(1)))

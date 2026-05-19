@@ -18,10 +18,10 @@ This guide walks you through bootstrapping a new project using the AI team frame
 
 ### Step 1: Install the `ai-team` CLI
 
-Install from PyPI once published:
+Download the wheel from the project's GitHub Releases page:
 
 ```bash
-pipx install ai-team-cli
+pipx install https://github.com/<org>/<repo>/releases/download/<tag>/ai_team-<version>-py3-none-any.whl
 ```
 
 Install from a local wheel build while developing this repository:
@@ -47,6 +47,14 @@ ai-team report
 ```
 
 For a full usage walkthrough see [`cli/docs/usage.md`](../cli/docs/usage.md); for an exhaustive command and flag reference see [`cli/docs/commands.md`](../cli/docs/commands.md).
+
+### Release hygiene
+
+Public releases must not include secrets, tokens, passwords, environment
+variable values, usernames, emails, machine paths, hostnames, or any other data
+that could identify or compromise this machine. Before publishing a release,
+scan newly added docs, examples, and scratch files for sensitive material and
+replace it with placeholders if needed.
 
 ### Step 2: Create the Directory Structure
 
