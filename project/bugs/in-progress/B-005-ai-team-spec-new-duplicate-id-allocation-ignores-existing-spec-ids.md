@@ -161,6 +161,16 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-19
+
+Implemented B-005 using a TDD cycle. I first added a regression test in `cli/tests/test_spec_new.py` that creates two existing spec files with slug-based filenames and frontmatter IDs `S-001` and `S-002`, then invokes `ai-team spec new --json` and expects `S-003`. The test failed as expected, proving the duplicate-allocation bug (`S-001` was returned).
+
+I then implemented the minimal fix in `cli/src/ai_team/core/ids.py`: `next_spec_id()` now computes the max from both legacy filename pattern matches (`S-NNN-*.md`) and YAML frontmatter `id: S-NNN` values across `project/specs/` and `project/specs/archive/`. I intentionally did not refactor other ID allocators because the defect scope is spec allocation only.
+
+I considered using `parse_spec()` for frontmatter extraction but rejected it because that parser does not model a spec `id` field; a focused frontmatter regex scan was the most direct fix with least blast radius. After the fix, the regression test passed, related ID tests remained green, and full CLI tests plus Ruff checks passed.
+
+No implementation work remains on this branch. Ready for reviewer cycle and canonical Work Log append on `dev-agent`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
