@@ -14,6 +14,24 @@ are observations to triage, not confirmed defects unless marked so.
 
 ## Issues
 
+### I-009 — `ai-team spec new` duplicate-ID bug recurs
+
+- **Severity:** medium
+- **Status:** open
+- **Observed during:** `ai-team spec new`, 2026-05-19.
+- **What happened:** Running `ai-team spec new --json --author planner --status draft "JS extension for pi-agent event forwarding"` returned a new spec with `id: S-001`, even though `project/specs/` already contained `the-intern-agent-service-architecture.md` with `id: S-001` and `bob-service-shell-architecture.md` with `id: S-002`.
+- **Impact:** Two specs can end up sharing the same identifier. References like `S-001` become ambiguous, and the generated artifact needs manual frontmatter repair.
+- **Suggested fix:** Scan `project/specs/` for the highest existing `S-NNN` in frontmatter and increment from there, the same way task IDs are allocated.
+
+### I-010 — `ai-team spec new` assigns duplicate IDs
+
+- **Severity:** medium
+- **Status:** open
+- **Observed during:** `ai-team spec new`, 2026-05-16.
+- **What happened:** Running `ai-team spec new --json --author planner --status draft "Bob Service Shell Architecture"` returned `{"id": "S-001", ...}` while `project/specs/the-intern-agent-service-architecture.md` already had `id: S-001`.
+- **Impact:** Two specs can end up sharing the same identifier. References like `S-001` become ambiguous, and the generated artifact requires a manual frontmatter fixup.
+- **Suggested fix:** Scan `project/specs/` for the highest existing `S-NNN` in frontmatter and increment from there, the same way task IDs are allocated.
+
 ### I-001 — Reviewer verdict commit included implementation files (not a CLI bug)
 
 - **Severity:** medium
