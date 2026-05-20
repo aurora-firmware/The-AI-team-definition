@@ -130,10 +130,10 @@ For a narrated usage guide see [`cli/docs/usage.md`](cli/docs/usage.md); for an 
 
 ### Install the CLI
 
-Install from PyPI once published:
+Download and install the wheel from the project's GitHub Releases page:
 
 ```bash
-pipx install ai-team-cli
+pipx install https://github.com/<org>/<repo>/releases/download/<tag>/ai_team-<version>-py3-none-any.whl
 ```
 
 For a local build from this repository:
