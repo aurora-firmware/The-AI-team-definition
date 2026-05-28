@@ -68,6 +68,7 @@ ai-team init [PATH] [OPTIONS]
 | `--dry-run` | Print what would be written without touching the filesystem. |
 | `--force` | Overwrite existing files. Without this flag the command refuses to overwrite. |
 | `--no-interactive` | Skip all prompts. Requires `--tools` to be provided explicitly. |
+| `--create-root-guidance` | When used with `--no-interactive`, create root `CLAUDE.md` and `AGENTS.md` from starter templates. Defaults to false (skipped). |
 
 ### What gets scaffolded
 
