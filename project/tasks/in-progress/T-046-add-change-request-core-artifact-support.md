@@ -103,3 +103,10 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-28
+PASS
+
+- Stage 1 (acceptance): All ACs satisfied in the submitted code. Change-request frontmatter parsing/dumping support was added with required fields and error handling style (`FrontmatterError` via `_require`), CR ID allocation scans provided directories for max `CR-NNN` filenames, and change-request frontmatter dump ordering is preserved through the ordered field map.
+- Stage 1 (scope): Developer commits touched only the expected implementation/test files for this task.
+- Stage 2 (quality): Correctness, test coverage, readability, and performance/security checks are acceptable for scope. Targeted verification passed: `UV_CACHE_DIR=/tmp/uv-cache uv run python -m pytest tests/test_models.py tests/test_ids.py` (53 passed), `UV_CACHE_DIR=/tmp/uv-cache uv run ruff format --check .`, and `UV_CACHE_DIR=/tmp/uv-cache uv run ruff check .`.
