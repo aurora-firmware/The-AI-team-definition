@@ -79,6 +79,10 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-28
+
+Started with mandatory Work Log read (no prior entries), then translated AC-1 through AC-4 into a single focused scaffold-source test that asserts `cli/src/ai_team/init/sources/project/CLAUDE.md` and `.../AGENTS.md` both exist and both explicitly describe specs, tasks, bugs, decisions, reports, and project-local docs. Ran the targeted test to confirm red; it failed because `sources/project/CLAUDE.md` did not exist. Implemented the minimal change by adding both source template files with concise folder-purpose guidance. Re-ran the targeted test (green), then re-ran `tests/test_init_scaffolds.py` (all green), and executed the task verification `rg` command confirming all required terms are present in both files. Considered adding generator/scaffold output updates, but rejected that in this task because AC-4 explicitly defers generated scaffold output and init-collision behavior to the dependent scaffold-generation task. Finalized by committing only task-owned files and leaving unrelated root untracked files untouched. Remaining work is reviewer validation and downstream dependent task to wire these new source templates into scaffold generation.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
