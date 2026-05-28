@@ -92,6 +92,33 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-29
+
+Read the task file and confirmed the Work Log was empty. Then read all four target documents end-to-end to understand current structure and voice, followed by the relevant completed task files (T-044, T-045, T-046, T-047, T-048, T-050, T-051, T-054, T-055) and the spec (`S-002`).
+
+**Changes made (one commit, `66b669b`):**
+
+`ai-process/processes/workflow-overview.md`:
+- AC-1: Added a "Lighter path — change-request" paragraph at the end of the Brainstorm section. Also updated the Task Breakdown `Input:` line to mention "or accepted change-request".
+- AC-2: Added a paragraph at the start of the Task Breakdown section explaining that spec breakdown explicitly considers documentation and test updates as implementation work.
+- AC-3: Noted in the Task Breakdown section that Gate 2 focuses on technical task-plan readiness and does not reopen product questions settled at Gate 1.
+- AC-4: Added a paragraph at the start of "What the development loop does" explaining that the loop reads the baseline test command from the `## Test` section of root `CLAUDE.md`/`AGENTS.md`.
+
+`ai-process/processes/quality-gates.md`:
+- AC-3: Added a `**Scope:**` field to the Gate 2 block.
+- AC-4 / dev-loop guard: Added a "Development Loop Baseline Guard" section between Gate 4 and Gate 5.
+
+`ai-process/architecture/component-map.md`:
+- AC-1: Added a "Change Request (intake)" row to the Procedures table, a "Change Requests" directory row to the Documents and Directories table, and an `ai-team change-request new` row to the CLI Command Mapping table.
+- AC-4: Added "Root Guidance Files" and "Project Guidance Files" rows to the Documents and Directories table.
+
+`guides/setup-guide.md`:
+- AC-4: Renamed Step 4 to include `AGENTS.md`, added a paragraph explaining the `## Test` section importance, noted that `ai-team init` can scaffold these files, added a "Root `CLAUDE.md` `## Test` section" item at the top of Step 5, and updated the Step 6 verification item 5.
+
+**Decisions:** All additions are short paragraphs or bullet extensions integrated into existing sections — no new top-level sections invented. The "Development Loop Baseline Guard" is positioned between Gate 4 and Gate 5 because it is an operational check distinct from the numbered gates.
+
+**Obstacles encountered:** None. Verification grep returns 35 matching lines across the four target files.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
