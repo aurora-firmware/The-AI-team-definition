@@ -184,3 +184,23 @@ This is not a regression — the *queue discovery* boundary (the only thing AC-1
 - **F-5** *(medium, planner + CLI maintainer)*: Consider extending `ai-team list tasks` (or adding `ai-team task next`) to encapsulate priority/dependency/tiebreak selection so dev-loop's Step 3 can move off filesystem reads. This is a future-cleanup item, not a regression.
 
 None of these are merge blockers. The current change is a sound, coherent framework-design step.
+
+### Session 2 — 2026-05-28
+
+**What was done.** Addressed Planner Extraordinary Review follow-ups F-1, F-2, F-3, and F-4 in a single TDD cycle. Deferred F-5 as instructed.
+
+**F-1 (tighten "missing vs ambiguous" prose).** Replaced the old vague escalation prose in Step 2 with two named subsections ("Missing" and "Ambiguous") each containing an enumerated list of exact, decidable conditions. Missing conditions: root `CLAUDE.md` does not exist; root `CLAUDE.md` exists but has no `## Test` heading; `## Test` section has no fenced code block. Ambiguous conditions: fenced block still matches the T-050 placeholder comment; section contains more than one fenced code block. Both subsections end with the literal greppable BLOCKED stop message specified in the follow-up instructions.
+
+**F-2 (no-fallback policy).** Added an explicit sentence at the top of Step 2 stating that the baseline test command is discovered ONLY from the root `CLAUDE.md` `## Test` section, with no fallback to other files. The rationale (deterministic single-source surface) is documented inline.
+
+**F-3 (strengthen tests).** Updated `test_dev_loop_escalates_when_baseline_test_command_missing_or_ambiguous` to assert both literal BLOCKED stop messages (missing and ambiguous). Added four new tests: `test_dev_loop_baseline_guard_enumerates_missing_conditions`, `test_dev_loop_baseline_guard_enumerates_ambiguous_conditions`, `test_dev_loop_baseline_guard_reads_only_from_root_claude_md`, and `test_dev_loop_baseline_guard_runs_once_at_startup_only`. All assert presence in body.md source and both scaffold files.
+
+**F-4 (startup-only re-run policy).** Added an explicit rationale sentence at the top of Step 2: "The baseline guard runs once at loop startup. It is NOT re-checked between tasks. Rationale: post-merge regressions are caught by the integrate skill's destination-branch test step; re-checking between tasks adds latency without adding coverage."
+
+**F-5 (deferred).** Step 3 / queue selection logic was not touched. The Planner agreed this is future scope. No change made.
+
+**Scaffold regeneration.** Ran `uv run python scripts/sync_init_scaffolds.py` after each body.md edit to keep both scaffold files in sync.
+
+**Test count.** 19 tests passed at session start; 23 tests pass at session end. No pre-existing tests were broken.
+
+**What remains.** Nothing — all four assigned follow-ups are covered by passing tests. The branch is ready for re-review.
