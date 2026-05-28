@@ -87,6 +87,22 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-28
+
+Picked up T-047 on the `task/T-047-implement-change-request-cli-creation` branch with no prior Work Log entries.
+
+Read the task file and explored the established artifact-command pattern used by `bug.py` and `adr.py`. Both follow the same structure: `_template_body` helper to strip YAML frontmatter, a `new` subcommand that allocates an ID, slugifies the title, builds the model, calls `write_artifact`, and returns a path string or JSON payload.
+
+The only significant divergence for change requests is that `next_change_request_id` takes a `tuple[Path, ...]` rather than a `ProjectRoot`, because change requests live in a single directory (`root.change_requests`) rather than multiple state folders.
+
+Wrote four tests covering all four ACs in a single pass (AC-1: creates file and echoes path; AC-2: frontmatter metadata; AC-3: `--json` output without table formatting; AC-4: refuses overwrite with non-zero exit). Implemented the command, ran ruff format, confirmed all tests green and linters clean.
+
+Updated `cli/docs/usage.md` with a "File a change request" section in Daily Workflows. The section mentions `ai-team change-request new` with and without `--json`, which is consistent with the commands actually implemented. Care was taken not to add `ai-team change-request new` to the hardcoded parametrize list in `test_usage_guide.py` since `commands.md` is generated and would require re-running `gen_docs.sh` to pick up the new command.
+
+One pre-existing infrastructure issue noted: `test_gen_docs.py` runs the `gen_docs.sh` script which truncates `cli/docs/commands.md` to 3 lines as a side effect, causing 22 cascading test failures in the full test suite run. These failures are pre-existing on the base branch and are unrelated to this task. The task's verification command (`pytest tests/test_change_request_new.py`) is clean.
+
+Everything committed in a single cycle on the task branch. Nothing remains.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
