@@ -1,7 +1,7 @@
 ---
 id: T-047
 title: Implement change request CLI creation
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-05-28'
