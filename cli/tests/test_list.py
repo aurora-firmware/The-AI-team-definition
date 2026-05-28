@@ -355,9 +355,7 @@ def test_list_change_requests_displays_id_title_state_in_rich_table(
     assert "CR-000" not in result.output
 
 
-def test_list_change_requests_json_outputs_machine_readable_rows(
-    monkeypatch, tmp_path
-):
+def test_list_change_requests_json_outputs_machine_readable_rows(monkeypatch, tmp_path):
     """`list change-requests --json` emits JSON rows without table formatting."""
     from ai_team.cli import app
 

@@ -304,3 +304,153 @@ def test_validate_scope_flags_limit_checked_artifact_kinds(monkeypatch, tmp_path
 
     assert result.exit_code == 0
     assert json.loads(result.output) == []
+
+
+CHANGE_REQUEST_TEMPLATE = """\
+---
+id: "{id}"
+title: "{title}"
+status: {status}
+created: 2026-05-10
+---
+
+Body.
+"""
+
+
+def _change_request(cr_id: str, title: str, status: str) -> str:
+    return CHANGE_REQUEST_TEMPLATE.format(
+        id=cr_id,
+        title=title,
+        status=status,
+    )
+
+
+def test_validate_change_requests_reports_valid_cr_with_no_findings(
+    monkeypatch, tmp_path
+):
+    """`validate --change-requests` reports zero findings for a valid change request."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "change-requests" / "CR-001-add-step.md",
+        _change_request("CR-001", "Add step", "pending"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--change-requests", "--json"])
+
+    assert result.exit_code == 0
+    assert json.loads(result.output) == []
+
+
+def test_validate_change_requests_reports_frontmatter_error_for_missing_required_field(
+    monkeypatch, tmp_path
+):
+    """`validate --change-requests` emits frontmatter-invalid for a malformed CR."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "change-requests" / "CR-002-bad.md",
+        """\
+---
+title: "Bad CR missing id"
+status: pending
+created: 2026-05-10
+---
+
+Body.
+""",
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--change-requests", "--json"])
+
+    assert result.exit_code != 0
+    findings = json.loads(result.output)
+    assert any(finding["code"] == "frontmatter-invalid" for finding in findings)
+
+
+def test_validate_change_requests_reports_id_pattern_error(monkeypatch, tmp_path):
+    """`validate --change-requests` emits id-pattern for a non-CR-NNN id."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "change-requests" / "CR-003-bad-id.md",
+        _change_request("CHANGE-003", "Bad ID format", "pending"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--change-requests", "--json"])
+
+    assert result.exit_code != 0
+    findings = json.loads(result.output)
+    assert any(finding["code"] == "id-pattern" for finding in findings)
+
+
+def test_validate_change_requests_reports_filename_pattern_error(monkeypatch, tmp_path):
+    """`validate --change-requests` emits filename-pattern for wrong filename format."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "change-requests" / "not-a-cr.md",
+        _change_request("CR-004", "Good ID bad filename", "pending"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--change-requests", "--json"])
+
+    assert result.exit_code != 0
+    findings = json.loads(result.output)
+    assert any(finding["code"] == "filename-pattern" for finding in findings)
+
+
+def test_validate_scope_change_requests_flag_excludes_other_artifact_kinds(
+    monkeypatch, tmp_path
+):
+    """`--change-requests` scope flag excludes bugs and tasks from validation."""
+    from ai_team.cli import app
+
+    _seed_valid_project(tmp_path)
+    # A bug with a bad status — should not appear when only --change-requests is set
+    _write(
+        tmp_path / "project" / "bugs" / "open" / "B-010-status-mismatch.md",
+        _bug("B-010", "Bad bug status", "resolved"),
+    )
+    # A valid change request
+    _write(
+        tmp_path / "project" / "change-requests" / "CR-001-valid.md",
+        _change_request("CR-001", "Valid CR", "pending"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--change-requests", "--json"])
+
+    assert result.exit_code == 0
+    assert json.loads(result.output) == []
+
+
+def test_validate_default_scope_includes_change_requests(monkeypatch, tmp_path):
+    """Default validate (no scope flags) also validates change requests."""
+    from ai_team.cli import app
+
+    _seed_valid_project(tmp_path)
+    _write(
+        tmp_path / "project" / "change-requests" / "CR-999-bad.md",
+        """\
+---
+title: "Missing id field"
+status: pending
+created: 2026-05-10
+---
+
+Body.
+""",
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--json"])
+
+    assert result.exit_code != 0
+    findings = json.loads(result.output)
+    assert any(finding["code"] == "frontmatter-invalid" for finding in findings)
