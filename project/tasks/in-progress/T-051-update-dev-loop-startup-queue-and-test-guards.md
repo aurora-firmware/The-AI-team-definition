@@ -91,6 +91,25 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-28
+
+**What was done.** Investigated the CLI surface before writing any code: ran `ai-team list tasks --help` and `ai-team list tasks --state pending` to confirm the correct filter flag is `--state`, not `--status`. Verified the baseline test command location by reading `cli/src/ai_team/init/sources/root/CLAUDE.md`, which has a `## Test` section with a placeholder comment — that is the canonical home the dev-loop must read. Read the existing `body.md` end-to-end and all 14 baseline tests before touching anything.
+
+Followed TDD: wrote five failing tests in `tests/test_init_scaffolds.py` (one per AC) asserting that specific phrases appear in the body source and both scaffolds, confirmed they failed, then made surgical edits to `body.md`.
+
+Changes to `body.md`:
+- AC-1: replaced "list all files in `project/tasks/pending/`" with `ai-team list tasks --state pending` in Step 1, and updated the Input Requirements blurb to reference the CLI.
+- AC-2–5: inserted a new **Step 2: Baseline Test Guard** that reads the `## Test` section of `CLAUDE.md`, escalates if the section is missing or ambiguous, runs the command, and stops with failure output if it fails. The step is annotated as startup-only (skip on subsequent loop iterations).
+- Renumbered the old Steps 2–7 to Steps 3–8, and updated internal cross-references (`go back to **Step 4**` became `**Step 5**`, `Step 2` in Cycle Counter Reset became `Step 3`).
+
+Ran `python scripts/sync_init_scaffolds.py` to regenerate both scaffold files. All 19 tests pass; ruff format and ruff check clean.
+
+**What was tried and rejected.** Considered placing the baseline guard before Step 1 (queue discovery) as a "Step 0", but Step 2 is the natural position: Step 1 determines whether there is work to do at all, and the guard should only run if there is at least one pending task. The skip-on-loop-back annotation prevents redundant re-runs on every task iteration.
+
+**What remains.** Nothing — all five ACs are covered by passing tests and the scaffold regeneration is committed.
+
+**Obstacle for follow-up consideration.** AC-1 in the task spec used the phrase "task state filter" without naming the exact command. The actual CLI is `ai-team list tasks --state pending` (a subcommand of `list`, not `task`). No new surface was invented — documented the existing command.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
