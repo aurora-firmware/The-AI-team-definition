@@ -444,6 +444,43 @@ def _spec_breakdown_skill_texts() -> tuple[str, str, str]:
     return source, claude, codex
 
 
+def _spec_breakdown_review_skill_texts() -> tuple[str, str, str]:
+    repo_root = Path(__file__).resolve().parents[1]
+    source = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "skills"
+        / "spec-breakdown-review"
+        / "body.md"
+    ).read_text(encoding="utf-8")
+    claude = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "claude"
+        / "skills"
+        / "spec-breakdown-review"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    codex = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "codex"
+        / "skills"
+        / "spec-breakdown-review"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    return source, claude, codex
+
+
 def test_spec_breakdown_skill_requires_docs_planning_during_task_creation() -> None:
     source, claude, codex = _spec_breakdown_skill_texts()
     required_phrases = (
@@ -466,5 +503,38 @@ def test_spec_breakdown_skill_covers_test_planning_and_optional_omission() -> No
 
     for phrase in required_phrases:
         assert phrase in source, f"spec-breakdown source must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_spec_breakdown_review_focuses_gate_2_on_technical_readiness() -> None:
+    source, claude, codex = _spec_breakdown_review_skill_texts()
+    required_phrases = (
+        "focus findings only on technical task-plan readiness",
+        "Do not fail Gate 2 for product-scope concerns that do not block technical readiness",
+        "if the plan contradicts the approved spec or existing ADRs",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, (
+            f"spec-breakdown-review source must include: {phrase!r}"
+        )
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_spec_breakdown_review_preserves_existing_output_format_and_verdicts() -> None:
+    source, claude, codex = _spec_breakdown_review_skill_texts()
+    required_phrases = (
+        "Result: PASS | FAIL | BLOCKED | ESCALATE",
+        "Spec reviewed: project/specs/<file>",
+        "Tasks reviewed: <count>",
+        "Next owner:",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, (
+            f"spec-breakdown-review source must include: {phrase!r}"
+        )
         assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
