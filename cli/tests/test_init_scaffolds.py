@@ -575,6 +575,101 @@ def test_spec_breakdown_review_preserves_existing_output_format_and_verdicts() -
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
 
 
+def _dev_loop_skill_texts() -> tuple[str, str, str]:
+    repo_root = Path(__file__).resolve().parents[1]
+    source = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "skills"
+        / "dev-loop"
+        / "body.md"
+    ).read_text(encoding="utf-8")
+    claude = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "claude"
+        / "skills"
+        / "dev-loop"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    codex = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "codex"
+        / "skills"
+        / "dev-loop"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    return source, claude, codex
+
+
+def test_dev_loop_uses_cli_task_state_filter_for_queue_discovery() -> None:
+    """AC-1: Queue discovery uses ai-team list tasks --state pending, not raw filesystem."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = ("ai-team list tasks --state pending",)
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_discovers_baseline_test_command_before_claiming_task() -> None:
+    """AC-2: Loop reads the baseline test command from project guidance before claiming."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = (
+        "baseline test command",
+        "CLAUDE.md",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_allows_loop_to_continue_when_baseline_tests_pass() -> None:
+    """AC-3: Loop continues to task selection when baseline test command passes."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = ("baseline test command passes",)
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_escalates_when_baseline_test_command_missing_or_ambiguous() -> None:
+    """AC-4: Loop escalates to human when baseline test command is missing or ambiguous."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = ("baseline test command is missing",)
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_stops_and_reports_when_baseline_tests_fail() -> None:
+    """AC-5: Loop stops and reports failing command and output when baseline tests fail."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = ("baseline test command fails",)
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
 def test_project_guidance_sources_exist_and_describe_project_artifact_folders() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     source_root = repo_root / "src" / "ai_team" / "init" / "sources" / "project"
