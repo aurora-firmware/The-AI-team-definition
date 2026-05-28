@@ -1,7 +1,7 @@
 ---
 id: T-049
 title: Add project guidance templates to init scaffolds
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-05-28'
