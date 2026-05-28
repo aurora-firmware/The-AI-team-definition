@@ -11,6 +11,7 @@ from ai_team.core.models import (
     FrontmatterError,
     parse_adr,
     parse_bug,
+    parse_change_request,
     parse_spec,
     parse_task,
 )
@@ -38,6 +39,7 @@ TASK_ID_RE = re.compile(r"^T-\d{3}$")
 BUG_ID_RE = re.compile(r"^B-\d{3}$")
 SPEC_ID_RE = re.compile(r"^S-\d{3}$")
 ADR_ID_RE = re.compile(r"^ADR-\d{3}$")
+CHANGE_REQUEST_ID_RE = re.compile(r"^CR-\d{3}$")
 SLUGGED_FILENAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]*\.md$")
 
 
@@ -125,6 +127,7 @@ def validate_project(
     bugs: bool = False,
     specs: bool = False,
     adrs: bool = False,
+    change_requests: bool = False,
 ) -> list[Finding]:
     """Validate selected artifact categories and return findings."""
     findings: list[Finding] = []
@@ -306,6 +309,24 @@ def validate_project(
                         ),
                     )
                 )
+
+    if change_requests:
+        for path in _iter_markdown_files(root.change_requests):
+            try:
+                cr = parse_change_request(path)
+            except FrontmatterError as exc:
+                findings.append(_finding(path, root, "frontmatter-invalid", str(exc)))
+                continue
+
+            _check_id_pattern(
+                findings,
+                root,
+                path,
+                artifact_label="Change request",
+                artifact_id=cr.id,
+                pattern=CHANGE_REQUEST_ID_RE,
+            )
+            _check_stateful_filename(findings, root, path, cr.id)
 
     return findings
 

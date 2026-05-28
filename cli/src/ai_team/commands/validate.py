@@ -18,11 +18,16 @@ app = typer.Typer(
 
 
 def _selected_scopes(
-    all_scopes: bool, tasks: bool, bugs: bool, specs: bool, adrs: bool
-) -> tuple[bool, bool, bool, bool]:
-    if all_scopes or not any((tasks, bugs, specs, adrs)):
-        return (True, True, True, True)
-    return (tasks, bugs, specs, adrs)
+    all_scopes: bool,
+    tasks: bool,
+    bugs: bool,
+    specs: bool,
+    adrs: bool,
+    change_requests: bool,
+) -> tuple[bool, bool, bool, bool, bool]:
+    if all_scopes or not any((tasks, bugs, specs, adrs, change_requests)):
+        return (True, True, True, True, True)
+    return (tasks, bugs, specs, adrs, change_requests)
 
 
 def _render_findings_table(findings: list[dict[str, str]]) -> None:
@@ -50,18 +55,26 @@ def default(
     bugs: bool = typer.Option(False, "--bugs", help="Validate bugs only."),
     specs: bool = typer.Option(False, "--specs", help="Validate specs only."),
     adrs: bool = typer.Option(False, "--adrs", help="Validate ADRs only."),
+    change_requests: bool = typer.Option(
+        False, "--change-requests", help="Validate change requests only."
+    ),
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     root = find_project_root(Path.cwd())
-    selected_tasks, selected_bugs, selected_specs, selected_adrs = _selected_scopes(
-        all_scopes, tasks, bugs, specs, adrs
-    )
+    (
+        selected_tasks,
+        selected_bugs,
+        selected_specs,
+        selected_adrs,
+        selected_change_requests,
+    ) = _selected_scopes(all_scopes, tasks, bugs, specs, adrs, change_requests)
     findings = validate_project(
         root,
         tasks=selected_tasks,
         bugs=selected_bugs,
         specs=selected_specs,
         adrs=selected_adrs,
+        change_requests=selected_change_requests,
     )
     payload = [finding.as_dict() for finding in findings]
 
