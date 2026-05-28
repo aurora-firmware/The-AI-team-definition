@@ -114,3 +114,25 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-28
+
+PASS
+
+Both stages passed.
+
+**Stage 1 — Spec compliance:**
+- AC-1 met: `_replace_project_skeleton` now copies `sources/project/CLAUDE.md` into the generated scaffold directory via `shutil.copy2`, with a `FileNotFoundError` guard if the source is absent.
+- AC-2 met: Same mechanism copies `sources/project/AGENTS.md`.
+- AC-3 met: The existing `_plan_copies(scaffolds_path / "project", ...)` in `commands/init.py` iterates all files in the project scaffold directory, so the two newly generated files are automatically planned as init outputs — no changes to `init.py` were required and none were made.
+- AC-4 met: The collision-detection path in `commands/init.py` is unchanged; the new files participate in it through the same mechanism, confirmed by `test_init_refuses_when_project_guidance_file_exists_without_force` and `test_init_force_overwrites_project_guidance_files`.
+- Only the five files listed in "Files to Touch" plus the task file itself were modified. No unspecified files were touched.
+- The generated scaffold files (`scaffolds/project/CLAUDE.md` and `scaffolds/project/AGENTS.md`) exactly match their sources under `sources/project/`.
+
+**Stage 2 — Code quality:**
+- Correctness: `FileNotFoundError` guard in `_replace_project_skeleton` correctly fails fast if a source file is missing. Logic is sound.
+- Tests: 28 tests pass. New tests cover both success paths (AC-1/AC-2 content match, AC-3 init output, AC-3 dry-run listing, AC-4 force overwrite) and the failure path (AC-4 collision refusal). Tests are independent.
+- Security: No secrets, no external input, no queries. Not applicable.
+- Readability: Names are descriptive, the loop over `("CLAUDE.md", "AGENTS.md")` is clear, error messages are precise.
+- Performance: No concerns for a build-time script.
+- Verification command (`sync_init_scaffolds.py` + `pytest` + `ruff format --check` + `ruff check`) ran clean locally against the task branch.
