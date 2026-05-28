@@ -53,6 +53,17 @@ created: 2026-05-10
 Body.
 """
 
+CHANGE_REQUEST_TEMPLATE = """\
+---
+id: "{id}"
+title: "{title}"
+status: {status}
+created: 2026-05-10
+---
+
+Body.
+"""
+
 
 def _write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -94,6 +105,14 @@ def _spec(title: str, version: str, status: str) -> str:
 
 def _adr(id: str, title: str, status: str) -> str:
     return ADR_TEMPLATE.format(
+        id=id,
+        title=title,
+        status=status,
+    )
+
+
+def _change_request(id: str, title: str, status: str) -> str:
+    return CHANGE_REQUEST_TEMPLATE.format(
         id=id,
         title=title,
         status=status,
@@ -300,3 +319,79 @@ def test_list_specs_and_adrs_include_expected_columns_and_fields(monkeypatch, tm
             "status": "accepted",
         }
     ]
+
+
+def test_list_change_requests_displays_id_title_state_in_rich_table(
+    monkeypatch, tmp_path
+):
+    """`list change-requests` shows ID, Title, and State columns in a table."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "change-requests" / "CR-001-add-new-step.md",
+        _change_request("CR-001", "Add new step", "pending"),
+    )
+    _write(
+        tmp_path / "project" / "change-requests" / "CR-002-revise-scope.md",
+        _change_request("CR-002", "Revise scope", "approved"),
+    )
+    _write(
+        tmp_path / "project" / "change-requests" / "TEMPLATE-change-request.md",
+        _change_request("CR-000", "Template CR", "pending"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["list", "change-requests"])
+
+    assert result.exit_code == 0
+    assert "ID" in result.output
+    assert "Title" in result.output
+    assert "State" in result.output
+    assert "CR-001" in result.output
+    assert "Add new step" in result.output
+    assert "CR-002" in result.output
+    assert "Revise scope" in result.output
+    assert "Template CR" not in result.output
+    assert "CR-000" not in result.output
+
+
+def test_list_change_requests_json_outputs_machine_readable_rows(
+    monkeypatch, tmp_path
+):
+    """`list change-requests --json` emits JSON rows without table formatting."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "change-requests" / "CR-001-add-new-step.md",
+        _change_request("CR-001", "Add new step", "pending"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["list", "change-requests", "--json"])
+
+    assert result.exit_code == 0
+    parsed = json.loads(result.output)
+    assert parsed == [
+        {
+            "id": "CR-001",
+            "title": "Add new step",
+            "state": "pending",
+        }
+    ]
+    assert "Change Requests" not in result.output
+    assert "┏" not in result.output
+
+
+def test_list_change_requests_returns_empty_list_when_no_change_requests_exist(
+    monkeypatch, tmp_path
+):
+    """`list change-requests` returns an empty list without error when folder is empty."""
+    from ai_team.cli import app
+
+    (tmp_path / "project" / "change-requests").mkdir(parents=True, exist_ok=True)
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["list", "change-requests", "--json"])
+
+    assert result.exit_code == 0
+    assert json.loads(result.output) == []
