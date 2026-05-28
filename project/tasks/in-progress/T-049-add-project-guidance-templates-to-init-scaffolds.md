@@ -94,3 +94,19 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-28
+PASS
+
+Stage 1 passed: AC-1 and AC-2 are satisfied by added source templates at
+`cli/src/ai_team/init/sources/project/CLAUDE.md` and
+`cli/src/ai_team/init/sources/project/AGENTS.md`; AC-3 is satisfied by explicit
+folder-purpose descriptions for specs, tasks, bugs, decisions, reports, and
+project-local docs in both files; AC-4 is satisfied because no scaffold
+generator or collision-behavior files were modified in this task.
+
+Stage 2 passed: the added test
+`test_project_guidance_sources_exist_and_describe_project_artifact_folders`
+directly validates file presence and required terms; independent reviewer
+verification also passed with `13 passed` for
+`tests/test_init_scaffolds.py` and the task `rg` command.
