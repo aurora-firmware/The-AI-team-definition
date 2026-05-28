@@ -125,7 +125,7 @@ The bug report remains available through the canonical bug file on `dev-agent`; 
 
 #### What the development loop does
 
-Before claiming the first task, the loop reads the project's documented baseline test command from the `## Test` section of the root `CLAUDE.md` (or `AGENTS.md`) and runs it. If the test command is missing or ambiguous, the loop escalates to the human rather than guessing. If it fails, the loop stops and reports the failure. Project test commands belong in root guidance files (`CLAUDE.md` or `AGENTS.md`) or in referenced project-local docs such as `project/docs/coding_guidelines.md`; `ai-team init` can scaffold these files from stable templates.
+Before claiming the first task, the loop reads the project's documented baseline test command from the `## Test` section of the root `CLAUDE.md` and runs it. If the test command is missing or ambiguous, the loop escalates to the human rather than guessing. If it fails, the loop stops and reports the failure. Project test commands belong in root guidance files (`CLAUDE.md` or `AGENTS.md`) or in referenced project-local docs such as `project/docs/coding_guidelines.md`; `ai-team init` can scaffold these files from stable templates.
 
 1. Picks the next task from `pending/` (priority → dependency readiness → creation date), using `ai-team list tasks --state pending`.
 2. Moves it to `in-progress/`, creates the task branch, commits the state change on `dev-agent`.
