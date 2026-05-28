@@ -1,7 +1,7 @@
 ---
 id: T-046
 title: Add change request core artifact support
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-05-28'
