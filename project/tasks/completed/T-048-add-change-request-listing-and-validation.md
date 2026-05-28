@@ -1,7 +1,7 @@
 ---
 id: T-048
 title: Add change request listing and validation
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-05-28'
