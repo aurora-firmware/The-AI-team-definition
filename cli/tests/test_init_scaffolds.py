@@ -91,6 +91,30 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
         "codex planner\n",
     )
 
+    # Package-owned project guidance source fixtures.
+    _write(
+        repo
+        / "cli"
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "project"
+        / "CLAUDE.md",
+        "# Project Guidance\n\nspecs tasks bugs decisions reports project-local docs\n",
+    )
+    _write(
+        repo
+        / "cli"
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "project"
+        / "AGENTS.md",
+        "# Project Guidance for Agents\n\nspecs tasks bugs decisions reports project-local docs\n",
+    )
+
     # Seed stale generated output that should be removed.
     _write(
         repo
@@ -231,6 +255,8 @@ def test_sync_script_replaces_project_with_empty_lifecycle_skeleton(
         Path("bugs/resolved/.gitkeep"),
         Path("decisions/.gitkeep"),
         Path("docs/.gitkeep"),
+        Path("CLAUDE.md"),
+        Path("AGENTS.md"),
     }
     actual_files = {
         (Path(root) / file_name).relative_to(project_root)
@@ -240,6 +266,31 @@ def test_sync_script_replaces_project_with_empty_lifecycle_skeleton(
 
     assert actual_files == expected_files
     assert not (project_root / "old.txt").exists()
+
+
+def test_sync_script_copies_project_guidance_files_from_source(
+    tmp_path: Path,
+) -> None:
+    """AC-1 & AC-2: Generator copies CLAUDE.md and AGENTS.md from sources/project/."""
+    repo = _setup_fake_repo(tmp_path)
+
+    subprocess.run(
+        [sys.executable, "cli/scripts/sync_init_scaffolds.py"],
+        cwd=repo,
+        check=True,
+    )
+
+    sources_root = (
+        repo / "cli" / "src" / "ai_team" / "init" / "sources" / "project"
+    )
+    project_root = repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "project"
+
+    for file_name in ("CLAUDE.md", "AGENTS.md"):
+        source_text = (sources_root / file_name).read_text(encoding="utf-8")
+        scaffold_text = (project_root / file_name).read_text(encoding="utf-8")
+        assert scaffold_text == source_text, (
+            f"scaffolds/project/{file_name} does not match sources/project/{file_name}"
+        )
 
 
 def test_package_owned_skill_sources_include_body_and_required_metadata() -> None:

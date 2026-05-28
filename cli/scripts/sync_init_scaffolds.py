@@ -42,7 +42,7 @@ def _replace_tree(source: Path, destination: Path) -> None:
     )
 
 
-def _replace_project_skeleton(destination: Path) -> None:
+def _replace_project_skeleton(destination: Path, source: Path) -> None:
     if destination.exists():
         shutil.rmtree(destination)
 
@@ -52,6 +52,14 @@ def _replace_project_skeleton(destination: Path) -> None:
         leaf_dir = destination / leaf
         leaf_dir.mkdir(parents=True, exist_ok=True)
         (leaf_dir / ".gitkeep").write_text("", encoding="utf-8")
+
+    for guidance_file in ("CLAUDE.md", "AGENTS.md"):
+        src = source / guidance_file
+        if not src.is_file():
+            raise FileNotFoundError(
+                f"Expected project guidance source does not exist: {src}"
+            )
+        shutil.copy2(src, destination / guidance_file)
 
 
 def _load_skill_metadata(path: Path) -> dict[str, str]:
@@ -107,7 +115,7 @@ def sync_init_scaffolds(cli_root: Path) -> None:
     sources_root = init_root / "sources"
 
     scaffolds_root.mkdir(parents=True, exist_ok=True)
-    _replace_project_skeleton(scaffolds_root / "project")
+    _replace_project_skeleton(scaffolds_root / "project", sources_root / "project")
     _replace_generated_skills(
         sources_root / "skills",
         scaffolds_root,
