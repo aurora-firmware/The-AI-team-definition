@@ -18,12 +18,14 @@ import pytest
 from ai_team.core.models import (
     Adr,
     Bug,
+    ChangeRequest,
     FrontmatterError,
     Spec,
     Task,
     dump_frontmatter,
     parse_adr,
     parse_bug,
+    parse_change_request,
     parse_spec,
     parse_task,
 )
@@ -127,6 +129,17 @@ supersedes: "ADR-001"
 ---
 
 Body.
+"""
+
+VALID_CHANGE_REQUEST_CONTENT = """\
+---
+id: "CR-001"
+title: "Tighten task wording"
+status: pending
+created: 2026-05-28
+---
+
+# Tighten task wording
 """
 
 
@@ -255,6 +268,23 @@ def test_parse_adr_populates_optional_supersedes_when_present(tmp_path):
     assert result.supersedes == "ADR-001"
 
 
+def test_parse_change_request_returns_change_request_instance(tmp_path):
+    """parse_change_request returns a ChangeRequest dataclass instance."""
+    path = write_file(tmp_path, "CR-001-change.md", VALID_CHANGE_REQUEST_CONTENT)
+    result = parse_change_request(path)
+    assert isinstance(result, ChangeRequest)
+
+
+def test_parse_change_request_populates_all_fields(tmp_path):
+    """parse_change_request populates id, title, status, and created."""
+    path = write_file(tmp_path, "CR-001-change.md", VALID_CHANGE_REQUEST_CONTENT)
+    result = parse_change_request(path)
+    assert result.id == "CR-001"
+    assert result.title == "Tighten task wording"
+    assert result.status == "pending"
+    assert result.created == "2026-05-28"
+
+
 # ---------------------------------------------------------------------------
 # AC-2: dump_frontmatter round-trips through parse_* to an equal model
 # ---------------------------------------------------------------------------
@@ -324,6 +354,17 @@ def test_dump_frontmatter_adr_with_supersedes_round_trips(tmp_path):
 
     roundtrip_path = write_file(tmp_path, "ADR-002-roundtrip.md", dumped)
     restored = parse_adr(roundtrip_path)
+    assert restored == original
+
+
+def test_dump_frontmatter_change_request_round_trips(tmp_path):
+    """dump_frontmatter output parses back to an equal ChangeRequest model."""
+    path = write_file(tmp_path, "CR-001-change.md", VALID_CHANGE_REQUEST_CONTENT)
+    original = parse_change_request(path)
+    dumped = dump_frontmatter(original, "# Tighten task wording\n")
+
+    roundtrip_path = write_file(tmp_path, "CR-001-roundtrip.md", dumped)
+    restored = parse_change_request(roundtrip_path)
     assert restored == original
 
 
@@ -468,6 +509,23 @@ Body.
     assert str(path) in str(exc_info.value)
 
 
+def test_frontmatter_error_raised_when_change_request_status_missing(tmp_path):
+    """parse_change_request raises FrontmatterError when status is absent."""
+    content = """\
+---
+id: "CR-001"
+title: "Missing status"
+created: 2026-05-28
+---
+Body.
+"""
+    path = write_file(tmp_path, "change-request-no-status.md", content)
+    with pytest.raises(FrontmatterError) as exc_info:
+        parse_change_request(path)
+    assert "status" in str(exc_info.value)
+    assert str(path) in str(exc_info.value)
+
+
 def test_frontmatter_error_message_names_field_and_path(tmp_path):
     """FrontmatterError message names both the missing field and the file path."""
     content = """\
@@ -585,6 +643,20 @@ Body.
     model = parse_task(path)
     dumped = dump_frontmatter(model, "Body.\n")
     assert "# workflow state" in dumped
+
+
+def test_dump_frontmatter_preserves_change_request_key_order(tmp_path):
+    """dump_frontmatter preserves key order for change-request artifacts."""
+    path = write_file(tmp_path, "CR-001-change.md", VALID_CHANGE_REQUEST_CONTENT)
+    model = parse_change_request(path)
+    dumped = dump_frontmatter(model, "# Tighten task wording\n")
+
+    fm_block = dumped.split("---")[1]
+    keys_in_order = [
+        line.split(":")[0].strip() for line in fm_block.splitlines() if ":" in line
+    ]
+    expected_order = ["id", "title", "status", "created"]
+    assert keys_in_order == expected_order
 
 
 # ---------------------------------------------------------------------------

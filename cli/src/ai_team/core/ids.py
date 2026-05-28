@@ -13,6 +13,7 @@ _TASK_PATTERN = re.compile(r"^T-(\d{3})-.*\.md$")
 _BUG_PATTERN = re.compile(r"^B-(\d{3})-.*\.md$")
 _SPEC_PATTERN = re.compile(r"^S-(\d{3})-.*\.md$")
 _ADR_PATTERN = re.compile(r"^ADR-(\d{3})-.*\.md$")
+_CHANGE_REQUEST_PATTERN = re.compile(r"^CR-(\d{3})-.*\.md$")
 _SPEC_FRONTMATTER_ID_PATTERN = re.compile(
     r'^id:\s*["\']?S-(\d{3})["\']?\s*(?:#.*)?$',
     re.MULTILINE,
@@ -62,6 +63,15 @@ def next_adr_id(project_root: ProjectRoot) -> str:
         prefix="ADR",
         directories=(project_root.decisions,),
         pattern=_ADR_PATTERN,
+    )
+
+
+def next_change_request_id(search_directories: tuple[Path, ...]) -> str:
+    """Return the next CR-NNN identifier for the provided directories."""
+    return _next_id(
+        prefix="CR",
+        directories=search_directories,
+        pattern=_CHANGE_REQUEST_PATTERN,
     )
 
 
