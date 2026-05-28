@@ -119,6 +119,14 @@ Read the task file and confirmed the Work Log was empty. Then read all four targ
 
 **Obstacles encountered:** None. Verification grep returns 35 matching lines across the four target files.
 
+### Session 2 — 2026-05-29
+
+Reviewer cycle-1 FAIL flagged a single factual inaccuracy in `ai-process/processes/workflow-overview.md`: the first sentence of the new dev-loop paragraph referenced "root `CLAUDE.md` (or `AGENTS.md`)", but T-051's actual implementation reads ONLY from root `CLAUDE.md` with no AGENTS.md fallback. The second sentence's human-guidance framing ("Project test commands belong in root guidance files (`CLAUDE.md` or `AGENTS.md`) ...") is correct as-is per the Reviewer.
+
+Applied the verbatim fix specified by the Reviewer: replaced "root `CLAUDE.md` (or `AGENTS.md`)" with "root `CLAUDE.md`" in the dev-loop baseline-guard paragraph only. No other edits. Committed as `e13de28 docs(workflow-overview): correct dev-loop baseline guard reads only root CLAUDE.md` on the task branch.
+
+Nothing else changed. Verification grep still returns the expected concept matches across all four target files.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
