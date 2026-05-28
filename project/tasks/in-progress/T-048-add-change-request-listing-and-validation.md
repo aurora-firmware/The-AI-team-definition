@@ -113,3 +113,28 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-28
+
+PASS
+
+Both stages passed.
+
+**Stage 1 — Spec compliance**
+
+- AC-1: `list change-requests` renders a table with ID, Title, and State columns. The `ChangeRequest` model (`cli/src/ai_team/core/models.py`) has only `id`, `title`, `status`, and `created` — no spec-amendment field — confirming the Developer's decision to omit that column is correct. "Where available" is satisfied by omitting the column since the field does not exist on the model.
+- AC-2: `--json` emits a plain JSON array with `id`, `title`, and `state` keys; no table formatting. Verified by `test_list_change_requests_json_outputs_machine_readable_rows`.
+- AC-3: Validation scans `root.change_requests`, reports `frontmatter-invalid` on parse failure, `id-pattern` for non-`CR-NNN` IDs, and `filename-pattern` for mismatched filenames — matching the same three-check pattern used for tasks, bugs, and ADRs. Covered by four tests in `tests/test_validate.py`.
+- AC-4: Empty directory returns an empty list without error. Covered by `test_list_change_requests_returns_empty_list_when_no_change_requests_exist`.
+
+Only the five files listed in "Files to Touch" were modified in the two T-048 implementation commits (`87a8a44` and `2b59e81`). No out-of-scope files were touched.
+
+**Stage 2 — Code quality**
+
+- Correctness: Implementation follows the `adrs` pattern faithfully. Default scope correctly includes change requests. `_selected_scopes` tuple expansion is correct. Validation block: parse then `frontmatter-invalid` on exception then `_check_id_pattern` then `_check_stateful_filename`.
+- Tests: 3 tests cover AC-1/AC-2/AC-4; 6 tests cover AC-3 including scope isolation and default-scope inclusion. All 21 tests pass.
+- Security: No credentials, no external input, no queries.
+- Readability: Code follows existing conventions; functions are focused; no dead code.
+- Performance: No unnecessary loops or resource leaks.
+
+**Non-blocking observation:** `commands/list.py`'s `_iter_markdown_files` helper lacks a `folder.exists()` guard (unlike its counterpart in `core/validate.py`). This pre-existed T-048 and is noted in the Work Log. A missing `change-requests` directory would raise `FileNotFoundError` from `Path.glob`. This is a pre-existing issue not in scope for this task.
