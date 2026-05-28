@@ -173,3 +173,20 @@ All 23 tests pass; ruff format and lint are clean.
 - **File:** `cli/docs/usage.md`, **location:** Flags table (around line 66-70 on dev-agent)
   - **What is wrong:** The flags table in `usage.md` documents all `ai-team init` options for users but does not include `--create-root-guidance`. AC-3 requires "documented flags or defaults" — the flag must appear in the user-facing reference alongside the other non-interactive flags.
   - **What should change:** Add a row to the flags table: `| \`--create-root-guidance\` | When used with \`--no-interactive\`, create root \`CLAUDE.md\` and \`AGENTS.md\` from starter templates. Defaults to false (skipped). |`
+
+### Review Verdict — 2026-05-28 (cycle 2)
+
+PASS
+
+**Stage 1 — Spec compliance**
+
+All five acceptance criteria confirmed satisfied. Commit `f4c157f` touches only `cli/docs/commands.md` and `cli/docs/usage.md` — no production code or tests were modified in cycle 2. The cycle 1 FAIL item (AC-3 documentation gaps) is fully resolved:
+
+- `cli/docs/commands.md` now lists `--create-root-guidance` in the `## ai-team init` Options section (line 223 on the task branch). The file carries the standard generated-file header and content matches the live `uv run python -m typer ai_team.cli utils docs --name "ai-team"` output. The only difference from a strict `gen_docs.sh` run is one trailing blank line omitted from the committed file — a cosmetic whitespace artifact with no semantic effect.
+- `cli/docs/usage.md` flags table includes a new row for `--create-root-guidance` immediately after the `--no-interactive` row, with wording consistent with the AC-4 decline message.
+
+AC-1 through AC-5 remain satisfied from cycle 1; no regression in implementation.
+
+**Stage 2 — Code quality**
+
+All 23 tests pass (`uv run pytest tests/test_init.py`). Ruff format check and lint are clean. No dead code, hardcoded secrets, or unvalidated inputs introduced.
