@@ -1,7 +1,7 @@
 ---
 id: T-051
 title: Update dev loop startup queue and test guards
-status: pending
+status: completed
 priority: high
 assigned-role: planner
 created: '2026-05-28'
