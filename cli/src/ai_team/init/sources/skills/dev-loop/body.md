@@ -32,17 +32,35 @@ If the queue is empty, stop and report: "Queue is empty. All pending tasks have 
 
 ### Step 2: Baseline Test Guard
 
-Runs once at loop startup, before the first task is claimed. Skip this step when looping back after a completed task.
+The baseline guard runs once at loop startup. It is NOT re-checked between tasks. Rationale: post-merge regressions are caught by the integrate skill's destination-branch test step; re-checking between tasks adds latency without adding coverage.
 
-Discover and run the project's baseline test command before claiming any task.
+Discover and run the project's baseline test command ONLY from the root `CLAUDE.md` `## Test` section before claiming any task. The dev-loop does not fall back to other files (e.g., `project/docs/coding_guidelines.md`, README, build configs). If the project documents tests elsewhere, the human must mirror or reference them in root `CLAUDE.md`. This policy is deterministic: there is exactly one place an agent must look.
 
-1. Read the root `CLAUDE.md` (or the project-level equivalent if documented elsewhere in project guidance).
-2. Find the command documented under the `## Test` section.
-   - If the `## Test` section is missing, empty, or contains only a placeholder comment, stop and escalate to the human: "Cannot start dev-loop — baseline test command is missing from project guidance. Add a test command to the `## Test` section of CLAUDE.md and retry."
-   - If the section contains multiple uncommented commands and it is not clear which is the single baseline command, stop and escalate to the human: "Cannot start dev-loop — baseline test command is ambiguous in project guidance. Clarify the `## Test` section to a single runnable command and retry."
-3. Run the discovered baseline test command.
-   - If the baseline test command passes, continue to Step 3.
-   - If the baseline test command fails, stop immediately and report: the failing command, the output summary, and: "Fix the failing tests before starting dev-loop."
+Skip this step when looping back after a completed task (control returns to Step 1, which skips Step 2 on subsequent iterations).
+
+#### Missing — escalate when ANY of these hold
+
+- Root `CLAUDE.md` does not exist.
+- Root `CLAUDE.md` exists but has no `## Test` heading.
+- The `## Test` section exists but its body contains no fenced code block (no ` ``` `...` ``` ` block).
+
+Stop and report:
+`BLOCKED: root CLAUDE.md is missing a runnable command in the ## Test section. Add a fenced command block before re-running the loop.`
+
+#### Ambiguous — escalate when ANY of these hold
+
+- The `## Test` section's fenced block still matches the T-050 placeholder (it contains only a comment like `# describe...` or `# TODO` or is empty).
+- The `## Test` section contains more than one fenced code block (the loop cannot pick).
+
+Stop and report:
+`BLOCKED: root CLAUDE.md ## Test section is ambiguous (placeholder or multiple commands). Replace it with exactly one fenced command block before re-running the loop.`
+
+#### Runnable
+
+If the `## Test` section contains exactly one fenced code block whose content is not a placeholder comment, treat its content as the baseline test command. Run it.
+
+- If the baseline test command passes, continue to Step 3.
+- If the baseline test command fails, stop immediately and report: `BLOCKED: baseline test command failed before any task was claimed. Failing command: <command>. Output summary: <last 20 lines of combined stdout/stderr>.`
 
 ### Step 3: Pick the Next Task
 

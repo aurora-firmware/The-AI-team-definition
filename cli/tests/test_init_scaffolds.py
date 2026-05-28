@@ -649,9 +649,68 @@ def test_dev_loop_allows_loop_to_continue_when_baseline_tests_pass() -> None:
 
 
 def test_dev_loop_escalates_when_baseline_test_command_missing_or_ambiguous() -> None:
-    """AC-4: Loop escalates to human when baseline test command is missing or ambiguous."""
+    """AC-4 / F-3: Loop escalates with specific stop messages for missing AND ambiguous cases."""
     source, claude, codex = _dev_loop_skill_texts()
-    required_phrases = ("baseline test command is missing",)
+    required_phrases = (
+        "BLOCKED: root CLAUDE.md is missing a runnable command in the ## Test section."
+        " Add a fenced command block before re-running the loop.",
+        "BLOCKED: root CLAUDE.md ## Test section is ambiguous (placeholder or multiple commands)."
+        " Replace it with exactly one fenced command block before re-running the loop.",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_baseline_guard_enumerates_missing_conditions() -> None:
+    """F-1: Step 2 enumerates exact decidable conditions for 'missing'."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = (
+        "Root `CLAUDE.md` does not exist",
+        "Root `CLAUDE.md` exists but has no `## Test` heading",
+        "The `## Test` section exists but its body contains no fenced code block",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_baseline_guard_enumerates_ambiguous_conditions() -> None:
+    """F-1: Step 2 enumerates exact decidable conditions for 'ambiguous'."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = (
+        "The `## Test` section's fenced block still matches the T-050 placeholder",
+        "The `## Test` section contains more than one fenced code block",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_baseline_guard_reads_only_from_root_claude_md() -> None:
+    """F-2: Step 2 documents no-fallback policy — reads ONLY from root CLAUDE.md ## Test."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = ("ONLY from the root `CLAUDE.md`",)
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_baseline_guard_runs_once_at_startup_only() -> None:
+    """F-4: Step 2 states the guard runs once at startup, not between tasks, with rationale."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = (
+        "The baseline guard runs once at loop startup."
+        " It is NOT re-checked between tasks.",
+    )
 
     for phrase in required_phrases:
         assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
