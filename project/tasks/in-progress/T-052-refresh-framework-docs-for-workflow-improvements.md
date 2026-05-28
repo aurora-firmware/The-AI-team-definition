@@ -235,3 +235,25 @@ Caveat: this review cannot directly verify the verbatim Procedures-row wording i
 3. **Sharpen the `CLAUDE.md` vs `AGENTS.md` distinction in `workflow-overview.md` dev-loop paragraph and `setup-guide.md` Step 4/5.** The current human-facing "either is fine" advice can mislead a reader into placing the test command in AGENTS.md only. Add a one-clause clarification such as "for the dev-loop baseline guard, the test command must be in root `CLAUDE.md` specifically; AGENTS.md is the equivalent file for non-Claude tooling and is read by those tools but not by `dev-loop`." Addresses the wording risk in §1.
 
 **Note on commit (environment limit).** This review thread does not have a Bash/git tool available. I appended the review to the working-tree copy of the canonical task file at `/home/daneel/projects/the-ai-team-definition/project/tasks/in-progress/T-052-refresh-framework-docs-for-workflow-improvements.md`. The current branch is `task/T-047-implement-change-request-cli-creation` (per `git status` at thread start), not `dev-agent`. The loop/integrator must commit this edit on `dev-agent` with the message `docs(tasks): record T-052 planner extraordinary review` before the canonical task moves forward. If the loop wishes to refuse the in-place edit (because canonical task files belong on `dev-agent`), the body of this review can be lifted verbatim into a `dev-agent` commit on the same file.
+
+### Session 3 — 2026-05-29
+
+Addressed all three Planner follow-ups (FU-1, FU-2, FU-3) in a single combined commit on the task branch.
+
+**FU-1 — `workflow-overview.md` diagram and gate tables.**
+- Updated the End-to-End Flow ASCII diagram: added a `Change Request (human)` box in a right column with a right-to-left arrow entering Task Breakdown directly, plus a short annotation ("lighter intake — no full brainstorm or Gate 1 needed"). The existing left-column flow is unchanged.
+- Updated the Gate Lifecycle table: Gate 2 row's transition cell now reads "Task plan draft (from approved spec **or** accepted change-request) → implementation-ready task queue", and a prose note explains that change-requests bypass Gate 1.
+- Updated the Quality Gates summary table: Gate 1 row annotated "(skipped for change-request intake)"; Gate 2 row annotated "(applies to both spec and change-request derived tasks)"; brief prose note added under the table.
+
+**FU-2 — `quality-gates.md` Gate 2 "When:" sentence.**
+Replaced verbatim with the Planner's suggested wording: "After the Planner writes the task plan from either an approved specification or an accepted change-request, before the development loop starts."
+
+**FU-3 — sharpen CLAUDE.md vs AGENTS.md distinction.**
+- `workflow-overview.md` dev-loop paragraph: appended one clarifying sentence noting that the dev-loop baseline guard reads root `CLAUDE.md` specifically; `AGENTS.md` is for non-Claude tooling.
+- `setup-guide.md` Step 4: rewrote the opening paragraph so the CLAUDE.md/AGENTS.md distinction is explicit; placing the test command only in AGENTS.md will cause the baseline guard to escalate.
+
+**Commit:** Single combined commit `2735285` on `task/T-052-refresh-framework-docs-for-workflow-improvements` with message `docs(workflow): address planner follow-ups on change-request intake and CLAUDE.md/AGENTS.md distinction`.
+
+**Verification:** `rg` command returns 40 matching lines across the four target files; all targeted concepts present.
+
+**Obstacles encountered:** None. Ready for Planner re-review.
