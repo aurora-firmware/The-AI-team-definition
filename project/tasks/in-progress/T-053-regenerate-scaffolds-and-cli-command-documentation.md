@@ -95,6 +95,22 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-29
+
+No scaffold drift was found — `sync_init_scaffolds.py` reported no changes after running, confirming that earlier tasks (T-044 through T-055) had already kept sources and scaffolds in sync.
+
+The only meaningful issue was a pre-existing defect in `gen_docs.sh`: the script called `uv run typer` but the `typer` CLI binary is not registered on PATH in this environment. The command exited with code 2 (caught by `set -euo pipefail`), leaving `commands.md` truncated to its 4-line header comment on every prior invocation. This caused 22 cascading test failures (6 in `test_gen_docs.py`, 16 in `test_usage_guide.py`). Fixed by switching the script to `uv run python -m typer`, which resolves correctly through the venv. After the fix, `commands.md` was regenerated to 552 lines covering all command groups including `change-request`, `list change-requests`, and the `--create-root-guidance` init flag.
+
+Two surgical additions were made to `usage.md`: `ai-team list change-requests` was added to the listing section; `ai-team validate --change-requests` was added to the validate section. A new "Root guidance files" subsection was added to the init section explaining the interactive prompt flow, `--create-root-guidance` non-interactive usage, and `--force` behavior.
+
+`guides/customization-guide.md` received a new "Root CLAUDE.md and AGENTS.md" subsection covering what these files are for, the `## Test` section convention and which tooling reads which file (Claude reads `CLAUDE.md`, non-Claude tooling reads `AGENTS.md`), and the workflow for filling in the starter templates after `ai-team init` scaffolds them.
+
+**Scope note for Reviewer.** `cli/scripts/gen_docs.sh` is not in the task's "Files to Touch" list, but the script was the root cause of the command-doc drift (AC-3) and the test failures (AC-4). The Developer judged the fix to be in-scope housekeeping that this task is meant to absorb. The Reviewer should confirm or split the fix into a separate task.
+
+Full suite at end of session: 286 passed, 0 failed. Both ruff checks clean.
+
+Commits on the task branch: `0edfa4b` (gen_docs.sh + commands.md), `be39064` (usage.md + customization-guide.md).
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
