@@ -1,7 +1,7 @@
 ---
 id: T-053
 title: Regenerate scaffolds and CLI command documentation
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-05-28'
