@@ -350,9 +350,7 @@ _MODEL_FIELDS: dict[type, list[tuple[str, str]]] = {
 }
 
 
-def dump_frontmatter(
-    model: Task | Bug | Spec | Adr | ChangeRequest, body: str
-) -> str:
+def dump_frontmatter(model: Task | Bug | Spec | Adr | ChangeRequest, body: str) -> str:
     """Serialise *model* back to a complete markdown file string.
 
     The output has the form::
