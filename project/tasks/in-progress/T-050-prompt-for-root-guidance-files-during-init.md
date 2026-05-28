@@ -90,6 +90,34 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-28
+
+Implemented T-050 in a single TDD session. Started by reading the task file and all existing code (no prior Work Log entries). Then read `init.py`, `test_init.py`, and `sync_init_scaffolds.py` to understand the established patterns.
+
+**What was done:**
+
+Wrote 9 new tests covering all five acceptance criteria before writing any implementation. Tests failed as expected. Then:
+
+1. Created `cli/src/ai_team/init/sources/root/CLAUDE.md` and `cli/src/ai_team/init/sources/root/AGENTS.md` — stable templates that explicitly invite projects to document their test, build, run, and lint commands.
+
+2. Updated `cli/src/ai_team/commands/init.py` to add:
+   - `_ROOT_GUIDANCE_FILES` constant listing `["CLAUDE.md", "AGENTS.md"]`
+   - `_ROOT_GUIDANCE_DECLINED_MESSAGE` constant for AC-4 follow-up text
+   - `_copy_root_guidance_file()` helper that respects the `--force` flag
+   - `_handle_root_guidance()` which drives all AC-1–5 logic: skips existing files unless `--force`, emits `WOULD WRITE` in dry-run, prompts interactively, or uses `--create-root-guidance` flag in non-interactive mode
+   - New `--create-root-guidance` option on the command (boolean, default False)
+   - Root guidance handling is performed after the main scaffold copy so collisions in `project/` still abort early before any I/O
+
+3. Updated the existing `test_init_interactive_does_not_prompt_for_ai_process_snapshot` test to supply the two new confirmation answers (`y\ny\n`). Its intent (checking no `ai-process` prompt appears) is preserved.
+
+**What was tried and rejected:**
+
+Considered making `--create-root-guidance` a tri-state (auto/yes/no) but the simpler boolean flag with a documented default of False is enough to satisfy AC-3 without overcomplicating the interface. Also considered adding root guidance files to the `planned` collision list, but that would break the prompting flow — root files need their own gating logic separate from the scaffold collision check.
+
+**What remains:**
+
+Nothing for this task. All 23 tests pass, ruff is clean, all five ACs are covered.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
