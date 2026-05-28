@@ -1,7 +1,7 @@
 ---
 id: T-054
 title: Add change request storage and template loading
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-05-28'
