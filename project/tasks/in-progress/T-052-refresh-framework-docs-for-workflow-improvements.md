@@ -130,3 +130,26 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-29
+
+FAIL
+
+**Stage 1 — Spec Compliance**
+
+- AC-1: PASS. Change-request documented as a lighter path in `workflow-overview.md` (Brainstorm section, `Input:` line update), `component-map.md` (Procedures table, Documents and Directories table, CLI Command Mapping table).
+- AC-2: PASS. Spec breakdown docs/tests planning documented in `workflow-overview.md` Task Breakdown section as a new paragraph before the Gate 2 description.
+- AC-3: PASS. Gate 2 technical focus documented in `workflow-overview.md` Task Breakdown section and `quality-gates.md` new `**Scope:**` field.
+- AC-4: FAIL — one factual inaccuracy (see below).
+- File scope: Only the four files listed in "Files to Touch" were modified (plus the canonical task file on `dev-agent`). PASS.
+
+**Stage 2 — Code Quality**
+
+All additions fit the surrounding prose without standing out. No new top-level sections were invented unnecessarily. The "Development Loop Baseline Guard" section between Gate 4 and Gate 5 in `quality-gates.md` is sensibly positioned and self-contained. Voice and structure are preserved across all four files. The step numbers in `setup-guide.md` are intact. `--create-root-guidance` is accurately described (it requires `--no-interactive` per the implementation in `cli/src/ai_team/commands/init.py`).
+
+**Failed Check**
+
+- **File:** `ai-process/processes/workflow-overview.md`
+- **Location:** The paragraph added at the start of "What the development loop does" (AC-4 paragraph).
+- **What is wrong:** The paragraph says "the loop reads the project's documented baseline test command from the `## Test` section of the root `CLAUDE.md` (or `AGENTS.md`)". The actual dev-loop skill body (T-051, `cli/src/ai_team/init/sources/skills/dev-loop/body.md`, Step 2 of the Procedure) is explicit: "Discover and run the project's baseline test command ONLY from the root `CLAUDE.md` `## Test` section… The dev-loop does not fall back to other files." T-051 ships no `AGENTS.md` fallback. The parenthetical `(or `AGENTS.md`)` is factually incorrect.
+- **What should change:** Remove the `(or `AGENTS.md`)` parenthetical from the first sentence of that paragraph. The second sentence may keep the broader human-guidance framing ("Project test commands belong in root guidance files (`CLAUDE.md` or `AGENTS.md`)") because that is advice for humans about where to document their commands, not a claim about what the loop reads. The corrected first sentence should read: "Before claiming the first task, the loop reads the project's documented baseline test command from the `## Test` section of the root `CLAUDE.md` and runs it."
