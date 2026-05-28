@@ -84,6 +84,14 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-28
+
+Implemented T-046 using TDD in two cycles. First cycle added failing tests for change-request frontmatter behavior in `test_models.py` (parse returns a typed model, parse populates required fields, dump/round-trip works, missing required field raises the existing `FrontmatterError` style, and dumped key order is preserved). Then added minimal production support in `core/models.py`: new `ChangeRequest` dataclass, `parse_change_request`, dumper field ordering for change requests, and inclusion in the supported model map/union. Ran targeted and full model tests to green.
+
+Second cycle added failing tests for CR ID allocation in `test_ids.py` (starts at `CR-001`, scans multiple provided directories for max existing `CR-NNN-*.md`, ignores non-matching filenames). Then added minimal `next_change_request_id(search_directories)` plus CR filename pattern in `core/ids.py`. Ran targeted and full ID tests to green.
+
+Tried running the task’s exact `uv run pytest ...` command, but this environment has a pre-existing shebang/path issue for direct console script spawning; used equivalent `uv run python -m pytest ...` as the reliable workaround and documented it. `ruff format --check` initially required formatting in `core/models.py`; applied formatter and re-ran all checks successfully. No task lifecycle files were edited on this branch. Remaining work: reviewer pass and loop-managed Work Log append on `dev-agent`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
