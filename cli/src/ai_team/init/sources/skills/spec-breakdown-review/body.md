@@ -9,6 +9,8 @@
 
 ## Procedure
 
+Gate 2 is a technical preflight. During review, focus findings only on technical task-plan readiness: dependency correctness, file conflict ordering, ADR/spec consistency, atomicity, and verifiable execution.
+
 ### Step 1: Read Planning Context
 
 Read the approved specification and all task files for the plan under review.
@@ -31,6 +33,7 @@ If no dependency exists, add the dependency directly when the correction is obvi
 
 Compare the task plan against existing ADRs and architecture docs.
 If a task contradicts an existing decision or requires changing an approved specification, do not pass Gate 2.
+When assessing architecture, if the plan contradicts the approved spec or existing ADRs, fail or escalate by following the existing Gate 2 procedure.
 Use `new-adr` only when the plan exposes a durable architecture-affecting decision within the approved spec.
 When invoking `new-adr`, provide the full required input set:
 - `title`: concise decision title derived from the architectural choice
@@ -55,6 +58,7 @@ If the plan fails:
 
 - For obvious missing dependencies or file-ordering issues, edit the affected task files directly.
 - For decomposition or atomicity issues, return a correction request to the Planner with exact task IDs and required changes.
+- Do not fail Gate 2 for product-scope concerns that do not block technical readiness; record them as non-blocking follow-up feedback.
 - For spec contradictions, escalate because an approved specification change is required.
 
 ## Output Format
