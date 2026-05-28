@@ -1,7 +1,7 @@
 ---
 id: T-050
 title: Prompt for root guidance files during init
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-05-28'
