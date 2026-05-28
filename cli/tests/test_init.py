@@ -213,3 +213,75 @@ def test_init_interactive_does_not_prompt_for_ai_process_snapshot(tmp_path):
 
     assert result.exit_code == 0
     assert "Include ai-process" not in result.output
+
+
+def test_init_creates_project_guidance_files(tmp_path):
+    """AC-3: init writes project/CLAUDE.md and project/AGENTS.md."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    result = CliRunner().invoke(
+        app,
+        ["init", str(target), "--tools", "claude", "--no-interactive"],
+    )
+
+    assert result.exit_code == 0
+    assert (target / "project" / "CLAUDE.md").is_file()
+    assert (target / "project" / "AGENTS.md").is_file()
+
+
+def test_init_dry_run_includes_project_guidance_files(tmp_path):
+    """AC-3: dry-run output lists project/CLAUDE.md and project/AGENTS.md."""
+    from ai_team.cli import app
+
+    target = tmp_path / "new-repo"
+    result = CliRunner().invoke(
+        app,
+        ["init", str(target), "--tools", "claude", "--no-interactive", "--dry-run"],
+    )
+
+    assert result.exit_code == 0
+    assert str(target / "project" / "CLAUDE.md") in result.output
+    assert str(target / "project" / "AGENTS.md") in result.output
+
+
+def test_init_refuses_when_project_guidance_file_exists_without_force(
+    monkeypatch, tmp_path
+):
+    """AC-4: init exits non-zero when project/CLAUDE.md already exists without --force."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    target.mkdir()
+
+    existing = target / "project" / "CLAUDE.md"
+    existing.parent.mkdir(parents=True, exist_ok=True)
+    existing.write_text("occupied\n", encoding="utf-8")
+
+    monkeypatch.chdir(target)
+    result = CliRunner().invoke(app, ["init", "--tools", "claude", "--no-interactive"])
+
+    assert result.exit_code != 0
+    assert existing.read_text(encoding="utf-8") == "occupied\n"
+    assert not (target / ".claude" / "agents" / "planner.md").exists()
+
+
+def test_init_force_overwrites_project_guidance_files(monkeypatch, tmp_path):
+    """AC-4: --force allows init to overwrite existing project guidance files."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    target.mkdir()
+
+    existing = target / "project" / "CLAUDE.md"
+    existing.parent.mkdir(parents=True, exist_ok=True)
+    existing.write_text("old content\n", encoding="utf-8")
+
+    monkeypatch.chdir(target)
+    result = CliRunner().invoke(
+        app, ["init", "--tools", "claude", "--no-interactive", "--force"]
+    )
+
+    assert result.exit_code == 0
+    assert existing.read_text(encoding="utf-8") != "old content\n"
+    assert (target / "project" / "AGENTS.md").is_file()
