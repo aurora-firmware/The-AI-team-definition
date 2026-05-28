@@ -538,3 +538,26 @@ def test_spec_breakdown_review_preserves_existing_output_format_and_verdicts() -
         )
         assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_project_guidance_sources_exist_and_describe_project_artifact_folders() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    source_root = repo_root / "src" / "ai_team" / "init" / "sources" / "project"
+    required_terms = (
+        "specs",
+        "tasks",
+        "bugs",
+        "decisions",
+        "reports",
+        "project-local docs",
+    )
+
+    for guidance_file_name in ("CLAUDE.md", "AGENTS.md"):
+        guidance_path = source_root / guidance_file_name
+        assert guidance_path.is_file(), f"Missing source template: {guidance_path}"
+
+        guidance_text = guidance_path.read_text(encoding="utf-8")
+        for term in required_terms:
+            assert term in guidance_text, (
+                f"{guidance_file_name} must describe {term!r} in project guidance"
+            )
