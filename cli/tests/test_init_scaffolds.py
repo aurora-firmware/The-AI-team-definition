@@ -93,25 +93,11 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
 
     # Package-owned project guidance source fixtures.
     _write(
-        repo
-        / "cli"
-        / "src"
-        / "ai_team"
-        / "init"
-        / "sources"
-        / "project"
-        / "CLAUDE.md",
+        repo / "cli" / "src" / "ai_team" / "init" / "sources" / "project" / "CLAUDE.md",
         "# Project Guidance\n\nspecs tasks bugs decisions reports project-local docs\n",
     )
     _write(
-        repo
-        / "cli"
-        / "src"
-        / "ai_team"
-        / "init"
-        / "sources"
-        / "project"
-        / "AGENTS.md",
+        repo / "cli" / "src" / "ai_team" / "init" / "sources" / "project" / "AGENTS.md",
         "# Project Guidance for Agents\n\nspecs tasks bugs decisions reports project-local docs\n",
     )
 
@@ -280,9 +266,7 @@ def test_sync_script_copies_project_guidance_files_from_source(
         check=True,
     )
 
-    sources_root = (
-        repo / "cli" / "src" / "ai_team" / "init" / "sources" / "project"
-    )
+    sources_root = repo / "cli" / "src" / "ai_team" / "init" / "sources" / "project"
     project_root = repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "project"
 
     for file_name in ("CLAUDE.md", "AGENTS.md"):
