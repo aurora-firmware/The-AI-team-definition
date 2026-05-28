@@ -1,7 +1,7 @@
 ---
 id: T-044
 title: Update spec breakdown docs and test planning
-status: pending
+status: completed
 priority: high
 assigned-role: planner
 created: '2026-05-28'
