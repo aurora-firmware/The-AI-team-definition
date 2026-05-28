@@ -23,7 +23,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 ## Gate 2: Task Plan Preflight
 
-**When:** After the Planner writes the task plan, before the development loop starts.
+**When:** After the Planner writes the task plan from either an approved specification or an accepted change-request, before the development loop starts.
 **Evaluator:** Architect.
 **Scope:** Gate 2 focuses on **technical task-plan readiness**. The Architect evaluates dependencies, file conflicts, architectural consistency with existing decisions, atomicity, and verifiability. Gate 2 does not reopen product or spec approval questions that were already settled at Gate 1. If the Architect finds a product-scope concern that does not block technical readiness, it is noted as follow-up feedback rather than a Gate 2 failure. Only a contradiction against the approved spec or existing ADRs causes a Gate 2 failure or escalation.
 **Pass criteria:**

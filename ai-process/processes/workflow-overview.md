@@ -9,19 +9,19 @@ created: 2026-03-10
 ## End-to-End Flow
 
 ```
-Feature Request (human)
-    ↓
-┌──────────────────────────┐
-│  PLANNER: Brainstorm     │  ← interactive exploration
-│  Explore ideas           │
-│  Produce design doc      │
-└─────────┬────────────────┘
-          ↓
-   ★ GATE 1: Spec Approval (human) ★
-          ↓
-┌──────────────────────────┐
-│  PLANNER: Task Breakdown │  ← structured decomposition
-│  Atomic tasks            │
+Feature Request (human)          Change Request (human)
+    ↓                                      │
+┌──────────────────────────┐               │  lighter intake —
+│  PLANNER: Brainstorm     │  ← interactive│  no full brainstorm
+│  Explore ideas           │   exploration │  or Gate 1 needed
+│  Produce design doc      │               │
+└─────────┬────────────────┘               │
+          ↓                                │
+   ★ GATE 1: Spec Approval (human) ★       │
+          ↓                                │
+┌──────────────────────────┐               │
+│  PLANNER: Task Breakdown │◄──────────────┘
+│  Atomic tasks            │  ← structured decomposition
 │  Dependencies mapped     │
 │  Verification defined    │
 └─────────┬────────────────┘
@@ -125,7 +125,7 @@ The bug report remains available through the canonical bug file on `dev-agent`; 
 
 #### What the development loop does
 
-Before claiming the first task, the loop reads the project's documented baseline test command from the `## Test` section of the root `CLAUDE.md` and runs it. If the test command is missing or ambiguous, the loop escalates to the human rather than guessing. If it fails, the loop stops and reports the failure. Project test commands belong in root guidance files (`CLAUDE.md` or `AGENTS.md`) or in referenced project-local docs such as `project/docs/coding_guidelines.md`; `ai-team init` can scaffold these files from stable templates.
+Before claiming the first task, the loop reads the project's documented baseline test command from the `## Test` section of the root `CLAUDE.md` and runs it. If the test command is missing or ambiguous, the loop escalates to the human rather than guessing. If it fails, the loop stops and reports the failure. Project test commands belong in root guidance files (`CLAUDE.md` or `AGENTS.md`) or in referenced project-local docs such as `project/docs/coding_guidelines.md`; `ai-team init` can scaffold these files from stable templates. Note that for the dev-loop baseline guard the test command must be in root `CLAUDE.md` specifically — `AGENTS.md` is the equivalent file for non-Claude tooling and is read by those tools but not by `dev-loop`.
 
 1. Picks the next task from `pending/` (priority → dependency readiness → creation date), using `ai-team list tasks --state pending`.
 2. Moves it to `in-progress/`, creates the task branch, commits the state change on `dev-agent`.
@@ -274,10 +274,12 @@ The bug-fix loop records Developer Diagnosis Log and Work Log handoffs in that c
 | Gate | Controls transition | Evaluator | Output |
 |---|---|---|---|
 | Gate 1: Specification Approval | Feature request → approved spec | Human | Approved specification |
-| Gate 2: Task Plan Preflight | Task plan draft → implementation-ready task queue | Architect | Approved task queue or correction request |
+| Gate 2: Task Plan Preflight | Task plan draft (from approved spec **or** accepted change-request) → implementation-ready task queue | Architect | Approved task queue or correction request |
 | Gate 3: Code Review | Developer-complete task → integration-ready branch | Reviewer | PASS, FAIL, or ESCALATE |
 | Gate 4: Integration Tests | Reviewed branch → completed task or bug | Integration procedure | Merged/completed or regression report |
 | Gate 5: Final Merge Sign-off | Completed queue → production merge | Human | Approval to merge `dev-agent` to `main` |
+
+Change-requests are a lighter intake path that may bypass Gate 1 — they feed directly into Task Breakdown and then Gate 2. Full features still go through Brainstorm, Gate 1, and Task Breakdown.
 
 Each gate defines its input artifact, evaluator, pass output, fail output, and next owner in `ai-process/processes/quality-gates.md`.
 
@@ -313,12 +315,13 @@ Five gates control the workflow (see `ai-process/processes/quality-gates.md` for
 
 | Gate | Checkpoint | Evaluator | Phase boundary |
 |------|-----------|-----------|----------------|
-| 1 | Spec Approval | Human | Brainstorm → Task Breakdown |
-| 2 | Task Plan Preflight | Architect | Task Breakdown → Development Loop |
+| 1 | Spec Approval | Human | Brainstorm → Task Breakdown (skipped for change-request intake) |
+| 2 | Task Plan Preflight | Architect | Task Breakdown → Development Loop (applies to both spec and change-request derived tasks) |
 | 3 | Code Review | Reviewer | Implementation → Integration (per-task, inside the development loop) |
 | 4 | Integration Tests | Integration procedure | Review → Completed (per-task, inside the development loop) |
 | 5 | Final Merge Sign-off | Human | `dev-agent` → `main` |
 
 Gates 1 and 5 are human touchpoints — design approval and final production sign-off.
+Gate 1 is required for full feature specs; change-requests bypass it and proceed directly to Task Breakdown.
 Gate 2 is automated — it catches structural problems in the task plan before implementation starts.
 Gates 3 and 4 are automated role and procedure checks — they catch defects during execution.

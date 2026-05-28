@@ -103,7 +103,7 @@ The `ai-process/` specification documents are not exported. They live in the AI 
 
 ### Step 4: Create Your Project's CLAUDE.md and AGENTS.md
 
-Create a `CLAUDE.md` (and optionally `AGENTS.md`) in your project root. The `## Test` section is especially important: it is the canonical location where autonomous agents, including `dev-loop`, look for the baseline test command. If the section is absent, contains only a placeholder, or is ambiguous, `dev-loop` will escalate to the human rather than guessing a command.
+Create a `CLAUDE.md` (and optionally `AGENTS.md`) in your project root. The `## Test` section in `CLAUDE.md` is especially important: it is the canonical location where `dev-loop` reads the baseline test command at startup. If the section is absent, contains only a placeholder, or is ambiguous, `dev-loop` will escalate to the human rather than guessing a command. `AGENTS.md` is the equivalent file for non-Claude tooling and is read by those tools, but `dev-loop` reads only root `CLAUDE.md` — placing the test command in `AGENTS.md` alone will cause the baseline guard to escalate.
 
 `ai-team init` can scaffold starter versions of both root guidance files when they are missing. Run `ai-team init . --tools claude` interactively and answer the prompts, or pass `--create-root-guidance` with `--no-interactive` to create them non-interactively. Existing root guidance files are never overwritten unless `--force` is also set.
 
