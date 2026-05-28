@@ -139,7 +139,7 @@ PASS | FAIL | ESCALATE
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
 
-### Review Verdict — 2026-05-29
+### Review Verdict — 2026-05-29 (cycle 1)
 
 FAIL
 
@@ -161,3 +161,21 @@ All additions fit the surrounding prose without standing out. No new top-level s
 - **Location:** The paragraph added at the start of "What the development loop does" (AC-4 paragraph).
 - **What is wrong:** The paragraph says "the loop reads the project's documented baseline test command from the `## Test` section of the root `CLAUDE.md` (or `AGENTS.md`)". The actual dev-loop skill body (T-051, `cli/src/ai_team/init/sources/skills/dev-loop/body.md`, Step 2 of the Procedure) is explicit: "Discover and run the project's baseline test command ONLY from the root `CLAUDE.md` `## Test` section… The dev-loop does not fall back to other files." T-051 ships no `AGENTS.md` fallback. The parenthetical `(or `AGENTS.md`)` is factually incorrect.
 - **What should change:** Remove the `(or `AGENTS.md`)` parenthetical from the first sentence of that paragraph. The second sentence may keep the broader human-guidance framing ("Project test commands belong in root guidance files (`CLAUDE.md` or `AGENTS.md`)") because that is advice for humans about where to document their commands, not a claim about what the loop reads. The corrected first sentence should read: "Before claiming the first task, the loop reads the project's documented baseline test command from the `## Test` section of the root `CLAUDE.md` and runs it."
+
+### Review Verdict — 2026-05-29 (cycle 2)
+
+PASS
+
+**Stage 1 — Spec Compliance**
+
+- AC-1: PASS (unchanged from cycle 1).
+- AC-2: PASS (unchanged from cycle 1).
+- AC-3: PASS (unchanged from cycle 1).
+- AC-4: PASS. The first sentence of the dev-loop baseline-guard paragraph in `ai-process/processes/workflow-overview.md` now reads "…from the `## Test` section of the root `CLAUDE.md` and runs it." — no `AGENTS.md` mention. The second sentence ("Project test commands belong in root guidance files (`CLAUDE.md` or `AGENTS.md`) …") is unchanged and correct.
+- File scope: Cycle 2 diff touches only `ai-process/processes/workflow-overview.md` (one line). No other files were modified. PASS.
+
+**Stage 2 — Code Quality**
+
+No regressions. The paragraph reads naturally in context; the distinction between what the loop reads (root `CLAUDE.md` only) and where humans should put commands (root guidance files, either `CLAUDE.md` or `AGENTS.md`) is now clear. All concept-match grep hits across the four target files confirmed present.
+
+Both stages pass. No minor observations.
