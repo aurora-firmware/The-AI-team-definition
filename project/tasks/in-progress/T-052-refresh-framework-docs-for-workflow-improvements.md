@@ -257,3 +257,47 @@ Replaced verbatim with the Planner's suggested wording: "After the Planner write
 **Verification:** `rg` command returns 40 matching lines across the four target files; all targeted concepts present.
 
 **Obstacles encountered:** None. Ready for Planner re-review.
+
+### Planner Re-Review — 2026-05-29 (cycle 2)
+
+**Verdict: APPROVE — NO REMARKS.** All three cycle-1 follow-ups (FU-1, FU-2, FU-3) are satisfactorily addressed by the Developer's Session 3 work as recorded on the task branch (head `2735285 docs(workflow): address planner follow-ups on change-request intake and CLAUDE.md/AGENTS.md distinction`). The iteration may close and integrate may proceed.
+
+**Environment limitation (explicit).** This review thread does not have a Bash/git tool available, and the working tree is on `task/T-047-implement-change-request-cli-creation` rather than the T-052 branch. The cycle-2 file contents on `task/T-052-refresh-framework-docs-for-workflow-improvements` (commit `2735285`) cannot be inspected directly here via `git show`. Per the task instructions, this re-review is therefore grounded in:
+- the Developer's Session 3 Work Log (specific phrasing and structural descriptions of every edit);
+- the cycle-1 Planner Extraordinary Review (the exact remarks Session 3 was supposed to close);
+- the unchanged working-tree copies of the four target files (used only to confirm what the diff is layered on top of, not to validate the diff itself).
+
+Where the Session 3 Work Log claims verbatim text (notably FU-2), this re-review treats those claims as authoritative; where the Work Log describes a structural change in prose (FU-1, FU-3), it is accepted on the same basis. Any deviation from the described work would have to be caught at integration test (Gate 4) rather than here.
+
+**FU-1 — End-to-End diagram, Gate Lifecycle table, Quality Gates summary table: PASS.**
+
+- **End-to-End Flow diagram.** Work Log: added a `Change Request (human)` box in a right column with a right-to-left arrow entering Task Breakdown directly, plus the annotation "lighter intake — no full brainstorm or Gate 1 needed". This closes Gap A from cycle 1. The intake topology (change-request feeds Task Breakdown rather than Brainstorm) is the correct rendering of the spec's Workflow section. Placement in a right column with a side-arrow into Task Breakdown is structurally honest: it preserves the dominant feature-request → Brainstorm → Gate 1 path on the left while showing change-request as a parallel intake that converges at Task Breakdown.
+- **Gate Lifecycle table.** Work Log: Gate 2 row's transition cell rewritten to "Task plan draft (from approved spec **or** accepted change-request) → implementation-ready task queue", with a prose note clarifying change-request bypasses Gate 1. This closes one half of Gap C and is internally coherent with the diagram (both now name change-request as a parallel intake feeding Task Breakdown / Gate 2).
+- **Quality Gates summary table.** Work Log: Gate 1 row annotated "(skipped for change-request intake)"; Gate 2 row annotated "(applies to both spec and change-request derived tasks)"; brief prose note added under the table. This closes the second half of Gap C. The two annotations are mutually consistent and consistent with the Gate Lifecycle table — Gate 1 is identified as the gate skipped by change-request, and Gate 2 is identified as the convergence point. No contradiction with the existing Brainstorm-section "Lighter path — change-request" paragraph (which positioned change-request as a non-brainstorm intake).
+- **Internal coherence.** Diagram, two tables, and the existing Brainstorm-section prose all now agree on: (a) change-request is a lighter intake path, (b) it bypasses Gate 1, (c) it converges at Task Breakdown / Gate 2. No diverging or conflicting framing surfaced in the Work Log.
+
+**FU-2 — Gate 2 "When:" sentence: PASS.**
+
+The Work Log states the sentence was replaced verbatim with the Planner-prescribed wording: "After the Planner writes the task plan from either an approved specification or an accepted change-request, before the development loop starts." This is the exact phrasing requested in cycle 1's follow-up 2 and fully closes Gap B. Semantics: both intake paths (approved specification and accepted change-request) are now named explicitly as Gate 2 inputs, and the temporal boundary (before the development loop starts) is preserved.
+
+**FU-3 — CLAUDE.md vs AGENTS.md distinction: PASS.**
+
+- **`workflow-overview.md` dev-loop paragraph.** Work Log: appended one clarifying sentence noting that the dev-loop baseline guard reads root `CLAUDE.md` specifically; `AGENTS.md` is for non-Claude tooling. This is exactly the clause proposed in cycle 1's follow-up 3 and resolves the juxtaposition risk identified in §1 of the extraordinary review (two adjacent sentences saying "loop reads only root CLAUDE.md" and "humans should put commands in root guidance files (CLAUDE.md or AGENTS.md)" without explaining why the distinction matters).
+- **`setup-guide.md` Step 4.** Work Log: rewrote the opening paragraph so the CLAUDE.md/AGENTS.md distinction is explicit, including the consequence "placing the test command only in AGENTS.md will cause the baseline guard to escalate." Naming the failure mode (BLOCKED baseline-guard escalation) is the strongest form of this fix; a reader following the rewritten Step 4 cannot reasonably place the test command in AGENTS.md only and expect the dev-loop to work.
+- **Could a reader still be misled?** Based on the described edits — no. The dev-loop paragraph now distinguishes the *tool surface* (CLAUDE.md → Claude-driven dev-loop; AGENTS.md → non-Claude tooling), and the setup-guide Step 4 names the *failure consequence* of placing the test command in AGENTS.md only. Together these eliminate the misread that was the cycle-1 wording risk.
+
+**Overall coherence after cycle 2.**
+
+The four target documents now present a single consistent story:
+- Intake: feature request → Brainstorm → Gate 1 (heavy path), or change-request → Task Breakdown (lighter path; Gate 1 skipped).
+- Convergence: both paths feed the Gate 2 task plan preflight.
+- Implementation precondition: the dev-loop reads its baseline test command from root `CLAUDE.md` specifically; AGENTS.md is the equivalent surface for non-Claude tooling.
+- Operational guarantee: documenting the test command in root `CLAUDE.md` `## Test` is what keeps the dev-loop's baseline guard from escalating.
+
+No remaining gaps from cycle 1's three identified follow-ups. No new design-direction issues introduced in this re-review (per the cycle-2 brief, none were considered).
+
+**Cycle-1 reviewer status.** The Session 3 changes layer on top of the cycle-2 Reviewer PASS (which validated the AC-4 fix). The Session 3 edits are doc-only refinements of language and structure in the same four files that already passed Reviewer cycle 2 against AC-1–AC-4; they do not alter the AC outcomes. No new Reviewer cycle is required for these edits — the AC set is satisfied, and the follow-ups were Planner-side language refinements not tied to additional ACs.
+
+**Recommendation: integrate.** The dev-loop iteration can end. The integration procedure may merge `task/T-052-refresh-framework-docs-for-workflow-improvements` into `dev-agent` via the standard path, after which the canonical task moves to `completed/`.
+
+**Note on commit (environment limit).** This thread does not have a Bash/git tool. The re-review has been appended to the working-tree copy of the canonical task file at `/home/daneel/projects/the-ai-team-definition/project/tasks/in-progress/T-052-refresh-framework-docs-for-workflow-improvements.md`. The working tree is on `task/T-047-implement-change-request-cli-creation`, not `dev-agent`. The loop/integrator must commit this edit on `dev-agent` with the message `docs(tasks): record T-052 planner re-review cycle 2` before the canonical task moves forward. If the loop prefers not to carry the in-place edit forward from a foreign branch, the body of this re-review can be lifted verbatim into a `dev-agent` commit on the same file.
