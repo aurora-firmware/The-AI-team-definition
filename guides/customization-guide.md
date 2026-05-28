@@ -46,6 +46,52 @@ The `ai-process/` specification documents (process docs, guidelines, architectur
 - Define build, run, lint, test, and integration verification commands in `CLAUDE.md`, task files, README, or project-local docs.
 - The integration procedure reads these commands from the project; it should stop and ask if it cannot determine the correct command.
 
+### Root CLAUDE.md and AGENTS.md
+
+`ai-team init` can scaffold two root-level guidance files from starter templates:
+
+- **`CLAUDE.md`** (repo root) — read by Claude and the dev-loop. The `## Test`
+  section is the primary place to document the build, test, lint, and run
+  commands for your project. The dev-loop reads this file before starting any
+  session so agents can run your tests without guessing.
+- **`AGENTS.md`** (repo root) — read by non-Claude AI tooling (for example,
+  Codex). Mirror your `## Test` section here if you use Codex agents so they
+  also have the correct commands. Claude reads `CLAUDE.md`, not `AGENTS.md`.
+
+#### What they're for
+
+These files give AI tools the project-specific context they cannot infer from
+source code alone: how to install dependencies, how to run the test suite, how
+to lint, and what environment assumptions apply. Without them, agents fall back
+to guessing — or stop and ask, slowing down the loop.
+
+#### The `## Test` section convention
+
+The dev-loop skill reads the `## Test` section of `CLAUDE.md` to determine the
+verification command for a task. Structure it like this:
+
+```markdown
+## Test
+
+\`\`\`bash
+uv run pytest
+uv run ruff format --check .
+uv run ruff check .
+\`\`\`
+```
+
+Keep this section accurate. If the test command changes (new linter added,
+test runner changed), update `CLAUDE.md` in the same commit.
+
+#### Workflow after `ai-team init` scaffolds them
+
+1. Open the generated `CLAUDE.md` and `AGENTS.md` from the starter templates.
+2. Replace the placeholder project name and description.
+3. Fill in your actual build, test, lint, and run commands under `## Test`.
+4. Add your tech stack, repo layout, and any agent-facing conventions.
+5. Commit both files. They are yours to maintain — re-running `ai-team init`
+   without `--force` will not overwrite them.
+
 ### Optional Customization
 
 **Agent subset** — Not every project needs all 5 agents:
