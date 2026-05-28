@@ -21,6 +21,7 @@ $ ai-team [OPTIONS] COMMAND [ARGS]...
 * `adr`: Create and manage ADR artifacts.
 * `archive`: Archive old completed tasks and resolved...
 * `bug`: Create and manage bug artifacts.
+* `change-request`: Create and manage change-request artifacts.
 * `init`: Scaffold an AI-team repository.
 * `list`: List tasks, bugs, specs, and ADRs.
 * `report`: Write a Gate 5 progress report.
@@ -162,6 +163,43 @@ $ ai-team bug resolve [OPTIONS] BUG_ID
 
 * `--help`: Show this message and exit.
 
+## `ai-team change-request`
+
+Create and manage change-request artifacts.
+
+**Usage**:
+
+```console
+$ ai-team change-request [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `new`: Create a new change-request artifact from...
+
+### `ai-team change-request new`
+
+Create a new change-request artifact from the bundled template.
+
+**Usage**:
+
+```console
+$ ai-team change-request new [OPTIONS] TITLE
+```
+
+**Arguments**:
+
+* `TITLE`: [required]
+
+**Options**:
+
+* `--json`: Emit JSON output.
+* `--help`: Show this message and exit.
+
 ## `ai-team init`
 
 Scaffold an AI-team repository.
@@ -182,6 +220,7 @@ $ ai-team init [OPTIONS] [PATH] COMMAND [ARGS]...
 * `--force`
 * `--dry-run`
 * `--no-interactive`
+* `--create-root-guidance`
 * `--help`: Show this message and exit.
 
 ## `ai-team list`
@@ -493,4 +532,3 @@ $ ai-team validate [OPTIONS] COMMAND [ARGS]...
 * `--adrs`: Validate ADRs only.
 * `--json`: Emit JSON output.
 * `--help`: Show this message and exit.
-
