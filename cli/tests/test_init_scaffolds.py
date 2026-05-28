@@ -405,3 +405,66 @@ def test_package_owned_agent_sources_cover_each_exported_role_for_both_tools() -
         assert codex_source.read_text(encoding="utf-8") == codex_scaffold.read_text(
             encoding="utf-8"
         )
+
+
+def _spec_breakdown_skill_texts() -> tuple[str, str, str]:
+    repo_root = Path(__file__).resolve().parents[1]
+    source = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "skills"
+        / "spec-breakdown"
+        / "body.md"
+    ).read_text(encoding="utf-8")
+    claude = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "claude"
+        / "skills"
+        / "spec-breakdown"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    codex = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "codex"
+        / "skills"
+        / "spec-breakdown"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    return source, claude, codex
+
+
+def test_spec_breakdown_skill_requires_docs_planning_during_task_creation() -> None:
+    source, claude, codex = _spec_breakdown_skill_texts()
+    required_phrases = (
+        "consider documentation updates as implementation work derived from the approved spec",
+        "not as a prerequisite before creating tasks",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"spec-breakdown source must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_spec_breakdown_skill_covers_test_planning_and_optional_omission() -> None:
+    source, claude, codex = _spec_breakdown_skill_texts()
+    required_phrases = (
+        "consider test updates and verification changes as implementation work derived from the approved spec",
+        "If documentation or test updates are not needed, omit them without placeholder tasks",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"spec-breakdown source must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
