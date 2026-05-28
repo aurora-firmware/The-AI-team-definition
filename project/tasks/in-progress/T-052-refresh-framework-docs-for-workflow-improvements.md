@@ -179,3 +179,59 @@ PASS
 No regressions. The paragraph reads naturally in context; the distinction between what the loop reads (root `CLAUDE.md` only) and where humans should put commands (root guidance files, either `CLAUDE.md` or `AGENTS.md`) is now clear. All concept-match grep hits across the four target files confirmed present.
 
 Both stages pass. No minor observations.
+
+### Planner Extraordinary Review — 2026-05-29
+
+**Verdict: APPROVE WITH FOLLOW-UP** — mergeable as-is. Two structural gaps and one wording risk are surfaced as candidate follow-up tasks; none of them invalidate the cycle 2 PASS.
+
+**Method.** Read the canonical task file (Work Log Sessions 1–2 and both Reviewer verdicts), the approved spec `S-002` (`project/specs/coordinated-process-and-cli-workflow-improvements.md`), the shipped behavior of the dev-loop skill (`cli/src/ai_team/init/sources/skills/dev-loop/body.md`), the spec-breakdown skill, the spec-breakdown-review skill, the `ai-team change-request` command source, and the root `CLAUDE.md` / `AGENTS.md` templates. Cross-checked the four target docs against the spec, the reviewer's quoted excerpts, and the shipped skill bodies. The task branch (`task/T-052-refresh-framework-docs-for-workflow-improvements`, head `e13de28`) is not checked out in this environment, so the exact wording on the branch was reconstructed from the Work Log entries and the verbatim excerpts in the Reviewer verdicts. Where this review cannot read the branch text directly, it is explicit about it.
+
+**1. Accuracy against shipped behavior — PASS with one wording risk.**
+
+- T-051 dev-loop: confirmed against `cli/src/ai_team/init/sources/skills/dev-loop/body.md` Step 2 — the loop reads ONLY root `CLAUDE.md` `## Test`, with no AGENTS.md fallback. The cycle 2 fix to `workflow-overview.md` (first sentence of the dev-loop baseline paragraph) is correct.
+- T-044 spec-breakdown docs/tests planning: matches the shipped skill body (Step 3 paragraph about considering documentation and test updates as derived work).
+- T-045 Gate 2 narrowed: matches `spec-breakdown-review` body ("Gate 2 is a technical preflight... focus findings only on technical task-plan readiness").
+- T-047 change-request CLI: `ai-team change-request new` exists; recording it in `component-map.md`'s CLI Command Mapping table is accurate.
+- T-050/T-055 templates: the root `CLAUDE.md` and root `AGENTS.md` templates both ship with `## Test` sections, even though the dev-loop only reads the former. This template parity is the source of the wording risk noted below.
+
+**Wording risk (not a factual error).** The Reviewer accepted the second sentence of the workflow-overview dev-loop paragraph ("Project test commands belong in root guidance files (`CLAUDE.md` or `AGENTS.md`) ...") on the grounds that it is human-facing advice, not a loop claim. That framing is defensible, but the same sentence sits two lines away from the corrected first sentence that says the loop reads ONLY root `CLAUDE.md`. A reader who follows the second sentence and places their test command only in root `AGENTS.md` will hit a `BLOCKED` baseline-guard escalation. The reviewer did not catch this because each sentence is individually correct; the risk is in their juxtaposition. Same risk applies to whatever wording was added to `setup-guide.md` Step 4 (Work Log says it was renamed to include `AGENTS.md` and a `## Test` paragraph was added) — the exact text on the branch is not visible in this environment, so this is a flag for follow-up rather than a blocker.
+
+**2. Internal coherence across the four docs — PASS with caveats.**
+
+- `workflow-overview.md` Brainstorm section adds change-request as a "lighter path" and the Task Breakdown `Input:` line is updated to "approved specification or accepted change-request". `component-map.md` adds the matching Procedures row, the Documents and Directories row, and the CLI Command Mapping row. The two docs agree on what change-request is and where it lives.
+- `quality-gates.md`'s new Gate 2 `**Scope:**` field aligns with the `workflow-overview.md` Task Breakdown note that Gate 2 does not reopen Gate 1 product questions.
+- `setup-guide.md`'s "Root `CLAUDE.md` `## Test` section" verification step (Work Log AC-4) reinforces the `quality-gates.md` Development Loop Baseline Guard section.
+
+Caveat: this review cannot directly verify the verbatim Procedures-row wording in `component-map.md` for change-request, nor the Documents and Directories row for "Change Requests". The Work Log lists them but not their phrasing. The Reviewer's verdict implicitly confirms presence via concept-grep coverage but does not quote the rows. If any row contradicts the spec's "lighter path for smaller changes" framing it would be a coherence issue; nothing in the Work Log or verdicts suggests this is the case.
+
+**3. Voice and structure fit — PASS.**
+
+- All additions are in-place insertions into existing sections rather than new top-level sections, with one deliberate exception: the "Development Loop Baseline Guard" section between Gate 4 and Gate 5 in `quality-gates.md`. That positioning is defensible — the guard is a runtime gate operationally adjacent to the numbered gates but distinct from them. A reader could equally well argue it belongs under Gate 2 as a precondition for "implementation-ready" (because it runs at dev-loop startup, after Gate 2). Either home is reasonable; the chosen home is defensible.
+- The Brainstorm section additions in `workflow-overview.md` (the "Lighter path — change-request" paragraph at the end) fit the section voice. Adding it at the end is a reasonable placement, though a separate sibling subsection "Change-Request Intake" between Brainstorm and Task Breakdown would have been a sharper structural home given that change-request is *not* a brainstorm sub-path — it bypasses brainstorm entirely. Recommend this as a follow-up (see below), not a blocker.
+
+**4. AC coverage — PASS.**
+
+- **AC-1 (change-request as lighter path):** Home in `workflow-overview.md` Brainstorm section and Task Breakdown Input line; reinforced by three rows in `component-map.md`. Complete.
+- **AC-2 (docs/tests planned during spec breakdown):** Home in `workflow-overview.md` Task Breakdown section. Not in `component-map.md` (the Spec Breakdown Procedures row description was not updated — acceptable per "no duplication required" but borderline; see follow-up 2). Complete.
+- **AC-3 (Gate 2 technical-readiness):** Home in `workflow-overview.md` Task Breakdown section and `quality-gates.md` Gate 2 `**Scope:**` field. Complete.
+- **AC-4 (project test commands in root guidance):** Home in `workflow-overview.md` dev-loop paragraph, `quality-gates.md` Development Loop Baseline Guard section, `setup-guide.md` Step 4/5/6, and `component-map.md` Root/Project Guidance Files rows. Complete (modulo the wording risk in §1).
+
+**5. Second-order gaps — three identified, all follow-up not blocking.**
+
+- **Gap A: workflow-overview.md "End-to-End Flow" ASCII diagram (lines 9–62) was not updated.** The diagram still shows a single intake path: `Feature Request → PLANNER: Brainstorm → ★ GATE 1 → PLANNER: Task Breakdown`. The new "Lighter path — change-request" prose introduces an intake path that bypasses Gate 1 entirely (or feeds task breakdown plus spec amendments). The diagram and the prose are now out of step. The spec's own Workflow section shows the change-request intake as a parallel diagram fragment, so the framework doc could honour the same structure.
+- **Gap B: `quality-gates.md` Gate 2 "When:" sentence still reads "After the Planner writes the task plan, before the development loop starts."** It does not name change-request-derived tasks as a Gate 2 input. The Work Log says only the `**Scope:**` field was added. Since change-request tasks also flow through Gate 2 (per the spec's Workflow section), the "When:" wording does not fully cover the new intake path. Minor — fixable in one line.
+- **Gap C: workflow-overview.md "Gate Lifecycle" table (lines 268–274) and "Quality Gates" summary table (lines 309–315) describe Gate 1 input as "Feature request → approved spec".** They do not record that change-request is a parallel intake that may skip Gate 1. If the project treats change-request as out of scope for Gate 1, the tables should say so; if change-request can still produce a Gate 1 spec amendment, the tables should hint at the branch. Either way, the tables are silent. Minor.
+
+**6. Spec alignment — PASS.**
+
+- The spec's Design Principles use the phrase "lighter intake path", "documentation and tests are derived-work concerns", "review gates must stay focused on their owner", and "project-specific commands must be documented, not guessed". The Work Log entries and Reviewer-quoted excerpts use compatible language: "lighter path — change-request", "documentation and test updates as implementation work", "Gate 2 ... does not reopen product questions settled at Gate 1", and "Project test commands belong in root guidance files". No drift from approved language detected.
+- The spec's Exclusions explicitly say change-request "is a lighter path for smaller changes. Larger features still use brainstorm, full spec approval, task breakdown, and Gate 1/Gate 2". The Work Log says the workflow-overview Brainstorm-section paragraph documents it as the lighter path. Aligned.
+- The spec's Configuration Requirements for the test command name "Root guidance files, project-local docs referenced by root guidance, or other documented project command surfaces". The framework docs narrow this to root `CLAUDE.md` (for the loop) and "root guidance files (`CLAUDE.md` or `AGENTS.md`)" (for human guidance). Narrowing the loop's read to root `CLAUDE.md` is a T-051 implementation decision; it does not contradict the spec, which uses the looser human-facing language. Aligned.
+
+**Proposed follow-up tasks (do not file — record only):**
+
+1. **Update `workflow-overview.md` End-to-End Flow diagram and Gate Lifecycle / Quality Gates tables** to acknowledge the change-request intake path. Closes Gap A and Gap C.
+2. **Tighten `quality-gates.md` Gate 2 "When:"** to "After the Planner writes the task plan from either an approved specification or an accepted change-request, before the development loop starts." Closes Gap B.
+3. **Sharpen the `CLAUDE.md` vs `AGENTS.md` distinction in `workflow-overview.md` dev-loop paragraph and `setup-guide.md` Step 4/5.** The current human-facing "either is fine" advice can mislead a reader into placing the test command in AGENTS.md only. Add a one-clause clarification such as "for the dev-loop baseline guard, the test command must be in root `CLAUDE.md` specifically; AGENTS.md is the equivalent file for non-Claude tooling and is read by those tools but not by `dev-loop`." Addresses the wording risk in §1.
+
+**Note on commit (environment limit).** This review thread does not have a Bash/git tool available. I appended the review to the working-tree copy of the canonical task file at `/home/daneel/projects/the-ai-team-definition/project/tasks/in-progress/T-052-refresh-framework-docs-for-workflow-improvements.md`. The current branch is `task/T-047-implement-change-request-cli-creation` (per `git status` at thread start), not `dev-agent`. The loop/integrator must commit this edit on `dev-agent` with the message `docs(tasks): record T-052 planner extraordinary review` before the canonical task moves forward. If the loop wishes to refuse the in-place edit (because canonical task files belong on `dev-agent`), the body of this review can be lifted verbatim into a `dev-agent` commit on the same file.
