@@ -87,6 +87,22 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-28
+
+Implemented T-055 in two TDD cycles on branch `task/T-055-generate-project-guidance-files-in-init-scaffolds`.
+
+**What was done:**
+
+Cycle 1 (AC-1 & AC-2): Added project guidance source fixtures (`CLAUDE.md` and `AGENTS.md`) to the `_setup_fake_repo` helper in `test_init_scaffolds.py`, updated the existing `test_sync_script_replaces_project_with_empty_lifecycle_skeleton` test to expect these two files in the project scaffold output, and added a new `test_sync_script_copies_project_guidance_files_from_source` test asserting exact content match between source and scaffold. Tests failed red as expected. Implementation added a `source` parameter to `_replace_project_skeleton` in `sync_init_scaffolds.py` and a loop at the end of that function that uses `shutil.copy2` to copy `CLAUDE.md` and `AGENTS.md` from `sources/project/` into the generated scaffold directory. Tests went green. Ran the sync script to generate the actual `cli/src/ai_team/init/scaffolds/project/CLAUDE.md` and `AGENTS.md` files.
+
+Cycle 2 (AC-3 & AC-4): Added four tests to `test_init.py`: `test_init_creates_project_guidance_files` (init writes both files), `test_init_dry_run_includes_project_guidance_files` (dry-run output lists them), `test_init_refuses_when_project_guidance_file_exists_without_force` (collision refusal), `test_init_force_overwrites_project_guidance_files` (force permits overwrite). All four passed immediately without any `init.py` changes — the existing `_plan_copies(scaffolds_path / "project", ...)` mechanism already handles any files present in the project scaffold directory, so adding the generated files was sufficient.
+
+Applied `ruff format` correction in a tidy-up commit after the main cycles.
+
+**Tried and rejected:** No alternative approaches were considered; the existing `_plan_copies` mechanism made the init-command side of AC-3 and AC-4 trivially correct once the scaffolds existed.
+
+**What remains:** Nothing. All four ACs have passing tests. The verification command (`sync_init_scaffolds.py` + pytest + ruff) passes clean.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
