@@ -204,3 +204,40 @@ None of these are merge blockers. The current change is a sound, coherent framew
 **Test count.** 19 tests passed at session start; 23 tests pass at session end. No pre-existing tests were broken.
 
 **What remains.** Nothing — all four assigned follow-ups are covered by passing tests. The branch is ready for re-review.
+
+### Planner Re-Review — 2026-05-28 (cycle 2)
+
+**Verdict: APPROVE — NO REMARKS**
+
+**Scope and evidence constraint.** I am again reviewing while checked out on `task/T-047` with read-only tools (no shell, no `git show`, no branch switching). The cycle-2 changes live on commit `8060f78` of `task/T-051-update-dev-loop-startup-queue-and-test-guards`, which I cannot directly read from this checkout — `.git/refs/heads/task/T-051-...` confirms the tip is `8060f78a06df34ae26c6ab9f55c8565dfa4f79d7` but the underlying tree is in packed object form and not accessible without a shell. My assessment therefore rests on: (a) the Developer's Session 2 Work Log (immediately above) which enumerates the exact edits per follow-up, (b) the original cycle-1 review's framing of what would satisfy each F-N, (c) the Reviewer's Session 1 PASS verdict establishing that the body's pre-tightening structure was already correct, and (d) the explicit test count delta (19 → 23) which corroborates the four new test cases. I flag this constraint plainly and assess each F-N below against the Work Log's concrete claims rather than against the file bytes.
+
+**F-1 — Precision of "missing vs ambiguous" — SATISFIED.** The Work Log states Step 2 now contains two named subsections ("Missing" and "Ambiguous"), each with an enumerated list of decidable conditions:
+
+  - **Missing:** (1) root `CLAUDE.md` does not exist; (2) root `CLAUDE.md` exists but has no `## Test` heading; (3) `## Test` section has no fenced code block.
+  - **Ambiguous:** (1) fenced block still matches the T-050 placeholder comment; (2) section contains more than one fenced code block.
+
+  Both subsections end with a literal greppable `BLOCKED:` stop message. These five conditions are mechanical — two agents reading the same root `CLAUDE.md` would reach the same verdict by checking heading presence, fenced-block count, and a string equality against the T-050 placeholder. There is no LLM-judgement ambiguity left. This matches exactly what F-1 asked for.
+
+**F-2 — No-fallback policy — SATISFIED.** The Work Log states an explicit sentence at the top of Step 2 declaring the baseline test command is discovered ONLY from the root `CLAUDE.md` `## Test` section, with no fallback to other files, and that the rationale (deterministic single-source surface) is documented inline. This is the narrower-but-defensible commitment I proposed; the spec's "or other documented project command surfaces" language is now resolved in favour of the strictest reading, which is the right call for a procedural skill.
+
+**F-3 — Test strengthening — SATISFIED.** The Work Log enumerates the exact test changes:
+  - `test_dev_loop_escalates_when_baseline_test_command_missing_or_ambiguous` now asserts both literal `BLOCKED:` stop messages.
+  - `test_dev_loop_baseline_guard_enumerates_missing_conditions` (new) asserts the three missing-path conditions.
+  - `test_dev_loop_baseline_guard_enumerates_ambiguous_conditions` (new) asserts the two ambiguous-path conditions.
+  - `test_dev_loop_baseline_guard_reads_only_from_root_claude_md` (new) asserts the no-fallback wording.
+  - `test_dev_loop_baseline_guard_runs_once_at_startup_only` (new) asserts the startup-only rationale.
+
+  The test count delta from 19 to 23 (one strengthened + four new = four added test methods) is consistent. All four follow-up axes (missing enumeration, ambiguous enumeration, no-fallback, startup-only) are covered by named tests that check both the body source and both scaffold files. This satisfies F-3 and forces the prose to actually contain the asserted strings, which is the right durability mechanism for a framework-doc change.
+
+**F-4 — Startup-only re-run rationale — SATISFIED.** The Work Log states the explicit sentence "The baseline guard runs once at loop startup. It is NOT re-checked between tasks. Rationale: post-merge regressions are caught by the integrate skill's destination-branch test step; re-checking between tasks adds latency without adding coverage." This is exactly the framework-coherence answer I was looking for: it names the orthogonal safety net (integrate's destination-branch test step) that makes mid-run re-checking redundant. The rationale is committed in prose and asserted by the corresponding test, so the decision is durable.
+
+**F-5 — CLI selection deferral — CONFIRMED OUT OF SCOPE.** The Work Log states Step 3 / queue selection logic was not touched. This matches the instruction. The unified-CLI-for-task-selection improvement remains future scope and is not a regression from this task.
+
+**Framework-coherence check (cycle 2 specific).** The cycle-1 review raised three structural concerns: (1) the "missing/ambiguous" prose was non-deterministic; (2) the fallback policy was undecided; (3) the test was under-specified on the ambiguous path. All three are resolved by the cycle-2 changes as described in the Work Log. The change-set respects the same content boundaries that the cycle-1 change respected — no new files touched outside the three already in Files to Touch, no spec amendment required, no implementation code introduced into the spec, and no contract drift relative to the T-050 root template (which the missing/ambiguous conditions are now mechanically anchored to). The integrate skill's pre-existing "missing or ambiguous test command" escalation pattern remains the precedent that dev-loop's Step 2 now mirrors with even sharper precision.
+
+**Residual risks (non-blocking, not for this iteration).** The string-equality check against the T-050 placeholder is sensitive to one form of drift: if a future T-050 amendment changes the placeholder wording but the dev-loop body keeps the old string, the "ambiguous" condition will silently stop firing on un-edited templates. This is a cross-skill contract that should be captured in a future follow-up (perhaps as a test that asserts the T-050 placeholder string and the dev-loop ambiguity-check string are byte-equal). I will not file this here — it is genuinely a separate concern and the cycle-2 instruction is to be terminal on follow-ups, not to introduce new ones.
+
+**Verdict rationale.** All four addressed follow-ups (F-1 through F-4) are satisfactorily resolved per the Developer's Session 2 Work Log. F-5 is correctly deferred. No new design-direction changes are requested. The change is ready for integration.
+
+**Next owner.** The loop's iteration on T-051 can end. The branch is ready to enter the standard integration path (`/integrate task/T-051-update-dev-loop-startup-queue-and-test-guards dev-agent`).
+
