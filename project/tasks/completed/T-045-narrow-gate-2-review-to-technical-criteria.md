@@ -1,7 +1,7 @@
 ---
 id: T-045
 title: Narrow Gate 2 review to technical criteria
-status: pending
+status: completed
 priority: high
 assigned-role: architect
 created: '2026-05-28'
