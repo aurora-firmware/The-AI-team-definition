@@ -129,3 +129,27 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-28
+
+FAIL
+
+**Stage 1 — Spec compliance**
+
+AC-1 through AC-5 are all implemented and verified. The four files listed in "Files to Touch" are the only implementation files changed in commit `0cd0702`. Collision check is correct: `_handle_root_guidance` skips existing files when `force` is False (AC-5) and `_copy_root_guidance_file` has a consistent guard. The decline-path message (`_ROOT_GUIDANCE_DECLINED_MESSAGE`) is printed and references `ai-team init --create-root-guidance`. Both template files contain Build/Test/Run/Lint sections explicitly prompting projects to record commands.
+
+AC-3 partially fails: the flag `--create-root-guidance` is not documented in the project's canonical references.
+
+**Stage 2 — Code quality (one failure)**
+
+All 23 tests pass; ruff format and lint are clean.
+
+**Failed check — AC-3 / project documentation rule**
+
+- **File:** `cli/docs/commands.md`, **location:** `## ai-team init` Options list (line 181-184 on dev-agent)
+  - **What is wrong:** `--create-root-guidance` is absent from `commands.md`. CLAUDE.md project rules state: "If you update command output or release guidance, regenerate `cli/docs/commands.md` with `bash cli/scripts/gen_docs.sh` before committing." A new CLI option was added that changes `--help` output, but `gen_docs.sh` was not run. `commands.md` still lists only `--tools`, `--force`, `--dry-run`, `--no-interactive`.
+  - **What should change:** Run `bash cli/scripts/gen_docs.sh` from the repository root to regenerate `commands.md`, then commit the updated file on the task branch.
+
+- **File:** `cli/docs/usage.md`, **location:** Flags table (around line 66-70 on dev-agent)
+  - **What is wrong:** The flags table in `usage.md` documents all `ai-team init` options for users but does not include `--create-root-guidance`. AC-3 requires "documented flags or defaults" — the flag must appear in the user-facing reference alongside the other non-interactive flags.
+  - **What should change:** Add a row to the flags table: `| \`--create-root-guidance\` | When used with \`--no-interactive\`, create root \`CLAUDE.md\` and \`AGENTS.md\` from starter templates. Defaults to false (skipped). |`
