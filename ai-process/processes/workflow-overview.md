@@ -83,18 +83,22 @@ This phase is **interactive**. The Planner does not produce a finished document 
 **Ends when:** Human approves the specification at Gate 1.
 Because the human shaped the spec throughout the dialogue, Gate 1 approval should be quick.
 
+**Lighter path — change-request:** For smaller changes that do not warrant a full new spec, the Planner uses a change-request document (`project/change-requests/CR-NNN-<slug>.md`) instead of the full brainstorm flow. A change-request records desired changes and possible spec amendments, then produces tasks and amendments as needed. Larger features still use the full brainstorm, Gate 1 approval, and task breakdown path. The CLI command `ai-team change-request new` creates a change-request document from the bundled template.
+
 ### 2. Task Breakdown + Gate 2
 
 **Role:** Planner (structured mode), then Architect (Gate 2 evaluator).
 **Procedure:** Structured task decomposition.
-**Input:** Approved specification.
+**Input:** Approved specification (or accepted change-request).
 **Output:** Set of task files in `project/tasks/pending/`, validated by the Architect.
 
-After the Planner writes the task files, the Architect automatically reviews the task plan:
+During breakdown the Planner explicitly considers whether the spec changes require documentation updates or test coverage updates. When they do, those updates are planned as implementation tasks or acceptance criteria — not as prerequisites before task creation. If documentation and test updates are not needed, the Planner omits them without creating placeholder tasks.
+
+After the Planner writes the task files, the Architect automatically reviews the task plan at Gate 2. Gate 2 focuses on technical task-plan readiness — dependencies, file conflict risks, architectural consistency with existing decision records, atomicity, and verifiability. It does not reopen product or spec approval questions already settled at Gate 1.
 - Checks dependency correctness and completeness.
 - Identifies any two tasks that modify the same file without a declared dependency (merge conflict risk).
 - Verifies architectural consistency with existing decision records.
-- Returns a correction request to the Planner if problems are found.
+- Returns a correction request to the Planner if problems are found; product-scope concerns that do not block technical readiness are noted as follow-up items, not Gate 2 failures.
 
 Gate 2 is automated and does not require human approval.
 When the Architect passes the task plan at Gate 2, the human starts the development loop.
@@ -121,7 +125,9 @@ The bug report remains available through the canonical bug file on `dev-agent`; 
 
 #### What the development loop does
 
-1. Picks the next task from `pending/` (priority → dependency readiness → creation date).
+Before claiming the first task, the loop reads the project's documented baseline test command from the `## Test` section of the root `CLAUDE.md` (or `AGENTS.md`) and runs it. If the test command is missing or ambiguous, the loop escalates to the human rather than guessing. If it fails, the loop stops and reports the failure. Project test commands belong in root guidance files (`CLAUDE.md` or `AGENTS.md`) or in referenced project-local docs such as `project/docs/coding_guidelines.md`; `ai-team init` can scaffold these files from stable templates.
+
+1. Picks the next task from `pending/` (priority → dependency readiness → creation date), using `ai-team list tasks --state pending`.
 2. Moves it to `in-progress/`, creates the task branch, commits the state change on `dev-agent`.
 3. Assigns the task to the **Developer** for test-driven implementation and debugging — waits for completion and a Work Log handoff.
 4. Appends the Developer's Work Log entry to the canonical task file on `dev-agent` and commits it.

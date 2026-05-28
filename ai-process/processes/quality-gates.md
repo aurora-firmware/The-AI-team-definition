@@ -25,6 +25,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 **When:** After the Planner writes the task plan, before the development loop starts.
 **Evaluator:** Architect.
+**Scope:** Gate 2 focuses on **technical task-plan readiness**. The Architect evaluates dependencies, file conflicts, architectural consistency with existing decisions, atomicity, and verifiability. Gate 2 does not reopen product or spec approval questions that were already settled at Gate 1. If the Architect finds a product-scope concern that does not block technical readiness, it is noted as follow-up feedback rather than a Gate 2 failure. Only a contradiction against the approved spec or existing ADRs causes a Gate 2 failure or escalation.
 **Pass criteria:**
 - Task dependencies are correct and complete.
 - File conflict risks are identified and resolved through dependencies or task changes.
@@ -74,6 +75,10 @@ For bug fixes, the Reviewer also verifies:
 
 **On failure:** The integration procedure reverts the merge commit, files a bug report for each regression on `dev-agent`, and stops the active loop. The source branch is preserved for fixing.
 Regression bug reports must record the preserved source branch as `source_branch` so the bug-fix loop can branch from and merge back into that branch before integration is retried.
+
+## Development Loop Baseline Guard
+
+Before the development loop claims its first task it reads the documented baseline test command from the `## Test` section of the root `CLAUDE.md`. If that section is absent, empty, or still contains the placeholder from `ai-team init`, the loop escalates to the human rather than guessing. If the command is present but fails, the loop stops and reports the output. This is an operational startup check, not a numbered quality gate — it is distinct from Gate 4 (integration test suite), which runs after each task merge.
 
 ## Gate 5: Final Merge Sign-off
 
