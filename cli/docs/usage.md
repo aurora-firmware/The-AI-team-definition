@@ -195,6 +195,19 @@ ai-team spec new "Billing reconciliation" --author "planner" --status draft
 ai-team adr new "Use PostgreSQL for ledger storage" --status proposed
 ```
 
+### File a change request
+
+Change requests capture proposed changes before they are planned as tasks.
+They land in `project/change-requests/` with a `CR-NNN-<slug>.md` filename.
+
+```bash
+# Create a new pending change request (lands in project/change-requests/)
+ai-team change-request new "Revamp onboarding flow"
+
+# Emit machine-readable output for agent use
+ai-team change-request new "Revamp onboarding flow" --json
+```
+
 List specs and ADRs:
 
 ```bash
