@@ -1,7 +1,7 @@
 ---
 id: T-055
 title: Generate project guidance files in init scaffolds
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-05-28'
