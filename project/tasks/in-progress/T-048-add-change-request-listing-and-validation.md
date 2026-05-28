@@ -88,6 +88,20 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-05-28
+
+Implemented AC-1 through AC-4 in two TDD cycles.
+
+**Cycle 1 — listing (AC-1, AC-2, AC-4).** Inspected the existing `list.py` command, the `ChangeRequest` model, and the `ProjectRoot` locator. The `ChangeRequest` model carries `id`, `title`, `status`, and `created` — there is no `target-spec` or spec-amendment field on the model. The listing output therefore includes ID, Title, and State only; no spec-amendment column exists yet. Added `change-requests` as a named Typer subcommand on the `list` app, following the same `_iter_markdown_files` / `_render_table` / `print_json` pattern used by `adrs`. Template and `.gitkeep` files are skipped by the shared `_should_skip` helper already in place. AC-4 is naturally satisfied because `_iter_markdown_files` returns an empty list for an empty or non-existent folder.
+
+**Cycle 2 — validation (AC-3).** Extended `core/validate.py` with `CHANGE_REQUEST_ID_RE = re.compile(r"^CR-\d{3}$")` and a `change_requests: bool` parameter on `validate_project`. The new block parses each file in `root.change_requests` via `parse_change_request`, reports `frontmatter-invalid` on parse failure, and then applies `_check_id_pattern` and `_check_stateful_filename` — the same two checks used for tasks, bugs, and ADRs. Updated `commands/validate.py` to expose `--change-requests` as a scope flag and to include change requests in the default scope (when no scope flag is given).
+
+**Decision: no spec-amendment column in list output.** The `ChangeRequest` datamodel (from T-046) has no `target-spec` or analogous field. The task says "where available", so no column was added. This is documented here; if a future task adds that field to the model, the list command should be extended accordingly.
+
+**No files outside the task's Files-to-Touch list were modified.** All 21 tests pass; `ruff format --check` and `ruff check` are clean.
+
+**Obstacle noted.** The `_iter_markdown_files` helper in `commands/list.py` does not guard against non-existent folders. AC-4 tests create the folder first, so this is fine for now, but a future test exercising a missing `change-requests` directory may surface a `FileNotFoundError` from `Path.glob`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
