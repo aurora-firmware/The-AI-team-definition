@@ -113,14 +113,32 @@ empty directories.
 `.ai-team.toml` is the marker file that tells the CLI where the project root
 is. It records the tools selected and the framework version used.
 
+### Root guidance files
+
+After scaffolding the project skeleton and tool files, `ai-team init` offers to
+create root-level `CLAUDE.md` and `AGENTS.md` from starter templates. These files
+tell AI tools how to build, test, and run your project.
+
+- **Interactive mode** (default): the CLI prompts once per file. Answer `y` to
+  create a starter template, or `n` to skip.
+- **`--no-interactive --create-root-guidance`**: creates both files without
+  prompting. Useful in CI or scripted setup flows.
+- **`--no-interactive` without `--create-root-guidance`**: skips both files and
+  prints a reminder to add them manually.
+
+Existing root guidance files are never overwritten unless `--force` is also passed.
+
 ### Example: preview then initialise
 
 ```bash
 # Preview without writing
 ai-team init . --tools claude --no-interactive --dry-run
 
-# Initialise for real
-ai-team init . --tools claude --no-interactive
+# Initialise for real (interactive: prompts for root CLAUDE.md and AGENTS.md)
+ai-team init . --tools claude
+
+# Non-interactive with root guidance files
+ai-team init . --tools claude --no-interactive --create-root-guidance
 
 # Initialise with both Claude and Codex tool scaffolds
 ai-team init . --tools all --no-interactive
@@ -209,9 +227,10 @@ ai-team change-request new "Revamp onboarding flow"
 ai-team change-request new "Revamp onboarding flow" --json
 ```
 
-List specs and ADRs:
+List change requests, specs, and ADRs:
 
 ```bash
+ai-team list change-requests
 ai-team list specs
 ai-team list adrs
 ```
@@ -247,6 +266,9 @@ ai-team validate --all
 
 # Validate tasks and bugs only
 ai-team validate --tasks --bugs
+
+# Validate change requests only
+ai-team validate --change-requests
 
 # Emit JSON for scripting
 ai-team validate --json

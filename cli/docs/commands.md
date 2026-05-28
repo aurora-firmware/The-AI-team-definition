@@ -23,7 +23,7 @@ $ ai-team [OPTIONS] COMMAND [ARGS]...
 * `bug`: Create and manage bug artifacts.
 * `change-request`: Create and manage change-request artifacts.
 * `init`: Scaffold an AI-team repository.
-* `list`: List tasks, bugs, specs, and ADRs.
+* `list`: List tasks, bugs, specs, ADRs, and change...
 * `report`: Write a Gate 5 progress report.
 * `show`: Show an artifact by identifier.
 * `spec`: Create and manage specification artifacts.
@@ -225,7 +225,7 @@ $ ai-team init [OPTIONS] [PATH] COMMAND [ARGS]...
 
 ## `ai-team list`
 
-List tasks, bugs, specs, and ADRs.
+List tasks, bugs, specs, ADRs, and change requests.
 
 **Usage**:
 
@@ -243,6 +243,7 @@ $ ai-team list [OPTIONS] COMMAND [ARGS]...
 * `bugs`: List bugs from the project bug folders.
 * `specs`: List specs from the project specs folder.
 * `adrs`: List ADRs from the project decisions folder.
+* `change-requests`: List change requests from the project...
 
 ### `ai-team list tasks`
 
@@ -305,6 +306,21 @@ $ ai-team list adrs [OPTIONS]
 **Options**:
 
 * `--state TEXT`: Filter by state where applicable.
+* `--json`: Emit JSON output.
+* `--help`: Show this message and exit.
+
+### `ai-team list change-requests`
+
+List change requests from the project change-requests folder.
+
+**Usage**:
+
+```console
+$ ai-team list change-requests [OPTIONS]
+```
+
+**Options**:
+
 * `--json`: Emit JSON output.
 * `--help`: Show this message and exit.
 
@@ -530,5 +546,7 @@ $ ai-team validate [OPTIONS] COMMAND [ARGS]...
 * `--bugs`: Validate bugs only.
 * `--specs`: Validate specs only.
 * `--adrs`: Validate ADRs only.
+* `--change-requests`: Validate change requests only.
 * `--json`: Emit JSON output.
 * `--help`: Show this message and exit.
+
