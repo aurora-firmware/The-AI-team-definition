@@ -122,3 +122,29 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-05-29
+
+PASS
+
+**Stage 1 — Spec compliance**
+
+- AC-1: Confirmed. Running `uv run python scripts/sync_init_scaffolds.py` on the task branch produced no diff, meaning scaffold sources and generated outputs are in sync.
+- AC-2: Confirmed. `cli/docs/commands.md` regenerated from 4 lines (header stub) to 552 lines. Re-running `bash scripts/gen_docs.sh` on the task branch produced no further diff, confirming the file matches the actual script output with no hand-editing.
+- AC-3: Confirmed. Both generation scripts produce no changes when run against HEAD of the task branch — zero drift.
+- AC-4: Confirmed. Full test suite: 286 passed, 0 failed. `ruff format --check` and `ruff check` both clean.
+
+**Scope expansion — `cli/scripts/gen_docs.sh` fix (commit `0edfa4b`)**
+
+The fix is in-scope housekeeping. The broken `uv run typer` invocation was the direct root cause of the corrupted `commands.md` (truncated to 4 lines) and of the 22 cascading test failures that blocked AC-3 and AC-4. The task's stated purpose is to absorb all remaining generated-output drift; achieving that purpose was impossible without correcting the generation script. The change is minimal (one line, `uv run typer` → `uv run python -m typer`), targeted to the root cause, and does not introduce any unrelated behavior.
+
+**Stage 2 — Code quality**
+
+- `gen_docs.sh`: Single-line fix. No logic complexity, no new dependencies. Correct for this environment; `python -m typer` is the idiomatic way to invoke typer's CLI utils without a registered entry-point binary.
+- `commands.md`: Machine-generated. No manual edits verified (re-run confirmed).
+- `usage.md` additions: Three well-scoped additions. The `--create-root-guidance` flag table row, the "Root guidance files" subsection, and the change-request workflow block each document exactly one concern. Prose matches the existing voice and table formatting conventions. Examples are accurate (validated against commands.md).
+- `customization-guide.md` additions: "Root CLAUDE.md and AGENTS.md" subsection follows the existing heading hierarchy and `#### sub-subsection` pattern. Numbered list for post-init workflow mirrors the existing style in "Retrofitting Into an Existing Project". No dead copy, no redundant explanation.
+- Tests: 286/286 pass; the task did not require new tests (no behavioral code changes), and the existing `test_gen_docs.py` and `test_usage_guide.py` suites exercise the regenerated outputs.
+- No security concerns, no hardcoded secrets, no performance issues.
+
+Both stages pass.
