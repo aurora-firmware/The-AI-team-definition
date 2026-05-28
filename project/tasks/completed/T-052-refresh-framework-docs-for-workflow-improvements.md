@@ -1,7 +1,7 @@
 ---
 id: T-052
 title: Refresh framework docs for workflow improvements
-status: pending
+status: completed
 priority: medium
 assigned-role: planner
 created: '2026-05-28'
