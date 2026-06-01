@@ -322,7 +322,9 @@ def validate_project(
                     pattern=SPEC_ID_RE,
                 )
 
-            _check_spec_filename(findings, root, path, spec_id=str(spec_id) if spec_id else None)
+            _check_spec_filename(
+                findings, root, path, spec_id=str(spec_id) if spec_id else None
+            )
 
     if adrs:
         for path in _iter_markdown_files(root.decisions):
