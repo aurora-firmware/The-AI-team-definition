@@ -37,6 +37,7 @@ def make_project_layout(base: Path, project_dir_name: str = "project") -> Path:
               open/
               in-progress/
               resolved/
+            change-requests/
             decisions/
             docs/
     """
@@ -46,6 +47,7 @@ def make_project_layout(base: Path, project_dir_name: str = "project") -> Path:
         (proj / "tasks" / state).mkdir(parents=True)
     for state in ("open", "in-progress", "resolved"):
         (proj / "bugs" / state).mkdir(parents=True)
+    (proj / "change-requests").mkdir()
     (proj / "decisions").mkdir()
     (proj / "docs").mkdir()
     return base
@@ -118,6 +120,13 @@ def test_project_root_exposes_decisions_and_docs(tmp_path):
     result = find_project_root(tmp_path)
     assert result.decisions == tmp_path / "project" / "decisions"
     assert result.docs == tmp_path / "project" / "docs"
+
+
+def test_project_root_exposes_change_requests_path(tmp_path):
+    """ProjectRoot exposes the path to change-request artifacts."""
+    make_project_layout(tmp_path)
+    result = find_project_root(tmp_path)
+    assert result.change_requests == tmp_path / "project" / "change-requests"
 
 
 def test_repo_path_is_absolute_even_when_cwd_is_relative(tmp_path):

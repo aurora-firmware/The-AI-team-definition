@@ -41,6 +41,11 @@ Then fill in the task body so it satisfies:
 - **Files to touch**: Exact file paths that will be created or modified.
 - **Verification command**: Shell command that proves the task is done.
 
+During task writing, consider documentation updates as implementation work derived from the approved spec, not as a prerequisite before creating tasks.
+If the spec changes user-facing behavior, commands, templates, guides, or workflow expectations, add the required documentation updates as tasks or acceptance criteria in this breakdown.
+Also consider test updates and verification changes as implementation work derived from the approved spec.
+If documentation or test updates are not needed, omit them without placeholder tasks.
+
 ### Step 4: Validate the Plan
 Verify completeness: does the full set of tasks cover the entire specification?
 Verify isolation: do any two tasks modify the same file? If yes, add a dependency between them.

@@ -3,9 +3,11 @@ ai_team.core.models — dataclasses for AI-team artifact types parsed from
 YAML frontmatter.
 
 Provides:
-  - ``Task``, ``Bug``, ``Spec``, ``Adr`` dataclasses holding frontmatter fields.
-  - ``parse_task``, ``parse_bug``, ``parse_spec``, ``parse_adr`` — read an artifact
-    file and return the corresponding dataclass.
+  - ``Task``, ``Bug``, ``Spec``, ``Adr``, ``ChangeRequest`` dataclasses holding
+    frontmatter fields.
+  - ``parse_task``, ``parse_bug``, ``parse_spec``, ``parse_adr``,
+    ``parse_change_request`` — read an artifact file and return the
+    corresponding dataclass.
   - ``dump_frontmatter(model, body) -> str`` — serialise a model back to a complete
     markdown file (YAML frontmatter block + body).
   - ``FrontmatterError`` — raised when a required field is missing or invalid.
@@ -159,6 +161,18 @@ class Adr:
     _source_map: CommentedMap | None = field(default=None, compare=False, repr=False)
 
 
+@dataclass
+class ChangeRequest:
+    """Frontmatter fields for a change-request artifact."""
+
+    id: str
+    title: str
+    status: str
+    created: str
+    # Holds the original CommentedMap from parsing so comments survive dump.
+    _source_map: CommentedMap | None = field(default=None, compare=False, repr=False)
+
+
 # ---------------------------------------------------------------------------
 # Parsers
 # ---------------------------------------------------------------------------
@@ -259,6 +273,25 @@ def parse_adr(path: Path) -> Adr:
     )
 
 
+def parse_change_request(path: Path) -> ChangeRequest:
+    """Parse a change-request artifact file and return a :class:`ChangeRequest`.
+
+    Raises
+    ------
+    FrontmatterError
+        If any required field is missing or the frontmatter is malformed.
+    """
+    path = Path(path)
+    data = _parse_yaml_frontmatter(path)
+    return ChangeRequest(
+        id=str(_require(data, "id", path)),
+        title=str(_require(data, "title", path)),
+        status=str(_require(data, "status", path)),
+        created=str(_require(data, "created", path)),
+        _source_map=data,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Dumper
 # ---------------------------------------------------------------------------
@@ -300,16 +333,24 @@ _ADR_FIELDS: list[tuple[str, str]] = [
     ("supersedes", "supersedes"),  # optional — omitted when None
 ]
 
+_CHANGE_REQUEST_FIELDS: list[tuple[str, str]] = [
+    ("id", "id"),
+    ("title", "title"),
+    ("status", "status"),
+    ("created", "created"),
+]
+
 # Map each model type to its ordered field list.
 _MODEL_FIELDS: dict[type, list[tuple[str, str]]] = {
     Task: _TASK_FIELDS,
     Bug: _BUG_FIELDS,
     Spec: _SPEC_FIELDS,
     Adr: _ADR_FIELDS,
+    ChangeRequest: _CHANGE_REQUEST_FIELDS,
 }
 
 
-def dump_frontmatter(model: Task | Bug | Spec | Adr, body: str) -> str:
+def dump_frontmatter(model: Task | Bug | Spec | Adr | ChangeRequest, body: str) -> str:
     """Serialise *model* back to a complete markdown file string.
 
     The output has the form::
@@ -336,7 +377,8 @@ def dump_frontmatter(model: Task | Bug | Spec | Adr, body: str) -> str:
     Parameters
     ----------
     model:
-        A :class:`Task`, :class:`Bug`, :class:`Spec`, or :class:`Adr` instance.
+        A :class:`Task`, :class:`Bug`, :class:`Spec`, :class:`Adr`, or
+        :class:`ChangeRequest` instance.
     body:
         The markdown body text to place after the frontmatter block.
 

@@ -7,7 +7,13 @@ Cycle 1 scope:
 
 from pathlib import Path
 
-from ai_team.core.ids import next_adr_id, next_bug_id, next_spec_id, next_task_id
+from ai_team.core.ids import (
+    next_adr_id,
+    next_bug_id,
+    next_change_request_id,
+    next_spec_id,
+    next_task_id,
+)
 from ai_team.core.locator import ProjectRoot
 
 
@@ -92,3 +98,39 @@ def test_next_adr_id_ignores_non_matching_files(tmp_path):
     (root.decisions / ".gitkeep").write_text("", encoding="utf-8")
 
     assert next_adr_id(root) == "ADR-004"
+
+
+def test_next_change_request_id_returns_cr_001_when_no_matches_exist(tmp_path):
+    """CR IDs start at CR-001 when no matching files are found."""
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    first.mkdir()
+    second.mkdir()
+
+    assert next_change_request_id((first, second)) == "CR-001"
+
+
+def test_next_change_request_id_scans_provided_directories(tmp_path):
+    """Allocator increments from the max CR-NNN in provided directories."""
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    first.mkdir()
+    second.mkdir()
+
+    (first / "CR-003-small-change.md").write_text("", encoding="utf-8")
+    (second / "CR-011-bigger-change.md").write_text("", encoding="utf-8")
+
+    assert next_change_request_id((first, second)) == "CR-012"
+
+
+def test_next_change_request_id_ignores_non_matching_filenames(tmp_path):
+    """Only CR-NNN-*.md filenames contribute to the next change-request ID."""
+    search_dir = tmp_path / "changes"
+    search_dir.mkdir()
+
+    (search_dir / "CR-template.md").write_text("", encoding="utf-8")
+    (search_dir / "CR-11-not-padded.md").write_text("", encoding="utf-8")
+    (search_dir / "CR-999-no-extension.txt").write_text("", encoding="utf-8")
+    (search_dir / "notes.md").write_text("", encoding="utf-8")
+
+    assert next_change_request_id((search_dir,)) == "CR-001"

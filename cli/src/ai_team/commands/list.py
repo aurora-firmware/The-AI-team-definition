@@ -8,11 +8,17 @@ import typer
 from rich.table import Table
 
 from ai_team.core.locator import find_project_root
-from ai_team.core.models import parse_adr, parse_bug, parse_spec, parse_task
+from ai_team.core.models import (
+    parse_adr,
+    parse_bug,
+    parse_change_request,
+    parse_spec,
+    parse_task,
+)
 from ai_team.render import console, print_json
 
 NAME = "list"
-app = typer.Typer(help="List tasks, bugs, specs, and ADRs.")
+app = typer.Typer(help="List tasks, bugs, specs, ADRs, and change requests.")
 
 
 def _should_skip(path: Path) -> bool:
@@ -175,3 +181,25 @@ def adrs(
         print_json(rows)
         return
     _render_table("ADRs", ["ID", "Title", "Status"], rows)
+
+
+@app.command("change-requests")
+def change_requests(
+    as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
+) -> None:
+    """List change requests from the project change-requests folder."""
+    root = find_project_root(Path.cwd())
+    rows: list[dict[str, str]] = []
+    for path in _iter_markdown_files(root.change_requests):
+        cr = parse_change_request(path)
+        rows.append(
+            {
+                "id": cr.id,
+                "title": cr.title,
+                "state": cr.status,
+            }
+        )
+    if as_json:
+        print_json(rows)
+        return
+    _render_table("Change Requests", ["ID", "Title", "State"], rows)

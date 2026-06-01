@@ -60,6 +60,9 @@ class ProjectRoot:
     bugs_resolved: Path
     """``project_dir/bugs/resolved``."""
 
+    change_requests: Path
+    """``project_dir/change-requests``."""
+
     decisions: Path
     """``project_dir/decisions``."""
 
@@ -83,6 +86,7 @@ class ProjectRoot:
             bugs_open=pd / "bugs" / "open",
             bugs_in_progress=pd / "bugs" / "in-progress",
             bugs_resolved=pd / "bugs" / "resolved",
+            change_requests=pd / "change-requests",
             decisions=pd / "decisions",
             docs=pd / "docs",
         )

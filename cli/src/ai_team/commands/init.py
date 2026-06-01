@@ -19,6 +19,14 @@ app = typer.Typer(
 
 _SUPPORTED_TOOLS = ["claude", "codex"]
 
+_ROOT_GUIDANCE_FILES = ["CLAUDE.md", "AGENTS.md"]
+
+_ROOT_GUIDANCE_DECLINED_MESSAGE = (
+    "To help agents run your project without guessing, add your test and run "
+    "commands to a root CLAUDE.md and AGENTS.md. "
+    "See `ai-team init --create-root-guidance` to generate starter templates."
+)
+
 
 def _iter_files(root: Path) -> list[Path]:
     return sorted(path for path in root.rglob("*") if path.is_file())
@@ -73,6 +81,59 @@ def _next_steps() -> list[str]:
     ]
 
 
+def _copy_root_guidance_file(
+    source: Path,
+    destination: Path,
+    force: bool,
+) -> None:
+    """Copy a single root guidance file; overwrite only when *force* is True."""
+    if destination.exists() and not force:
+        return
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, destination)
+
+
+def _handle_root_guidance(
+    target_root: Path,
+    sources_root: Path,
+    no_interactive: bool,
+    create_root_guidance: bool,
+    force: bool,
+    dry_run: bool,
+) -> bool:
+    """Prompt for or create root guidance files.  Returns True if any file was declined."""
+    declined = False
+
+    for filename in _ROOT_GUIDANCE_FILES:
+        destination = target_root / filename
+        source = sources_root / "root" / filename
+
+        # AC-5: never replace an existing file unless force is active
+        if destination.exists() and not force:
+            continue
+
+        if dry_run:
+            typer.echo(f"WOULD WRITE: {destination}")
+            continue
+
+        if no_interactive:
+            # AC-3: deterministic — only create when the flag is set
+            if create_root_guidance:
+                _copy_root_guidance_file(source, destination, force)
+        else:
+            # AC-1 / AC-2: interactive — ask the user
+            create = typer.confirm(
+                f"Create root {filename} from the starter template?",
+                default=True,
+            )
+            if create:
+                _copy_root_guidance_file(source, destination, force)
+            else:
+                declined = True
+
+    return declined
+
+
 @app.callback()
 def init_command(
     path: Path = typer.Argument(Path(".")),
@@ -80,6 +141,7 @@ def init_command(
     force: bool = typer.Option(False, "--force"),
     dry_run: bool = typer.Option(False, "--dry-run"),
     no_interactive: bool = typer.Option(False, "--no-interactive"),
+    create_root_guidance: bool = typer.Option(False, "--create-root-guidance"),
 ) -> None:
     """Initialize scaffold files in *path*."""
     try:
@@ -91,7 +153,11 @@ def init_command(
     target_root = path.resolve()
 
     scaffolds = resources.files("ai_team.init") / "scaffolds"
-    with resources.as_file(scaffolds) as scaffolds_path:
+    sources = resources.files("ai_team.init") / "sources"
+    with (
+        resources.as_file(scaffolds) as scaffolds_path,
+        resources.as_file(sources) as sources_path,
+    ):
         planned: list[tuple[Path, Path]] = []
         planned.extend(
             _plan_copies(scaffolds_path / "project", target_root / "project")
@@ -107,42 +173,64 @@ def init_command(
                 _plan_copies(scaffolds_path / "codex", target_root / ".codex")
             )
 
-    marker = target_root / ".ai-team.toml"
-    planned_destinations = [destination for _, destination in planned] + [marker]
-    collisions = [
-        destination for destination in planned_destinations if destination.exists()
-    ]
+        marker = target_root / ".ai-team.toml"
+        planned_destinations = [destination for _, destination in planned] + [marker]
+        collisions = [
+            destination for destination in planned_destinations if destination.exists()
+        ]
 
-    if dry_run:
-        for destination in planned_destinations:
-            typer.echo(f"WOULD WRITE: {destination}")
+        if dry_run:
+            for destination in planned_destinations:
+                typer.echo(f"WOULD WRITE: {destination}")
+            # Also show root guidance would-write entries in dry-run
+            _handle_root_guidance(
+                target_root,
+                sources_path,
+                no_interactive,
+                create_root_guidance,
+                force,
+                dry_run=True,
+            )
 
-    if collisions and not force:
-        typer.echo(
-            "Refusing to overwrite existing files without --force:\n"
-            + "\n".join(str(path) for path in collisions),
-            err=True,
+        if collisions and not force:
+            typer.echo(
+                "Refusing to overwrite existing files without --force:\n"
+                + "\n".join(str(path) for path in collisions),
+                err=True,
+            )
+            raise typer.Exit(code=1)
+
+        if dry_run:
+            return
+
+        for source, destination in planned:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, destination)
+
+        marker_data = {
+            "project": {"dir": "project"},
+            "init": {
+                "tools": selected_tools,
+                "framework_version": importlib.metadata.version("ai-team"),
+            },
+        }
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.write_text(tomli_w.dumps(marker_data), encoding="utf-8")
+
+        # Handle root guidance files (outside the collision-checked scaffold set)
+        declined = _handle_root_guidance(
+            target_root,
+            sources_path,
+            no_interactive,
+            create_root_guidance,
+            force,
+            dry_run=False,
         )
-        raise typer.Exit(code=1)
-
-    if dry_run:
-        return
-
-    for source, destination in planned:
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, destination)
-
-    marker_data = {
-        "project": {"dir": "project"},
-        "init": {
-            "tools": selected_tools,
-            "framework_version": importlib.metadata.version("ai-team"),
-        },
-    }
-    marker.parent.mkdir(parents=True, exist_ok=True)
-    marker.write_text(tomli_w.dumps(marker_data), encoding="utf-8")
 
     typer.echo("Initialization complete.")
     typer.echo("Next steps:")
     for line in _next_steps():
         typer.echo(f"- {line}")
+
+    if declined:
+        typer.echo(f"\nNote: {_ROOT_GUIDANCE_DECLINED_MESSAGE}")

@@ -91,6 +91,16 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
         "codex planner\n",
     )
 
+    # Package-owned project guidance source fixtures.
+    _write(
+        repo / "cli" / "src" / "ai_team" / "init" / "sources" / "project" / "CLAUDE.md",
+        "# Project Guidance\n\nspecs tasks bugs decisions reports project-local docs\n",
+    )
+    _write(
+        repo / "cli" / "src" / "ai_team" / "init" / "sources" / "project" / "AGENTS.md",
+        "# Project Guidance for Agents\n\nspecs tasks bugs decisions reports project-local docs\n",
+    )
+
     # Seed stale generated output that should be removed.
     _write(
         repo
@@ -231,6 +241,8 @@ def test_sync_script_replaces_project_with_empty_lifecycle_skeleton(
         Path("bugs/resolved/.gitkeep"),
         Path("decisions/.gitkeep"),
         Path("docs/.gitkeep"),
+        Path("CLAUDE.md"),
+        Path("AGENTS.md"),
     }
     actual_files = {
         (Path(root) / file_name).relative_to(project_root)
@@ -240,6 +252,29 @@ def test_sync_script_replaces_project_with_empty_lifecycle_skeleton(
 
     assert actual_files == expected_files
     assert not (project_root / "old.txt").exists()
+
+
+def test_sync_script_copies_project_guidance_files_from_source(
+    tmp_path: Path,
+) -> None:
+    """AC-1 & AC-2: Generator copies CLAUDE.md and AGENTS.md from sources/project/."""
+    repo = _setup_fake_repo(tmp_path)
+
+    subprocess.run(
+        [sys.executable, "cli/scripts/sync_init_scaffolds.py"],
+        cwd=repo,
+        check=True,
+    )
+
+    sources_root = repo / "cli" / "src" / "ai_team" / "init" / "sources" / "project"
+    project_root = repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "project"
+
+    for file_name in ("CLAUDE.md", "AGENTS.md"):
+        source_text = (sources_root / file_name).read_text(encoding="utf-8")
+        scaffold_text = (project_root / file_name).read_text(encoding="utf-8")
+        assert scaffold_text == source_text, (
+            f"scaffolds/project/{file_name} does not match sources/project/{file_name}"
+        )
 
 
 def test_package_owned_skill_sources_include_body_and_required_metadata() -> None:
@@ -405,3 +440,313 @@ def test_package_owned_agent_sources_cover_each_exported_role_for_both_tools() -
         assert codex_source.read_text(encoding="utf-8") == codex_scaffold.read_text(
             encoding="utf-8"
         )
+
+
+def _spec_breakdown_skill_texts() -> tuple[str, str, str]:
+    repo_root = Path(__file__).resolve().parents[1]
+    source = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "skills"
+        / "spec-breakdown"
+        / "body.md"
+    ).read_text(encoding="utf-8")
+    claude = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "claude"
+        / "skills"
+        / "spec-breakdown"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    codex = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "codex"
+        / "skills"
+        / "spec-breakdown"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    return source, claude, codex
+
+
+def _spec_breakdown_review_skill_texts() -> tuple[str, str, str]:
+    repo_root = Path(__file__).resolve().parents[1]
+    source = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "skills"
+        / "spec-breakdown-review"
+        / "body.md"
+    ).read_text(encoding="utf-8")
+    claude = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "claude"
+        / "skills"
+        / "spec-breakdown-review"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    codex = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "codex"
+        / "skills"
+        / "spec-breakdown-review"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    return source, claude, codex
+
+
+def test_spec_breakdown_skill_requires_docs_planning_during_task_creation() -> None:
+    source, claude, codex = _spec_breakdown_skill_texts()
+    required_phrases = (
+        "consider documentation updates as implementation work derived from the approved spec",
+        "not as a prerequisite before creating tasks",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"spec-breakdown source must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_spec_breakdown_skill_covers_test_planning_and_optional_omission() -> None:
+    source, claude, codex = _spec_breakdown_skill_texts()
+    required_phrases = (
+        "consider test updates and verification changes as implementation work derived from the approved spec",
+        "If documentation or test updates are not needed, omit them without placeholder tasks",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"spec-breakdown source must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_spec_breakdown_review_focuses_gate_2_on_technical_readiness() -> None:
+    source, claude, codex = _spec_breakdown_review_skill_texts()
+    required_phrases = (
+        "focus findings only on technical task-plan readiness",
+        "Do not fail Gate 2 for product-scope concerns that do not block technical readiness",
+        "if the plan contradicts the approved spec or existing ADRs",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, (
+            f"spec-breakdown-review source must include: {phrase!r}"
+        )
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_spec_breakdown_review_preserves_existing_output_format_and_verdicts() -> None:
+    source, claude, codex = _spec_breakdown_review_skill_texts()
+    required_phrases = (
+        "Result: PASS | FAIL | BLOCKED | ESCALATE",
+        "Spec reviewed: project/specs/<file>",
+        "Tasks reviewed: <count>",
+        "Next owner:",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, (
+            f"spec-breakdown-review source must include: {phrase!r}"
+        )
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def _dev_loop_skill_texts() -> tuple[str, str, str]:
+    repo_root = Path(__file__).resolve().parents[1]
+    source = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "skills"
+        / "dev-loop"
+        / "body.md"
+    ).read_text(encoding="utf-8")
+    claude = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "claude"
+        / "skills"
+        / "dev-loop"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    codex = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "codex"
+        / "skills"
+        / "dev-loop"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    return source, claude, codex
+
+
+def test_dev_loop_uses_cli_task_state_filter_for_queue_discovery() -> None:
+    """AC-1: Queue discovery uses ai-team list tasks --state pending, not raw filesystem."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = ("ai-team list tasks --state pending",)
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_discovers_baseline_test_command_before_claiming_task() -> None:
+    """AC-2: Loop reads the baseline test command from project guidance before claiming."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = (
+        "baseline test command",
+        "CLAUDE.md",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_allows_loop_to_continue_when_baseline_tests_pass() -> None:
+    """AC-3: Loop continues to task selection when baseline test command passes."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = ("baseline test command passes",)
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_escalates_when_baseline_test_command_missing_or_ambiguous() -> None:
+    """AC-4 / F-3: Loop escalates with specific stop messages for missing AND ambiguous cases."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = (
+        "BLOCKED: root CLAUDE.md is missing a runnable command in the ## Test section."
+        " Add a fenced command block before re-running the loop.",
+        "BLOCKED: root CLAUDE.md ## Test section is ambiguous (placeholder or multiple commands)."
+        " Replace it with exactly one fenced command block before re-running the loop.",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_baseline_guard_enumerates_missing_conditions() -> None:
+    """F-1: Step 2 enumerates exact decidable conditions for 'missing'."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = (
+        "Root `CLAUDE.md` does not exist",
+        "Root `CLAUDE.md` exists but has no `## Test` heading",
+        "The `## Test` section exists but its body contains no fenced code block",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_baseline_guard_enumerates_ambiguous_conditions() -> None:
+    """F-1: Step 2 enumerates exact decidable conditions for 'ambiguous'."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = (
+        "The `## Test` section's fenced block still matches the T-050 placeholder",
+        "The `## Test` section contains more than one fenced code block",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_baseline_guard_reads_only_from_root_claude_md() -> None:
+    """F-2: Step 2 documents no-fallback policy — reads ONLY from root CLAUDE.md ## Test."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = ("ONLY from the root `CLAUDE.md`",)
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_baseline_guard_runs_once_at_startup_only() -> None:
+    """F-4: Step 2 states the guard runs once at startup, not between tasks, with rationale."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = (
+        "The baseline guard runs once at loop startup."
+        " It is NOT re-checked between tasks.",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_dev_loop_stops_and_reports_when_baseline_tests_fail() -> None:
+    """AC-5: Loop stops and reports failing command and output when baseline tests fail."""
+    source, claude, codex = _dev_loop_skill_texts()
+    required_phrases = ("baseline test command fails",)
+
+    for phrase in required_phrases:
+        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_project_guidance_sources_exist_and_describe_project_artifact_folders() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    source_root = repo_root / "src" / "ai_team" / "init" / "sources" / "project"
+    required_terms = (
+        "specs",
+        "tasks",
+        "bugs",
+        "decisions",
+        "reports",
+        "project-local docs",
+    )
+
+    for guidance_file_name in ("CLAUDE.md", "AGENTS.md"):
+        guidance_path = source_root / guidance_file_name
+        assert guidance_path.is_file(), f"Missing source template: {guidance_path}"
+
+        guidance_text = guidance_path.read_text(encoding="utf-8")
+        for term in required_terms:
+            assert term in guidance_text, (
+                f"{guidance_file_name} must describe {term!r} in project guidance"
+            )

@@ -9,10 +9,10 @@ Optional: a single task ID or branch name as `$ARGUMENTS` (e.g., `T-012` or `tas
 - If provided, the loop processes only that task — it does not continue to the next task after completion or failure.
 - If omitted, the loop processes the full pending queue until empty, blocked, or escalated.
 
-The orchestrator reads state directly from the filesystem:
-- `project/tasks/pending/` — work queue
-- `project/tasks/in-progress/` — active task slot
-- `project/tasks/blocked/` — escalation output
+The orchestrator reads queue state using the `ai-team` CLI:
+- `ai-team list tasks --state pending` — pending work queue
+- `project/tasks/in-progress/` — active task slot (filesystem)
+- `project/tasks/blocked/` — escalation output (filesystem)
 
 Task files are canonical lifecycle state on `dev-agent`.
 Developer branches are for implementation artifacts only; the active loop records Developer Work Log handoffs in the canonical task file.
@@ -27,10 +27,42 @@ If `$ARGUMENTS` is non-empty:
 - If not found in `pending/`, stop with: "Task <task-id> not found in project/tasks/pending/. Check the task ID and its current status."
 - Use this single task as the queue. After it completes (success, blocked, or escalated), stop — do not continue to other tasks.
 
-If `$ARGUMENTS` is empty, list all files in `project/tasks/pending/`.
+If `$ARGUMENTS` is empty, discover pending tasks using: `ai-team list tasks --state pending`.
 If the queue is empty, stop and report: "Queue is empty. All pending tasks have been processed."
 
-### Step 2: Pick the Next Task
+### Step 2: Baseline Test Guard
+
+The baseline guard runs once at loop startup. It is NOT re-checked between tasks. Rationale: post-merge regressions are caught by the integrate skill's destination-branch test step; re-checking between tasks adds latency without adding coverage.
+
+Discover and run the project's baseline test command ONLY from the root `CLAUDE.md` `## Test` section before claiming any task. The dev-loop does not fall back to other files (e.g., `project/docs/coding_guidelines.md`, README, build configs). If the project documents tests elsewhere, the human must mirror or reference them in root `CLAUDE.md`. This policy is deterministic: there is exactly one place an agent must look.
+
+Skip this step when looping back after a completed task (control returns to Step 1, which skips Step 2 on subsequent iterations).
+
+#### Missing — escalate when ANY of these hold
+
+- Root `CLAUDE.md` does not exist.
+- Root `CLAUDE.md` exists but has no `## Test` heading.
+- The `## Test` section exists but its body contains no fenced code block (no ` ``` `...` ``` ` block).
+
+Stop and report:
+`BLOCKED: root CLAUDE.md is missing a runnable command in the ## Test section. Add a fenced command block before re-running the loop.`
+
+#### Ambiguous — escalate when ANY of these hold
+
+- The `## Test` section's fenced block still matches the T-050 placeholder (it contains only a comment like `# describe...` or `# TODO` or is empty).
+- The `## Test` section contains more than one fenced code block (the loop cannot pick).
+
+Stop and report:
+`BLOCKED: root CLAUDE.md ## Test section is ambiguous (placeholder or multiple commands). Replace it with exactly one fenced command block before re-running the loop.`
+
+#### Runnable
+
+If the `## Test` section contains exactly one fenced code block whose content is not a placeholder comment, treat its content as the baseline test command. Run it.
+
+- If the baseline test command passes, continue to Step 3.
+- If the baseline test command fails, stop immediately and report: `BLOCKED: baseline test command failed before any task was claimed. Failing command: <command>. Output summary: <last 20 lines of combined stdout/stderr>.`
+
+### Step 3: Pick the Next Task
 
 Select the highest-priority task whose dependencies are all satisfied:
 1. **Priority order:** critical → high → medium → low (read from task frontmatter `priority` field)
@@ -39,14 +71,14 @@ Select the highest-priority task whose dependencies are all satisfied:
 
 If no task has all dependencies satisfied, stop and report which tasks are waiting and what they are waiting for.
 
-### Step 3: Claim the Task
+### Step 4: Claim the Task
 
 1. Switch to `dev-agent`.
 2. Move the selected task file from `project/tasks/pending/` to `project/tasks/in-progress/`.
 3. Commit the task move: `chore(tasks): move T-NNN to in-progress`.
 4. Create and check out the task branch from `dev-agent`: `git checkout -b task/T-NNN-short-description` (derive from task filename).
 
-### Step 4: Implementation Cycle
+### Step 5: Implementation Cycle
 
 Before spawning the Developer, read the latest canonical task file from `dev-agent`.
 Check out the task branch `task/T-NNN-...`.
@@ -68,7 +100,7 @@ Record the Work Log handoff:
 2. Append the Developer's Work Log handoff under `## Work Log` in `project/tasks/in-progress/<task-file>`.
 3. Commit the lifecycle update: `chore(tasks): record T-NNN work log`.
 
-### Step 5: Review Cycle
+### Step 6: Review Cycle
 
 **Spawn the Reviewer subagent** with this prompt:
 
@@ -80,7 +112,7 @@ Record the Work Log handoff:
 
 Wait for the reviewer to complete before continuing.
 
-### Step 6: Read the Verdict
+### Step 7: Read the Verdict
 
 Switch to `dev-agent`, then read the canonical task file and find the most recent `### Review Verdict` entry.
 Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
@@ -104,7 +136,7 @@ Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 
 Increment the review cycle counter.
 
-- If **cycle < 3**: go back to **Step 4** (Developer fixes the issues noted in the Review Verdict)
+- If **cycle < 3**: go back to **Step 5** (Developer fixes the issues noted in the Review Verdict)
 - If **cycle = 3**: treat as ESCALATE (max review cycles exceeded)
 
 #### On ESCALATE
@@ -121,7 +153,7 @@ Follow the two-phase escalation procedure below. Phase 1 is a single Architect c
 > Question: <specific guidance needed to continue within the approved specification>
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
 
-If the Architect resolves the issue, go back to **Step 4** with the Architect's guidance.
+If the Architect resolves the issue, go back to **Step 5** with the Architect's guidance.
 
 **Phase 2 — Human Escalation:**
 If the Architect cannot resolve the issue:
@@ -130,7 +162,7 @@ If the Architect cannot resolve the issue:
 3. Stop the loop entirely.
 4. Produce the report using the Phase 2 Human Escalation Report template defined in the `escalation-review` skill. Fill every section (Work item, Original request, Self-recovery attempts, Architect analysis, Why human input is required, Decision needed).
 
-### Step 7: Loop Complete
+### Step 8: Loop Complete
 
 When the queue is fully drained (Step 1 finds no pending tasks), report a summary:
 - Tasks completed and merged this run (list with task IDs and merge commits)
@@ -140,7 +172,7 @@ When the queue is fully drained (Step 1 finds no pending tasks), report a summar
 
 ## Cycle Counter Reset
 
-The review cycle counter resets to 0 each time a new task is picked up in Step 2.
+The review cycle counter resets to 0 each time a new task is picked up in Step 3.
 It is local to each task — one task failing twice does not affect the counter for the next task.
 
 ## Commit Conventions

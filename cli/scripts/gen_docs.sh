@@ -22,4 +22,4 @@ HEADER
 
 # Append the Typer-generated docs.
 cd "${REPO_ROOT}/cli"
-uv run typer ai_team.cli utils docs --name "ai-team" >> "${OUTPUT}"
+uv run python -m typer ai_team.cli utils docs --name "ai-team" >> "${OUTPUT}"
