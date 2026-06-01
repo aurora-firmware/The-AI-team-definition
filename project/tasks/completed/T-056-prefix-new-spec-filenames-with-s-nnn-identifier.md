@@ -1,7 +1,7 @@
 ---
 id: T-056
 title: Prefix new spec filenames with S-NNN- identifier
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-06-01'
