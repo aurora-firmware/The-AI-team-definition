@@ -57,7 +57,7 @@ def new_spec(
     root = find_project_root(Path.cwd())
     spec_id = next_spec_id(root)
     slug = slugify(title)
-    dest = root.specs / f"{slug}.md"
+    dest = root.specs / f"{spec_id}-{slug}.md"
 
     template = load_template("spec")
     source_map, body = _template_parts(template)
