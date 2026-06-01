@@ -16,7 +16,7 @@ def _mkdir(path: Path) -> None:
 def test_spec_new_creates_spec_with_defaults_and_prints_absolute_path(
     monkeypatch, tmp_path
 ):
-    """`ai-team spec new` creates one spec file with default frontmatter values."""
+    """`ai-team spec new` creates one spec file at S-NNN-<slug>.md with default values."""
     from ai_team.cli import app
 
     _mkdir(tmp_path / "project" / "specs")
@@ -24,7 +24,7 @@ def test_spec_new_creates_spec_with_defaults_and_prints_absolute_path(
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["spec", "new", "Launch Plan"])
 
-    expected = tmp_path / "project" / "specs" / "launch-plan.md"
+    expected = tmp_path / "project" / "specs" / "S-001-launch-plan.md"
 
     assert result.exit_code == 0
     assert result.output.strip() == str(expected)
@@ -44,7 +44,7 @@ def test_spec_new_creates_spec_with_defaults_and_prints_absolute_path(
 
 
 def test_spec_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
-    """`spec new --json` emits id/path and writes frontmatter from supplied flags."""
+    """`spec new --json` emits id/path at S-NNN-<slug>.md from supplied flags."""
     from ai_team.cli import app
 
     _mkdir(tmp_path / "project" / "specs")
@@ -64,7 +64,7 @@ def test_spec_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
         ],
     )
 
-    expected = tmp_path / "project" / "specs" / "auth-spec.md"
+    expected = tmp_path / "project" / "specs" / "S-001-auth-spec.md"
     payload = json.loads(result.output)
 
     assert result.exit_code == 0
@@ -86,12 +86,16 @@ def test_spec_new_refuses_to_overwrite_when_allocated_path_exists(
     monkeypatch, tmp_path
 ):
     """Existing output path causes non-zero exit and preserves file bytes."""
+    import ai_team.commands.spec as spec_mod
     from ai_team.cli import app
 
     specs = tmp_path / "project" / "specs"
     _mkdir(specs)
 
-    existing = specs / "launch-plan.md"
+    # Force the allocator to always return S-001 so we can pre-create the target.
+    monkeypatch.setattr(spec_mod, "next_spec_id", lambda _root: "S-001")
+
+    existing = specs / "S-001-launch-plan.md"
     existing.write_text("existing bytes\n", encoding="utf-8")
 
     monkeypatch.chdir(tmp_path)
@@ -113,7 +117,7 @@ def test_spec_new_substitutes_body_h1_with_provided_title(monkeypatch, tmp_path)
 
     assert result.exit_code == 0
 
-    expected = tmp_path / "project" / "specs" / "my-new-spec.md"
+    expected = tmp_path / "project" / "specs" / "S-001-my-new-spec.md"
     content = expected.read_text(encoding="utf-8")
 
     assert "# My New Spec" in content
@@ -160,7 +164,7 @@ author: planner
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["spec", "new", "Verification Spec", "--json"])
 
-    expected = specs_dir / "verification-spec.md"
+    expected = specs_dir / "S-003-verification-spec.md"
     payload = json.loads(result.output)
 
     assert result.exit_code == 0
