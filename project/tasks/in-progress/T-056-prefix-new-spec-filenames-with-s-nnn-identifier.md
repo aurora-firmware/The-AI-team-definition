@@ -126,3 +126,27 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-06-01
+
+PASS
+
+Both stages passed.
+
+**Stage 1 — Spec compliance:**
+- AC-1: `commands/spec.py` builds `dest = root.specs / f"{spec_id}-{slug}.md"`. Four tests confirm path ends in `S-NNN-<slug>.md`. Met.
+- AC-2: `_check_spec_filename` in `core/validate.py` accepts `S-NNN-<slug>.md` with matching frontmatter id and emits no finding. Test covers the valid case. Met.
+- AC-3: `_check_spec_filename` falls through to `SLUGGED_FILENAME_RE` for legacy `<slug>.md` filenames — always accepted without a finding. Test covers the legacy case. Met.
+- AC-4: `commands/list.py` reads `spec._source_map["id"]` for the ID column with fallback to `path.stem`. Tests updated to assert `"S-001"` rather than filename stem; dedicated prefixed-filename test added. Met.
+- AC-5: 290 tests pass; `ruff check .` and `ruff format --check .` both clean. Verified locally on the task branch. Met.
+- Scope constraint: No existing spec files in `project/specs/` or `project/specs/archive/` were renamed. `spec_slugs` construction and `_spec_reference_exists` are unchanged — task→spec reference resolution is untouched. Met.
+- Files touched: All within the stated scope. Generated scaffolds regenerated via `sync_init_scaffolds.py`. `commands.md` confirmed up-to-date (no output change, no regeneration needed). Met.
+
+**Stage 2 — Code quality:**
+- Correctness: `split("-", 2)[:2]` correctly extracts the `S-NNN` prefix from new-style filenames. The fallback path in `_check_spec_filename` for neither-pattern filenames reports a clear error. The overwrite-protection test monkeypatches `next_spec_id` — justified by the allocator's design and documented in the Work Log.
+- Tests: New tests cover all three validation cases (new-style valid, new-style prefix mismatch, legacy valid) and are independent using `tmp_path`.
+- Security: No hardcoded credentials, no unvalidated external input, no queries.
+- Readability: `_check_spec_filename` is focused, clearly named, and carries a docstring explaining both accepted forms.
+- Performance: No concerns.
+
+No minor observations.
