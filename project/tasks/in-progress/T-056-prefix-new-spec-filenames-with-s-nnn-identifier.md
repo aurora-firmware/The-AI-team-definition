@@ -97,6 +97,24 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-01
+
+This session implemented all five acceptance criteria for T-056 in four TDD cycles.
+
+**What was done:**
+
+Cycle 1 (AC-1): Updated `cli/src/ai_team/commands/spec.py` to construct the destination path as `S-NNN-<slug>.md` instead of `<slug>.md`. All existing spec_new tests were updated to expect the new path format. The overwrite-protection test required a monkeypatch of `next_spec_id` because the new naming scheme makes natural collisions impossible in sequential single-process runs (the allocator always increments past any `S-NNN-*.md` file it sees), so the test now simulates the race-condition edge case by forcing a fixed allocated ID.
+
+Cycle 2 (AC-2 + AC-3): Replaced the single-pattern filename check in `cli/src/ai_team/core/validate.py` with a new `_check_spec_filename` helper. The helper accepts both `S-NNN-<slug>.md` (new style, with prefix-vs-frontmatter id verification) and `<slug>.md` (legacy, always valid). Three new tests were added covering: new-style valid, new-style with mismatched prefix, and legacy valid.
+
+Cycle 3 (AC-4): Updated the `specs` subcommand in `cli/src/ai_team/commands/list.py` to read the spec id from `spec._source_map["id"]` rather than `path.stem`. Existing tests were updated (SPEC_TEMPLATE gained an `id` field; the table and JSON assertions were updated from `"ai-team-cli"` to `"S-001"`). A new dedicated test verifies the frontmatter-id-over-stem behaviour with an `S-007-my-spec.md` file.
+
+Cycle 4 (AC-5): Ran the full `uv run pytest`, `uv run ruff check .`, `uv run ruff format --check .` suite — all green (290 passed). Applied a minor ruff formatting fix to `validate.py`. Updated `cli/docs/usage.md` to describe the new `S-NNN-<slug>.md` convention and updated `cli/src/ai_team/init/sources/skills/new-spec/body.md` to note the filename format in step 3. Ran `sync_init_scaffolds.py` to propagate the skill source change.
+
+**What was tried and rejected:** Initially attempted to test the overwrite-protection case by pre-seeding specs so the allocator would produce a colliding path — structurally impossible because any `S-NNN-*.md` file is picked up by the ID scanner and the allocator increments past it. Monkeypatching the allocator was the correct solution.
+
+**What remains:** Nothing — all acceptance criteria are implemented, tested, and committed on `task/T-056-prefix-spec-filenames` (5 commits). Ready for review.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
