@@ -454,3 +454,59 @@ Body.
     assert result.exit_code != 0
     findings = json.loads(result.output)
     assert any(finding["code"] == "frontmatter-invalid" for finding in findings)
+
+
+def test_validate_specs_accepts_new_s_nnn_slug_filename_with_matching_id(
+    monkeypatch, tmp_path
+):
+    """`validate --specs` reports no findings for a valid S-NNN-<slug>.md spec."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "specs" / "S-001-launch-plan.md",
+        _spec("S-001", "Launch Plan"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--specs", "--json"])
+
+    assert result.exit_code == 0
+    assert json.loads(result.output) == []
+
+
+def test_validate_specs_reports_filename_id_mismatch_when_prefix_does_not_match_frontmatter(
+    monkeypatch, tmp_path
+):
+    """`validate --specs` emits filename-pattern when S-NNN prefix mismatches frontmatter id."""
+    from ai_team.cli import app
+
+    # File named S-002-launch-plan.md but frontmatter id is S-001
+    _write(
+        tmp_path / "project" / "specs" / "S-002-launch-plan.md",
+        _spec("S-001", "Launch Plan"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--specs", "--json"])
+
+    assert result.exit_code != 0
+    findings = json.loads(result.output)
+    assert any(finding["code"] == "filename-pattern" for finding in findings)
+
+
+def test_validate_specs_accepts_legacy_slug_only_filename_without_id_prefix(
+    monkeypatch, tmp_path
+):
+    """`validate --specs` reports no filename-pattern finding for legacy <slug>.md specs."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "specs" / "roadmap-spec.md",
+        _spec("S-001", "Roadmap Spec"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--specs", "--json"])
+
+    assert result.exit_code == 0
+    assert json.loads(result.output) == []

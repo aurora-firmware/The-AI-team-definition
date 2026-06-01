@@ -41,6 +41,8 @@ SPEC_ID_RE = re.compile(r"^S-\d{3}$")
 ADR_ID_RE = re.compile(r"^ADR-\d{3}$")
 CHANGE_REQUEST_ID_RE = re.compile(r"^CR-\d{3}$")
 SLUGGED_FILENAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]*\.md$")
+# New-style spec filenames: S-NNN-<slug>.md
+SPEC_PREFIXED_FILENAME_RE = re.compile(r"^S-\d{3}-[a-z0-9][a-z0-9-]*\.md$")
 
 
 def _should_skip(path: Path) -> bool:
@@ -107,6 +109,56 @@ def _check_stateful_filename(
             (
                 f"Filename '{path.name}' does not match expected "
                 f"'{artifact_id}-<slug>.md'."
+            ),
+        )
+    )
+
+
+def _check_spec_filename(
+    findings: list[Finding],
+    root: ProjectRoot,
+    path: Path,
+    *,
+    spec_id: str | None,
+) -> None:
+    """Check spec filename against both legacy and new-style patterns.
+
+    Accepts:
+    - Legacy: ``<slug>.md`` (all-lowercase slug, no S-NNN prefix).
+    - New-style: ``S-NNN-<slug>.md`` where the prefix matches the frontmatter id.
+
+    Reports a ``filename-pattern`` finding when neither pattern matches, or when
+    the S-NNN prefix is present but does not match the frontmatter id.
+    """
+    if SPEC_PREFIXED_FILENAME_RE.match(path.name):
+        # New-style filename: verify prefix matches frontmatter id.
+        id_prefix = path.name.split("-", 2)[:2]  # e.g. ["S", "001"]
+        filename_id = "-".join(id_prefix)  # e.g. "S-001"
+        if spec_id is not None and filename_id != spec_id:
+            findings.append(
+                _finding(
+                    path,
+                    root,
+                    "filename-pattern",
+                    (
+                        f"Spec filename '{path.name}' id prefix '{filename_id}' "
+                        f"does not match frontmatter id '{spec_id}'."
+                    ),
+                )
+            )
+        return
+    if SLUGGED_FILENAME_RE.match(path.name):
+        # Legacy filename: all-lowercase slug with no id prefix — always valid.
+        return
+    # Neither pattern matches.
+    findings.append(
+        _finding(
+            path,
+            root,
+            "filename-pattern",
+            (
+                f"Spec filename '{path.name}' does not match "
+                f"'<slug>.md' or 'S-NNN-<slug>.md'."
             ),
         )
     )
@@ -270,15 +322,9 @@ def validate_project(
                     pattern=SPEC_ID_RE,
                 )
 
-            if not SLUGGED_FILENAME_RE.match(path.name):
-                findings.append(
-                    _finding(
-                        path,
-                        root,
-                        "filename-pattern",
-                        f"Spec filename '{path.name}' does not match '<slug>.md'.",
-                    )
-                )
+            _check_spec_filename(
+                findings, root, path, spec_id=str(spec_id) if spec_id else None
+            )
 
     if adrs:
         for path in _iter_markdown_files(root.decisions):

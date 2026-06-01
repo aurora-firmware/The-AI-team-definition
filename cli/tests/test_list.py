@@ -37,6 +37,7 @@ version: "{version}"
 status: {status}
 created: 2026-05-10
 author: planner
+id: "{id}"
 ---
 
 Body.
@@ -95,11 +96,12 @@ def _bug(id: str, title: str, severity: str, status: str) -> str:
     )
 
 
-def _spec(title: str, version: str, status: str) -> str:
+def _spec(title: str, version: str, status: str, spec_id: str = "S-001") -> str:
     return SPEC_TEMPLATE.format(
         title=title,
         version=version,
         status=status,
+        id=spec_id,
     )
 
 
@@ -288,14 +290,15 @@ def test_list_specs_and_adrs_include_expected_columns_and_fields(monkeypatch, tm
     assert "Title" in specs_table.output
     assert "Status" in specs_table.output
     assert "Version" in specs_table.output
-    assert "ai-team-cli" in specs_table.output
+    assert "S-001" in specs_table.output
+    assert "CLI Spec" in specs_table.output
     assert "Template spec" not in specs_table.output
 
     specs_json = CliRunner().invoke(app, ["list", "specs", "--json"])
     assert specs_json.exit_code == 0
     assert json.loads(specs_json.output) == [
         {
-            "id": "ai-team-cli",
+            "id": "S-001",
             "title": "CLI Spec",
             "status": "approved",
             "version": "0.1",
@@ -393,3 +396,30 @@ def test_list_change_requests_returns_empty_list_when_no_change_requests_exist(
 
     assert result.exit_code == 0
     assert json.loads(result.output) == []
+
+
+def test_list_specs_reports_frontmatter_id_not_filename_stem_for_prefixed_filenames(
+    monkeypatch, tmp_path
+):
+    """`list specs` ID column shows frontmatter id, not the filename stem."""
+    from ai_team.cli import app
+
+    # New-style filename: S-NNN-slug.md — stem is "S-007-my-spec", frontmatter id is "S-007"
+    _write(
+        tmp_path / "project" / "specs" / "S-007-my-spec.md",
+        _spec("My Spec", "1.0", "approved", spec_id="S-007"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["list", "specs", "--json"])
+
+    assert result.exit_code == 0
+    parsed = json.loads(result.output)
+    assert parsed == [
+        {
+            "id": "S-007",
+            "title": "My Spec",
+            "status": "approved",
+            "version": "1.0",
+        }
+    ]

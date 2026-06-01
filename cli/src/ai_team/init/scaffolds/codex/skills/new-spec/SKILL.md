@@ -35,7 +35,7 @@ When invoked directly by a human and required fields are missing, ask only for t
 
 3. Execute the command and parse the JSON response to capture:
    - `id` (for example, `S-003`)
-   - `path` (absolute path to the created file)
+   - `path` (absolute path to the created file, named `S-NNN-<slug>.md`)
 
 4. Open the created spec file and fill its body sections from the supplied `description`, using the **content-boundary rule** and the **section recipes** below. Leave any section that still needs exploration marked `[TODO]`.
 

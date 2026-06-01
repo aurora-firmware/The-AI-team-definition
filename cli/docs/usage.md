@@ -207,7 +207,7 @@ ai-team list bugs --state open
 ### Create a spec or ADR
 
 ```bash
-# New specification (lands in project/specs/)
+# New specification (lands in project/specs/ as S-NNN-<slug>.md)
 ai-team spec new "Billing reconciliation" --author "planner" --status draft
 
 # New Architecture Decision Record (lands in project/decisions/)
@@ -354,9 +354,11 @@ change this key if your project uses a different folder name than `project`.
       YYYY-MM/                ← old completed/resolved artifacts (ai-team archive)
 ```
 
-Artifact IDs follow the patterns `T-NNN` (tasks), `B-NNN` (bugs), `S-NNN`
-(specs), and `ADR-NNN` (ADRs). The CLI allocates the next sequential ID by
-scanning all state folders for a given artifact type.
+Artifact filenames follow the patterns `T-NNN-<slug>.md` (tasks),
+`B-NNN-<slug>.md` (bugs), `S-NNN-<slug>.md` (specs), and `ADR-NNN-<slug>.md`
+(ADRs). The CLI allocates the next sequential ID by scanning all state folders
+for a given artifact type. Legacy spec files without the `S-NNN-` prefix are
+also accepted by validation.
 
 ---
 
