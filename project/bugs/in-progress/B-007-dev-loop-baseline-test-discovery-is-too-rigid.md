@@ -116,6 +116,13 @@ Root cause or fault hypothesis:
 Planned verification:
 -->
 
+### Diagnosis 1 — 2026-06-03
+Reproduction status: Confirmed by inspecting the source-of-truth dev-loop skill and generated scaffold copies before changing production files.
+Evidence captured: `cli/src/ai_team/init/sources/skills/dev-loop/body.md` says to discover and run the baseline test command "ONLY from the root `CLAUDE.md` `## Test` section", forbids fallback to project docs, README, or build configs, and reports missing or ambiguous cases with `BLOCKED: root CLAUDE.md ...` messages. The same text is present in `cli/src/ai_team/init/scaffolds/claude/skills/dev-loop/SKILL.md` and `cli/src/ai_team/init/scaffolds/codex/skills/dev-loop/SKILL.md`. Current scaffold tests assert the rigid behavior through phrases such as `ONLY from the root `CLAUDE.md``, exact fenced-code-block conditions, and `BLOCKED: root CLAUDE.md`.
+Isolated fault: The dev-loop skill's Step 2 baseline guard is written as a single-file root `CLAUDE.md` parser with no fallback to other clear project guidance and no user clarification path when no automated baseline command is documented.
+Root cause or fault hypothesis: Task T-051 encoded deterministic command discovery as an exact root-CLAUDE contract, but the broader workflow intent is to confirm a green baseline using project-specific guidance and to ask the human when no clear command exists.
+Planned verification: Update the source dev-loop skill and generated scaffold copies to require flexible project test discovery, user clarification for missing or unavailable automated tests, and preservation of the startup baseline guard. Update scaffold tests so they reject the old rigid phrases and require the new behavior. Regenerate scaffolds with the sync script, then run `tests/test_init_scaffolds.py`, ruff format/check, and an `rg` verification showing the old rigid control phrases are absent.
+
 ## Work Log
 
 <!-- Mandatory. Append one entry per session boundary. Format:
