@@ -163,3 +163,8 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-06-03
+PASS
+
+Diagnosis records reproduction status, command evidence, isolated missing scaffold sources, and the root cause. The fix addresses the isolated cause by adding the missing `change-requests` project leaf, package-owned `change-request` skill source, Planner skill/scope references, and regenerated Claude/Codex scaffolds. Regression tests cover fresh init output and source/generated scaffold presence, and focused pytest plus ruff checks passed. Manual fresh-init verification confirmed `ai-team change-request new "Test request"` now creates the change-request artifact without a missing-directory crash.
