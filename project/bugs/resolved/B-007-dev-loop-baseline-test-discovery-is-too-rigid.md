@@ -2,7 +2,7 @@
 id: B-007
 title: Dev-loop baseline test discovery is too rigid
 severity: medium
-status: in-progress
+status: resolved
 created: '2026-06-03'
 ---
 
