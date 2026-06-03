@@ -133,6 +133,13 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-03
+Implemented the dev-loop baseline discovery fix on `bug/B-007-dev-loop-baseline-test-discovery-is-too-rigid`. Replaced the root-`CLAUDE.md`-only startup guard in the source dev-loop skill with flexible project guidance discovery: root guidance files, referenced project docs, common project documentation/configuration, then the smallest explicitly documented automated baseline command. The new behavior asks the human for the intended command when no automated baseline command is documented or when multiple plausible commands are present, and it can continue only after explicit confirmation that no automated baseline test exists.
+
+Updated generated Claude and Codex scaffold copies with `UV_CACHE_DIR=/tmp/uv-cache uv run python scripts/sync_init_scaffolds.py`. Updated `cli/tests/test_init_scaffolds.py` to require the flexible discovery order, missing/ambiguous clarification messages, explicit no-automated-test confirmation handling, and absence of the old rigid control phrases. Because this changes framework behavior, also updated `ai-process/processes/workflow-overview.md`, `ai-process/processes/quality-gates.md`, and `guides/setup-guide.md` so the owning process/setup docs match the new baseline guard contract.
+
+Verification passed with `UV_CACHE_DIR=/tmp/uv-cache uv run --group dev python -m pytest tests/test_init_scaffolds.py` (24 passed), `UV_CACHE_DIR=/tmp/uv-cache uv run --group dev python -m ruff format --check .`, and `UV_CACHE_DIR=/tmp/uv-cache uv run --group dev python -m ruff check .`. The required `rg -n 'ONLY from the root `CLAUDE.md`|exactly one fenced command block|BLOCKED: root CLAUDE.md' ...` check against the three dev-loop skill files returned no matches; exit code 1 was expected for no matches. No implementation work remains for B-007.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
