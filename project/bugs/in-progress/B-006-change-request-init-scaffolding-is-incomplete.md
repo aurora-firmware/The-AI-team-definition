@@ -143,6 +143,15 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-03
+Implemented the init-scaffolding fix on `bug/B-006-change-request-init-scaffolding-is-incomplete`. Added regression coverage requiring fresh Codex init output to include `.codex/skills/change-request/SKILL.md` and `project/change-requests/.gitkeep`, requiring the sync script's generated project skeleton to include `change-requests/.gitkeep`, and requiring source/generated change-request skill files for both tools.
+
+Updated the source of truth by adding `change-requests` to `cli/scripts/sync_init_scaffolds.py`, adding `cli/src/ai_team/init/sources/skills/change-request/`, and listing the new skill plus `project/change-requests/` write scope in Planner sources. Regenerated scaffolds with `UV_CACHE_DIR=/tmp/uv-cache uv run python scripts/sync_init_scaffolds.py`, which created the generated Claude/Codex skill files and project `.gitkeep`.
+
+Verification passed with `UV_CACHE_DIR=/tmp/uv-cache uv run --group dev python -m pytest tests/test_init.py::test_init_tools_codex_scaffolds_codex_agents_and_skills tests/test_init_scaffolds.py::test_sync_script_replaces_project_with_empty_lifecycle_skeleton tests/test_init_scaffolds.py::test_init_scaffolds_export_change_request_skill_and_project_directory tests/test_change_request_new.py` (7 passed), `UV_CACHE_DIR=/tmp/uv-cache uv run --group dev python -m ruff format --check .`, and `UV_CACHE_DIR=/tmp/uv-cache uv run --group dev python -m ruff check .`. Manual verification also passed: a fresh `/tmp/ait-b006-fixed` Codex init contained `project/change-requests/` and `.codex/skills/change-request/SKILL.md`, and `ai-team change-request new "Test request"` created `/tmp/ait-b006-fixed/project/change-requests/CR-001-test-request.md`.
+
+One environment issue was worked around: the `pytest` console script shim points at a stale interpreter path, so verification used `python -m pytest`. No implementation work remains for B-006.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
