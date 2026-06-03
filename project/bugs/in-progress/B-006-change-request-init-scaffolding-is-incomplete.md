@@ -126,6 +126,13 @@ Root cause or fault hypothesis:
 Planned verification:
 -->
 
+### Diagnosis 1 — 2026-06-03
+Reproduction status: Confirmed locally on `bug/B-006-change-request-init-scaffolding-is-incomplete` before changing production code.
+Evidence captured: `UV_CACHE_DIR=/tmp/uv-cache uv run ai-team init /tmp/ait-b006-repro --tools codex --no-interactive --force` completed, but `test -d /tmp/ait-b006-repro/project/change-requests` returned `1` and `test -f /tmp/ait-b006-repro/.codex/skills/change-request/SKILL.md` returned `1`. Running `UV_CACHE_DIR=/tmp/uv-cache uv run --project /home/daneel/projects/the-ai-team-definition/cli ai-team change-request new "Test request"` from `/tmp/ait-b006-repro` failed with `FileNotFoundError: [Errno 2] No such file or directory: '/tmp/ait-b006-repro/project/change-requests/CR-001-test-request.md.tmp~'`. A focused pytest attempt, `UV_CACHE_DIR=/tmp/uv-cache uv run pytest tests/test_init.py::test_init_tools_codex_scaffolds_codex_agents_and_skills tests/test_change_request_new.py`, could not run because the current uv environment has no `pytest` executable.
+Isolated fault: `cli/scripts/sync_init_scaffolds.py` omits `change-requests` from `PROJECT_LEAF_DIRS`, so generated project scaffolds omit `project/change-requests/.gitkeep`. The package-owned skill source tree also lacks `cli/src/ai_team/init/sources/skills/change-request/`, so regenerated Claude and Codex scaffolds cannot include the change-request skill.
+Root cause or fault hypothesis: The 0.6.0 change-request CLI/template/model surfaces were added without updating the init scaffold source-of-truth to export the matching project artifact directory and Planner-facing skill.
+Planned verification: Add regression coverage for the generated project skeleton and exported skills, add the missing source-of-truth entries, regenerate scaffolds with `python scripts/sync_init_scaffolds.py`, then run the bug's focused pytest/ruff verification and manually confirm fresh init includes `project/change-requests/`, includes `.codex/skills/change-request/SKILL.md`, and allows `ai-team change-request new "Test request"` to create a file.
+
 ## Work Log
 
 <!-- Mandatory. Append one entry per session boundary. Format:
