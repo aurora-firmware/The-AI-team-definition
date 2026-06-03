@@ -2,7 +2,7 @@
 id: B-006
 title: Change-request init scaffolding is incomplete
 severity: high
-status: open
+status: in-progress
 created: '2026-06-03'
 ---
 
