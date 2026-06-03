@@ -239,6 +239,7 @@ def test_sync_script_replaces_project_with_empty_lifecycle_skeleton(
         Path("bugs/open/.gitkeep"),
         Path("bugs/in-progress/.gitkeep"),
         Path("bugs/resolved/.gitkeep"),
+        Path("change-requests/.gitkeep"),
         Path("decisions/.gitkeep"),
         Path("docs/.gitkeep"),
         Path("CLAUDE.md"),
@@ -316,6 +317,33 @@ def test_package_owned_skill_sources_include_body_and_required_metadata() -> Non
 
         assert body == scaffold_body
         assert metadata["claude"]["header"].strip() == scaffold_header.strip()
+
+
+def test_init_scaffolds_export_change_request_skill_and_project_directory() -> None:
+    """Fresh init scaffolds include change-request workflow surfaces."""
+    repo_root = Path(__file__).resolve().parents[1]
+    source_skill = (
+        repo_root / "src" / "ai_team" / "init" / "sources" / "skills" / "change-request"
+    )
+    scaffold_project = repo_root / "src" / "ai_team" / "init" / "scaffolds" / "project"
+
+    assert (source_skill / "body.md").is_file()
+    assert (source_skill / "metadata.toml").is_file()
+    assert (scaffold_project / "change-requests" / ".gitkeep").is_file()
+
+    for tool in ("claude", "codex"):
+        scaffold_skill = (
+            repo_root
+            / "src"
+            / "ai_team"
+            / "init"
+            / "scaffolds"
+            / tool
+            / "skills"
+            / "change-request"
+            / "SKILL.md"
+        )
+        assert scaffold_skill.is_file()
 
 
 def test_sync_script_generates_codex_agent_scaffolds_as_real_files_not_symlinks(

@@ -16,6 +16,7 @@ PROJECT_LEAF_DIRS = (
     "bugs/open",
     "bugs/in-progress",
     "bugs/resolved",
+    "change-requests",
     "decisions",
     "docs",
 )
