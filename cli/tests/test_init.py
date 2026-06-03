@@ -157,6 +157,8 @@ def test_init_tools_codex_scaffolds_codex_agents_and_skills(tmp_path):
     assert result.exit_code == 0
     assert (target / ".codex" / "agents" / "planner.toml").is_file()
     assert (target / ".codex" / "skills" / "tdd" / "SKILL.md").is_file()
+    assert (target / ".codex" / "skills" / "change-request" / "SKILL.md").is_file()
+    assert (target / "project" / "change-requests" / ".gitkeep").is_file()
     assert not (target / ".claude").exists()
     assert not (target / "ai-process").exists()
 

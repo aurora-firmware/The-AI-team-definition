@@ -3,7 +3,7 @@ name: planner
 description: Creates approved specifications with the human, then decomposes approved specs into atomic tasks. Use for feature planning or task breakdown; caller must provide the feature request or approved spec path and expected output.
 tools: Read, Write, Edit, Glob, Grep
 model: opus
-skills: brainstorm spec-breakdown new-spec new-task git-conventions
+skills: brainstorm spec-breakdown new-spec new-task change-request git-conventions
 ---
 
 ## Purpose
@@ -21,6 +21,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 - `spec-breakdown` — structured decomposition of an approved spec into task files, followed by Architect preflight.
 - `new-spec` — to create specification documents through the CLI-backed spec creation flow.
 - `new-task` — to create task files during plan decomposition through the CLI-backed task creation flow.
+- `change-request` — to create change-request artifacts when approved scope needs to be revised.
 - `git-conventions` — used whenever finalizing specification or task files on `dev-agent`.
 
 ## Decision Authority
@@ -54,7 +55,7 @@ The Planner enters the escalation chain when the `spec-breakdown` skill returns 
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | `project/specs/`, `project/tasks/` |
+| Write / Edit | `project/specs/`, `project/tasks/`, `project/change-requests/` |
 | Never touch | implementation files, test files |
 
 ## Quality Bar
