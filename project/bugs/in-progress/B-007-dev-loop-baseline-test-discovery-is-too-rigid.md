@@ -151,3 +151,8 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-06-03
+PASS
+
+Diagnosis records the reproduced source/scaffold text, isolated root-only baseline guard, and root cause. The fix addresses the isolated cause by replacing the rigid root-`CLAUDE.md` parser contract with flexible project-guidance discovery, human clarification for missing or ambiguous baseline commands, and explicit no-automated-test confirmation handling. The generated Claude/Codex scaffolds match the source, the owning process/setup docs were updated for the framework contract change, and regression tests assert both the new behavior and absence of the old control phrases. Verification passed with focused scaffold tests, ruff format/check, ruff lint, and the required no-match `rg` check.
