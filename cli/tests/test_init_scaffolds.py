@@ -652,11 +652,14 @@ def test_dev_loop_uses_cli_task_state_filter_for_queue_discovery() -> None:
 
 
 def test_dev_loop_discovers_baseline_test_command_before_claiming_task() -> None:
-    """AC-2: Loop reads the baseline test command from project guidance before claiming."""
+    """AC-2: Loop reads project guidance before claiming a task."""
     source, claude, codex = _dev_loop_skill_texts()
     required_phrases = (
         "baseline test command",
+        "project-specific guidance",
         "CLAUDE.md",
+        "AGENTS.md",
+        "project/docs/coding_guidelines.md",
     )
 
     for phrase in required_phrases:
@@ -676,14 +679,15 @@ def test_dev_loop_allows_loop_to_continue_when_baseline_tests_pass() -> None:
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
 
 
-def test_dev_loop_escalates_when_baseline_test_command_missing_or_ambiguous() -> None:
-    """AC-4 / F-3: Loop escalates with specific stop messages for missing AND ambiguous cases."""
+def test_dev_loop_asks_user_when_baseline_test_command_missing_or_ambiguous() -> None:
+    """AC-4 / F-3: Loop asks for clarification on missing or ambiguous commands."""
     source, claude, codex = _dev_loop_skill_texts()
     required_phrases = (
-        "BLOCKED: root CLAUDE.md is missing a runnable command in the ## Test section."
-        " Add a fenced command block before re-running the loop.",
-        "BLOCKED: root CLAUDE.md ## Test section is ambiguous (placeholder or multiple commands)."
-        " Replace it with exactly one fenced command block before re-running the loop.",
+        "ask the human for one of these before claiming a task",
+        "BLOCKED: no automated baseline test command is documented."
+        " Provide the command to run, or confirm that this project has no automated baseline test.",
+        "BLOCKED: multiple plausible baseline test commands are documented."
+        " Confirm which command the loop should run before claiming tasks.",
     )
 
     for phrase in required_phrases:
@@ -692,13 +696,14 @@ def test_dev_loop_escalates_when_baseline_test_command_missing_or_ambiguous() ->
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
 
 
-def test_dev_loop_baseline_guard_enumerates_missing_conditions() -> None:
-    """F-1: Step 2 enumerates exact decidable conditions for 'missing'."""
+def test_dev_loop_baseline_guard_defines_flexible_discovery_order() -> None:
+    """F-1: Step 2 defines a flexible project guidance discovery order."""
     source, claude, codex = _dev_loop_skill_texts()
     required_phrases = (
-        "Root `CLAUDE.md` does not exist",
-        "Root `CLAUDE.md` exists but has no `## Test` heading",
-        "The `## Test` section exists but its body contains no fenced code block",
+        "Read root project guidance files that exist",
+        "Read any project-local docs referenced by those files",
+        "Read common project documentation or configuration files",
+        "Prefer an explicitly documented test command",
     )
 
     for phrase in required_phrases:
@@ -707,12 +712,13 @@ def test_dev_loop_baseline_guard_enumerates_missing_conditions() -> None:
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
 
 
-def test_dev_loop_baseline_guard_enumerates_ambiguous_conditions() -> None:
-    """F-1: Step 2 enumerates exact decidable conditions for 'ambiguous'."""
+def test_dev_loop_baseline_guard_handles_projects_without_automated_tests() -> None:
+    """F-1: Step 2 can proceed with explicit no-automated-test confirmation."""
     source, claude, codex = _dev_loop_skill_texts()
     required_phrases = (
-        "The `## Test` section's fenced block still matches the T-050 placeholder",
-        "The `## Test` section contains more than one fenced code block",
+        "If the human confirms that no automated baseline test is available",
+        "record that confirmation in the loop summary",
+        "continue to Step 3 without running a baseline command",
     )
 
     for phrase in required_phrases:
@@ -721,15 +727,19 @@ def test_dev_loop_baseline_guard_enumerates_ambiguous_conditions() -> None:
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
 
 
-def test_dev_loop_baseline_guard_reads_only_from_root_claude_md() -> None:
-    """F-2: Step 2 documents no-fallback policy — reads ONLY from root CLAUDE.md ## Test."""
+def test_dev_loop_baseline_guard_does_not_restore_rigid_root_claude_policy() -> None:
+    """F-2: Step 2 must not restore the rigid root-CLAUDE-only policy."""
     source, claude, codex = _dev_loop_skill_texts()
-    required_phrases = ("ONLY from the root `CLAUDE.md`",)
+    forbidden_phrases = (
+        "ONLY from the root `CLAUDE.md`",
+        "exactly one fenced command block",
+        "BLOCKED: root CLAUDE.md",
+    )
 
-    for phrase in required_phrases:
-        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
-        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
-        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+    for phrase in forbidden_phrases:
+        assert phrase not in source, f"dev-loop body.md must not include: {phrase!r}"
+        assert phrase not in claude, f"Claude scaffold must not include: {phrase!r}"
+        assert phrase not in codex, f"Codex scaffold must not include: {phrase!r}"
 
 
 def test_dev_loop_baseline_guard_runs_once_at_startup_only() -> None:
