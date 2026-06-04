@@ -7,6 +7,10 @@ effort: high
 
 # Write Plan
 
+**Ownership boundary:** spec-breakdown owns plan coverage (the full set of tasks covers the entire spec), dependency ordering between tasks, and task boundary decisions (splitting or merging units of work).
+Per-task shape rules are owned by the `new-task` skill.
+Gate 2 technical readiness is owned by the `spec-breakdown-review` skill.
+
 ## Input Requirements
 
 - **Approved specification** — the spec that passed Gate 1 (Spec Approval).
@@ -36,7 +40,7 @@ The `new-task` skill handles template loading, ID assignment, filename, and fron
 Then fill in the task body so it satisfies:
 - **Title**: Clear, descriptive, starts with a verb (Implement, Add, Create, Fix).
 - **Description**: Enough context to start without asking questions.
-- **Acceptance criteria**: Author every criterion using one of the five EARS patterns documented in the `new-task` skill (Ubiquitous, Event-driven, Unwanted-behaviour, State-driven, Optional).
+- **Acceptance criteria**: Author every criterion using one of the five EARS patterns documented in the task template (`cli/src/ai_team/templates/task.md`) (Ubiquitous, Event-driven, Unwanted-behaviour, State-driven, Optional).
 - **Dependencies**: List of task IDs that must complete first.
 - **Files to touch**: Exact file paths that will be created or modified.
 - **Verification command**: Shell command that proves the task is done.

@@ -2,6 +2,10 @@
 
 Create a new task.
 
+**Ownership boundary:** new-task owns per-task shape — every field of a single task file: title, description, acceptance criteria, verification, and task quality rules.
+Plan-level rules (coverage, dependency ordering, file conflicts across tasks) are owned by the `spec-breakdown` skill.
+Gate 2 technical readiness review is owned by the `spec-breakdown-review` skill.
+
 ## Input Requirements
 
 Provide these values directly when possible:

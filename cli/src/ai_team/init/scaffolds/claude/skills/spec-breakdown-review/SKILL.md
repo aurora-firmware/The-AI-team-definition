@@ -7,6 +7,10 @@ effort: high
 
 # Gate 2 Preflight
 
+**Ownership boundary:** spec-breakdown-review owns Gate 2 technical readiness — it validates whether a task plan is safe to hand to `/dev-loop`.
+Plan content (coverage decisions, splitting, EARS-pattern authoring in the task template at `cli/src/ai_team/templates/task.md`) is owned by `spec-breakdown` and `new-task`.
+The result of this skill is a Findings block; the architect role envelope wraps it in its standard output format — do not duplicate `Result:` or `Summary:` fields here.
+
 ## Input Requirements
 
 - **Approved specification** — the spec that passed Gate 1.
@@ -24,19 +28,25 @@ Read the approved specification and all task files for the plan under review.
 Read existing decision records in `project/decisions/`.
 Identify each task's dependencies, files to touch, acceptance criteria, and verification command.
 
-### Step 2: Check Dependency Correctness
+### Step 2: Check Spec Coverage
+
+Verify spec coverage: confirm that the full set of pending tasks covers the entire approved specification with no features, sections, or behaviors left unaddressed.
+If any part of the spec is not covered by at least one task, flag the gap.
+Do not pass Gate 2 if the plan leaves spec sections unimplemented without explicit justification.
+
+### Step 3: Check Dependency Correctness
 
 Verify that every declared dependency refers to a real task.
 Check for missing dependencies where one task reads, modifies, or relies on files or behavior created by another task.
 Flag circular dependencies.
 
-### Step 3: Check File Conflict Risk
+### Step 4: Check File Conflict Risk
 
 Identify tasks that create or modify the same file.
 If overlapping edits are intentional, ensure a dependency orders them.
 If no dependency exists, add the dependency directly when the correction is obvious; otherwise request Planner revision.
 
-### Step 4: Check Architectural Consistency
+### Step 5: Check Architectural Consistency
 
 Compare the task plan against existing ADRs and architecture docs.
 If a task contradicts an existing decision or requires changing an approved specification, do not pass Gate 2.
@@ -48,7 +58,7 @@ When invoking `new-adr`, provide the full required input set:
 - `status`: `accepted` — the Architect is adopting the decision now as part of approving the task plan
 Escalate to human through the Planner when the approved spec must change.
 
-### Step 5: Check Atomicity And Verification
+### Step 6: Check Atomicity And Verification
 
 Confirm each task is independently implementable and verifiable.
 Flag tasks that exceed the one-shottable threshold:
@@ -58,7 +68,7 @@ Flag tasks that exceed the one-shottable threshold:
 - Description too large or ambiguous for one implementation session.
 - No clear verification command.
 
-### Step 6: Produce Verdict
+### Step 7: Produce Verdict
 
 If the plan passes, state that Gate 2 passes and the pending queue is ready for `/dev-loop`.
 
@@ -71,7 +81,10 @@ If the plan fails:
 
 ## Output Format
 
-Use this structure — matches the Architect agent's standard `Result:` vocabulary:
+The architect role envelope wraps the Findings block produced here.
+There are no duplicated Result/Summary fields in this output — do not add a top-level `Result:` or `Summary:` outside this block; those fields belong to the architect envelope and must not be repeated here.
+
+Use this structure for the Findings block — matches the Architect agent's standard `Result:` vocabulary:
 
 ```text
 Result: PASS | FAIL | BLOCKED | ESCALATE
