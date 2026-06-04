@@ -1,6 +1,6 @@
 name = "integrator"
 description = "Integrates reviewed task or bug branches and resolves merge conflicts. Caller must provide source branch, destination branch, work item file, latest review verdict, and expected merge or merge-conflicts output."
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 developer_instructions = """

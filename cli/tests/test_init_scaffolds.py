@@ -470,6 +470,39 @@ def test_package_owned_agent_sources_cover_each_exported_role_for_both_tools() -
         )
 
 
+def test_package_owned_codex_agents_use_supported_role_model_defaults() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    sources_root = (
+        repo_root / "src" / "ai_team" / "init" / "sources" / "agents" / "codex"
+    )
+    scaffold_root = (
+        repo_root / "src" / "ai_team" / "init" / "scaffolds" / "codex" / "agents"
+    )
+    expected_models = {
+        "architect": "gpt-5.5",
+        "planner": "gpt-5.5",
+        "developer": "gpt-5.4",
+        "reviewer": "gpt-5.4",
+        "integrator": "gpt-5.4",
+    }
+
+    for role_name, expected_model in expected_models.items():
+        source_data = tomllib.loads(
+            (sources_root / f"{role_name}.toml").read_text(encoding="utf-8")
+        )
+        scaffold_data = tomllib.loads(
+            (scaffold_root / f"{role_name}.toml").read_text(encoding="utf-8")
+        )
+
+        assert source_data["model"] == expected_model
+        assert scaffold_data["model"] == expected_model
+        assert source_data["model"] != "gpt-5.3-codex"
+        assert scaffold_data["model"] != "gpt-5.3-codex"
+        assert source_data["model_reasoning_effort"] == "high"
+        assert scaffold_data["model_reasoning_effort"] == "high"
+        assert scaffold_data == source_data
+
+
 def _spec_breakdown_skill_texts() -> tuple[str, str, str]:
     repo_root = Path(__file__).resolve().parents[1]
     source = (
