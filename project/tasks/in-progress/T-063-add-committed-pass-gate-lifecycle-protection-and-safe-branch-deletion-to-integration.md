@@ -63,6 +63,30 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-04
+
+Implemented all four acceptance criteria for T-063 in a single TDD cycle.
+
+**What was done:**
+
+For AC-1, inserted a new "Step 2b" in `integrate/body.md` that requires the Integrator to read the canonical work item's `## Review` section on `dev-agent`, extract the most recent Review Verdict, and stop with a clear error if the committed verdict is not PASS (or missing). The step is positioned after reading the work item file (Step 2) and before checking out the source branch (Step 3), so the verdict check happens entirely on `dev-agent` before any branch checkout.
+
+For AC-2, verified the existing lifecycle-file guard in Step 3 (line 67 of the original source) was already present and intentionally not touched, as required.
+
+For AC-3, replaced the `git branch -D` forced-delete fallback block in Step 7 with stop-and-report language. The instruction now says "Forced deletion is forbidden — do not escalate to the `-D` flag" and tells the Integrator to report the error and instruct the human to delete the branch manually. The literal string `branch -D` was carefully avoided in the instruction text to satisfy the negative grep verification command.
+
+For AC-4, added an explicit pre-integration precondition paragraph to the "On PASS" handler in both `dev-loop/body.md` and `bug-loop/body.md`. Both paragraphs name the specific committed artifacts that must exist on `dev-agent` (Work Log, Review Verdict, and in bug-loop's case, also the Diagnosis Log) before `integrate` is invoked, and they cross-reference the fact that `integrate` will verify the committed PASS verdict.
+
+Scaffolds were regenerated with `python3 cli/scripts/sync_init_scaffolds.py` after each source edit, as required by CLAUDE.md. Lint was clean after `ruff format` auto-formatted the new test file.
+
+**What was tried and rejected:**
+
+An initial attempt to phrase the AC-3 prohibition as "Do not use `git branch -D`" was rejected because it leaves the literal pattern `branch -D` in the body, which the task's negative grep verification would reject. Rewrote as "do not escalate to the `-D` flag" to express the same constraint without the forbidden string.
+
+**What remains:**
+
+Nothing. All 4 ACs have passing tests, the three task verification commands pass, and the full test suite (334 tests) is green.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
