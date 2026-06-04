@@ -56,60 +56,10 @@ The Reviewer enters the escalation chain when the `code-review` skill returns `E
 - The reviewer checks the task's acceptance criteria, not personal preferences.
 - For bug fixes, the reviewer checks the Diagnosis Log, root-cause alignment, regression test or manual-verification rationale, and Fix Verification evidence.
 
-### Review Checklist
+### Review Quality Bar
 
-The two-stage review applies this checklist. Stage 1 covers spec compliance; Stage 2 covers code quality. The Bug Fix Addendum applies when reviewing bug fixes.
-
-**Stage 1 — Spec compliance**
-- All acceptance criteria from the task are met.
-- No functionality is missing compared to what the task specifies.
-- No unspecified behavior or features were added.
-- Any exclusions or file-scope constraints stated in the task are respected.
-- Any file created or modified outside the task's stated scope is explicitly justified in the Work Log — otherwise this is a **Fail**.
-
-**Stage 2 — Code quality**
-
-*Correctness*
-- Logic is correct for all expected inputs (including edge cases).
-- Error handling covers failure modes described in the spec.
-- No off-by-one errors, null reference issues, or unhandled states.
-
-*Tests*
-- Tests exist for the new or modified code.
-- Tests cover both success and failure paths.
-- Tests are independent (no shared mutable state).
-- The Work Log records local test evidence or explains why a local test run was not possible. Authoritative pre-merge and post-merge test execution happens at the integration gate.
-
-*Security*
-- No hardcoded credentials or secrets.
-- External input is validated before use.
-- Database queries use parameterized statements.
-- No new permissions or access beyond what is needed.
-
-*Readability*
-- Names are descriptive and follow project conventions.
-- Functions are focused (one responsibility each).
-- Comments explain *why*, not *what* (no redundant comments).
-- No dead code, commented-out blocks, or debugging artifacts.
-
-*Performance*
-- No unnecessary loops over large data sets.
-- No blocking operations in hot paths without justification.
-- No obvious memory leaks or resource leaks.
-
-**Bug Fix Addendum** — when reviewing a bug fix, also check:
-- The bug file contains a Diagnosis Log entry before the fix Work Log entry.
-- Reproduction status is explicit: confirmed, intermittent, or not yet reproduced.
-- Relevant logs, stack traces, failing assertions, or command output are recorded or summarized.
-- The isolated fault and root cause or fault hypothesis are documented.
-- The fix is scoped to the isolated cause and does not add unrelated behavior.
-- A regression test covers the defect when practical; if not, the Work Log explains why.
-- The Fix Verification steps were run, or the Work Log explains why they could not be run.
-
-**Verdict mapping**
-- **Pass** — every applicable check is satisfied.
-- **Fail** — one or more checks are not satisfied. Return to the Developer with specific, actionable notes for each failed check.
-- **Escalate** — use only when the code has a fundamental design issue that no amount of Developer fixes can address within the approved specification.
+The `code-review` skill owns the canonical two-stage checklist, including task acceptance or bug criteria, code quality, bug-fix evidence checks, and verdict mapping.
+The Reviewer applies that checklist through the skill and records only the resulting verdict and actionable findings in the canonical task or bug file.
 
 ## Output Format
 
@@ -140,8 +90,8 @@ Next Action:
 When `Result` is `ESCALATE`, append an Escalation Request block after the fields above:
 
 ```text
-Problem: [what went wrong]
-Attempted: [what was reviewed and what feedback cycles occurred]
-Failed because: [why ordinary Developer fixes cannot resolve it]
-Question: [specific decision or guidance needed]
+Problem: [the criterion that will not pass, or the boundary that was violated]
+Attempted: [implementations tried on retry, or why the boundary cannot be honoured as written]
+Failed because: [the specific reason — test output, scope mismatch, contradictory requirement]
+Question: [specific guidance needed to continue within the approved specification]
 ```
