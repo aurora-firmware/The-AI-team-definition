@@ -2,7 +2,7 @@
 name: bug-loop
 description: Fully autonomous bug-fix loop. Picks open bugs one at a time, creates a dedicated branch from the correct base, drives each through diagnosis-first Developer → Reviewer cycles until the reviewer passes, then moves to the next bug. Stops only when the queue is empty or a bug cannot be resolved after full escalation. Use this whenever there are open bugs to fix.
 argument-hint: "[bug-id ...] — optional space-separated bug IDs (e.g., B-001 B-003). If omitted, processes all open bugs."
-allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate), Skill(git-conventions)
+allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate), Skill(git-conventions), Skill(status-report)
 disable-model-invocation: true
 ---
 
@@ -176,7 +176,12 @@ If the Architect cannot resolve it, proceed to Phase 2.
 
 ### Step 8: Loop Complete
 
-When the queue is fully drained (Step 1 finds no open bugs), report a summary:
+When the queue is fully drained (Step 1 finds no open bugs), invoke `Skill(status-report)` to
+produce the canonical Gate 5 summary. The status-report skill runs `ai-team status`, scans project
+state directories, and writes the full progress report — that output is the authoritative end-of-run
+status.
+
+After the status-report output, append the following loop-specific run details as supplemental context:
 - Bugs resolved and merged this run (list with bug IDs and merge commits)
 - Any escalated bugs still in `in-progress/`
 - Any integration failures that stopped the loop mid-run
