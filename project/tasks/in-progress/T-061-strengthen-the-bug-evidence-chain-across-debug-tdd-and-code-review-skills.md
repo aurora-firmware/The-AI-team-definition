@@ -68,6 +68,30 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-04
+
+Implemented T-061 in a single TDD session covering all five acceptance criteria.
+
+Started by reading the task file and the Work Log (empty, first session). Read the current bodies of all four target skill files (debug, tdd, code-review, new-bug) to understand the starting state.
+
+Wrote a single test file (`cli/tests/test_bug_evidence_chain.py`) with 23 tests covering AC-1 through AC-5 before touching any source file. Confirmed 13 tests failed (the ones testing for new content) and 10 already passed (testing for phrases already present in the current bodies).
+
+**Implementation decisions:**
+
+- **debug (AC-1):** Removed Steps 6 and 7 (fix and verify) entirely, replacing them with a clear diagnosis-only declaration at the top of the file. Step 5 was rewritten as a "Diagnosis Handoff (Fix Contract)" section that explicitly names the five fields: reproduction status, evidence captured, isolated fault, planned fix, and planned verification. The body now ends at Step 5 with "Stop here. Do not change production code in this skill."
+
+- **tdd (AC-2):** Extended Step 0 to require verifying the fix contract is complete before proceeding, and updated the Step 1 note on bug fixes to explicitly reference using the fix contract as the implementation target. This was the minimal change; the existing "If no Diagnosis Log exists, stop" language was preserved and extended rather than rewritten.
+
+- **code-review (AC-3 + AC-4):** Added an explicit evidence chain verification gate at the end of Step 1 (before Stage 1), with a direct instruction to return FAIL and not infer intent from the diff when the chain is missing. The Stage 2 checklist and Bug Fix Addendum were inlined as canonical content in the body (previously they deferred to "the Reviewer role's quality bar"), satisfying AC-4. The "two-stage checklist" phrase was added to the intro paragraph.
+
+- **new-bug (AC-5):** Added a "For integration-filed regression bugs" block to the Input Requirements section, listing source_branch, expected, actual, evidence, and fix_verification as required fields. Added a Step 6 to the Procedure to populate those fields after creating the bug file.
+
+Ran `python3 cli/scripts/sync_init_scaffolds.py` to regenerate all eight scaffolds (claude + codex for each skill). All 315 tests pass. All four task verification greps return matches. Ruff format and lint clean.
+
+No files were touched outside the four source bodies, their generated scaffolds, and the new test file. All within the task's `Files to Touch` scope.
+
+Nothing remains for the next session; the task is complete.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
