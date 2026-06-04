@@ -98,3 +98,25 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-06-04
+
+PASS
+
+Both Stage 1 (spec compliance) and Stage 2 (code quality) passed.
+
+**Stage 1 — Acceptance Criteria**
+
+- AC-1: integrate/body.md gains Step 2b at line 46, requiring the integrator to read the `## Review` section on `dev-agent`, extract the latest verdict, and stop if it is not PASS. The task verification grep (`grep -niE "committed.*(pass|verdict)"`) returns five matching lines. Both claude and codex scaffolds carry the same language. Met.
+- AC-2: The lifecycle-file guard (Step 3, line 67) was intentionally left untouched. `grep -niE "lifecycle"` returns matches at lines 25, 67, 226, 234, 241, and 251. Met.
+- AC-3: `! grep -nE "branch -D"` returns no matches in the source or in either scaffold. The stop-and-report block in Step 7 instructs the integrator that "Forced deletion is forbidden — do not escalate to the `-D` flag" and to ask the human to delete manually. Met.
+- AC-4: dev-loop/body.md has the "On PASS" precondition paragraph at line 131–133 requiring committed Work Log and Review Verdict before calling integrate. bug-loop/body.md has an equivalent paragraph at line 123–125 also requiring the committed Diagnosis Log. Met.
+
+**Stage 2 — Code Quality**
+
+- Correctness: Step 2b is positioned between Step 2 (read work item on dev-agent) and Step 3 (check out source branch), which is the correct gate point. The stop condition covers both missing verdict and non-PASS verdict.
+- Tests: `cli/tests/test_t063_integration_guards.py` covers all four ACs across source and both scaffolds (claude, codex). Tests cover both positive (content present) and negative (`branch -D` absent) paths. All 334 tests pass (`uv run pytest` from `cli/`).
+- Source-of-truth convention: sources edited first, scaffolds regenerated via `sync_init_scaffolds.py`, not hand-edited. Diff confirms only source bodies and their regenerated scaffolds changed, plus the new test file.
+- Files modified are exactly the three sources listed in "Files to Touch" plus their two scaffold copies and the test file. No out-of-scope files were modified.
+- No dead code, hardcoded secrets, or readability issues observed.
+- The task lifecycle file is correctly absent from the implementation branch (Work Log committed only on `dev-agent`).
