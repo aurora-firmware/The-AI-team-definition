@@ -1,7 +1,7 @@
 ---
 id: T-065
 title: Update Claude agent role files to the reviewed state in source
-status: pending
+status: completed
 priority: medium
 assigned-role: unassigned
 created: '2026-06-04'
