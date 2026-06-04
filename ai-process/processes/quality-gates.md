@@ -27,6 +27,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 **Evaluator:** Architect.
 **Scope:** Gate 2 focuses on **technical task-plan readiness**. The Architect evaluates dependencies, file conflicts, architectural consistency with existing decisions, atomicity, and verifiability. Gate 2 does not reopen product or spec approval questions that were already settled at Gate 1. If the Architect finds a product-scope concern that does not block technical readiness, it is noted as follow-up feedback rather than a Gate 2 failure. Only a contradiction against the approved spec or existing ADRs causes a Gate 2 failure or escalation.
 **Pass criteria:**
+- Task plan covers every requirement in the approved specification (spec-coverage verification).
 - Task dependencies are correct and complete.
 - File conflict risks are identified and resolved through dependencies or task changes.
 - Task plan is architecturally consistent with existing decisions.
@@ -57,6 +58,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 ### Bug Fix Criteria
 For bug fixes, the Reviewer also verifies:
+- The complete diagnosis→fix evidence chain is present: the committed Diagnosis Log entry (the fix contract) records reproduction status, captured evidence, isolated fault, and root cause or fault hypothesis; the fix addresses that isolated cause; and the Fix Verification steps from the bug report confirm the defect is resolved.
 - The Diagnosis Log records reproduction status, captured evidence, isolated fault, and root cause or fault hypothesis.
 - The fix targets the isolated cause rather than masking the symptom downstream.
 - A regression test exists when the defect can be tested automatically, or the Work Log explains why only manual verification is possible.
@@ -69,6 +71,7 @@ For bug fixes, the Reviewer also verifies:
 **When:** After each task or bug fix passes code review (Gate 3), during integration by the active loop.
 **Evaluator:** Automated test suite, run by the integration procedure.
 **Pass criteria:**
+- The latest committed canonical PASS verdict on `dev-agent` confirms the branch passed Gate 3 before the merge is attempted.
 - All unit tests pass on the source branch (pre-merge).
 - All unit and integration tests pass on the destination branch after the merge (regression check).
 - No unresolved merge conflicts remain.
