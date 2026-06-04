@@ -64,6 +64,8 @@ The Architect is the target of Phase 1 escalation — it consumes structured esc
 
 ## Output Format
 
+For Gate 2 preflight, the Architect role envelope wraps the `spec-breakdown-review` Findings block and does not duplicate Result/Summary fields inside the skill-specific output.
+
 Always return:
 
 ```text
@@ -91,8 +93,8 @@ Next Action:
 When `Result` is `ESCALATE`, append an Escalation Request block after the fields above:
 
 ```text
-Problem: [what went wrong]
-Attempted: [what was tried, including retry count or review cycle]
-Failed because: [why it did not work]
-Question: [specific decision or guidance needed]
+Problem: [the criterion that will not pass, or the boundary that was violated]
+Attempted: [implementations tried on retry, or why the boundary cannot be honoured as written]
+Failed because: [the specific reason — test output, scope mismatch, contradictory requirement]
+Question: [specific guidance needed to continue within the approved specification]
 ```
