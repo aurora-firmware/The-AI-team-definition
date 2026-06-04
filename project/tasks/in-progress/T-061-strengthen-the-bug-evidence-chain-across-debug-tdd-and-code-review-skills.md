@@ -103,3 +103,28 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-06-04
+
+PASS
+
+**Stage 1 — Spec compliance:** All five acceptance criteria are met.
+
+- AC-1: `debug/body.md` declares itself diagnosis-only in the opening paragraph, adds a Step 5 "Diagnosis Handoff (Fix Contract)" section requiring all five contract fields (reproduction status, evidence captured, isolated fault, planned fix, planned verification), and explicitly instructs the agent to stop before changing production code.
+- AC-2: `tdd/body.md` Step 0 now requires verifying the fix contract is complete before proceeding, and Step 1 instructs the agent to use the fix contract as the implementation target for bug fixes.
+- AC-3: `code-review/body.md` adds an evidence chain verification gate in Step 1, with an explicit FAIL return and "do not infer intent from the diff" instruction.
+- AC-4: `code-review/body.md` contains the canonical Stage 1, Stage 2, and Bug Fix Addendum checklists inline. The intro paragraph references "the two-stage checklist below" as the canonical quality bar.
+- AC-5: `new-bug/body.md` adds a regression bug block in Input Requirements (source_branch, expected, actual, evidence, fix_verification) and adds Step 6 to populate those fields.
+
+All four verification greps from the task return matches. No files outside the stated `Files to Touch` scope were modified (13 files total: 4 source bodies, 8 regenerated scaffolds, 1 new test file — all within scope or explicitly generated).
+
+**Stage 2 — Code quality:** All checks pass.
+
+- Correctness: skill bodies are procedural Markdown; logic in the new procedural gates is sound and consistent across debug, tdd, and code-review.
+- Tests: `cli/tests/test_bug_evidence_chain.py` — 23 tests covering all five ACs, success paths for each field, and scaffold propagation for both claude and codex tools. Tests are independent and deterministic. All 23 pass.
+- Full suite: 315/315 tests pass (`uv run pytest` from `cli/`).
+- Lint/format: `ruff format --check` and `ruff check` both clean.
+- Source-of-truth convention: sources were edited first; scaffolds were regenerated via `python3 cli/scripts/sync_init_scaffolds.py`, not hand-edited. Scaffold content matches source content.
+- Security, readability, performance: not applicable to Markdown skill bodies; test file has no secrets, dead code, or resource leaks.
+
+No non-blocking observations.
