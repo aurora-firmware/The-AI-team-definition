@@ -1,7 +1,7 @@
 ---
 id: T-059
 title: Add Gate 2 coverage and committed-evidence checks to quality-gates
-status: pending
+status: completed
 priority: medium
 assigned-role: unassigned
 created: '2026-06-04'
