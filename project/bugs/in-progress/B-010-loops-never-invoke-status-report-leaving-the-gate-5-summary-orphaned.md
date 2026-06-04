@@ -84,6 +84,26 @@ Root cause or fault hypothesis:
 Planned verification:
 -->
 
+### Diagnosis 1 — 2026-06-04
+
+**Reproduction status:** Confirmed. Static wiring gap; no runtime execution required. Both Fix Verification greps returned zero matches (the expected broken state — `status-report` is referenced nowhere in either loop's body or metadata).
+
+**Evidence captured:**
+- `cli/src/ai_team/init/sources/skills/dev-loop/body.md` Step 8 "Loop Complete" (lines ~174-181): hand-rolled bullet summary (tasks completed/merged, already-completed, blocked, integration failures); no `Skill(status-report)` invocation.
+- `cli/src/ai_team/init/sources/skills/bug-loop/body.md` Step 8 "Loop Complete" (lines ~169-174): hand-rolled bullet summary (bugs resolved/merged, escalated, integration failures); no `Skill(status-report)` invocation.
+- `cli/src/ai_team/init/sources/skills/dev-loop/metadata.toml` — `allowed-tools` in BOTH `[claude]` and `[codex]` is `Read, Glob, Grep, Bash, Agent, Skill(integrate), Skill(git-conventions)`; `Skill(status-report)` absent.
+- `cli/src/ai_team/init/sources/skills/bug-loop/metadata.toml` — same absence in both sections.
+- `cli/src/ai_team/init/sources/skills/status-report/metadata.toml` — both sections carry `disable-model-invocation: true`, so the skill is reachable only via an explicit `Skill(status-report)` call. With it absent from both loops' `allowed-tools` AND uncalled in both bodies, `status-report` is completely unreachable.
+- `cli/src/ai_team/init/sources/skills/status-report/body.md` — runs `ai-team status`, counts artifacts, reads active specs/blocked tasks, inspects integration evidence, produces a canonical Gate 5 markdown summary, and writes a full report to `project/docs/reports/progress-report-[date].md`. Materially richer than the loops' hand-rolled bullets.
+- Doc alignment: `ai-process/processes/workflow-overview.md:178` already names `status-report` as the Gate 5 producer (landed via T-058). The loop bodies are behind the documented contract, not the reverse.
+- Syntax reference: `cli/src/ai_team/init/sources/skills/integrate/metadata.toml` uses `Skill(merge-conflicts), Skill(new-bug), Skill(git-conventions)` — confirms the `Skill(name)` token format for `allowed-tools`.
+
+**Isolated fault:** Two identical wiring failures in each loop — (a) Step 8 hand-rolls an inline summary instead of invoking `Skill(status-report)`; (b) `allowed-tools` in both `[claude]` and `[codex]` omits `Skill(status-report)`, making the skill inaccessible even if the body called it.
+
+**Root cause:** `status-report` is a `disable-model-invocation: true` skill that was never wired into the loops: neither loop lists it in `allowed-tools`, and neither Step 8 calls it. Both gaps must be fixed together for the skill to be reachable and used. The documented contract (workflow-overview.md:178) already expects the loops to invoke it.
+
+**Planned verification:** Fix four source files (eight edits): append `Skill(status-report)` to the `[claude]` and `[codex]` `allowed-tools` in both `dev-loop/metadata.toml` and `bug-loop/metadata.toml` (parity per P2 / T-066); and in both `dev-loop/body.md` and `bug-loop/body.md` Step 8, invoke `Skill(status-report)` on a drained queue to produce the Gate 5 summary (folding/retaining the loop-specific items — blocked tasks, integration failures — as supplemental context). Post-fix, both Fix Verification greps must match in all four files. CLI scaffold regeneration (`scripts/sync_init_scaffolds.py`) follows so the test suite stays green; repo-root `.claude/`/`.codex/` export re-render is owned by T-067.
+
 ## Work Log
 
 <!-- Mandatory. Append one entry per session boundary. Format:
