@@ -1,7 +1,7 @@
 ---
 id: T-060
 title: Add no-routine-forced-branch-deletion rule to git-conventions guideline
-status: pending
+status: completed
 priority: medium
 assigned-role: unassigned
 created: '2026-06-04'
