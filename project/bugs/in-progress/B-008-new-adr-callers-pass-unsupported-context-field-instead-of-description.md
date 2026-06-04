@@ -2,7 +2,7 @@
 id: B-008
 title: new-adr callers pass unsupported 'context' field instead of 'description'
 severity: high
-status: open
+status: in-progress
 created: '2026-06-04'
 ---
 
