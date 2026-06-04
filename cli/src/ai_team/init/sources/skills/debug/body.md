@@ -1,5 +1,8 @@
 # Debug
 
+This skill is **diagnosis-only**. It ends with a fix contract in the Diagnosis Log. The
+Developer or tdd skill applies the fix; debug does not change production code.
+
 ## Input Requirements
 
 - **Failing test or error report** — what is failing, including the error message.
@@ -76,52 +79,44 @@ Once isolated, determine WHY it fails:
 Record the root cause.
 If the evidence supports only a fault hypothesis, label it as a hypothesis and explain why it is the best current explanation.
 
-### Step 5: Prepare the Diagnosis Handoff
+### Step 5: Prepare the Diagnosis Handoff (Fix Contract)
 
-Prepare a bug file Diagnosis Log entry before implementing the fix.
-Include:
-- Reproduction status.
-- Evidence captured.
-- Isolated fault.
-- Root cause or fault hypothesis.
-- Planned verification.
+Prepare a bug file Diagnosis Log entry — the **fix contract** — before any production code
+change is made. The fix contract must include all four of the following fields; entries
+that omit any field are incomplete and must not be treated as a green light to implement:
 
-Return this entry to the active loop. The loop appends and commits it to the canonical bug file on `dev-agent`.
-For task debugging, return the same information as part of the task Work Log handoff.
-If the caller requested diagnosis only, stop here and do not change production code.
+- **Reproduction status** — confirmed, intermittent, or unconfirmed (with rationale).
+- **Evidence captured** — the exact commands, outputs, and artifacts gathered.
+- **Isolated fault** — the specific function, module, or line responsible for the defect.
+- **Planned fix** — the minimal code change required to address the isolated fault.
+- **Planned verification** — the test command or manual step that will confirm the fix.
 
-### Step 6: Fix with Minimal Change
+Return this fix contract to the active loop. The loop appends and commits it to the
+canonical bug file on `dev-agent`. The tdd skill then consumes the fix contract as the
+implementation target.
 
-Apply the smallest change that fixes the root cause.
-Do not refactor surrounding code, add features, or "improve" unrelated areas.
-The fix should be obviously correct and narrowly scoped.
-When the defect can be tested automatically, add or update a regression test that fails before the fix and passes after it.
-
-### Step 7: Verify the Fix
-
-Run the originally failing test — it must pass.
-Run the full test suite — nothing else should have broken.
-If something else broke, the fix was too broad or the root cause was misidentified. Return to Step 2.
+**Stop here.** Do not change production code in this skill. The tdd skill owns the
+red→green→refactor cycle that follows.
 
 ## Output Format
 
-- **Fix applied** — the specific code change.
+- **Diagnosis Log handoff (fix contract)** — a dated entry for the active loop to record on `dev-agent` before implementation begins.
 - **Root cause** — brief explanation of what was wrong and why.
-- **Verification** — confirmation that the fix resolves the issue and all tests pass.
-- **Diagnosis Log handoff** — for bug fixes, a dated entry for the active loop to record before the Work Log handoff.
+- **Reproduction status** — confirmed, intermittent, or unconfirmed.
 
 ## Quality Criteria
 
-- The root cause is identified and documented, not just the symptom.
-- Reproduction status and evidence are recorded before implementation starts.
-- The fix is minimal — only the necessary change, nothing more.
-- All tests pass after the fix (both the failing test and the full suite).
-- No new debugging artifacts remain in the code (print statements, commented-out code).
+- The root cause or fault hypothesis is identified and documented before any code change.
+- Reproduction status and evidence are recorded.
+- The fix contract is complete: isolated fault, planned fix, planned verification are all present.
+- No production code is changed by this skill.
+- No new debugging artifacts remain in the codebase (print statements, commented-out code).
 
 ## Common Pitfalls
 
 - **Fixing symptoms, not causes** — if a function returns the wrong value, do not add a corrective step downstream. Fix the function.
 - **Shotgun debugging** — making multiple changes at once and hoping one of them fixes it. Change one thing at a time and test after each change.
 - **Skipping reproduction** — do not patch from a vague symptom unless a reproduction is impossible and the evidence still supports a clear fault hypothesis.
-- **Leaving debug code** — remove all print statements, logging additions, and temporary code before completing the fix.
+- **Bypassing the fix contract** — returning to the tdd skill before all five fix contract fields are recorded in the Diagnosis Log invalidates the evidence chain.
+- **Leaving debug code** — remove all print statements, logging additions, and temporary code before completing the diagnosis.
 - **Broadening scope** — the urge to "clean up while I'm here" leads to larger diffs, more risk, and harder reviews. Stay focused on the bug.
