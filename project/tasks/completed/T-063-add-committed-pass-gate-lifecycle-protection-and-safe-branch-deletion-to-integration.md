@@ -2,7 +2,7 @@
 id: T-063
 title: Add committed-PASS gate, lifecycle protection, and safe branch deletion
   to integration
-status: pending
+status: completed
 priority: medium
 assigned-role: unassigned
 created: '2026-06-04'
