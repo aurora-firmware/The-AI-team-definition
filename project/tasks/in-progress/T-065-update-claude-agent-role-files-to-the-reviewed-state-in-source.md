@@ -58,6 +58,14 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-04
+
+Read the canonical task file first and confirmed the Work Log was empty. I translated the four acceptance criteria into focused source/scaffold regression tests in `cli/tests/test_t065_claude_agent_role_files.py`: planner retains `change-request`, reviewer points to the `code-review` canonical two-stage checklist without inlining it, architect names the Gate 2 Findings block as wrapped by the role envelope without duplicating Result/Summary fields, and all five Claude role files use the frozen escalation request block. The initial targeted test run failed as expected for reviewer checklist ownership, architect Gate 2 wording, and escalation wording.
+
+I then updated the five Claude role source files, removed the inline reviewer checklist in favor of a short `code-review` pointer, added the architect Gate 2 envelope sentence, and aligned all role escalation blocks to the canonical frozen wording from `escalation-review`. I regenerated scaffolds with `python3 scripts/sync_init_scaffolds.py` after the documented `python` command failed because `python` is not installed in this environment. I rejected editing generated scaffolds directly; all scaffold changes came from the sync script.
+
+Verification passed: the task grep commands found `change-request` in planner and `code-review` in reviewer, the targeted T-065 tests passed, full `uv run pytest` passed with 357 tests, `ruff format --check .` and `ruff check .` passed after formatting the new test file, and `uv build` passed after approved network access for PyPI build dependencies. The implementation was committed on the task branch as `c135719 docs(agents): align claude role files`. Nothing remains for the Developer; ready for Reviewer handoff.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
