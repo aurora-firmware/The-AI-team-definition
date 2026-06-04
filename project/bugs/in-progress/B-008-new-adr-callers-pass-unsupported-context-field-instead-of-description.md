@@ -118,6 +118,18 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-04
+
+Read the bug file and the three relevant source files (`new-adr/body.md`, `spec-breakdown-review/body.md`, `escalation-review/body.md`) to confirm the diagnosis contract. Ran the corrected backtick-aware verification script and confirmed the red state: both callers showed `STILL BROKEN`, `MISSING description`, and `MISSING status`.
+
+Applied two surgical edits — one per caller source file — replacing the `` - `context`: … `` bullet with `` - `description`: … `` (preserving the instructional prose verbatim) and adding a `` - `status`: `accepted` — … `` bullet. Chose `accepted` over `proposed` because in both caller contexts the Architect is issuing a concrete architectural resolution (adopting the decision now), not proposing one for later human approval; this matches `new-adr`'s own description of when each status value applies.
+
+After the source edits the verification script went green for both files (`ok` / `description present` / `status present`). Then ran `uv run pytest -q`, which failed on `test_package_owned_skill_sources_include_body_and_required_metadata` because that test validates the CLI-internal scaffolds (`cli/src/ai_team/init/scaffolds/`) match their source bodies. Regenerated them with `scripts/sync_init_scaffolds.py` (mandated by CLAUDE.md whenever sources change), after which the full suite passed 292/292.
+
+Scope decision: regenerated only the CLI-internal scaffolds under `cli/src/ai_team/init/scaffolds/` (a build artifact the test suite enforces). The repo-root `.claude/` and `.codex/` hand-copied exports were deliberately left untouched — re-rendering those is owned by T-067. Six files committed on the bug branch (2 sources + 4 scaffolds, claude+codex variants of both skills) as `34d35d6`.
+
+Nothing remains beyond Reviewer approval and integration.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
