@@ -61,14 +61,6 @@ chore(tasks): move T-004 to completed
 - No amending commits that have already been pushed.
 - Never commit secrets, `.env` files, or credentials.
 
-## Quality Criteria
-
-- Every commit message parses as `<type>(<component>): <description>`.
-- Each role commits only on the branch(es) listed for it above.
-- Branch names use the exact `task/T-NNN-...` or `bug/B-NNN-...` prefix.
-- No commit to `main` is ever produced by an automated role.
-- No commit uses `--no-verify`, `--force`, or amends a pushed commit.
-
 ## Common Pitfalls
 
 - Repeating the task or bug ID in the commit message — the branch name already carries it.
