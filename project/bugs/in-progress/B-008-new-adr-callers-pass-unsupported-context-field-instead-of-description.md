@@ -70,9 +70,13 @@ is handled by T-067.
 ## Fix Verification
 
 ```bash
+# NOTE: the field is rendered as `context` (backtick-wrapped), so the grep pattern
+# must include the backticks — a bare "context:" never matches and yields a false "ok".
 for f in cli/src/ai_team/init/sources/skills/spec-breakdown-review/body.md \
          cli/src/ai_team/init/sources/skills/escalation-review/body.md; do
-  grep -nA6 "new-adr" "$f" | grep -q "context:" && echo "STILL BROKEN: $f" || echo "ok: $f"
+  grep -nA6 "new-adr" "$f" | grep -q '`context`' && echo "STILL BROKEN: $f" || echo "ok: $f"
+  grep -nA8 "new-adr" "$f" | grep -q '`description`' && echo "description present: $f" || echo "MISSING description: $f"
+  grep -nA8 "new-adr" "$f" | grep -q '`status`' && echo "status present: $f" || echo "MISSING status: $f"
 done
 ```
 
@@ -86,6 +90,23 @@ Isolated fault:
 Root cause or fault hypothesis:
 Planned verification:
 -->
+
+### Diagnosis 1 — 2026-06-04
+
+**Reproduction status:** Confirmed. Static caller/callee contract mismatch, visible by direct file inspection; no runtime execution required.
+
+**Evidence captured:**
+- Callee `cli/src/ai_team/init/sources/skills/new-adr/body.md` (Input Requirements) accepts `title`, `description`, `status` (`proposed`/`accepted`/`superseded`), and optional `supersedes`. It does NOT accept `context`.
+- Caller `cli/src/ai_team/init/sources/skills/spec-breakdown-review/body.md` line 40: `` - `context`: the approved spec path... `` — `description` absent, `status` absent.
+- Caller `cli/src/ai_team/init/sources/skills/escalation-review/body.md` line 41: `` - `context`: the escalation request... `` — `description` absent, `status` absent.
+- Both exports are broken (not just Claude): `.claude/skills/{spec-breakdown-review,escalation-review}/SKILL.md` and `.codex/skills/{spec-breakdown-review,escalation-review}/SKILL.md` all carry the same `` `context` `` field. The bug report's claim that the Codex export was already fixed is NOT borne out by current file state. (Export re-render is owned by T-067, not this bug.)
+- The original Fix Verification script gave a FALSE NEGATIVE: it greps `context:` but the text is `` `context`: `` (backtick before the colon), so the bare substring `context:` never matches and the script printed `ok` for both files even while broken. Verified live: original pattern → `ok: ...` (both); backtick-aware pattern `` `context` `` → `STILL BROKEN: ...` (both). The Fix Verification section has been corrected accordingly.
+
+**Isolated fault:** In the `new-adr` invocation input lists of `spec-breakdown-review/body.md` (line 40) and `escalation-review/body.md` (line 41), the field `` `context` `` appears where `` `description` `` is required, and the required `` `status` `` field is omitted.
+
+**Root cause:** When the `new-adr` caller blocks were authored, `context` was used as the field name (describing the contextual info to supply) instead of mapping to `new-adr`'s actual `description` input, and `status` was never added. Neither caller was aligned to the `new-adr` callee contract, so an Architect following these skills invokes `new-adr` with an unrecognised `context` and no `status`, leaving the ADR body unpopulated.
+
+**Planned verification:** In both source files, replace `` `context`: <…> `` with `` `description`: <…> `` (folding the spec path / affected task IDs / relevant ADRs / durability rationale into description prose) and add a `` `status`: `` entry. Then run the corrected Fix Verification block: it must report `ok`, `description present`, and `status present` for both files. Export re-render is out of scope (T-067).
 
 ## Work Log
 
