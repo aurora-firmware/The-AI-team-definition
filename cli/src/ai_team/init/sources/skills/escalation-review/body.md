@@ -38,7 +38,8 @@ If the task or bug file needs clarification within existing scope, recommend the
 If the issue is architecture-affecting and within the approved spec, use `new-adr` or amend an existing ADR before implementation continues.
 When invoking `new-adr`, provide the full required input set:
 - `title`: concise decision title derived from the architectural guidance
-- `context`: the escalation request, work item path, approved spec or ADR context, and why the decision affects future work
+- `description`: the escalation request, work item path, approved spec or ADR context, and why the decision affects future work
+- `status`: `accepted` — the Architect is adopting the decision now as the authoritative resolution to the escalation
 
 If the issue requires changing the approved spec, or cannot be resolved after full analysis, escalate to the human with a compact context package.
 
