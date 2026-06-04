@@ -1,7 +1,7 @@
 ---
 id: T-062
 title: Clarify planning-skill boundaries, EARS pointer, and Gate 2 output format
-status: pending
+status: completed
 priority: medium
 assigned-role: unassigned
 created: '2026-06-04'
