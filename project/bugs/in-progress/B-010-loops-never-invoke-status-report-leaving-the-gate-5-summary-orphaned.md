@@ -2,7 +2,7 @@
 id: B-010
 title: Loops never invoke status-report, leaving the Gate 5 summary orphaned
 severity: medium
-status: open
+status: in-progress
 created: '2026-06-04'
 ---
 
