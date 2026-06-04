@@ -2,7 +2,7 @@
 id: T-058
 title: Reconcile test-discovery, Gate 5 producer, and bug-evidence wording in
   workflow-overview
-status: pending
+status: completed
 priority: medium
 assigned-role: unassigned
 created: '2026-06-04'
