@@ -2,7 +2,7 @@
 name: dev-loop
 description: Fully autonomous implementation loop. Picks pending tasks one at a time, drives each through Developer → Reviewer cycles until the reviewer passes, commits, then moves to the next task. Stops only when the queue is empty, a task is blocked, or escalation is required.
 argument-hint: "[task-id | task-branch] — optional single task to process (e.g., T-012 or task/T-012-my-feature). If omitted, processes the full pending queue."
-allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate), Skill(git-conventions)
+allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate), Skill(git-conventions), Skill(status-report)
 disable-model-invocation: true
 ---
 
@@ -181,7 +181,12 @@ If the Architect cannot resolve the issue:
 
 ### Step 8: Loop Complete
 
-When the queue is fully drained (Step 1 finds no pending tasks), report a summary:
+When the queue is fully drained (Step 1 finds no pending tasks), invoke `Skill(status-report)` to
+produce the canonical Gate 5 summary. The status-report skill runs `ai-team status`, scans project
+state directories, and writes the full progress report — that output is the authoritative end-of-run
+status.
+
+After the status-report output, append the following loop-specific run details as supplemental context:
 - Tasks completed and merged this run (list with task IDs and merge commits)
 - Tasks that were already completed before this run (skip)
 - Any blocked tasks
