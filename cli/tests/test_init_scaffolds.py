@@ -821,3 +821,222 @@ def test_project_guidance_sources_exist_and_describe_project_artifact_folders() 
             assert term in guidance_text, (
                 f"{guidance_file_name} must describe {term!r} in project guidance"
             )
+
+
+def _new_task_skill_texts() -> tuple[str, str, str]:
+    repo_root = Path(__file__).resolve().parents[1]
+    source = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "skills"
+        / "new-task"
+        / "body.md"
+    ).read_text(encoding="utf-8")
+    claude = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "claude"
+        / "skills"
+        / "new-task"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    codex = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "codex"
+        / "skills"
+        / "new-task"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    return source, claude, codex
+
+
+# AC-1: ownership boundaries
+
+
+def test_spec_breakdown_states_plan_coverage_ownership_boundary() -> None:
+    """AC-1: spec-breakdown body states it owns plan coverage, dependencies, task boundaries."""
+    source, claude, codex = _spec_breakdown_skill_texts()
+    required_phrases = (
+        "spec-breakdown owns",
+        "new-task",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"spec-breakdown source must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_new_task_states_per_task_shape_ownership_boundary() -> None:
+    """AC-1: new-task body states it owns per-task shape and references spec-breakdown for plan-level rules."""
+    source, claude, codex = _new_task_skill_texts()
+    required_phrases = (
+        "enforces per-task shape",
+        "spec-breakdown",
+        "new-task owns",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"new-task source must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_spec_breakdown_review_states_gate_2_technical_readiness_ownership_boundary() -> (
+    None
+):
+    """AC-1: spec-breakdown-review body states it owns Gate 2 technical readiness."""
+    source, claude, codex = _spec_breakdown_review_skill_texts()
+    required_phrases = (
+        "spec-breakdown-review owns",
+        "Gate 2 technical readiness",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, (
+            f"spec-breakdown-review source must include: {phrase!r}"
+        )
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+# AC-2: EARS references point to task template, not "the new-task skill"
+
+
+def test_spec_breakdown_ears_reference_points_to_task_template_not_new_task_skill() -> (
+    None
+):
+    """AC-2: spec-breakdown EARS reference uses task template path, not 'the new-task skill'."""
+    source, claude, codex = _spec_breakdown_skill_texts()
+
+    task_template_phrases = ("task template", "templates/task")
+    forbidden_phrase = "documented in the new-task skill"
+
+    for phrase in task_template_phrases:
+        assert phrase in source, f"spec-breakdown source must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+    assert forbidden_phrase not in source, (
+        f"spec-breakdown source must not include: {forbidden_phrase!r}"
+    )
+    assert forbidden_phrase not in claude, (
+        f"Claude scaffold must not include: {forbidden_phrase!r}"
+    )
+    assert forbidden_phrase not in codex, (
+        f"Codex scaffold must not include: {forbidden_phrase!r}"
+    )
+
+
+def test_spec_breakdown_review_ears_reference_points_to_task_template_not_new_task_skill() -> (
+    None
+):
+    """AC-2: spec-breakdown-review EARS reference uses task template path, not 'the new-task skill'."""
+    source, claude, codex = _spec_breakdown_review_skill_texts()
+
+    task_template_phrases = ("task template", "templates/task")
+
+    for phrase in task_template_phrases:
+        assert phrase in source, (
+            f"spec-breakdown-review source must include: {phrase!r}"
+        )
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+# AC-3: Gate 2 output section states architect role envelope wraps Findings block
+
+
+def test_spec_breakdown_review_output_states_architect_envelope_wraps_findings_block() -> (
+    None
+):
+    """AC-3: spec-breakdown-review output section states architect role envelope wraps Findings block."""
+    source, claude, codex = _spec_breakdown_review_skill_texts()
+    required_phrases = (
+        "architect",
+        "envelope",
+        "Findings",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, (
+            f"spec-breakdown-review source must include: {phrase!r}"
+        )
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_spec_breakdown_review_output_does_not_duplicate_result_summary_fields() -> (
+    None
+):
+    """AC-3: spec-breakdown-review output section states no duplicated Result/Summary fields."""
+    source, claude, codex = _spec_breakdown_review_skill_texts()
+    required_phrases = (
+        "no duplicated Result",
+        "Result/Summary",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, (
+            f"spec-breakdown-review source must include: {phrase!r}"
+        )
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+# AC-4: spec-coverage check appears before dependency and file-conflict checks
+
+
+def test_spec_breakdown_review_includes_spec_coverage_check() -> None:
+    """AC-4: spec-breakdown-review body includes a spec-coverage check (plan covers the whole spec)."""
+    source, claude, codex = _spec_breakdown_review_skill_texts()
+    required_phrases = (
+        "spec coverage",
+        "covers the",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, (
+            f"spec-breakdown-review source must include: {phrase!r}"
+        )
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_spec_breakdown_review_spec_coverage_check_precedes_dependency_and_conflict_checks() -> (
+    None
+):
+    """AC-4: spec-coverage check appears before dependency check and file-conflict check."""
+    source, _claude, _codex = _spec_breakdown_review_skill_texts()
+
+    coverage_markers = ("spec coverage", "covers the")
+    dependency_marker = "Check Dependency"
+    conflict_marker = "Check File Conflict"
+
+    coverage_pos = min(source.index(m) for m in coverage_markers if m in source)
+    assert dependency_marker in source, (
+        f"spec-breakdown-review source must include: {dependency_marker!r}"
+    )
+    assert conflict_marker in source, (
+        f"spec-breakdown-review source must include: {conflict_marker!r}"
+    )
+
+    dep_pos = source.index(dependency_marker)
+    conflict_pos = source.index(conflict_marker)
+
+    assert coverage_pos < dep_pos, (
+        "Spec-coverage check must appear before dependency check in spec-breakdown-review"
+    )
+    assert coverage_pos < conflict_pos, (
+        "Spec-coverage check must appear before file-conflict check in spec-breakdown-review"
+    )
