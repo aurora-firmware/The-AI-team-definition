@@ -2,7 +2,7 @@
 id: T-064
 title: Consolidate canonical git-conventions and escalation-review skill bodies
   to source
-status: pending
+status: completed
 priority: medium
 assigned-role: unassigned
 created: '2026-06-04'
