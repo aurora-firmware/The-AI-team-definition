@@ -139,3 +139,23 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-06-04
+
+PASS
+
+Both stages passed.
+
+**Stage 1 — Bug criteria:**
+- Diagnosis Log records confirmed reproduction status (static analysis, no runtime needed), evidence captured (all four source files inspected, absent `Skill(status-report)` entries quoted), isolated fault (two wiring gaps: body Step 8 hand-rolls summaries; `allowed-tools` omits `Skill(status-report)` in both sections of both loops), and root cause. All required fields are present.
+- Fix addresses both halves of the isolated fault: `Skill(status-report)` appended to `allowed-tools` in both `[claude]` and `[codex]` sections of `dev-loop/metadata.toml` and `bug-loop/metadata.toml` (sections are identical — parity maintained per P2 / T-066); Step 8 in both `dev-loop/body.md` and `bug-loop/body.md` now invokes `Skill(status-report)` as the authoritative Gate 5 summary producer, with loop-specific run details retained as supplemental context.
+- Fix Verification greps ran and returned matches in all four files (body.md and metadata.toml for both loops).
+- No unrelated behavior added.
+
+**Stage 2 — Code quality:**
+- Step 8 prose accurately describes what `status-report` does (`ai-team status`, project-state scan, full progress report) and is consistent with `ai-process/processes/workflow-overview.md:178` which already names `status-report` as the Gate 5 producer.
+- `[claude]` and `[codex]` metadata sections are identical in both `dev-loop/metadata.toml` and `bug-loop/metadata.toml` — parity requirement satisfied.
+- `status-report/metadata.toml` carries `disable-model-invocation: true` in both sections — the `allowed-tools` entry is genuinely required for reachability, and it is now present.
+- Implementation commit (`1e8a149`) contains exactly 8 files: 4 sources + 4 scaffolds. The bug lifecycle file was touched in a prior commit (branch setup), not the implementation commit. Repo-root `.claude/` and `.codex/` exports are untouched, per the T-067 ownership constraint.
+- Scaffold regeneration is idempotent: re-running `scripts/sync_init_scaffolds.py` produced no further diff.
+- `uv run pytest -q`: 292 passed. `uv run ruff check .` and `uv run ruff format --check .`: both clean.
