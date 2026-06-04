@@ -128,6 +128,11 @@ Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 
 #### On PASS
 
+Before invoking integration, confirm that both the committed Developer Work Log and the
+committed Review Verdict exist on `dev-agent` (they were recorded in Steps 5 and 6).
+The `integrate` skill verifies that the latest committed verdict is PASS — ensure this
+state is in place before calling integrate.
+
 1. Invoke the `integrate` skill to merge the reviewed branch into `dev-agent`:
    > `/integrate task/T-NNN-... dev-agent`
 
