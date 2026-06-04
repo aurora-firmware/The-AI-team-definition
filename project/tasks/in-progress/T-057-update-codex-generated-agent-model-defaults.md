@@ -106,3 +106,10 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-06-04
+PASS
+
+Stage 1 passed: AC-1 through AC-5 are satisfied by the Codex source TOMLs, regenerated scaffold TOMLs, and the added regression in `cli/tests/test_init_scaffolds.py`, with `model_reasoning_effort = "high"` preserved throughout.
+
+Stage 2 passed: the change set is scoped to the required agent defaults and scaffold coverage, the regression test enforces the full role-to-model mapping plus the unsupported-model guard, and the task verification commands reproduced successfully on the implementation branch.
