@@ -1,7 +1,7 @@
 ---
 id: T-057
 title: Update Codex generated agent model defaults
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-06-03'
