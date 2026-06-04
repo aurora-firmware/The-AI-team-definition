@@ -62,6 +62,20 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-04
+
+Implemented T-064 in a single session. All three acceptance criteria were addressed.
+
+**AC-1 (git-conventions stable headings):** The four citable headings (`## Branch Model`, `## Commit Message Format`, `## When Each Role Commits`, `## Hard Rules`) were already present in the source. The only missing change was removing `## Quality Criteria`, which the full_skills_review identified as a mere restatement of Hard Rules that undermined Hard Rules as the sole authority. Removed it; wrote a test that asserts the section is absent.
+
+**AC-2 (escalation-review frozen block + verdict + Phase 2):** The Escalation Verdict block and Phase 2 Human Escalation Report template were already in the source. What was missing was an explicit `## Escalation Request Block (FROZEN)` top-level section with a copy-ready fenced block of the four field names. Added that section between Input Requirements and Procedure. The Input Requirements bullet for "Structured request" was updated to point to the new section. B-008's `description` (not `context`) fix for the new-adr invocation was already present and was preserved without regression.
+
+**AC-3 (new-spec canonical; brainstorm pointer):** Both files were already in the correct state. `new-spec` holds the full `## Content-boundary rule (strict)` section including the `Rare exception` clause. `brainstorm` Step 7 carries a one-line inline reference ("It carries the **content-boundary rule**... apply them through that skill rather than re-deriving them here") and the Common Pitfalls reminder is a short two-sentence pointer, not the full four-paragraph rule. Tests confirmed this without requiring source changes.
+
+**What was rejected:** Considered also trimming the brainstorm Common Pitfalls item ("Embedding the implementation in the spec...") to a literal one-line pointer. Decided against it: the item is already a brief two-sentence reminder that names the pitfall concisely, not a full rule restatement. The test suite confirms it passes the AC-3 criteria, and removing content from Common Pitfalls would reduce actionable guidance without benefit.
+
+Scaffolds were regenerated with `python3 cli/scripts/sync_init_scaffolds.py`. All 353 tests pass; ruff format and check are clean.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
