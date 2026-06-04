@@ -2,14 +2,24 @@
 
 ## Input Requirements
 
-- **Structured request** with:
-  - Problem
-  - Attempted
-  - Failed because
-  - Question
+- **Structured request** — see [Escalation Request Block (FROZEN)](#escalation-request-block-frozen) below.
 - **Original work item** — task or bug file.
 - **Relevant logs** — Work Log, Diagnosis Log, Review Verdicts, test output, or merge-conflict context.
 - **Approved specification and ADRs** when the issue may affect scope or architecture.
+
+## Escalation Request Block (FROZEN)
+
+This is the single canonical source for the four-field escalation request format. Every skill or
+role that emits an escalation must use these exact field names in this exact order. The block is
+kept inline at each emission point for locality; this section freezes the field names so all
+copies stay consistent.
+
+```text
+Problem: [the criterion that will not pass, or the boundary that was violated]
+Attempted: [implementations tried on retry, or why the boundary cannot be honoured as written]
+Failed because: [the specific reason — test output, scope mismatch, contradictory requirement]
+Question: [specific guidance needed to continue within the approved specification]
+```
 
 ## Procedure
 
