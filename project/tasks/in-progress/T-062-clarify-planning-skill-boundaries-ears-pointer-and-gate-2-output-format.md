@@ -64,6 +64,30 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-04
+
+Implemented all four acceptance criteria for T-062 in a single TDD cycle.
+
+**What was done:**
+
+- Read the task file and all three source skill bodies before writing a line of code.
+- Wrote nine new failing tests in `cli/tests/test_init_scaffolds.py` — three for AC-1 (one per skill), two for AC-2 (spec-breakdown and spec-breakdown-review EARS pointers), two for AC-3 (architect envelope + no-duplicate fields), and two for AC-4 (spec-coverage check present, ordering before dependency/conflict steps).
+- Verified all nine tests failed before touching sources.
+- Edited `cli/src/ai_team/init/sources/skills/spec-breakdown/body.md`: added an ownership boundary block at the top stating spec-breakdown owns plan coverage, dependencies, and task boundaries; changed the EARS reference from "the `new-task` skill" to "the task template (`cli/src/ai_team/templates/task.md`)".
+- Edited `cli/src/ai_team/init/sources/skills/new-task/body.md`: added an ownership boundary block at the top stating new-task owns per-task shape and references spec-breakdown and spec-breakdown-review for their respective scopes.
+- Edited `cli/src/ai_team/init/sources/skills/spec-breakdown-review/body.md`: added ownership boundary block at top (references task template for EARS); inserted new Step 2 "Check Spec Coverage" before the dependency check (shifting Steps 2–6 to Steps 3–7); updated the Output Format section to explicitly state the architect envelope wraps the Findings block with no duplicated Result/Summary fields.
+- Ran `python3 cli/scripts/sync_init_scaffolds.py` to regenerate all six scaffold files.
+- All three task verification greps pass. Full suite: 324 tests pass. Ruff format and lint clean.
+- One intermediate issue: a case-sensitivity mismatch (`"no duplicated Result"` vs `"No duplicated Result/Summary fields:"`) was caught on first test run; fixed by adjusting the implementation text to use lowercase at sentence-internal position.
+
+**What was tried and rejected:**
+
+- Initially used "new-task enforces per-task shape" as the test phrase for AC-1 on new-task, but that phrase uses backtick-wrapped `` `new-task` `` in the existing text which would never match. Added an explicit ownership boundary sentence ("new-task owns") to the source instead.
+
+**What remains:**
+
+Nothing — all ACs implemented and verified.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
