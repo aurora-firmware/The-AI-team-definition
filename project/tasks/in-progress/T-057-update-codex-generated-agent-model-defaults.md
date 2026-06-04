@@ -88,6 +88,13 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-04
+Implemented T-057 on the task branch with a single TDD cycle. I started by reading the canonical task, confirmed the Codex source/scaffold TOMLs still used `gpt-5.4` for Architect and Planner and `gpt-5.3-codex` for Developer, Reviewer, and Integrator, and added a regression test in `cli/tests/test_init_scaffolds.py` that enforces the required role-to-model mapping, rejects `gpt-5.3-codex`, checks source/scaffold parity, and preserves `model_reasoning_effort = "high"`. The new test failed first on the Architect mapping, which gave the expected red state.
+
+For the green step, I updated the five package-owned Codex source TOMLs to the required defaults and regenerated `cli/src/ai_team/init/scaffolds/codex/agents/*.toml` with `scripts/sync_init_scaffolds.py` rather than editing generated output manually. After that, the new targeted regression passed, and the broader verification set passed as well: scaffold tests, the `ai-team init --tools codex` smoke test, `ruff format --check`, `ruff check`, and an `rg` sweep confirming there are no remaining `gpt-5.3-codex` references in the Codex source or scaffold agent TOMLs.
+
+I initially tried running the targeted pytest command from the repo root and hit environment issues, so I switched to running all `uv` commands from `cli/` and set `UV_CACHE_DIR=/tmp/uv-cache` because the default cache path is not writable in this environment. `ruff format --check` also wanted to reflow the new test, so I accepted the formatter's output and reran verification before committing. Nothing remains on the implementation branch for this task.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
