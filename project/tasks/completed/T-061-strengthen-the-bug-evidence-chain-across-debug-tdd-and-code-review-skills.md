@@ -2,7 +2,7 @@
 id: T-061
 title: Strengthen the bug evidence chain across debug, tdd, and code-review
   skills
-status: pending
+status: completed
 priority: medium
 assigned-role: unassigned
 created: '2026-06-04'
