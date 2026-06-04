@@ -37,7 +37,8 @@ When assessing architecture, if the plan contradicts the approved spec or existi
 Use `new-adr` only when the plan exposes a durable architecture-affecting decision within the approved spec.
 When invoking `new-adr`, provide the full required input set:
 - `title`: concise decision title derived from the architectural choice
-- `context`: the approved spec path, affected task IDs, relevant ADRs, and why the decision is durable rather than an implementation detail
+- `description`: the approved spec path, affected task IDs, relevant ADRs, and why the decision is durable rather than an implementation detail
+- `status`: `accepted` — the Architect is adopting the decision now as part of approving the task plan
 Escalate to human through the Planner when the approved spec must change.
 
 ### Step 5: Check Atomicity And Verification
