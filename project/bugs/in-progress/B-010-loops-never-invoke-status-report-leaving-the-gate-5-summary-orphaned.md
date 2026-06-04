@@ -114,6 +114,20 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-04
+
+Single red→green cycle. Confirmed the red state first (both Fix Verification greps returned empty), then made four source edits:
+- `cli/src/ai_team/init/sources/skills/dev-loop/metadata.toml` — appended `, Skill(status-report)` to `allowed-tools` in both `[claude]` and `[codex]` (identical, for parity per P2 / T-066).
+- `cli/src/ai_team/init/sources/skills/bug-loop/metadata.toml` — identical append in both sections.
+- `cli/src/ai_team/init/sources/skills/dev-loop/body.md` — Step 8 now invokes `Skill(status-report)` as the canonical Gate 5 summary producer; loop-specific run details (task IDs + merge commits, already-completed tasks, blocked tasks, integration failures) retained as supplemental context after the status-report output.
+- `cli/src/ai_team/init/sources/skills/bug-loop/body.md` — same pattern; bug-loop-specific details (resolved bug IDs + merge commits, escalated bugs still in-progress, integration failures) retained as supplemental context.
+
+Step 8 wording was informed by reading `status-report/body.md` first so the prose accurately describes what the skill produces (`ai-team status`, project-state scan, full progress report).
+
+Regenerated the CLI-internal scaffolds with `uv run python scripts/sync_init_scaffolds.py` (bare `python` is not on PATH; used `uv run python`), producing the four `{claude,codex}/skills/{dev-loop,bug-loop}/SKILL.md` files. Repo-root `.claude/`/`.codex/` exports deliberately untouched — re-render is owned by T-067.
+
+Verification: post-edit greps match in all four sources; `uv run pytest -q` → 292 passed; `uv run ruff check .` clean; `uv run ruff format --check .` clean. Eight files committed on the bug branch (4 sources + 4 scaffolds) as `1e8a149`. Nothing remains beyond review and integration.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
