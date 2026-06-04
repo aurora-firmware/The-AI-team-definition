@@ -16,6 +16,8 @@ Before reading the acceptance criteria or starting any other work, read every ex
 This step is mandatory even on the first session, when the Work Log is empty and the read is a cheap no-op.
 For bug fixes, also read the Diagnosis Log.
 If no Diagnosis Log exists, stop and run the debug procedure before writing tests or implementation.
+If a Diagnosis Log exists, verify it contains a complete fix contract (isolated fault, planned fix, planned
+verification) before proceeding. Use the fix contract as the implementation target for the bug fix cycle.
 
 ### Step 1: Read the Acceptance Criteria or Fix Verification
 For each task criterion or bug fix-verification step, identify the testable behavior.
@@ -24,7 +26,8 @@ Translate each criterion into one or more test cases with:
 - Expected output (what comes out)
 - Edge cases (boundaries, empty inputs, error conditions)
 
-For a bug fix, the first test should reproduce the diagnosed defect when practical.
+For a bug fix, use the fix contract from the Diagnosis Log as the implementation target.
+The first test should reproduce the diagnosed defect when practical.
 
 ### Step 2: Write the Test
 Write a failing test for the first acceptance criterion.
