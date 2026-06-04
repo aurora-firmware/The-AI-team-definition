@@ -68,3 +68,4 @@ chore(tasks): move T-004 to completed
 - No `--force` or `--force-with-lease` on shared branches (`dev-agent`, `main`).
 - No amending commits that have already been pushed.
 - Never commit secrets, `.env` files, or credentials.
+- No routine forced branch deletion (`git branch -D`) during integration. Use safe deletion (`git branch -d`) only. If `-d` is refused, stop and report instead of forcing deletion.
