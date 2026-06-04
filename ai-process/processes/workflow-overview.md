@@ -175,7 +175,7 @@ Integration happens per-task inside the development loop: after each Reviewer PA
 If integration fails because the task branch introduces a regression, the integration procedure reverts the merge, files a bug report that records the preserved task branch as `source_branch`, and leaves `dev-agent` clean.
 The development loop stops until the regression bug is fixed on a branch based from that preserved task branch.
 
-Once the queue is empty and all tasks are in `completed/`, the development loop produces a status summary for Gate 5.
+Once the queue is empty and all tasks are in `completed/`, the development loop produces a status summary for Gate 5 by invoking the `status-report` skill.
 The status summary lists the approved specification, completed tasks, unresolved bugs by severity, and latest integration-test result.
 The human reviews that status summary and approves the merge to `main` (Gate 5).
 This is a sign-off — the human confirms the outcome matches the spec intent, not individual code diffs.
@@ -214,7 +214,7 @@ If the issue cannot be reproduced yet, the bug may still be filed, but the repor
    - Regression introduced by a task branch: create the bug branch from the bug report's non-empty `source_branch`.
 3. Assigns the bug to the **Developer** for diagnosis — passes the canonical bug report content and waits for a Diagnosis Log handoff before implementation continues.
 4. The Developer reproduces or confirms the defect, gathers logs, isolates the likely fault, and records the root cause or the reason reproduction is impossible.
-5. The bug-fix loop appends the Diagnosis Log entry to the canonical bug file on `dev-agent` and commits it.
+5. The bug-fix loop appends the Diagnosis Log entry to the canonical bug file on `dev-agent` and commits it. That committed Diagnosis Log entry is the fix contract: the implementation step must address the isolated fault and root cause it records.
 6. The Developer fixes the isolated cause with the smallest change that resolves the defect, preferably by first adding or updating a failing regression test.
 7. The bug-fix loop appends the Developer's Work Log entry to the canonical bug file on `dev-agent` and commits it.
 8. Assigns the completed fix to the **Reviewer** — waits for a committed verdict in the canonical bug file.
