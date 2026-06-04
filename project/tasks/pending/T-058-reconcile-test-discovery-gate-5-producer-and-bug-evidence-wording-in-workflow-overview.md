@@ -1,0 +1,72 @@
+---
+id: T-058
+title: Reconcile test-discovery, Gate 5 producer, and bug-evidence wording in
+  workflow-overview
+status: pending
+priority: medium
+assigned-role: unassigned
+created: '2026-06-04'
+---
+
+# Reconcile test-discovery, Gate 5 producer, and bug-evidence wording in workflow-overview
+
+## Description
+
+Source: `full_skills_review.md` issue I8 (and minor I2 wording). **Post-audit note:** a source
+audit found the originally-reported I13 (test discovery) and I3 (committed evidence) are already
+satisfied in `ai-process/processes/workflow-overview.md` — discovery is already lenient
+(root `CLAUDE.md`/`AGENTS.md` start, follow references, block only when no command is documented;
+bug B-007), and the committed-evidence lifecycle model is already documented. This task is
+therefore reduced to the genuine gaps:
+
+- **Gate 5 producer (I8):** workflow-overview says the drained loop "produces a status summary
+  for Gate 5" but never names `status-report` as the producer. State that the drained loop
+  produces the Gate 5 summary by invoking the `status-report` skill.
+- **Bug fix-contract wording (I2):** describe the diagnosis handoff as a fix contract that the
+  implementation step consumes (the diagnosis-first flow already exists; this only sharpens the
+  term).
+
+## Acceptance Criteria
+
+AC-1: WHEN the development loop drains its queue, THE workflow-overview SHALL state that the
+      Gate 5 status summary is produced by the `status-report` skill.
+AC-2: The workflow-overview bug-fix flow SHALL describe the diagnosis handoff as a fix contract
+      that the implementation step consumes.
+
+## Dependencies
+
+- None
+
+## Files to Touch
+
+- `ai-process/processes/workflow-overview.md` — name `status-report` as Gate 5 producer; bug
+  fix-contract wording
+
+## Verification
+
+```bash
+grep -n "status-report" ai-process/processes/workflow-overview.md
+grep -niE "fix contract" ai-process/processes/workflow-overview.md
+```
+
+## Work Log
+
+<!-- Mandatory. Append one entry per session boundary. Format:
+### Session N — YYYY-MM-DD
+Free-prose body: what was done this session, what was tried and
+rejected, decisions made, what remains for next session.
+
+Start every session by reading the entries below.
+The final entry serves as the handoff to the reviewer. -->
+
+## Review
+
+<!-- Reviewer: append verdict here after each review cycle.
+
+### Review Verdict — YYYY-MM-DD
+PASS | FAIL | ESCALATE
+
+- For FAIL: file, location, what is wrong, what should change.
+- For PASS: brief confirmation that both stages passed.
+- For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
+-->
