@@ -59,6 +59,26 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-04
+
+Both acceptance criteria were addressed in a single TDD cycle against `ai-process/processes/workflow-overview.md`.
+
+**Red phase:** Ran the two verification greps before any edit; both returned exit code 1 (no matches), confirming the gaps were real.
+
+**AC-1 (Gate 5 producer):** Line 178 named the development loop as producing the Gate 5 status summary but did not identify the mechanism. Added "by invoking the `status-report` skill" inline so the sentence now reads as a complete statement of producer and tool.
+
+**AC-2 (fix contract wording):** Step 5 in the bug-fix loop section described committing the Diagnosis Log entry as a bookkeeping action. Extended that sentence to state explicitly: "That committed Diagnosis Log entry is the fix contract: the implementation step must address the isolated fault and root cause it records." This sharpens the existing diagnosis-first flow without restructuring it.
+
+**Alternatives considered and rejected:** Adding a separate paragraph or heading for "fix contract" — rejected because it would have introduced duplication; the contract concept belongs precisely at the point where the loop commits the Diagnosis Log, which is where the obligation begins.
+
+**Green phase:** Both verification greps matched the expected lines after the edits.
+
+**Refactor phase:** No structural refactoring was needed; both changes were minimal, targeted sentence extensions.
+
+**Committed** on the task branch as `docs(workflow): name status-report as Gate 5 producer and add fix-contract wording` (commit `ca9eb36`).
+
+**Nothing remains** for this task — all acceptance criteria are satisfied and verified.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
