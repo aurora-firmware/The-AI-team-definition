@@ -87,3 +87,28 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-06-04
+
+PASS
+
+Both stages passed.
+
+**Stage 1 — Spec compliance:**
+
+- AC-1: Confirmed. `git-conventions/body.md` exposes the four stable citable headings (`## Branch Model`, `## Commit Message Format`, `## When Each Role Commits`, `## Hard Rules`). The `## Quality Criteria` section — which merely restated Hard Rules — was removed, leaving Hard Rules as the sole authority. Scaffolds for both claude and codex match the source.
+
+- AC-2: Confirmed. `escalation-review/body.md` now contains the `## Escalation Request Block (FROZEN)` top-level section with the copy-ready four-field fenced block. The Escalation Verdict block and Phase 2 Human Escalation Report template were already present and remain. B-008's `description` (not `context`) fix for the new-adr invocation was preserved without regression — verified by direct inspection and the test `test_escalation_review_new_adr_invocation_uses_description_not_context`. The `status: accepted` addition to the new-adr invocation is a correct preservation of B-008's fix (that fix added `status` in its own commit). Scaffolds for both tools match.
+
+- AC-3: Independently verified. `new-spec/body.md` holds the full `## Content-boundary rule (strict)` section including the `Rare exception` clause. `brainstorm/body.md` contains a one-line inline pointer to `new-spec` at Step 7 and in Common Pitfalls, without restating the `Rare exception` clause or the full four-paragraph rule. No source changes were needed for AC-3, consistent with the Developer's claim. Scaffolds confirmed.
+
+- Scope: The single implementation commit (884994c) touches only the six in-scope source/scaffold files plus the new test file. All other file changes visible in `git diff main...` are from prior merged tasks on this branch, not from T-064.
+
+- Verification greps from the task both pass as expected.
+
+**Stage 2 — Code quality:**
+
+- Tests: `cli/tests/test_t064_skill_bodies_canonical.py` adds 18 tests covering each AC. Tests cover source bodies and both claude/codex scaffolds. All 353 tests pass. Tests are independent (no shared mutable state).
+- Correctness: Logic is sound. Tests read source and scaffold files directly with no mocking gaps.
+- Ruff format and lint checks both clean.
+- No dead code, hardcoded secrets, or unrelated behavior introduced.
