@@ -51,6 +51,22 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-05
+
+Picked up T-066 with an empty Work Log. Both acceptance criteria required documentation artifacts (ADR + guide update) with automated tests following the T-064/T-065 precedent.
+
+**What was done:**
+
+Ran `ai-team adr new "Codex skill frontmatter retains full parity with Claude" --status accepted --json` to create the skeleton ADR at `project/decisions/ADR-001-codex-skill-frontmatter-retains-full-parity-with-claude.md`. Wrote the failing test file `cli/tests/test_t066_codex_frontmatter_parity_decision.py` first (9 tests: 6 failing, 3 trivially passing due to the skeleton ADR having "parity" in title and "accepted" in frontmatter). Then implemented the green step: filled in the ADR with Context, Decision, Consequences, and Alternatives Considered sections covering the full frontmatter key set (`allowed-tools`, `argument-hint`, `effort`, `disable-model-invocation`), the `Skill()` wiring implication, and the rationale for full parity. Updated `guides/skill_template.md` by adding a `### Codex frontmatter parity (ADR-001)` subsection under Frontmatter Guidance. Ran `ruff format` to satisfy the linter. All 366 tests pass; ruff format and check both clean.
+
+**What was tried and rejected:**
+
+Considered adding the Codex parity note to the `## Pre-Publication Checklist` section of the skill template instead, but the Frontmatter Guidance section is where all key-level policy lives — that was the more natural placement and keeps the checklist focused on mechanical verification rather than policy statements.
+
+**What remains:**
+
+Nothing. Both ACs are satisfied, tests pass, and lint is clean. Task is ready for review.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
