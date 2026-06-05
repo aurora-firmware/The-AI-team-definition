@@ -1,7 +1,7 @@
 ---
 id: T-067
 title: Re-render init scaffolds and verify both skill exports
-status: pending
+status: completed
 priority: medium
 assigned-role: unassigned
 created: '2026-06-04'
