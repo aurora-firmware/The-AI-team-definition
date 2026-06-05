@@ -103,7 +103,7 @@ The `ai-process/` specification documents are not exported. They live in the AI 
 
 ### Step 4: Create Your Project's CLAUDE.md and AGENTS.md
 
-Create a `CLAUDE.md` (and optionally `AGENTS.md`) in your project root. The `## Test` section in `CLAUDE.md` is especially important: it is the canonical location where `dev-loop` reads the baseline test command at startup. If the section is absent, contains only a placeholder, or is ambiguous, `dev-loop` will escalate to the human rather than guessing a command. `AGENTS.md` is the equivalent file for non-Claude tooling and is read by those tools, but `dev-loop` reads only root `CLAUDE.md` — placing the test command in `AGENTS.md` alone will cause the baseline guard to escalate.
+Create a `CLAUDE.md` and `AGENTS.md` in your project root. The test instructions in these files are especially important: `dev-loop` starts baseline command discovery from root project guidance, then follows clear references to project-local docs such as `project/docs/coding_guidelines.md`, README files, build configuration, or other documented test instructions. If no automated baseline command is documented, or the available guidance is ambiguous, `dev-loop` will ask the human for the intended command or for explicit confirmation that no automated baseline test is available before claiming a task.
 
 `ai-team init` can scaffold starter versions of both root guidance files when they are missing. Run `ai-team init . --tools claude` interactively and answer the prompts, or pass `--create-root-guidance` with `--no-interactive` to create them non-interactively. Existing root guidance files are never overwritten unless `--force` is also set.
 
@@ -162,7 +162,7 @@ Start your `CLAUDE.md` with this structure and customize the first section:
 
 ### Step 5: Customize for Your Stack
 
-**Root `CLAUDE.md` `## Test` section** — Fill in the command agents should run to execute the test suite. This is the single source of truth for the baseline test command. `dev-loop` reads this section at startup; if it is missing or still contains the init placeholder, the loop escalates instead of starting. If your project has no automated tests, replace the placeholder with an explicit note saying so.
+**Baseline test instructions** — Fill in the command agents should run to execute the test suite. Put it in root guidance (`CLAUDE.md` or `AGENTS.md`) or clearly reference a project-local doc that contains it. `dev-loop` reads project guidance at startup; if the command is missing or ambiguous, the loop asks for human clarification before claiming a task. If your project has no automated tests, state that explicitly so the loop can record the confirmation and continue.
 
 **`project/docs/coding_guidelines.md`** — Add project-specific rules:
 - Stack and framework conventions.
@@ -201,7 +201,7 @@ Run these checks to confirm everything is in place:
 
 4. **Delete the test task**: Remove the test file you just created.
 
-5. **Project guidance exists**: Confirm root `CLAUDE.md` has a `## Test` section with a real test command (not the init placeholder), and points to `project/docs/coding_guidelines.md` or equivalent project-local guidance.
+5. **Project guidance exists**: Confirm root guidance has a real baseline test command or clearly points to `project/docs/coding_guidelines.md` or equivalent project-local guidance that contains it. If the project has no automated baseline test, state that explicitly.
 
 ### Step 7: Verify Packaging and Installation End-to-End (Maintainers)
 

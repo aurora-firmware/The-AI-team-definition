@@ -15,7 +15,7 @@ effort: high
 
 The task or bug file is canonical lifecycle state on `dev-agent`.
 Review verdicts are written and committed there, not on the implementation branch.
-The two-stage checklist applied below is the Reviewer role's quality bar, carried by the invoking Reviewer agent.
+The two-stage checklist below is the canonical quality bar for all code reviews.
 
 ## Procedure
 
@@ -23,6 +23,10 @@ The two-stage checklist applied below is the Reviewer role's quality bar, carrie
 Switch to `dev-agent` and read the canonical task or bug file completely.
 For tasks, understand what was asked, what the acceptance criteria are, and which files should have been modified.
 For bugs, understand the symptom, reproduction status, diagnostic evidence, isolated fault, root cause or fault hypothesis, and Fix Verification steps.
+
+For bug fixes, verify the diagnosis→fix evidence chain before proceeding to Stage 1:
+- Does the Diagnosis Log exist and contain a complete fix contract (isolated fault, planned fix, planned verification)?
+- If the evidence chain is missing or incomplete, return **FAIL** immediately. Do not infer intent from the diff.
 
 ### Step 2: Stage 1 — Acceptance Or Bug Criteria
 For tasks, check each acceptance criterion against the code:
@@ -32,21 +36,27 @@ For tasks, check each acceptance criterion against the code:
 
 For bug fixes, check:
 - Does the Diagnosis Log include reproduction status and evidence?
-- Does the fix address the isolated fault or documented root cause?
+- Does the fix address the isolated fault or documented root cause from the fix contract?
 - Were the Fix Verification steps followed?
 - Was unrelated behavior added?
 
 If any task criterion or bug-fix criterion is not met, skip Stage 2 and set the verdict to **FAIL** with specific feedback.
 
 ### Step 3: Stage 2 — Code Quality
-Apply the Stage 2 checklist from the Reviewer role's quality bar:
-- **Correctness**: Logic handles expected inputs and edge cases.
-- **Tests**: Tests exist, cover success and failure paths, are independent.
-- **Security**: No hardcoded secrets, input is validated, queries are parameterized.
-- **Readability**: Names are descriptive, functions are focused, no dead code.
+
+**Stage 2 Checklist:**
+- **Correctness**: Logic handles expected inputs and edge cases correctly.
+- **Tests**: Tests exist, cover both success and failure paths, and are independent (no shared mutable state).
+- **Security**: No hardcoded secrets, all external input is validated, database queries are parameterized.
+- **Readability**: Names are descriptive, functions are focused, no dead code or commented-out blocks.
 - **Performance**: No unnecessary loops, blocking calls, or resource leaks.
 
-For bug fixes, also run the Bug Fix Addendum from the Reviewer's quality bar.
+**Bug Fix Addendum:**
+For bug fixes, also check:
+- The fix is minimal — only the code required to address the isolated fault was changed.
+- A regression test exists that fails before the fix and passes after it.
+- No unrelated refactoring, cleanup, or feature code is bundled into the fix.
+- The Diagnosis Log fix contract (isolated fault, planned fix, planned verification) matches what was actually implemented.
 
 ### Step 4: Produce Verdict
 
@@ -99,6 +109,7 @@ Next owner: active loop for Architect consultation.
 ## Quality Criteria
 
 - Every acceptance criterion was explicitly checked (not assumed).
+- For bug fixes, the diagnosis→fix evidence chain was explicitly verified before any other check.
 - For bug fixes, diagnostic evidence and Fix Verification were explicitly checked.
 - Feedback is specific and actionable — never vague.
 - The reviewer checked the actual code, not just the test results.
@@ -110,3 +121,4 @@ Next owner: active loop for Architect consultation.
 - **Bikeshedding** — spending review time on naming preferences or formatting instead of correctness and security.
 - **Vague feedback** — "this could be better" is not actionable. "This function handles the success case but does not handle the empty-input case described in acceptance criterion 3" is.
 - **Scope creep in review** — reviewing code outside the task's scope. Only review what the task changed.
+- **Inferring intent from the diff** — for bug fixes, do not guess what the fix was meant to address. Require a complete evidence chain in the Diagnosis Log before reviewing the implementation.

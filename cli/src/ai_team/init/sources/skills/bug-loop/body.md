@@ -120,6 +120,11 @@ Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 
 #### On PASS
 
+Before invoking integration, confirm that the committed Diagnosis Log, the committed
+Developer Work Log, and the committed Review Verdict all exist on `dev-agent` (they were
+recorded in Steps 4, 5, and 6). The `integrate` skill verifies that the latest committed
+verdict is PASS — ensure this state is in place before calling integrate.
+
 1. Invoke the `integrate` skill to merge the reviewed branch into the target branch chosen in Step 3:
    > `/integrate bug/B-NNN-... <target-branch>`
 
@@ -168,7 +173,12 @@ If the Architect cannot resolve it, proceed to Phase 2.
 
 ### Step 8: Loop Complete
 
-When the queue is fully drained (Step 1 finds no open bugs), report a summary:
+When the queue is fully drained (Step 1 finds no open bugs), invoke `Skill(status-report)` to
+produce the canonical Gate 5 summary. The status-report skill runs `ai-team status`, scans project
+state directories, and writes the full progress report — that output is the authoritative end-of-run
+status.
+
+After the status-report output, append the following loop-specific run details as supplemental context:
 - Bugs resolved and merged this run (list with bug IDs and merge commits)
 - Any escalated bugs still in `in-progress/`
 - Any integration failures that stopped the loop mid-run

@@ -2,7 +2,7 @@
 name: dev-loop
 description: Fully autonomous implementation loop. Picks pending tasks one at a time, drives each through Developer → Reviewer cycles until the reviewer passes, commits, then moves to the next task. Stops only when the queue is empty, a task is blocked, or escalation is required.
 argument-hint: "[task-id | task-branch] — optional single task to process (e.g., T-012 or task/T-012-my-feature). If omitted, processes the full pending queue."
-allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate), Skill(git-conventions)
+allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate), Skill(git-conventions), Skill(status-report)
 disable-model-invocation: true
 ---
 
@@ -42,30 +42,39 @@ If the queue is empty, stop and report: "Queue is empty. All pending tasks have 
 
 The baseline guard runs once at loop startup. It is NOT re-checked between tasks. Rationale: post-merge regressions are caught by the integrate skill's destination-branch test step; re-checking between tasks adds latency without adding coverage.
 
-Discover and run the project's baseline test command ONLY from the root `CLAUDE.md` `## Test` section before claiming any task. The dev-loop does not fall back to other files (e.g., `project/docs/coding_guidelines.md`, README, build configs). If the project documents tests elsewhere, the human must mirror or reference them in root `CLAUDE.md`. This policy is deterministic: there is exactly one place an agent must look.
+Discover and run the project's baseline test command from project-specific guidance before claiming any task. Start with root guidance (`CLAUDE.md`, `AGENTS.md`, or equivalent instructions provided in the session), then follow clear references to project-local docs such as `project/docs/coding_guidelines.md`, README files, build configuration, or other documented test instructions. Prefer an explicitly documented test command over inferring one from dependencies or filenames.
 
 Skip this step when looping back after a completed task (control returns to Step 1, which skips Step 2 on subsequent iterations).
 
-#### Missing — escalate when ANY of these hold
+#### Discovery Order
 
-- Root `CLAUDE.md` does not exist.
-- Root `CLAUDE.md` exists but has no `## Test` heading.
-- The `## Test` section exists but its body contains no fenced code block (no ` ``` `...` ``` ` block).
+1. Read root project guidance files that exist, especially `CLAUDE.md` and `AGENTS.md`.
+2. Read any project-local docs referenced by those files for test, build, or verification commands.
+3. Read common project documentation or configuration files when guidance points there or no root guidance exists, such as README files, package/build manifests, or project-specific coding guidelines.
+4. Identify the smallest documented automated command that verifies the project starts green enough for task work.
 
-Stop and report:
-`BLOCKED: root CLAUDE.md is missing a runnable command in the ## Test section. Add a fenced command block before re-running the loop.`
+#### Missing or Unavailable
 
-#### Ambiguous — escalate when ANY of these hold
+If no automated baseline test command is documented, or the documentation explicitly says no automated tests exist, ask the human for one of these before claiming a task:
 
-- The `## Test` section's fenced block still matches the T-050 placeholder (it contains only a comment like `# describe...` or `# TODO` or is empty).
-- The `## Test` section contains more than one fenced code block (the loop cannot pick).
+- The intended baseline test command to run.
+- Explicit confirmation that no automated baseline test is available for this project.
 
-Stop and report:
-`BLOCKED: root CLAUDE.md ## Test section is ambiguous (placeholder or multiple commands). Replace it with exactly one fenced command block before re-running the loop.`
+Stop until the human responds. Report:
+`BLOCKED: no automated baseline test command is documented. Provide the command to run, or confirm that this project has no automated baseline test.`
+
+If the human confirms that no automated baseline test is available, record that confirmation in the loop summary and continue to Step 3 without running a baseline command.
+
+#### Ambiguous
+
+If multiple plausible automated baseline commands are documented and no source clearly identifies which one is the baseline, ask the human which command to use before claiming a task.
+
+Stop until the human responds. Report:
+`BLOCKED: multiple plausible baseline test commands are documented. Confirm which command the loop should run before claiming tasks.`
 
 #### Runnable
 
-If the `## Test` section contains exactly one fenced code block whose content is not a placeholder comment, treat its content as the baseline test command. Run it.
+If a clear baseline test command is documented, run it.
 
 - If the baseline test command passes, continue to Step 3.
 - If the baseline test command fails, stop immediately and report: `BLOCKED: baseline test command failed before any task was claimed. Failing command: <command>. Output summary: <last 20 lines of combined stdout/stderr>.`
@@ -127,6 +136,11 @@ Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 
 #### On PASS
 
+Before invoking integration, confirm that both the committed Developer Work Log and the
+committed Review Verdict exist on `dev-agent` (they were recorded in Steps 5 and 6).
+The `integrate` skill verifies that the latest committed verdict is PASS — ensure this
+state is in place before calling integrate.
+
 1. Invoke the `integrate` skill to merge the reviewed branch into `dev-agent`:
    > `/integrate task/T-NNN-... dev-agent`
 
@@ -172,7 +186,12 @@ If the Architect cannot resolve the issue:
 
 ### Step 8: Loop Complete
 
-When the queue is fully drained (Step 1 finds no pending tasks), report a summary:
+When the queue is fully drained (Step 1 finds no pending tasks), invoke `Skill(status-report)` to
+produce the canonical Gate 5 summary. The status-report skill runs `ai-team status`, scans project
+state directories, and writes the full progress report — that output is the authoritative end-of-run
+status.
+
+After the status-report output, append the following loop-specific run details as supplemental context:
 - Tasks completed and merged this run (list with task IDs and merge commits)
 - Tasks that were already completed before this run (skip)
 - Any blocked tasks

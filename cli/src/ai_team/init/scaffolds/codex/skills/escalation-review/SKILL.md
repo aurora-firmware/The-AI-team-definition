@@ -9,14 +9,24 @@ effort: high
 
 ## Input Requirements
 
-- **Structured request** with:
-  - Problem
-  - Attempted
-  - Failed because
-  - Question
+- **Structured request** — see [Escalation Request Block (FROZEN)](#escalation-request-block-frozen) below.
 - **Original work item** — task or bug file.
 - **Relevant logs** — Work Log, Diagnosis Log, Review Verdicts, test output, or merge-conflict context.
 - **Approved specification and ADRs** when the issue may affect scope or architecture.
+
+## Escalation Request Block (FROZEN)
+
+This is the single canonical source for the four-field escalation request format. Every skill or
+role that emits an escalation must use these exact field names in this exact order. The block is
+kept inline at each emission point for locality; this section freezes the field names so all
+copies stay consistent.
+
+```text
+Problem: [the criterion that will not pass, or the boundary that was violated]
+Attempted: [implementations tried on retry, or why the boundary cannot be honoured as written]
+Failed because: [the specific reason — test output, scope mismatch, contradictory requirement]
+Question: [specific guidance needed to continue within the approved specification]
+```
 
 ## Procedure
 
@@ -45,7 +55,8 @@ If the task or bug file needs clarification within existing scope, recommend the
 If the issue is architecture-affecting and within the approved spec, use `new-adr` or amend an existing ADR before implementation continues.
 When invoking `new-adr`, provide the full required input set:
 - `title`: concise decision title derived from the architectural guidance
-- `context`: the escalation request, work item path, approved spec or ADR context, and why the decision affects future work
+- `description`: the escalation request, work item path, approved spec or ADR context, and why the decision affects future work
+- `status`: `accepted` — the Architect is adopting the decision now as the authoritative resolution to the escalation
 
 If the issue requires changing the approved spec, or cannot be resolved after full analysis, escalate to the human with a compact context package.
 

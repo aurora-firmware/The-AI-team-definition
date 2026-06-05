@@ -50,6 +50,22 @@ Do not rely on task or bug file copies from the source branch or destination bra
    - If no automated verification command can be determined, stop with `BLOCKED` and ask the human for the project verification command.
 8. Use the discovered command set for both pre-merge and post-merge verification unless the work item or project guidance explicitly defines separate source-branch and destination-branch checks.
 
+### Step 2b: Verify the Latest Committed Review Verdict on dev-agent is PASS
+
+Before leaving `dev-agent`, confirm that the latest committed canonical Review Verdict for
+this work item is PASS.
+
+1. While still on `dev-agent`, read the `## Review` section of the work item file.
+2. Find the most recent `### Review Verdict` entry.
+3. Extract the verdict: PASS, FAIL, or ESCALATE.
+4. If the committed verdict is not PASS (or no verdict entry exists), stop and report:
+   - Work item ID and the verdict found (or "no verdict committed").
+   - Do not merge — the branch must pass review before integration.
+   - Instruct the active loop to ensure a committed PASS verdict exists on `dev-agent`
+     before re-invoking integrate.
+
+Proceed to Step 3 only when the committed verdict is PASS.
+
 ### Step 3: Verify Branch Contains Expected Changes
 
 1. Check out the source branch: `git checkout <source-branch>`.
@@ -159,11 +175,11 @@ Reached only when both Step 4 and Step 6 tests pass.
    ```bash
    git branch -d <source-branch>
    ```
-   If `-d` refuses (branch not considered merged by ancestry due to non-FF merge strategy or rebase history), confirm from Step 5 that the merge commit exists in the destination's log, then use:
-   ```bash
-   git branch -D <source-branch>
-   ```
-   Document the forced deletion in the report.
+   If `-d` refuses (branch not considered merged by ancestry due to non-FF merge strategy or rebase history), stop and report:
+   - The exact error output from `git branch -d`.
+   - The merge commit SHA from Step 5.
+   - Forced deletion is forbidden — do not escalate to the `-D` flag.
+   - Instruct the human to inspect the branch and delete it manually once satisfied it is safe.
 
 4. **Report success**:
    - Source branch merged and deleted.

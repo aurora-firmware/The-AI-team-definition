@@ -239,6 +239,7 @@ def test_sync_script_replaces_project_with_empty_lifecycle_skeleton(
         Path("bugs/open/.gitkeep"),
         Path("bugs/in-progress/.gitkeep"),
         Path("bugs/resolved/.gitkeep"),
+        Path("change-requests/.gitkeep"),
         Path("decisions/.gitkeep"),
         Path("docs/.gitkeep"),
         Path("CLAUDE.md"),
@@ -316,6 +317,33 @@ def test_package_owned_skill_sources_include_body_and_required_metadata() -> Non
 
         assert body == scaffold_body
         assert metadata["claude"]["header"].strip() == scaffold_header.strip()
+
+
+def test_init_scaffolds_export_change_request_skill_and_project_directory() -> None:
+    """Fresh init scaffolds include change-request workflow surfaces."""
+    repo_root = Path(__file__).resolve().parents[1]
+    source_skill = (
+        repo_root / "src" / "ai_team" / "init" / "sources" / "skills" / "change-request"
+    )
+    scaffold_project = repo_root / "src" / "ai_team" / "init" / "scaffolds" / "project"
+
+    assert (source_skill / "body.md").is_file()
+    assert (source_skill / "metadata.toml").is_file()
+    assert (scaffold_project / "change-requests" / ".gitkeep").is_file()
+
+    for tool in ("claude", "codex"):
+        scaffold_skill = (
+            repo_root
+            / "src"
+            / "ai_team"
+            / "init"
+            / "scaffolds"
+            / tool
+            / "skills"
+            / "change-request"
+            / "SKILL.md"
+        )
+        assert scaffold_skill.is_file()
 
 
 def test_sync_script_generates_codex_agent_scaffolds_as_real_files_not_symlinks(
@@ -440,6 +468,39 @@ def test_package_owned_agent_sources_cover_each_exported_role_for_both_tools() -
         assert codex_source.read_text(encoding="utf-8") == codex_scaffold.read_text(
             encoding="utf-8"
         )
+
+
+def test_package_owned_codex_agents_use_supported_role_model_defaults() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    sources_root = (
+        repo_root / "src" / "ai_team" / "init" / "sources" / "agents" / "codex"
+    )
+    scaffold_root = (
+        repo_root / "src" / "ai_team" / "init" / "scaffolds" / "codex" / "agents"
+    )
+    expected_models = {
+        "architect": "gpt-5.5",
+        "planner": "gpt-5.5",
+        "developer": "gpt-5.4",
+        "reviewer": "gpt-5.4",
+        "integrator": "gpt-5.4",
+    }
+
+    for role_name, expected_model in expected_models.items():
+        source_data = tomllib.loads(
+            (sources_root / f"{role_name}.toml").read_text(encoding="utf-8")
+        )
+        scaffold_data = tomllib.loads(
+            (scaffold_root / f"{role_name}.toml").read_text(encoding="utf-8")
+        )
+
+        assert source_data["model"] == expected_model
+        assert scaffold_data["model"] == expected_model
+        assert source_data["model"] != "gpt-5.3-codex"
+        assert scaffold_data["model"] != "gpt-5.3-codex"
+        assert source_data["model_reasoning_effort"] == "high"
+        assert scaffold_data["model_reasoning_effort"] == "high"
+        assert scaffold_data == source_data
 
 
 def _spec_breakdown_skill_texts() -> tuple[str, str, str]:
@@ -624,11 +685,14 @@ def test_dev_loop_uses_cli_task_state_filter_for_queue_discovery() -> None:
 
 
 def test_dev_loop_discovers_baseline_test_command_before_claiming_task() -> None:
-    """AC-2: Loop reads the baseline test command from project guidance before claiming."""
+    """AC-2: Loop reads project guidance before claiming a task."""
     source, claude, codex = _dev_loop_skill_texts()
     required_phrases = (
         "baseline test command",
+        "project-specific guidance",
         "CLAUDE.md",
+        "AGENTS.md",
+        "project/docs/coding_guidelines.md",
     )
 
     for phrase in required_phrases:
@@ -648,14 +712,15 @@ def test_dev_loop_allows_loop_to_continue_when_baseline_tests_pass() -> None:
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
 
 
-def test_dev_loop_escalates_when_baseline_test_command_missing_or_ambiguous() -> None:
-    """AC-4 / F-3: Loop escalates with specific stop messages for missing AND ambiguous cases."""
+def test_dev_loop_asks_user_when_baseline_test_command_missing_or_ambiguous() -> None:
+    """AC-4 / F-3: Loop asks for clarification on missing or ambiguous commands."""
     source, claude, codex = _dev_loop_skill_texts()
     required_phrases = (
-        "BLOCKED: root CLAUDE.md is missing a runnable command in the ## Test section."
-        " Add a fenced command block before re-running the loop.",
-        "BLOCKED: root CLAUDE.md ## Test section is ambiguous (placeholder or multiple commands)."
-        " Replace it with exactly one fenced command block before re-running the loop.",
+        "ask the human for one of these before claiming a task",
+        "BLOCKED: no automated baseline test command is documented."
+        " Provide the command to run, or confirm that this project has no automated baseline test.",
+        "BLOCKED: multiple plausible baseline test commands are documented."
+        " Confirm which command the loop should run before claiming tasks.",
     )
 
     for phrase in required_phrases:
@@ -664,13 +729,14 @@ def test_dev_loop_escalates_when_baseline_test_command_missing_or_ambiguous() ->
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
 
 
-def test_dev_loop_baseline_guard_enumerates_missing_conditions() -> None:
-    """F-1: Step 2 enumerates exact decidable conditions for 'missing'."""
+def test_dev_loop_baseline_guard_defines_flexible_discovery_order() -> None:
+    """F-1: Step 2 defines a flexible project guidance discovery order."""
     source, claude, codex = _dev_loop_skill_texts()
     required_phrases = (
-        "Root `CLAUDE.md` does not exist",
-        "Root `CLAUDE.md` exists but has no `## Test` heading",
-        "The `## Test` section exists but its body contains no fenced code block",
+        "Read root project guidance files that exist",
+        "Read any project-local docs referenced by those files",
+        "Read common project documentation or configuration files",
+        "Prefer an explicitly documented test command",
     )
 
     for phrase in required_phrases:
@@ -679,12 +745,13 @@ def test_dev_loop_baseline_guard_enumerates_missing_conditions() -> None:
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
 
 
-def test_dev_loop_baseline_guard_enumerates_ambiguous_conditions() -> None:
-    """F-1: Step 2 enumerates exact decidable conditions for 'ambiguous'."""
+def test_dev_loop_baseline_guard_handles_projects_without_automated_tests() -> None:
+    """F-1: Step 2 can proceed with explicit no-automated-test confirmation."""
     source, claude, codex = _dev_loop_skill_texts()
     required_phrases = (
-        "The `## Test` section's fenced block still matches the T-050 placeholder",
-        "The `## Test` section contains more than one fenced code block",
+        "If the human confirms that no automated baseline test is available",
+        "record that confirmation in the loop summary",
+        "continue to Step 3 without running a baseline command",
     )
 
     for phrase in required_phrases:
@@ -693,15 +760,19 @@ def test_dev_loop_baseline_guard_enumerates_ambiguous_conditions() -> None:
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
 
 
-def test_dev_loop_baseline_guard_reads_only_from_root_claude_md() -> None:
-    """F-2: Step 2 documents no-fallback policy — reads ONLY from root CLAUDE.md ## Test."""
+def test_dev_loop_baseline_guard_does_not_restore_rigid_root_claude_policy() -> None:
+    """F-2: Step 2 must not restore the rigid root-CLAUDE-only policy."""
     source, claude, codex = _dev_loop_skill_texts()
-    required_phrases = ("ONLY from the root `CLAUDE.md`",)
+    forbidden_phrases = (
+        "ONLY from the root `CLAUDE.md`",
+        "exactly one fenced command block",
+        "BLOCKED: root CLAUDE.md",
+    )
 
-    for phrase in required_phrases:
-        assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
-        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
-        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+    for phrase in forbidden_phrases:
+        assert phrase not in source, f"dev-loop body.md must not include: {phrase!r}"
+        assert phrase not in claude, f"Claude scaffold must not include: {phrase!r}"
+        assert phrase not in codex, f"Codex scaffold must not include: {phrase!r}"
 
 
 def test_dev_loop_baseline_guard_runs_once_at_startup_only() -> None:
@@ -750,3 +821,222 @@ def test_project_guidance_sources_exist_and_describe_project_artifact_folders() 
             assert term in guidance_text, (
                 f"{guidance_file_name} must describe {term!r} in project guidance"
             )
+
+
+def _new_task_skill_texts() -> tuple[str, str, str]:
+    repo_root = Path(__file__).resolve().parents[1]
+    source = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "skills"
+        / "new-task"
+        / "body.md"
+    ).read_text(encoding="utf-8")
+    claude = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "claude"
+        / "skills"
+        / "new-task"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    codex = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "codex"
+        / "skills"
+        / "new-task"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    return source, claude, codex
+
+
+# AC-1: ownership boundaries
+
+
+def test_spec_breakdown_states_plan_coverage_ownership_boundary() -> None:
+    """AC-1: spec-breakdown body states it owns plan coverage, dependencies, task boundaries."""
+    source, claude, codex = _spec_breakdown_skill_texts()
+    required_phrases = (
+        "spec-breakdown owns",
+        "new-task",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"spec-breakdown source must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_new_task_states_per_task_shape_ownership_boundary() -> None:
+    """AC-1: new-task body states it owns per-task shape and references spec-breakdown for plan-level rules."""
+    source, claude, codex = _new_task_skill_texts()
+    required_phrases = (
+        "enforces per-task shape",
+        "spec-breakdown",
+        "new-task owns",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"new-task source must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_spec_breakdown_review_states_gate_2_technical_readiness_ownership_boundary() -> (
+    None
+):
+    """AC-1: spec-breakdown-review body states it owns Gate 2 technical readiness."""
+    source, claude, codex = _spec_breakdown_review_skill_texts()
+    required_phrases = (
+        "spec-breakdown-review owns",
+        "Gate 2 technical readiness",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, (
+            f"spec-breakdown-review source must include: {phrase!r}"
+        )
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+# AC-2: EARS references point to task template, not "the new-task skill"
+
+
+def test_spec_breakdown_ears_reference_points_to_task_template_not_new_task_skill() -> (
+    None
+):
+    """AC-2: spec-breakdown EARS reference uses task template path, not 'the new-task skill'."""
+    source, claude, codex = _spec_breakdown_skill_texts()
+
+    task_template_phrases = ("task template", "templates/task")
+    forbidden_phrase = "documented in the new-task skill"
+
+    for phrase in task_template_phrases:
+        assert phrase in source, f"spec-breakdown source must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+    assert forbidden_phrase not in source, (
+        f"spec-breakdown source must not include: {forbidden_phrase!r}"
+    )
+    assert forbidden_phrase not in claude, (
+        f"Claude scaffold must not include: {forbidden_phrase!r}"
+    )
+    assert forbidden_phrase not in codex, (
+        f"Codex scaffold must not include: {forbidden_phrase!r}"
+    )
+
+
+def test_spec_breakdown_review_ears_reference_points_to_task_template_not_new_task_skill() -> (
+    None
+):
+    """AC-2: spec-breakdown-review EARS reference uses task template path, not 'the new-task skill'."""
+    source, claude, codex = _spec_breakdown_review_skill_texts()
+
+    task_template_phrases = ("task template", "templates/task")
+
+    for phrase in task_template_phrases:
+        assert phrase in source, (
+            f"spec-breakdown-review source must include: {phrase!r}"
+        )
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+# AC-3: Gate 2 output section states architect role envelope wraps Findings block
+
+
+def test_spec_breakdown_review_output_states_architect_envelope_wraps_findings_block() -> (
+    None
+):
+    """AC-3: spec-breakdown-review output section states architect role envelope wraps Findings block."""
+    source, claude, codex = _spec_breakdown_review_skill_texts()
+    required_phrases = (
+        "architect",
+        "envelope",
+        "Findings",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, (
+            f"spec-breakdown-review source must include: {phrase!r}"
+        )
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_spec_breakdown_review_output_does_not_duplicate_result_summary_fields() -> (
+    None
+):
+    """AC-3: spec-breakdown-review output section states no duplicated Result/Summary fields."""
+    source, claude, codex = _spec_breakdown_review_skill_texts()
+    required_phrases = (
+        "no duplicated Result",
+        "Result/Summary",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, (
+            f"spec-breakdown-review source must include: {phrase!r}"
+        )
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+# AC-4: spec-coverage check appears before dependency and file-conflict checks
+
+
+def test_spec_breakdown_review_includes_spec_coverage_check() -> None:
+    """AC-4: spec-breakdown-review body includes a spec-coverage check (plan covers the whole spec)."""
+    source, claude, codex = _spec_breakdown_review_skill_texts()
+    required_phrases = (
+        "spec coverage",
+        "covers the",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, (
+            f"spec-breakdown-review source must include: {phrase!r}"
+        )
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_spec_breakdown_review_spec_coverage_check_precedes_dependency_and_conflict_checks() -> (
+    None
+):
+    """AC-4: spec-coverage check appears before dependency check and file-conflict check."""
+    source, _claude, _codex = _spec_breakdown_review_skill_texts()
+
+    coverage_markers = ("spec coverage", "covers the")
+    dependency_marker = "Check Dependency"
+    conflict_marker = "Check File Conflict"
+
+    coverage_pos = min(source.index(m) for m in coverage_markers if m in source)
+    assert dependency_marker in source, (
+        f"spec-breakdown-review source must include: {dependency_marker!r}"
+    )
+    assert conflict_marker in source, (
+        f"spec-breakdown-review source must include: {conflict_marker!r}"
+    )
+
+    dep_pos = source.index(dependency_marker)
+    conflict_pos = source.index(conflict_marker)
+
+    assert coverage_pos < dep_pos, (
+        "Spec-coverage check must appear before dependency check in spec-breakdown-review"
+    )
+    assert coverage_pos < conflict_pos, (
+        "Spec-coverage check must appear before file-conflict check in spec-breakdown-review"
+    )
