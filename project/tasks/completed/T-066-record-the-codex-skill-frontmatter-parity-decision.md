@@ -1,7 +1,7 @@
 ---
 id: T-066
 title: Record the Codex skill-frontmatter parity decision
-status: pending
+status: completed
 priority: low
 assigned-role: unassigned
 created: '2026-06-04'
