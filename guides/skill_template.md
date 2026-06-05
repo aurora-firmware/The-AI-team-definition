@@ -244,6 +244,14 @@ description: Use this when needed.     # no specifics
 `disable-model-invocation`:
 - Set to `true` for orchestrators and actions that should only run on explicit human invocation, not via auto-selection.
 
+### Codex frontmatter parity (ADR-001)
+
+The `[codex]` section header in every exported `SKILL.md` keeps the **full frontmatter key
+set** — `allowed-tools`, `argument-hint`, `effort`, and `disable-model-invocation` — in
+full parity with the `[claude]` section. Do not strip keys from Codex headers. In
+particular, skill-to-skill wiring expressed as `Skill(<name>)` in `allowed-tools` must
+be preserved unchanged in both sections.
+
 ## Explicit Skill Invocation
 
 When one skill invokes another in-process, declare it in `allowed-tools` as `Skill(other-skill)` and reference it in prose by its backticked name. Example audit pattern:
