@@ -67,6 +67,20 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-05
+
+This was a verification-only task. All predecessor tasks (T-058 through T-066, T-068, B-008, B-010) had already merged into the branch, so the main job was to confirm the scaffold sync, tests, and linters all remained green with no remaining drift.
+
+**AC-1:** Ran `python3 scripts/sync_init_scaffolds.py` from `cli/` — script completed cleanly and `git status --short` showed a completely clean working tree. No scaffold drift existed.
+
+**AC-2:** Ran the full pytest suite (371 tests, all passed in 1.76s). Both ruff format check and ruff lint check passed with zero issues.
+
+**AC-3 (with architecture caveat):** The task's text references root-level `claude_skills/` and `codex_skills/` directories that no longer exist. These were deleted during the T-035/T-036 refactor which moved the framework to package-owned scaffolds. In the current architecture, the two skill exports are `cli/src/ai_team/init/scaffolds/claude/` and `cli/src/ai_team/init/scaffolds/codex/`, both of which contain 18 skills each and converge fully with source after sync. No recreation of the deleted root-level directories was done or warranted.
+
+**gen_docs.sh:** Ran `bash cli/scripts/gen_docs.sh` to check if CLI command help output changed across the batch. It produced no changes to `cli/docs/commands.md`, consistent with the expectation that T-066 (ADR via existing command) and T-068 (skill-body prose) did not alter CLI command output.
+
+No commits were needed — the branch was already clean and the sync produced no drift. This task's deliverable is the verification evidence itself; the branch carries no diff against `dev-agent`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
