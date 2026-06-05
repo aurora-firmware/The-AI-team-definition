@@ -78,3 +78,23 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-06-05
+
+PASS
+
+Stage 1 (spec compliance): Both acceptance criteria are satisfied.
+
+- AC-1: `project/decisions/ADR-001-codex-skill-frontmatter-retains-full-parity-with-claude.md` exists with `status: accepted`, a filled-in `## Context` section, a `## Decision` section naming all four frontmatter keys (`allowed-tools`, `argument-hint`, `effort`, `disable-model-invocation`), the `Skill()`-wiring implication explicitly stated, substantive rationale, and Alternatives Considered covering both Alternative A (strip keys) and Alternative B (separate source files). No placeholder text remains.
+- AC-2: `guides/skill_template.md` has a new `### Codex frontmatter parity (ADR-001)` subsection under Frontmatter Guidance that explicitly states `[codex]` section headers keep the full frontmatter key set and must not have keys stripped, including the `Skill()` wiring in `allowed-tools`.
+
+No unspecified files were modified. The only files touched are the three listed in the task scope (`project/decisions/`, `guides/skill_template.md`) plus the test file `cli/tests/test_t066_codex_frontmatter_parity_decision.py`, which is consistent with the precedent established by T-063, T-064, and T-065.
+
+Stage 2 (code quality): All checks pass.
+
+- Tests: 9 targeted tests cover both ACs (existence, content, required keys, Skill() wiring, rationale, accepted status, guide update). All 366 suite tests pass.
+- Correctness: ADR content is factually consistent with the task description; guide update is placed in the correct section (Frontmatter Guidance, not the checklist).
+- Security: No secrets or external input. Not applicable.
+- Readability: Test file is clearly structured with section comments separating AC-1 and AC-2 tests; assertion messages are specific. ADR follows standard ADR structure.
+- Performance: No issues.
+- Ruff format and check: clean.
