@@ -1,7 +1,7 @@
 ---
 id: T-068
 title: Add a Common Pitfalls section to the change-request skill body
-status: pending
+status: completed
 priority: low
 assigned-role: unassigned
 created: '2026-06-04'
