@@ -35,6 +35,14 @@ When invoked directly and required fields are missing, ask only for the missing 
 - The body states the requested change, reason, affected artifacts, and unresolved questions.
 - Unknown or unconfirmed details remain marked `[TODO]`.
 
+## Common Pitfalls
+
+- **Raising a change-request when a new spec is warranted** — if the proposed change adds a significant new capability, a new workflow, or a new system component, open a spec instead. A change-request is for scope amendments to an existing, approved spec, not a vehicle for speccing new work.
+- **Vague change description** — "update the spec" or "fix the task" is not a change description. Name the specific section, requirement, or acceptance criterion that must change and state why the current wording is wrong or incomplete.
+- **Missing affected-artifact list** — every change-request must name the specs, tasks, or other artifacts it touches. Omitting this forces reviewers to guess the blast radius and risks silent conflicts with in-flight tasks.
+- **Missing risk notes** — if the change could break a dependency, invalidate work already in progress, or require re-review of a gate, say so. Silently omitting known risks is the most common reason change-requests are rejected or returned for revision.
+- **Inventing details instead of marking `[TODO]`** — when the full impact of a change is not yet known, mark the gap `[TODO]` rather than filling it with plausible-sounding but unconfirmed content. Invented details mislead reviewers and produce incorrect downstream tasks.
+
 ## Output Format
 
 Always return:
