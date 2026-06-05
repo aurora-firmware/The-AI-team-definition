@@ -79,3 +79,19 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-06-05
+
+PASS
+
+Both stages passed.
+
+**Stage 1 — Spec compliance:**
+- AC-1 met: `cli/src/ai_team/init/sources/skills/change-request/body.md` contains a `## Common Pitfalls` heading placed between `## Quality Criteria` and `## Output Format`, consistent in shape with the `new-task` sibling skill.
+- AC-2 met: the section covers all four required misuses — using a change-request when a full spec is warranted, vague change descriptions, missing affected-artifact list, missing risk notes, and inventing details instead of marking `[TODO]`.
+- Scaffold hand-edits verified: running `python3 scripts/sync_init_scaffolds.py` on the task branch produced no further drift, confirming the hand-edits to `scaffolds/claude/skills/change-request/SKILL.md` and `scaffolds/codex/skills/change-request/SKILL.md` are byte-for-byte identical to generator output. The deviation from the literal `Files to Touch` list is justified by the scaffold-parity test invariant, consistent with prior precedent (T-064).
+
+**Stage 2 — Code quality:**
+- Tests: 371/371 pass; 5 new tests in `cli/tests/test_t068_change_request_common_pitfalls.py` cover the heading (AC-1) and all four misuse categories (AC-2) scoped correctly to the `## Common Pitfalls` section via a helper extractor.
+- Linters: `ruff format --check` and `ruff check` both clean.
+- No dead code, secrets, unscoped logic, or readability issues.
