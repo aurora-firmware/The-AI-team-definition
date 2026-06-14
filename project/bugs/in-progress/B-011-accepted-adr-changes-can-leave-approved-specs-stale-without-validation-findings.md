@@ -170,3 +170,21 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-06-14
+PASS
+
+Stage 1 passed. The Diagnosis Log evidence chain is complete and matches the
+implemented fix: ADR frontmatter now supports `affected-specs`, `validate`
+cross-checks accepted ADRs against approved specs and their Amendment Log
+entries, and the ADR CLI/docs/templates were updated so the contract is
+recordable and reviewable.
+
+Stage 2 passed. Reviewed `cli/src/ai_team/core/models.py`,
+`cli/src/ai_team/core/validate.py`, `cli/src/ai_team/commands/adr.py`, the
+regression tests, and the spec-authoring/template updates. Regression coverage
+exercises the stale-spec finding path and the new ADR metadata/CLI round-trip.
+Verification on the implementation branch passed with `UV_CACHE_DIR=/tmp/uv-cache
+uv run pytest tests/test_validate.py tests/test_models.py tests/test_adr_new.py`,
+full `UV_CACHE_DIR=/tmp/uv-cache uv run pytest` (374 passed), and both Ruff
+checks from `cli/`.
