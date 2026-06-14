@@ -131,6 +131,20 @@ supersedes: "ADR-001"
 Body.
 """
 
+VALID_ADR_WITH_AFFECTED_SPECS_CONTENT = """\
+---
+id: "ADR-003"
+title: "Revise connection gate"
+status: accepted
+created: 2026-05-10
+affected-specs:
+  - "S-001"
+  - "S-002"
+---
+
+Body.
+"""
+
 VALID_CHANGE_REQUEST_CONTENT = """\
 ---
 id: "CR-001"
@@ -268,6 +282,13 @@ def test_parse_adr_populates_optional_supersedes_when_present(tmp_path):
     assert result.supersedes == "ADR-001"
 
 
+def test_parse_adr_populates_optional_affected_specs_when_present(tmp_path):
+    """parse_adr populates affected_specs from an optional YAML list."""
+    path = write_file(tmp_path, "ADR-003.md", VALID_ADR_WITH_AFFECTED_SPECS_CONTENT)
+    result = parse_adr(path)
+    assert result.affected_specs == ["S-001", "S-002"]
+
+
 def test_parse_change_request_returns_change_request_instance(tmp_path):
     """parse_change_request returns a ChangeRequest dataclass instance."""
     path = write_file(tmp_path, "CR-001-change.md", VALID_CHANGE_REQUEST_CONTENT)
@@ -353,6 +374,17 @@ def test_dump_frontmatter_adr_with_supersedes_round_trips(tmp_path):
     dumped = dump_frontmatter(original, "Body.\n")
 
     roundtrip_path = write_file(tmp_path, "ADR-002-roundtrip.md", dumped)
+    restored = parse_adr(roundtrip_path)
+    assert restored == original
+
+
+def test_dump_frontmatter_adr_with_affected_specs_round_trips(tmp_path):
+    """dump_frontmatter round-trips an Adr with optional affected_specs."""
+    path = write_file(tmp_path, "ADR-003.md", VALID_ADR_WITH_AFFECTED_SPECS_CONTENT)
+    original = parse_adr(path)
+    dumped = dump_frontmatter(original, "Body.\n")
+
+    roundtrip_path = write_file(tmp_path, "ADR-003-roundtrip.md", dumped)
     restored = parse_adr(roundtrip_path)
     assert restored == original
 
@@ -610,6 +642,7 @@ def test_dump_frontmatter_adr_optional_field_omitted_when_none(tmp_path):
     assert model.supersedes is None
     dumped = dump_frontmatter(model, "# ADR-001: Use ruamel.yaml\n")
     assert "supersedes:" not in dumped
+    assert "affected-specs:" not in dumped
 
 
 def test_dump_frontmatter_task_optional_field_present_when_set(tmp_path):

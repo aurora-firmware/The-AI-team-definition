@@ -43,6 +43,9 @@ CHANGE_REQUEST_ID_RE = re.compile(r"^CR-\d{3}$")
 SLUGGED_FILENAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]*\.md$")
 # New-style spec filenames: S-NNN-<slug>.md
 SPEC_PREFIXED_FILENAME_RE = re.compile(r"^S-\d{3}-[a-z0-9][a-z0-9-]*\.md$")
+AMENDMENT_LOG_HEADING_RE = re.compile(r"^## Amendment Log\s*$", re.MULTILINE)
+SPEC_HEADING_RE = re.compile(r"^##\s+", re.MULTILINE)
+ISO_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 def _should_skip(path: Path) -> bool:
@@ -172,6 +175,57 @@ def _spec_reference_exists(reference: str, spec_slugs: set[str]) -> bool:
     return False
 
 
+def _approved_specs_by_id(root: ProjectRoot) -> dict[str, tuple[Path, str]]:
+    """Return spec-id keyed paths and statuses for valid top-level spec files."""
+    specs_by_id: dict[str, tuple[Path, str]] = {}
+    for path in _iter_markdown_files(root.specs):
+        try:
+            spec = parse_spec(path)
+        except FrontmatterError:
+            continue
+        spec_id = spec._source_map.get("id") if spec._source_map is not None else None
+        if spec_id is None:
+            continue
+        specs_by_id[str(spec_id)] = (path, spec.status)
+    return specs_by_id
+
+
+def _extract_amendment_log_section(text: str) -> str | None:
+    """Return the Amendment Log section body, or None when it is absent."""
+    match = AMENDMENT_LOG_HEADING_RE.search(text)
+    if match is None:
+        return None
+    section_start = match.end()
+    next_heading = SPEC_HEADING_RE.search(text, section_start)
+    section_end = next_heading.start() if next_heading is not None else len(text)
+    return text[section_start:section_end]
+
+
+def _spec_has_post_adr_amendment(
+    spec_path: Path, adr_id: str, adr_created: str
+) -> bool:
+    """Return True when the spec records an ADR-linked amendment on/after the ADR date."""
+    section = _extract_amendment_log_section(spec_path.read_text(encoding="utf-8"))
+    if section is None:
+        return False
+
+    for raw_line in section.splitlines():
+        line = raw_line.strip()
+        if not line.startswith("|"):
+            continue
+        columns = [column.strip() for column in line.strip("|").split("|")]
+        if len(columns) < 2:
+            continue
+        amendment_date = columns[0]
+        if not ISO_DATE_RE.match(amendment_date):
+            continue
+        if amendment_date < adr_created:
+            continue
+        if adr_id in " | ".join(columns[1:]):
+            return True
+    return False
+
+
 def validate_project(
     root: ProjectRoot,
     *,
@@ -189,6 +243,7 @@ def validate_project(
     spec_slugs = {
         path.stem for path in _iter_markdown_files(root.specs) if path.suffix == ".md"
     }
+    specs_by_id = _approved_specs_by_id(root)
     task_ids = _existing_task_ids(root)
     adr_ids = _existing_adr_ids(root)
 
@@ -352,6 +407,41 @@ def validate_project(
                         (
                             f"ADR supersedes reference '{adr.supersedes}' does not "
                             "resolve to an existing ADR."
+                        ),
+                    )
+                )
+            if not adr.affected_specs:
+                continue
+            for spec_id in adr.affected_specs:
+                spec_record = specs_by_id.get(spec_id)
+                if spec_record is None:
+                    findings.append(
+                        _finding(
+                            path,
+                            root,
+                            "adr-affected-spec-missing",
+                            (
+                                f"ADR affected spec reference '{spec_id}' does not "
+                                "resolve to an existing spec."
+                            ),
+                        )
+                    )
+                    continue
+                spec_path, spec_status = spec_record
+                if adr.status != "accepted" or spec_status != "approved":
+                    continue
+                if _spec_has_post_adr_amendment(spec_path, adr.id, adr.created):
+                    continue
+                findings.append(
+                    _finding(
+                        path,
+                        root,
+                        "adr-affected-spec-stale",
+                        (
+                            f"Accepted ADR '{adr.id}' affects approved spec "
+                            f"'{spec_id}', but {spec_path.name} has no amendment "
+                            f"entry on or after {adr.created} that references "
+                            f"'{adr.id}'."
                         ),
                     )
                 )
