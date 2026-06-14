@@ -3,7 +3,7 @@ id: B-011
 title: Accepted ADR changes can leave approved specs stale without validation 
   findings
 severity: medium
-status: in-progress
+status: resolved
 created: '2026-06-14'
 ---
 
