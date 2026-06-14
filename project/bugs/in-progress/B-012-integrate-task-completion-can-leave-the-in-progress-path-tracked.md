@@ -103,6 +103,32 @@ Root cause or fault hypothesis:
 Planned verification:
 -->
 
+### Diagnosis 1 — 2026-06-14
+
+**Reproduction status:** Confirmed.
+
+**Evidence captured:** Current integrate source and both generated scaffolds
+instruct the integrator to move the task file, update status, stage, and commit,
+but do not require `git mv` or `git rm` plus `git add`. A minimal git
+reproduction moved an in-progress task, staged only the completed path, and
+committed; `git ls-tree` then showed both paths in HEAD and
+`git status --porcelain project/tasks/in-progress/` showed an unstaged deletion.
+The reported T-084 incident has the same commit history: the completion commit
+contained both paths and a follow-up commit removed the stale copy.
+
+**Isolated fault:** Integrate Step 7.1 permits a plain filesystem move plus
+staging only the destination. Step 7.4 reports success without verifying that
+the old path is absent from the index and working tree.
+
+**Root cause or fault hypothesis:** Root cause confirmed. The integration
+procedure omits a required deletion-aware git operation and a defensive
+post-move invariant check.
+
+**Planned verification:** Require `git mv` or `git rm` plus `git add` in the
+integrate source and generated scaffolds. Add an explicit check that
+`git status --porcelain project/tasks/in-progress/` is empty before success,
+then run the full repository test and lint checks.
+
 ## Work Log
 
 <!-- Mandatory. Append one entry per session boundary. Format:
