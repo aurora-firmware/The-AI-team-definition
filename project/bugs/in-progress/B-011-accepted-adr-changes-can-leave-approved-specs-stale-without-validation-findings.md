@@ -136,6 +136,29 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-14
+
+Read the canonical bug file and Diagnosis Log before making code changes.
+Reproduced the contract first with a new validation regression test: an accepted
+ADR naming an affected approved spec with no later Amendment Log entry produced
+no finding on the old code.
+
+Implemented the fix in two TDD cycles. Extended ADR frontmatter with optional
+`affected-specs`, then taught `validate` to cross-check accepted ADRs against
+approved specs and emit `adr-affected-spec-stale` when the spec has no Amendment
+Log row on or after the ADR date that references the ADR ID. Added model
+round-trip coverage and `ai-team adr new --affects-spec`, so new ADRs can record
+affected specs without manual frontmatter edits.
+
+Updated the spec template and authoring guide to require ADR-driven Amendment
+Log rows to include the ADR ID. Updated the `new-adr` skill source, regenerated
+Claude and Codex scaffolds, and regenerated `cli/docs/commands.md`.
+
+Focused regression and metadata tests passed, followed by full repository
+checks from `cli/`: `uv run pytest` reported 374 passing tests, and both
+`uv run ruff format --check .` and `uv run ruff check .` passed. Commands used
+`UV_CACHE_DIR=/tmp/uv-cache` because the default cache was not writable.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
