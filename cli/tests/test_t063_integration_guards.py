@@ -203,6 +203,42 @@ def test_integrate_stops_and_reports_when_safe_delete_is_refused() -> None:
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
 
 
+# AC-3b: integrate task completion uses a deletion-aware move and old-path check
+
+
+def test_integrate_requires_deletion_aware_task_completion_move() -> None:
+    """B-012: task completion instructions must describe a git-aware move that stages
+    both the old-path deletion and new-path addition."""
+    source, claude, codex = _integrate_skill_texts()
+
+    required_phrases = (
+        "git mv",
+        "git rm",
+        "git add",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"integrate body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
+def test_integrate_checks_old_task_path_is_clean_before_reporting_success() -> None:
+    """B-012: integrate must explicitly verify the old in-progress task path is clean
+    before reporting success."""
+    source, claude, codex = _integrate_skill_texts()
+
+    required_phrases = (
+        "git status --porcelain project/tasks/in-progress/",
+        "empty",
+    )
+
+    for phrase in required_phrases:
+        assert phrase in source, f"integrate body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+
+
 # AC-4: dev-loop records committed Developer handoffs and Review Verdicts before integration
 
 

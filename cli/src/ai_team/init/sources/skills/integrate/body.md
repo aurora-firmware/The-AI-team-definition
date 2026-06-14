@@ -155,7 +155,18 @@ Evaluate the result:
 Reached only when both Step 4 and Step 6 tests pass.
 
 1. **Update the canonical task file** (if a task file was found in Step 2):
-   - Move the task file from `project/tasks/in-progress/` to `project/tasks/completed/`.
+   - Move the task file from `project/tasks/in-progress/` to `project/tasks/completed/`
+     with a deletion-aware git operation so the old-path deletion and new-path addition
+     are staged atomically:
+     ```bash
+     git mv project/tasks/in-progress/<task-file> project/tasks/completed/<task-file>
+     ```
+     If the file was already moved in the working tree, repair the index before
+     continuing:
+     ```bash
+     git rm project/tasks/in-progress/<task-file>
+     git add project/tasks/completed/<task-file>
+     ```
    - Update `status` in the frontmatter to `completed`.
    - Stage and commit this change as a separate commit on the destination branch:
      `chore(tasks): move <task-id> to completed`
@@ -175,6 +186,8 @@ Reached only when both Step 4 and Step 6 tests pass.
    - Instruct the human to inspect the branch and delete it manually once satisfied it is safe.
 
 4. **Report success**:
+   - Verify `git status --porcelain project/tasks/in-progress/` is empty. If it is not
+     empty, stop and report that the old task path is still dirty or tracked.
    - Source branch merged and deleted.
    - Work item ID and title when available.
    - Test counts: N passed before merge, N passed after merge.
