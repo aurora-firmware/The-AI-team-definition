@@ -2,7 +2,7 @@
 id: B-012
 title: Integrate task completion can leave the in-progress path tracked
 severity: medium
-status: open
+status: in-progress
 created: '2026-06-14'
 ---
 
