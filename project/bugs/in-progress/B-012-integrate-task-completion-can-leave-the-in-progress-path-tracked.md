@@ -169,3 +169,22 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-06-14
+
+PASS
+
+Stage 1 passed. The Diagnosis Log documents confirmed reproduction, isolated Step
+7 as the fault, and ties the fix to the root cause by requiring a deletion-aware
+task-file move plus an explicit old-path cleanliness check before success. The
+submitted diff is limited to the integrate source, both generated integrate
+scaffolds, and regression tests.
+
+Stage 2 passed. `cli/tests/test_t063_integration_guards.py` now covers the
+required `git mv` / `git rm` + `git add` wording and the
+`git status --porcelain project/tasks/in-progress/` emptiness check across the
+source text and both generated scaffolds. Verification rerun on the source
+branch succeeded with `UV_CACHE_DIR=/tmp/uv-cache uv run pytest`
+(`376 passed`), `UV_CACHE_DIR=/tmp/uv-cache uv run pytest tests/test_t063_integration_guards.py`
+(`12 passed`), `UV_CACHE_DIR=/tmp/uv-cache uv run ruff format --check .`, and
+`UV_CACHE_DIR=/tmp/uv-cache uv run ruff check .`.
