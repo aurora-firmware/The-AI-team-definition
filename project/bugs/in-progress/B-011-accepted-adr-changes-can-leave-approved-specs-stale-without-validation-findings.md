@@ -100,6 +100,32 @@ Root cause or fault hypothesis:
 Planned verification:
 -->
 
+### Diagnosis 1 — 2026-06-14
+
+**Reproduction status:** Confirmed. A minimal temporary project containing an
+approved spec that states an old connection-gate rule and an accepted ADR that
+replaces that rule produced no validation findings.
+
+**Evidence captured:** Running `validate --all --json` against the fixture
+returned exit code 0 and `[]`. Source inspection confirmed that ADR metadata and
+creation support only `supersedes`, while `validate_project()` checks spec IDs
+and filenames plus ADR IDs and unresolved `supersedes` references. The existing
+validation tests pass without covering accepted-ADR-to-spec freshness.
+
+**Isolated fault:** The ADR/spec validation contract and implementation have no
+data path that correlates accepted ADRs with affected specs or their amendment
+records.
+
+**Root cause or fault hypothesis:** Root cause confirmed. Validation was
+originally scoped to artifact shape, lifecycle state, and direct-reference
+resolution. ADR references were restricted to `supersedes`, leaving no
+machine-readable affected-spec relationship and no freshness rule.
+
+**Planned verification:** Add a regression fixture containing an accepted ADR
+that declares affected approved specs and a spec whose amendment record omits
+the ADR-driven change. Verify `validate --all --json` emits a finding for the
+stale spec, then run the focused and full CLI test suites.
+
 ## Work Log
 
 <!-- Mandatory. Append one entry per session boundary. Format:
