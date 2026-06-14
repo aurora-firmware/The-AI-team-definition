@@ -139,6 +139,25 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-14
+
+Read the canonical bug file and Diagnosis Log as the implementation contract.
+Added regression tests that require the integrate source plus both generated
+scaffolds to mention a deletion-aware task completion move (`git mv`, or repair
+via `git rm` plus `git add`) and an explicit
+`git status --porcelain project/tasks/in-progress/` emptiness check before
+success. Verified the new tests failed against the existing procedure.
+
+Updated only the source-of-truth integrate procedure in Step 7. The task-file
+move now requires a git-aware operation that records deletion and addition, and
+the success path requires the old in-progress path to be clean before reporting
+success. Regenerated the Claude and Codex integrate scaffolds from source.
+
+The focused regression tests passed after the change. Full checks from `cli/`
+also passed: `uv run pytest` reported 376 passing tests,
+`uv run ruff format --check .` reported all files formatted, and
+`uv run ruff check .` passed. Commands used `UV_CACHE_DIR=/tmp/uv-cache`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
