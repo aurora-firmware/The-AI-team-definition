@@ -42,7 +42,7 @@ author: planner
 id: "{id}"
 ---
 
-Body.
+{body}
 """
 
 ADR_TEMPLATE = """\
@@ -81,8 +81,8 @@ def _bug(bug_id: str, title: str, status: str, *, extra_frontmatter: str = "") -
     )
 
 
-def _spec(spec_id: str, title: str) -> str:
-    return SPEC_TEMPLATE.format(id=spec_id, title=title)
+def _spec(spec_id: str, title: str, *, body: str = "Body.\n") -> str:
+    return SPEC_TEMPLATE.format(id=spec_id, title=title, body=body)
 
 
 def _adr(adr_id: str, title: str, *, extra_frontmatter: str = "") -> str:
@@ -210,6 +210,55 @@ def test_validate_emits_error_when_cross_references_do_not_resolve(
     )
     assert any(
         finding["code"] == "adr-supersedes-missing" and "ADR-999" in finding["message"]
+        for finding in findings
+    )
+
+
+def test_validate_reports_stale_approved_specs_affected_by_accepted_adr(
+    monkeypatch, tmp_path
+):
+    """Accepted ADRs must flag affected approved specs lacking a later amendment."""
+    from ai_team.cli import app
+
+    _seed_valid_project(tmp_path)
+    _write(
+        tmp_path / "project" / "specs" / "S-001-connection-gate.md",
+        _spec(
+            "S-001",
+            "Connection Gate",
+            body="""\
+Current rule.
+
+## Amendment Log
+
+<!-- No amendments yet. -->
+""",
+        ),
+    )
+    _write(
+        tmp_path / "project" / "decisions" / "ADR-002-socket-permissions-only.md",
+        _adr(
+            "ADR-002",
+            "Socket permissions only",
+            extra_frontmatter="""\
+affected-specs:
+  - "S-001"
+""",
+        ),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--json"])
+
+    assert result.exit_code != 0
+    findings = json.loads(result.output)
+    assert any(
+        finding["code"] == "adr-affected-spec-stale"
+        and finding["path"].endswith(
+            "project/decisions/ADR-002-socket-permissions-only.md"
+        )
+        and "S-001" in finding["message"]
+        and "ADR-002" in finding["message"]
         for finding in findings
     )
 

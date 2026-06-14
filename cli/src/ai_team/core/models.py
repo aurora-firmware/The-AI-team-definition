@@ -99,6 +99,18 @@ def _require(data: CommentedMap, key: str, path: Path) -> Any:
     return data[key]
 
 
+def _optional_string_list(data: CommentedMap, key: str, path: Path) -> list[str] | None:
+    """Return an optional YAML sequence of strings or raise a clear error."""
+    raw_value = data.get(key)
+    if raw_value is None:
+        return None
+    if not isinstance(raw_value, list):
+        raise FrontmatterError(
+            f"Optional frontmatter field '{key}' must be a YAML list in {path!s}"
+        )
+    return [str(item) for item in raw_value]
+
+
 # ---------------------------------------------------------------------------
 # Dataclasses
 # ---------------------------------------------------------------------------
@@ -157,6 +169,7 @@ class Adr:
     status: str
     created: str
     supersedes: str | None = None  # Optional reference to a superseded ADR ID
+    affected_specs: list[str] | None = None  # Optional references to affected spec IDs
     # Holds the original CommentedMap from parsing so comments survive dump.
     _source_map: CommentedMap | None = field(default=None, compare=False, repr=False)
 
@@ -269,6 +282,7 @@ def parse_adr(path: Path) -> Adr:
         supersedes=str(data["supersedes"])
         if data.get("supersedes") is not None
         else None,
+        affected_specs=_optional_string_list(data, "affected-specs", path),
         _source_map=data,
     )
 
@@ -331,6 +345,7 @@ _ADR_FIELDS: list[tuple[str, str]] = [
     ("status", "status"),
     ("created", "created"),
     ("supersedes", "supersedes"),  # optional — omitted when None
+    ("affected-specs", "affected_specs"),  # optional — omitted when None
 ]
 
 _CHANGE_REQUEST_FIELDS: list[tuple[str, str]] = [

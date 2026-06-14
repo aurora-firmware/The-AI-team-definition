@@ -140,6 +140,7 @@ If — and only if — a literal value is itself the contract (e.g. a fixed exte
 ## Amendment Log
 
 <!-- Optional. Use when an approved spec is amended after tasks are in flight.
+For amendments driven by an accepted ADR, include the ADR ID in the row text.
 | Date | What changed | Why | Affected tasks |
 |------|-------------|-----|----------------|
 | YYYY-MM-DD | Description of change | Reason for amendment | T-XXX, T-YYY |
