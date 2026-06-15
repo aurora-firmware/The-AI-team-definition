@@ -18,7 +18,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 ## Skills
 
 - `spec-breakdown-review` — validates pending task plans before `/dev-loop` starts.
-- `architecture-consistency-review` — checks a created or changed spec, ADR, or change-request against every approved spec and accepted ADR, and routes amendments for any drift. Run whenever such an artifact changes; Gate 2's preflight applies the same check to a task plan.
+- `architecture-consistency-review` — checks a created or changed spec, ADR, or change-request against every approved spec and accepted ADR, and routes amendments for any drift. Run whenever such an artifact changes. This is separate from Gate 2, where `spec-breakdown-review` independently reviews task-plan consistency.
 - `escalation-review` — analyses blocked work after role self-recovery and either issues guidance or escalates to human.
 - `new-adr` — records architecture-affecting decisions in `project/decisions/` through the CLI-backed ADR creation flow.
 - `git-conventions` — used whenever recording or amending ADRs on `dev-agent`.

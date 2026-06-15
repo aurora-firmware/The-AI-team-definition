@@ -95,8 +95,9 @@ rule, so verification is documentary:
 - `ai-process/processes/quality-gates.md` is the spec-layer description of the
   duty and names the skill as the executable owner.
 - Every change trigger invokes it: `new-adr` (step 6), `new-spec` (step 8),
-  `change-request` (step 5), the spec-amendment row in
-  `escalation-procedure.md`, and Gate 2's `spec-breakdown-review` (step 5).
+  `change-request` (step 5), and the spec-amendment row in
+  `escalation-procedure.md`. (Gate 2's `spec-breakdown-review` keeps its own,
+  separate task-plan consistency check.)
 - The Architect role (`agents/.../architect`) accepts a changed artifact as an
   input, lists the skill, and references it (not the non-exported `ai-process`
   path) in its decision authority.
@@ -207,10 +208,11 @@ spec-layer prose:
 
 - Added the `architecture-consistency-review` skill (source + regenerated
   scaffolds) holding the check, drift routing, and escalation.
-- Factored Gate 2: `spec-breakdown-review` Step 5 now applies the same skill
-  instead of restating the consistency check (consistency owned once).
-- Wired every trigger to invoke it: `new-adr`, `new-spec`, `change-request`, and
-  the spec-amendment path.
+- Kept `spec-breakdown-review` as the independent Gate 2 task-plan review; the
+  two skills stay separate (task plans vs. artifact changes) with no delegation
+  between them.
+- Wired every trigger to invoke the new skill: `new-adr`, `new-spec`,
+  `change-request`, and the spec-amendment path.
 - Registered it on the Architect role as a recognised input and skill, and
   replaced the `ai-process` reference with the exported skill.
 - Recorded it in `component-map.md` (Architect procedures + Procedures table).
@@ -266,10 +268,10 @@ PASS
 
 Session 3 closes the two PR-review warnings. The review is now an exported
 `architecture-consistency-review` skill with a real invocation path: `new-adr`,
-`new-spec`, `change-request`, the spec-amendment row, and Gate 2 all invoke it,
-and the Architect role accepts a changed artifact as input. The exported role no
-longer depends on the non-exported `ai-process` tree — it references the skill.
-Consistency is owned once (Gate 2 Step 5 calls the same skill). Verified
-scaffolds regenerate with no diff, the new skill is byte-identical across the
-Claude and Codex trees, and the full suite plus both Ruff checks pass from
-`cli/`.
+`new-spec`, `change-request`, and the spec-amendment row all invoke it, and the
+Architect role accepts a changed artifact as input. The exported role no longer
+depends on the non-exported `ai-process` tree — it references the skill.
+`spec-breakdown-review` remains the independent Gate 2 task-plan review; the two
+skills are kept separate (task plans vs. artifact changes). Verified scaffolds
+regenerate with no diff, the new skill is byte-identical across the Claude and
+Codex trees, and the full suite plus both Ruff checks pass from `cli/`.

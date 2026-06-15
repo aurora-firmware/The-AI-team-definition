@@ -7,7 +7,7 @@ effort: high
 
 # Architecture Consistency Review
 
-**Ownership boundary:** this skill owns the consistency check — whether a created or changed architecture artifact stays consistent with every approved spec and accepted ADR. It is the single definition of that check. Gate 2 (`spec-breakdown-review`) applies it to a task plan; the ADR, spec, and change-request flows apply it to a changed artifact. It does **not** own task-plan readiness (coverage, dependencies, atomicity) — that stays in `spec-breakdown-review`.
+**Ownership boundary:** this skill owns the consistency check for a *created or changed architecture artifact* — an ADR, spec, or change-request — confirming it stays consistent with every approved spec and accepted ADR. It does **not** review task plans: Gate 2's `spec-breakdown-review` independently checks task-plan consistency and readiness. The two reviews are separate skills with separate inputs — a changed artifact here, a task plan there.
 
 Approved specs and accepted ADRs are both binding sources of truth. A new or changed decision can silently contradict something an existing spec or ADR already records, leaving two authoritative artifacts that disagree until someone notices by hand. This review catches that drift at the moment of change.
 
