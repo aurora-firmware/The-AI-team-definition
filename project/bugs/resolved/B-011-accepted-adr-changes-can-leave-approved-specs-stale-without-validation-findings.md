@@ -51,9 +51,13 @@ only checks that the referenced ADR exists.
 
 ## Expected Behavior
 
-Accepted ADRs must have a machine-readable way to identify the specs or prior
-decisions they amend, and validation must report affected approved specs that
-have not recorded a corresponding amendment after the ADR was accepted.
+An accepted ADR that changes a decision must not be able to leave a dependent
+approved spec silently contradicting it. The framework guarantees this through a
+review duty rather than a metadata cross-check: whenever a spec or an ADR
+changes, the Architect reviews the change for compatibility with every other
+approved spec and accepted ADR, names any drift, and routes the amendments
+(Planner amends specs; Architect amends or supersedes ADRs), escalating to the
+human when reconciling the drift requires a spec change.
 
 ## Actual Behavior
 
@@ -83,11 +87,16 @@ Framework contract for ADR amendments, plus
 
 ## Fix Verification
 
-```bash
-# A fixture containing an accepted ADR with an affected approved spec that lacks
-# a post-ADR amendment record must produce a validation finding.
-uv run pytest cli/tests/test_validate.py
-```
+The resolution is a process duty, not an automated rule, so verification is
+documentary:
+
+- `ai-process/processes/quality-gates.md` defines the **Architecture Consistency
+  Review** as a standing Architect duty triggered on any spec or ADR change.
+- `ai-process/processes/escalation-procedure.md` routes an amended spec into that
+  review.
+- The Architect role (`agents/.../architect`) lists the review among its
+  responsibilities and decision authority.
+- `uv run pytest` stays green with no ADR/spec freshness validation rule present.
 
 ## Diagnosis Log
 
@@ -159,6 +168,27 @@ checks from `cli/`: `uv run pytest` reported 374 passing tests, and both
 `uv run ruff format --check .` and `uv run ruff check .` passed. Commands used
 `UV_CACHE_DIR=/tmp/uv-cache` because the default cache was not writable.
 
+### Session 2 — 2026-06-15
+
+Revised the resolution during PR review. The `affected-specs` field is a
+denormalised pointer that only catches drift an ADR author remembered to
+declare, so it cannot *guarantee* spec/ADR consistency — it only spot-checks the
+cases someone already noticed. The team decided the real guarantee is a review
+duty, not a validation rule.
+
+Reverted the entire B-011 mechanism: removed the `affected-specs` ADR field and
+its helper from `models.py`, the `--affects-spec` CLI option from `adr.py`, the
+`adr-affected-spec-missing`/`adr-affected-spec-stale` rule and amendment-scan
+helpers from `validate.py`, the matching tests, the `new-adr` skill mention, and
+the ADR-ID-in-row recipe lines from the spec template and authoring guide.
+
+Added the replacement: an **Architecture Consistency Review** standing duty in
+`ai-process/processes/quality-gates.md`, referenced from
+`escalation-procedure.md` (spec-amendment path) and from the Architect role
+(Claude `architect.md` and Codex `architect.toml`). Regenerated scaffolds and
+`cli/docs/commands.md`. Full checks from `cli/` rerun with
+`UV_CACHE_DIR=/tmp/uv-cache`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
@@ -188,3 +218,17 @@ Verification on the implementation branch passed with `UV_CACHE_DIR=/tmp/uv-cach
 uv run pytest tests/test_validate.py tests/test_models.py tests/test_adr_new.py`,
 full `UV_CACHE_DIR=/tmp/uv-cache uv run pytest` (374 passed), and both Ruff
 checks from `cli/`.
+
+### Review Verdict — 2026-06-15
+PASS
+
+Resolution revised during PR review (see Work Log Session 2). The validation
+mechanism was the wrong tool for this invariant — a declared-only cross-check
+cannot guarantee spec/ADR consistency — so it was reverted in full and replaced
+with the Architecture Consistency Review, a standing Architect duty that fires on
+any spec or ADR change. The duty is owned once in `quality-gates.md` and
+referenced from `escalation-procedure.md` and the Architect role, matching the
+framework's "own a shared rule in one place" convention. Verified the mechanism
+is fully removed (no `affected-specs`/`adr-affected-spec-*` remnants), scaffolds
+and `cli/docs/commands.md` regenerate with no diff, and the full suite plus both
+Ruff checks pass from `cli/`.

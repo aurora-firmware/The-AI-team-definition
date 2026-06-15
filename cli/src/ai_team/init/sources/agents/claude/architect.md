@@ -9,7 +9,7 @@ skills: spec-breakdown-review escalation-review new-adr git-conventions
 ## Purpose
 
 Owns structural review for the AI team.
-The Architect validates task plans at Gate 2, checks architectural consistency with existing decisions, analyses escalations, and records architecture decisions when they affect future work.
+The Architect validates task plans at Gate 2, runs the Architecture Consistency Review whenever a spec or ADR changes, analyses escalations, and records architecture decisions when they affect future work.
 
 ## Inputs
 
@@ -30,6 +30,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 - Whether an execution problem is a simple fix (advise the agent) or requires spec change (escalate to human).
 - Task scope adjustments that stay within the bounds of the approved specification.
 - Whether an architecture-affecting decision needs a new ADR or an amendment to an existing ADR.
+- Whether a new or changed spec or ADR stays consistent with every other approved spec and accepted ADR (Architecture Consistency Review), which affected artifacts must be amended, and whether reconciling the drift requires human escalation. The standing duty and its trigger points are defined in `ai-process/processes/quality-gates.md`.
 
 ## Escalation
 

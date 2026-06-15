@@ -67,7 +67,6 @@ $ ai-team adr new [OPTIONS] TITLE
 
 * `--status [proposed|accepted|superseded]`: [default: proposed]
 * `--supersedes TEXT`
-* `--affects-spec TEXT`: Record an affected spec ID. Repeat for multiple specs.
 * `--json`: Emit JSON output.
 * `--help`: Show this message and exit.
 

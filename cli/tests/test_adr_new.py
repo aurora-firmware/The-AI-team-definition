@@ -57,10 +57,6 @@ def test_adr_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
             "superseded",
             "--supersedes",
             "ADR-010",
-            "--affects-spec",
-            "S-001",
-            "--affects-spec",
-            "S-002",
             "--json",
         ],
     )
@@ -78,7 +74,6 @@ def test_adr_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
     assert adr.status == "superseded"
     assert adr.created == date.today().isoformat()
     assert adr.supersedes == "ADR-010"
-    assert adr.affected_specs == ["S-001", "S-002"]
 
 
 def test_adr_new_refuses_to_overwrite_when_allocated_path_exists(monkeypatch, tmp_path):

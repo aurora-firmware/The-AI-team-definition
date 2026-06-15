@@ -43,11 +43,6 @@ def new_adr(
     title: str,
     status: AdrStatus = typer.Option("proposed", "--status"),
     supersedes: str | None = typer.Option(None, "--supersedes"),
-    affected_specs: list[str] | None = typer.Option(
-        None,
-        "--affects-spec",
-        help="Record an affected spec ID. Repeat for multiple specs.",
-    ),
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     """Create a new ADR artifact from the bundled template."""
@@ -64,7 +59,6 @@ def new_adr(
         status=status,
         created=date.today().isoformat(),
         supersedes=supersedes,
-        affected_specs=affected_specs,
     )
 
     try:

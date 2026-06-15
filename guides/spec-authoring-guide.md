@@ -153,7 +153,7 @@ A phase is not a task. The `spec-breakdown` skill produces the actual tasks from
 
 ### Amendment Log
 
-**Recipe:** leave the table empty when the spec is first written. Add rows only after Gate 1 approval, when scope changes while tasks are in flight. Each row: date, what changed, why, affected tasks. When the amendment is driven by an accepted ADR, include the ADR ID in the row text so the relationship is explicit and reviewable.
+**Recipe:** leave the table empty when the spec is first written. Add rows only after Gate 1 approval, when scope changes while tasks are in flight. Each row: date, what changed, why, affected tasks.
 
 ## How to write measurable success criteria
 

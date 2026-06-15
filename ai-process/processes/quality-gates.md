@@ -25,7 +25,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 **When:** After the Planner writes the task plan from either an approved specification or an accepted change-request, before the development loop starts.
 **Evaluator:** Architect.
-**Scope:** Gate 2 focuses on **technical task-plan readiness**. The Architect evaluates dependencies, file conflicts, architectural consistency with existing decisions, atomicity, and verifiability. Gate 2 does not reopen product or spec approval questions that were already settled at Gate 1. If the Architect finds a product-scope concern that does not block technical readiness, it is noted as follow-up feedback rather than a Gate 2 failure. Only a contradiction against the approved spec or existing ADRs causes a Gate 2 failure or escalation.
+**Scope:** Gate 2 focuses on **technical task-plan readiness**. The Architect evaluates dependencies, file conflicts, architectural consistency with existing decisions, atomicity, and verifiability. Gate 2 does not reopen product or spec approval questions that were already settled at Gate 1. If the Architect finds a product-scope concern that does not block technical readiness, it is noted as follow-up feedback rather than a Gate 2 failure. Only a contradiction against the approved spec or existing ADRs causes a Gate 2 failure or escalation. The same consistency principle applies whenever a spec or ADR itself changes — see [Architecture Consistency Review](#architecture-consistency-review) below.
 **Pass criteria:**
 - Task plan covers every requirement in the approved specification (spec-coverage verification).
 - Task dependencies are correct and complete.
@@ -34,6 +34,14 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 - Tasks are atomic, independently verifiable, and ready for implementation.
 
 **On failure:** Architect returns a correction request to the Planner. The Planner revises the task plan and resubmits it to Gate 2.
+
+## Architecture Consistency Review
+
+**When:** Whenever a specification or an ADR is created, accepted, amended, or superseded — at ADR authoring time (the Architect's New ADR flow) and after any spec amendment (the Amendment Log entry recorded during spec revision or change-request intake). This is a standing duty, not a numbered gate.
+**Evaluator:** Architect.
+**Why:** Approved specs and accepted ADRs are both binding sources of truth (see Gate 2). A new or changed decision can silently contradict something an existing spec or ADR already records, leaving two authoritative artifacts that disagree until someone notices by hand.
+**Check:** The Architect reads the changed artifact against every other approved spec and accepted ADR and confirms they remain mutually consistent. Gate 2 applies this same consistency check to a *task plan*; this review covers the *spec or ADR change itself*, regardless of whether any task plan is in flight.
+**On drift:** The Architect names every affected artifact and routes the correction — the Planner amends affected specs (recording the change, and the driving ADR ID, in the Amendment Log), and the Architect amends or supersedes affected ADRs. When reconciling the drift requires changing an approved specification beyond an in-flight amendment, the Architect escalates to the human per the [escalation procedure](escalation-procedure.md).
 
 ## Gate 3: Code Review
 

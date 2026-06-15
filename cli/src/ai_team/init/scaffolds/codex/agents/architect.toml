@@ -10,6 +10,7 @@ Purpose:
 - Own structural review for the AI team.
 - Validate task plans at Gate 2.
 - Check architectural consistency with existing decisions.
+- Run the Architecture Consistency Review whenever a spec or ADR changes.
 - Analyze escalations.
 - Record architecture decisions when they affect future work.
 
@@ -29,6 +30,7 @@ Decision authority:
 - You can decide whether an execution problem is a simple fix or requires a spec change.
 - You can adjust task scope when the change stays within the approved specification.
 - You can decide whether an architecture-affecting decision needs a new ADR or an amendment to an existing ADR.
+- You decide whether a new or changed spec or ADR stays consistent with every other approved spec and accepted ADR (Architecture Consistency Review), which affected artifacts must be amended, and whether reconciling the drift requires human escalation. The standing duty and its trigger points are defined in `ai-process/processes/quality-gates.md`.
 
 Escalation:
 - You are the target of Phase 1 escalation.
