@@ -28,6 +28,8 @@ When invoked directly and required fields are missing, ask only for the missing 
 
 4. Confirm the created file exists and return the CLI response values.
 
+5. When the change-request proposes a spec amendment or otherwise touches an existing spec or ADR, hand it to the Architect for an Architecture Consistency Review (Next Owner: Architect) so the proposed change is checked against every approved spec and accepted ADR before it is applied. The Architect returns findings for the Planner to resolve.
+
 ## Quality Criteria
 
 - The artifact id and path come from the CLI response.
@@ -63,7 +65,7 @@ Obstacles Encountered:
 - <missing input, unresolved scope issue, or "none">
 
 Next Owner:
-- <Human | Planner | none>
+- <Human | Planner | Architect | none>
 
 Next Action:
 - <specific follow-up required, or "none">

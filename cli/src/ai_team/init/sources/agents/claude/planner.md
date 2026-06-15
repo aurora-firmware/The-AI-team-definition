@@ -48,6 +48,7 @@ The Planner enters the escalation chain when the `spec-breakdown` skill returns 
 ### Hands Off To
 - **Human** — a specification document for Gate 1 approval (after the human has already shaped it interactively).
 - **Architect** — task plan for preflight validation (after `spec-breakdown` completes).
+- **Architect** — a created or changed spec (from `new-spec`, before Gate 1) or change-request (from `change-request`, before its amendments are applied) for `architecture-consistency-review`; the Architect returns consistency findings to revise against.
 - **Task directory** — validated task files placed in `project/tasks/pending/`.
 
 ## Folder Scope

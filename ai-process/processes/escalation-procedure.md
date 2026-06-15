@@ -70,6 +70,8 @@ Question: [Specific question for the Architect]
 | Provide guidance | The blocked role applies the guidance and continues. No document changes needed. | Blocked role |
 | Defer the work | Task moves to `blocked/` with the reason noted. The spec issue is not addressed now. | Developer |
 
+After a spec is amended, the Architect runs the [Architecture Consistency Review](quality-gates.md#architecture-consistency-review) (the `architecture-consistency-review` skill) to confirm the amended spec stays consistent with every other approved spec and accepted ADR, and routes any further amendments the change exposes.
+
 ## When to Escalate
 
 A role enters the escalation chain when it **cannot complete its assigned task** after exhausting its self-recovery threshold. Specific triggers:
