@@ -88,6 +88,8 @@ For bug fixes, the Developer follows a diagnosis-first debugging procedure befor
 | Planner | Human | Specification for approval |
 | Planner | Task directory | Task files in `project/tasks/pending/` |
 | Planner | Architect | Gate 2 evaluation request |
+| Planner | Architect | Created/changed spec or change-request for Architecture Consistency Review (before Gate 1, or before change-request amendments are applied) |
+| Architect | Planner | Consistency findings on a created/changed spec or change-request |
 | Architect | Development Loop | Validated task plan — ready to run |
 | Human | Development Loop | Start signal after Gate 2 passes |
 | Development Loop | Developer | Task assignment |

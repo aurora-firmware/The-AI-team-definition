@@ -264,6 +264,17 @@ the Architect role records handing consistency findings back to the Planner.
 Regenerated scaffolds; full checks from `cli/` rerun with
 `UV_CACHE_DIR=/tmp/uv-cache`.
 
+### Session 6 — 2026-06-16
+
+A PR-body finding (could not anchor inline because the file was not yet in the
+diff) noted the same drift in the other architecture doc:
+`ai-process/architecture/system-overview.md` Information Flow table still listed
+Planner→Architect only as a Gate 2 request. Added two rows to that table — a
+Planner→Architect handoff for the Architecture Consistency Review (before Gate 1
+or before change-request amendments apply) and an Architect→Planner row for the
+returned consistency findings — so the system overview matches the component map
+and role contracts.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
