@@ -46,6 +46,7 @@ The Architect is the target of Phase 1 escalation — it consumes structured esc
 
 ### Hands Off To
 - **Planner** — preflight issues requiring task plan revision.
+- **Planner** — consistency findings on a created or changed spec or change-request (from `architecture-consistency-review`) to revise against.
 - **`dev-loop`** (indirectly) — a clean, validated `pending/` queue after preflight approval.
 - **Requesting agent** — guidance with a recommended approach (execution escalation).
 - **Human** — a full context package only when a spec change is required or the problem is irresolvable.

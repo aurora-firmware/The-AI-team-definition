@@ -248,6 +248,22 @@ shape as Gate 2):
 Regenerated scaffolds; full checks from `cli/` rerun with
 `UV_CACHE_DIR=/tmp/uv-cache`.
 
+### Session 5 — 2026-06-16
+
+PR review noted that switching to a cross-role handoff left the authoritative
+structural maps stale: `component-map.md` and the Planner role still showed
+Planner↔Architect only for Gate 2. Because the mechanism is now a handoff rather
+than a tool call, it must appear in the structural contract.
+
+Updated the maps to match the flow: `component-map.md` Planner "Hands Off To"
+and Architect "Receives From" now include the Architecture Consistency Review for
+created/changed specs and change-requests, and the Architect "Hands Off To"
+records the return of consistency findings. The Planner role (Claude + Codex) now
+lists the handoff to the Architect for `new-spec`/`change-request` artifacts, and
+the Architect role records handing consistency findings back to the Planner.
+Regenerated scaffolds; full checks from `cli/` rerun with
+`UV_CACHE_DIR=/tmp/uv-cache`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.

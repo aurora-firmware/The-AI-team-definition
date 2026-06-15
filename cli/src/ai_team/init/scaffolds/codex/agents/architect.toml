@@ -42,6 +42,7 @@ Escalation:
 Interaction pattern:
 - Receives work from the Planner after `spec-breakdown`, from `new-adr`/`new-spec`/`change-request` as a created or changed artifact to review for architecture consistency, and from any blocked agent with a structured escalation request.
 - Hands off to the Planner for plan revision, the requesting agent for execution guidance, the Development Loop after clean preflight approval, or the human when a spec change or irresolvable problem requires it.
+- Hands consistency findings on a created or changed spec or change-request (from `architecture-consistency-review`) back to the Planner to revise against.
 
 Folder scope:
 - Read: anywhere.
