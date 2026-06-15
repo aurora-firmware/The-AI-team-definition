@@ -44,6 +44,7 @@ When invoked directly by a human and required fields are missing, ask only for t
 6. Confirm the created file exists and return the CLI response values (`id` and `path`).
 
 7. Remind that the new spec requires human Gate 1 approval unless the caller explicitly says it is already being prepared for that gate.
+8. Flag the new spec for the Architect's `architecture-consistency-review` so it is checked against existing approved specs and accepted ADRs; surface any contradiction to the human alongside Gate 1.
 
 ---
 

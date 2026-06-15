@@ -24,3 +24,4 @@ When invoked directly by a human and required fields are missing, ask only for t
    - `path` (absolute path to the created ADR file)
 4. Open the created ADR file and fill body sections from the supplied `description`, replacing placeholder section content where appropriate.
 5. Confirm the file exists under `project/decisions/` and return the CLI response values (`id` and `path`).
+6. Hand the new ADR to the Architect's `architecture-consistency-review` so the decision is checked against every approved spec and accepted ADR before it is considered settled.

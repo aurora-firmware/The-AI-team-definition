@@ -48,6 +48,7 @@ If no dependency exists, add the dependency directly when the correction is obvi
 
 ### Step 5: Check Architectural Consistency
 
+Apply the consistency check defined in the `architecture-consistency-review` skill — the single definition of "does this contradict an approved spec or accepted ADR?" — to the task plan's target artifacts.
 Compare the task plan against existing ADRs and architecture docs.
 If a task contradicts an existing decision or requires changing an approved specification, do not pass Gate 2.
 When assessing architecture, if the plan contradicts the approved spec or existing ADRs, fail or escalate by following the existing Gate 2 procedure.

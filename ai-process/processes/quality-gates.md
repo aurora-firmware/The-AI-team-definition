@@ -37,10 +37,11 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 ## Architecture Consistency Review
 
-**When:** Whenever a specification or an ADR is created, accepted, amended, or superseded — at ADR authoring time (the Architect's New ADR flow) and after any spec amendment (the Amendment Log entry recorded during spec revision or change-request intake). This is a standing duty, not a numbered gate.
+**When:** Whenever a specification, an ADR, or a change-request is created, accepted, amended, or superseded — at ADR authoring time (`new-adr`), at spec creation (`new-spec`) or amendment, and at change-request intake (`change-request`). This is a standing duty, not a numbered gate.
 **Evaluator:** Architect.
+**Executable procedure:** the `architecture-consistency-review` skill, exported by `ai-team init`, owns the actual check, drift routing, and escalation behaviour. This section is the spec-layer description of *why* and *when* the duty runs; the skill is *how* it runs and is what the Architect role and the change procedures invoke.
 **Why:** Approved specs and accepted ADRs are both binding sources of truth (see Gate 2). A new or changed decision can silently contradict something an existing spec or ADR already records, leaving two authoritative artifacts that disagree until someone notices by hand.
-**Check:** The Architect reads the changed artifact against every other approved spec and accepted ADR and confirms they remain mutually consistent. Gate 2 applies this same consistency check to a *task plan*; this review covers the *spec or ADR change itself*, regardless of whether any task plan is in flight.
+**Check:** The Architect reads the changed artifact against every other approved spec and accepted ADR and confirms they remain mutually consistent. Gate 2's `spec-breakdown-review` applies this same check to a *task plan*; this review covers the *artifact change itself*, regardless of whether any task plan is in flight.
 **On drift:** The Architect names every affected artifact and routes the correction — the Planner amends affected specs (recording the change, and the driving ADR ID, in the Amendment Log), and the Architect amends or supersedes affected ADRs. When reconciling the drift requires changing an approved specification beyond an in-flight amendment, the Architect escalates to the human per the [escalation procedure](escalation-procedure.md).
 
 ## Gate 3: Code Review

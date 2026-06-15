@@ -87,15 +87,19 @@ Framework contract for ADR amendments, plus
 
 ## Fix Verification
 
-The resolution is a process duty, not an automated rule, so verification is
-documentary:
+The resolution is a process duty backed by an exported skill, not an automated
+rule, so verification is documentary:
 
-- `ai-process/processes/quality-gates.md` defines the **Architecture Consistency
-  Review** as a standing Architect duty triggered on any spec or ADR change.
-- `ai-process/processes/escalation-procedure.md` routes an amended spec into that
-  review.
-- The Architect role (`agents/.../architect`) lists the review among its
-  responsibilities and decision authority.
+- The `architecture-consistency-review` skill (exported by `ai-team init`) owns
+  the executable check, drift routing, and escalation behaviour.
+- `ai-process/processes/quality-gates.md` is the spec-layer description of the
+  duty and names the skill as the executable owner.
+- Every change trigger invokes it: `new-adr` (step 6), `new-spec` (step 8),
+  `change-request` (step 5), the spec-amendment row in
+  `escalation-procedure.md`, and Gate 2's `spec-breakdown-review` (step 5).
+- The Architect role (`agents/.../architect`) accepts a changed artifact as an
+  input, lists the skill, and references it (not the non-exported `ai-process`
+  path) in its decision authority.
 - `uv run pytest` stays green with no ADR/spec freshness validation rule present.
 
 ## Diagnosis Log
@@ -189,6 +193,30 @@ Added the replacement: an **Architecture Consistency Review** standing duty in
 `cli/docs/commands.md`. Full checks from `cli/` rerun with
 `UV_CACHE_DIR=/tmp/uv-cache`.
 
+### Session 3 — 2026-06-15
+
+PR review raised two valid warnings against Session 2: the documented duty had
+no invocation path (no procedure actually called it, and the Architect role did
+not accept a changed artifact as input), and the exported Architect role pointed
+at `ai-process/processes/quality-gates.md`, which `ai-team init` does not export
+into consuming projects. A duty nothing invokes and a reference the consumer
+cannot read amounts to an unenforced contract.
+
+Resolved both by making the review an exported, wired procedure rather than
+spec-layer prose:
+
+- Added the `architecture-consistency-review` skill (source + regenerated
+  scaffolds) holding the check, drift routing, and escalation.
+- Factored Gate 2: `spec-breakdown-review` Step 5 now applies the same skill
+  instead of restating the consistency check (consistency owned once).
+- Wired every trigger to invoke it: `new-adr`, `new-spec`, `change-request`, and
+  the spec-amendment path.
+- Registered it on the Architect role as a recognised input and skill, and
+  replaced the `ai-process` reference with the exported skill.
+- Recorded it in `component-map.md` (Architect procedures + Procedures table).
+
+Full checks from `cli/` rerun with `UV_CACHE_DIR=/tmp/uv-cache`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
@@ -232,3 +260,16 @@ framework's "own a shared rule in one place" convention. Verified the mechanism
 is fully removed (no `affected-specs`/`adr-affected-spec-*` remnants), scaffolds
 and `cli/docs/commands.md` regenerate with no diff, and the full suite plus both
 Ruff checks pass from `cli/`.
+
+### Review Verdict — 2026-06-15 (re-review after PR feedback)
+PASS
+
+Session 3 closes the two PR-review warnings. The review is now an exported
+`architecture-consistency-review` skill with a real invocation path: `new-adr`,
+`new-spec`, `change-request`, the spec-amendment row, and Gate 2 all invoke it,
+and the Architect role accepts a changed artifact as input. The exported role no
+longer depends on the non-exported `ai-process` tree — it references the skill.
+Consistency is owned once (Gate 2 Step 5 calls the same skill). Verified
+scaffolds regenerate with no diff, the new skill is byte-identical across the
+Claude and Codex trees, and the full suite plus both Ruff checks pass from
+`cli/`.

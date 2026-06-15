@@ -35,6 +35,8 @@ When invoked directly and required fields are missing, ask only for the missing 
 
 4. Confirm the created file exists and return the CLI response values.
 
+5. When the change-request proposes a spec amendment or otherwise touches an existing spec or ADR, hand it to the Architect's `architecture-consistency-review` so the proposed change is checked against every approved spec and accepted ADR before it is applied.
+
 ## Quality Criteria
 
 - The artifact id and path come from the CLI response.
