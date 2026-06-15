@@ -158,6 +158,24 @@ also passed: `uv run pytest` reported 376 passing tests,
 `uv run ruff format --check .` reported all files formatted, and
 `uv run ruff check .` passed. Commands used `UV_CACHE_DIR=/tmp/uv-cache`.
 
+### Session 2 — 2026-06-15
+
+PR review flagged that Session 1's success check was incomplete relative to this
+bug's own Expected Behavior. `git status --porcelain project/tasks/in-progress/`
+only reports working-tree and index changes, so it is empty when the old
+in-progress path is still **tracked** but clean — exactly the duplicate
+lifecycle state B-012 must prevent. The check confirmed "not dirty" but not "not
+tracked."
+
+Completed the contract: Step 7.4 now also verifies the old path is absent from
+the tracked tree (`git ls-files project/tasks/in-progress/<task-file>` returns
+nothing, confirmable against HEAD with `git ls-tree -r HEAD`) and that the new
+completed path is tracked, in addition to the working-tree cleanliness check.
+Strengthened `test_integrate_checks_old_task_path_is_clean_before_reporting_success`
+to require the `git ls-files` tracked-path check so the status-only gap cannot
+return. Regenerated both scaffolds; full checks from `cli/` rerun with
+`UV_CACHE_DIR=/tmp/uv-cache`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
@@ -188,3 +206,14 @@ branch succeeded with `UV_CACHE_DIR=/tmp/uv-cache uv run pytest`
 (`376 passed`), `UV_CACHE_DIR=/tmp/uv-cache uv run pytest tests/test_t063_integration_guards.py`
 (`12 passed`), `UV_CACHE_DIR=/tmp/uv-cache uv run ruff format --check .`, and
 `UV_CACHE_DIR=/tmp/uv-cache uv run ruff check .`.
+
+### Review Verdict — 2026-06-15 (re-review after PR feedback)
+PASS
+
+Session 2 completes B-012's stated Expected Behavior ("the old path is neither
+tracked nor dirty"). The earlier check verified only working-tree cleanliness, so
+a tracked-but-clean old path could still pass. Step 7.4 now also asserts the old
+path is absent from the tracked tree via `git ls-files` (and `git ls-tree HEAD`)
+and that the new path is tracked, and the regression test requires the
+tracked-path check so the gap cannot silently return. Verified scaffolds
+regenerate with no diff and the full suite plus both Ruff checks pass from `cli/`.

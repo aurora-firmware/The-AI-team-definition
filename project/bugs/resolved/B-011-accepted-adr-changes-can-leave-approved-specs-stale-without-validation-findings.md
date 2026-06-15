@@ -94,10 +94,15 @@ rule, so verification is documentary:
   the executable check, drift routing, and escalation behaviour.
 - `ai-process/processes/quality-gates.md` is the spec-layer description of the
   duty and names the skill as the executable owner.
-- Every change trigger invokes it: `new-adr` (step 6), `new-spec` (step 8),
-  `change-request` (step 5), and the spec-amendment row in
-  `escalation-procedure.md`. (Gate 2's `spec-breakdown-review` keeps its own,
-  separate task-plan consistency check.)
+- Every change event reaches it: the Architect runs it directly after `new-adr`
+  (step 6); `new-spec` (step 8), `change-request` (step 5), and the spec-amendment
+  row in `escalation-procedure.md` hand the changed artifact to the Architect
+  (Next Owner: Architect), the same Planner↔Architect handoff as Gate 2. (Gate 2's
+  `spec-breakdown-review` keeps its own, separate task-plan consistency check.)
+- On a contradiction the review **reports findings** to the owning role — it does
+  not amend. A pre-Gate-1 draft spec is revised directly (no Amendment Log); an
+  approved spec is amended via its Amendment Log; an ADR is amended/superseded by
+  the Architect; an approved-spec structural change escalates.
 - The Architect role (`agents/.../architect`) accepts a changed artifact as an
   input, lists the skill, and references it (not the non-exported `ai-process`
   path) in its decision authority.
@@ -219,6 +224,30 @@ spec-layer prose:
 
 Full checks from `cli/` rerun with `UV_CACHE_DIR=/tmp/uv-cache`.
 
+### Session 4 — 2026-06-15
+
+A PR re-review raised two more valid points on the wiring. (1) The authoring
+skills only declare `Read, Write, Bash`, so "hand to the Architect's review" was
+prose with no dispatch, and I had over-claimed that every event "invokes" the
+skill. (2) The skill routed every affected spec through the Amendment Log, but a
+pre-Gate-1 draft must keep its Amendment Log empty.
+
+Fixed both to match the framework's existing Planner↔Architect handoff (the same
+shape as Gate 2):
+
+- The review now **reports findings** to the owning role rather than amending.
+  Step 4 branches: a pre-Gate-1 draft spec is revised directly with no Amendment
+  Log entry; an approved spec is amended via its Amendment Log; an ADR is
+  amended/superseded by the Architect; an approved-spec structural change
+  escalates.
+- The handoffs are now honest declared handoffs, not in-process invocations:
+  `new-spec` and `change-request` set Next Owner to the Architect; `new-adr` is
+  Architect-run, so the Architect runs the review itself. Softened the "invoke"
+  language in `quality-gates.md` and this record.
+
+Regenerated scaffolds; full checks from `cli/` rerun with
+`UV_CACHE_DIR=/tmp/uv-cache`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
@@ -267,11 +296,25 @@ Ruff checks pass from `cli/`.
 PASS
 
 Session 3 closes the two PR-review warnings. The review is now an exported
-`architecture-consistency-review` skill with a real invocation path: `new-adr`,
-`new-spec`, `change-request`, and the spec-amendment row all invoke it, and the
-Architect role accepts a changed artifact as input. The exported role no longer
-depends on the non-exported `ai-process` tree — it references the skill.
+`architecture-consistency-review` skill with a real path to the Architect: the
+Architect runs it after `new-adr`, and `new-spec`, `change-request`, and the
+spec-amendment row hand the changed artifact to the Architect, which accepts it
+as input. The exported role no longer depends on the non-exported `ai-process`
+tree — it references the skill.
 `spec-breakdown-review` remains the independent Gate 2 task-plan review; the two
 skills are kept separate (task plans vs. artifact changes). Verified scaffolds
 regenerate with no diff, the new skill is byte-identical across the Claude and
 Codex trees, and the full suite plus both Ruff checks pass from `cli/`.
+
+### Review Verdict — 2026-06-15 (re-review #2 after PR feedback)
+PASS
+
+Session 4 closes the two follow-up warnings. The review now reports findings to
+the owning role instead of amending, with an explicit pre-Gate-1 draft branch
+that revises the draft without touching its Amendment Log — matching the rule
+that a draft's log stays empty until Gate 1. The change handoffs are declared
+Planner↔Architect handoffs (Next Owner: Architect) rather than in-process
+invocations the action skills cannot perform, and `new-adr` is run by the
+Architect, who runs the review itself. The over-claimed "invoke" language is
+gone. Verified scaffolds regenerate with no diff and the full suite plus both
+Ruff checks pass from `cli/`.

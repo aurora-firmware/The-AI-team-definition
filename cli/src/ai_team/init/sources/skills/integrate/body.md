@@ -186,8 +186,16 @@ Reached only when both Step 4 and Step 6 tests pass.
    - Instruct the human to inspect the branch and delete it manually once satisfied it is safe.
 
 4. **Report success**:
-   - Verify `git status --porcelain project/tasks/in-progress/` is empty. If it is not
-     empty, stop and report that the old task path is still dirty or tracked.
+   - Verify the lifecycle move actually landed — working-tree cleanliness alone is not
+     enough, because a still-tracked old path can be clean:
+     - Old path no longer tracked: `git ls-files project/tasks/in-progress/<task-file>`
+       returns nothing (confirm against HEAD with
+       `git ls-tree -r HEAD --name-only project/tasks/in-progress/`).
+     - New path tracked: `git ls-files project/tasks/completed/<task-file>` returns the file.
+     - No uncommitted move left behind: `git status --porcelain project/tasks/in-progress/`
+       is empty.
+     If any check fails, stop and report that the task lifecycle move is incomplete — the
+     old path is still tracked, the new path is missing, or uncommitted changes remain.
    - Source branch merged and deleted.
    - Work item ID and title when available.
    - Test counts: N passed before merge, N passed after merge.

@@ -224,11 +224,13 @@ def test_integrate_requires_deletion_aware_task_completion_move() -> None:
 
 
 def test_integrate_checks_old_task_path_is_clean_before_reporting_success() -> None:
-    """B-012: integrate must explicitly verify the old in-progress task path is clean
-    before reporting success."""
+    """B-012: integrate must verify the old in-progress task path is neither tracked
+    nor dirty before reporting success. Working-tree cleanliness alone is not enough,
+    so the procedure must also check the tracked tree (git ls-files / git ls-tree)."""
     source, claude, codex = _integrate_skill_texts()
 
     required_phrases = (
+        "git ls-files project/tasks/in-progress/",
         "git status --porcelain project/tasks/in-progress/",
         "empty",
     )

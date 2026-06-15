@@ -42,13 +42,16 @@ Read every accepted ADR in `project/decisions/` and every approved spec in `proj
 
 For each binding artifact, decide whether the changed artifact contradicts it — asserts a different decision for the same concern, removes a guarantee another artifact relies on, or restates a rule with different content. Record each contradiction with the specific artifact, the conflicting statements, and which one is now intended to be authoritative.
 
-### Step 4: Route Corrections
+### Step 4: Report Findings and Route Corrections
 
-For every contradiction found:
+This review **reports** contradictions as findings to the owning role — it does not edit specs or apply amendments itself. This is the same model as `spec-breakdown-review`, which returns findings to the Planner for revision. Route each contradiction by which artifact is the wrong side:
 
-- **Affected spec** → the Planner amends the spec in place and records the change in its Amendment Log, naming the driving ADR ID when an ADR caused the change. The Architect does not edit specs.
-- **Affected ADR** → the Architect amends or supersedes the ADR; use `new-adr` to record a superseding decision.
-- **Reconciliation needs an approved-spec change beyond an in-flight amendment** → escalate to the human through the Planner per the escalation procedure.
+- **The changed artifact is a pre-Gate-1 draft spec** → return the findings to the Planner, who revises the draft directly. Do **not** add an Amendment Log entry — a draft's Amendment Log stays empty until Gate 1 approval. The Architect and Planner iterate until the draft is consistent; the human then approves at Gate 1 as usual.
+- **An approved spec is the affected side** → return the findings to the Planner, who amends the approved spec in place and records the change in its Amendment Log, naming the driving ADR ID when an ADR caused the change.
+- **An ADR is the affected side** → the Architect amends or supersedes the ADR; use `new-adr` to record a superseding decision.
+- **Reconciling the drift requires changing an approved spec beyond an in-flight amendment** → escalate to the human through the Planner per the escalation procedure.
+
+The Architect never edits specs; draft revision and approved-spec amendment are both the Planner's.
 
 ### Step 5: Produce the Verdict
 
@@ -70,7 +73,7 @@ Findings:
 - <artifact>: <the contradiction and which statement is authoritative>
 
 Corrections routed:
-- <artifact>: <Planner amendment | Architect ADR amendment/supersede | escalation>
+- <artifact>: <Planner draft revision | Planner approved-spec amendment | Architect ADR amendment/supersede | escalation>
 
 Next owner:
 - Planner | Architect | Human | none
