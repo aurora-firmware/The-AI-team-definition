@@ -36,7 +36,8 @@ If `$ARGUMENTS` is non-empty:
 - Use this single task as the queue. After it completes (success, blocked, or escalated), stop — do not continue to other tasks.
 
 If `$ARGUMENTS` is empty, discover pending tasks using: `ai-team list tasks --state pending`.
-If the queue is empty, stop and report: "Queue is empty. All pending tasks have been processed."
+If the queue is empty, proceed directly to **Step 8: Loop Complete** so the canonical
+Gate 5 status report is produced before the loop stops.
 
 ### Step 2: Baseline Test Guard
 

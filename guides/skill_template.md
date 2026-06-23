@@ -41,7 +41,7 @@ Skills fall into three categories. The shape of the `SKILL.md` differs slightly 
 
 - **Procedures** — analytical, multi-step work. Have a numbered `Procedure`, `Escalation` section, `Quality Criteria`, and `Common Pitfalls`. Examples: `tdd`, `code-review`, `integrate`, `debug`, `merge-conflicts`, `spec-breakdown-review`, `escalation-review`, `brainstorm`, `spec-breakdown`.
 - **Orchestrators** — autonomous loops that spawn subagents and drive workflows. Have a numbered `Procedure` with explicit `**Spawn the <Role> subagent**` blocks, `Cycle Counter Reset`, `Commit Conventions`, `Hard Stops`, and `What This Skill Does NOT Do`. Usually carry `disable-model-invocation: true`. Examples: `dev-loop`, `bug-loop`.
-- **Actions** — simple document-creation or single-purpose operations. Short numbered list, usually no escalation section, often carry `disable-model-invocation: true`. Examples: `new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`, `git-conventions`.
+- **Actions** — simple document-creation or single-purpose operations. Short numbered list, usually no escalation section. Human-only actions may carry `disable-model-invocation: true`; actions invoked by another skill must remain model-invocable. Examples: `new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`, `git-conventions`.
 
 ## The Separation Rule
 
@@ -243,6 +243,7 @@ description: Use this when needed.     # no specifics
 
 `disable-model-invocation`:
 - Set to `true` for orchestrators and actions that should only run on explicit human invocation, not via auto-selection.
+- Do not set it to `true` on a skill referenced through another skill's `Skill(<name>)` declaration. The target must remain model-invocable for that in-process call to work.
 
 ### Codex frontmatter parity (ADR-001)
 
@@ -492,7 +493,7 @@ Before treating a skill as ready:
 - [ ] `name` ≤64 chars, lowercase-hyphen only, no reserved words.
 - [ ] `description` ≤1024 chars, third person, names *what* and *when*.
 - [ ] `allowed-tools` lists every tool and every in-process `Skill()` invoked.
-- [ ] `disable-model-invocation: true` set if human-triggered only.
+- [ ] `disable-model-invocation: true` set only if human-triggered and not targeted by another skill's `Skill()` declaration.
 
 **Content**
 - [ ] `SKILL.md` body under 500 lines.
