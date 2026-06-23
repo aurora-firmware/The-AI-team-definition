@@ -1,7 +1,6 @@
 ---
 name: status-report
 description: Generate a Gate 5 project status report by scanning specs, tasks, bugs, decisions, and integration evidence. Use when the development or bug-fix loop needs a summary, or when a human needs final merge sign-off context.
-disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Bash
 ---
 

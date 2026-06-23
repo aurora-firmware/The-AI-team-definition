@@ -27,6 +27,12 @@ The `[codex]` section header in every exported `SKILL.md` retains the complete f
 key set: `allowed-tools`, `argument-hint`, `effort`, and `disable-model-invocation`. No key
 is stripped or omitted from the Codex section relative to the Claude section.
 
+Parity is relative between the two runtime headers, not a requirement that every optional
+key appear on every skill. When an optional key does not apply, it is omitted from both
+headers. In particular, a skill referenced through `Skill(<name>)` must not set
+`disable-model-invocation: true`, because doing so makes the declared in-process call
+unreachable; omitting that key from both headers preserves parity.
+
 Skill-to-skill wiring expressed via `Skill(<name>)` in `allowed-tools` (e.g.,
 `Skill(status-report)`) is preserved as-is in the Codex section. Future skill-creator
 passes MUST NOT strip these keys from Codex headers.
@@ -39,6 +45,7 @@ passes MUST NOT strip these keys from Codex headers.
   reason about which keys are valid for which tool.
 - Skill-to-skill wiring via `Skill()` in `allowed-tools` works identically for both Claude
   and Codex consumers of the same exported scaffold.
+- Declared skill-to-skill calls cannot target a skill that disables model invocation.
 - Adding support for a new frontmatter key in future requires no special handling for Codex.
 
 ### Negative

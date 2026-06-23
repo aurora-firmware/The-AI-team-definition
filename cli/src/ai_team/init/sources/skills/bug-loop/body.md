@@ -31,7 +31,8 @@ If `$ARGUMENTS` is non-empty:
 
 If `$ARGUMENTS` is empty, list all files in `project/bugs/open/` (ignore `.gitkeep`) as the queue.
 
-If the queue is empty, stop and report: "Queue is empty. No open bugs to process."
+If the queue is empty, proceed directly to **Step 8: Loop Complete** so the canonical
+Gate 5 status report is produced before the loop stops.
 
 ### Step 2: Pick the Next Bug
 
