@@ -91,6 +91,21 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-24
+
+Implemented the read-only layout contract resolver and validation levels 1 and
+4 using TDD. Added coverage for valid and malformed markers, safe conventional
+fallbacks, configured tools, package-derived scaffold directories,
+extra-directory tolerance, exact framework-version matching, deterministic
+ordering, and repository immutability. The initial test run failed as expected
+because the layout module did not exist; implementation made all 10 focused
+tests pass. I then reduced the production module below the repository's
+300-line review threshold without changing behavior. Final targeted
+verification, Ruff checks, and the complete 392-test suite pass. No
+implementation work remains; lifecycle bookkeeping and review are next.
+
+Obstacles encountered: none.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
