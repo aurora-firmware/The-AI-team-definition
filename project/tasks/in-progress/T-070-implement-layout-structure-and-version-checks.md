@@ -117,3 +117,31 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-06-24
+
+FAIL
+
+Stage 1 acceptance review:
+
+- AC-1: PASS — valid marker data resolves the project directory, configured
+  tools, configured framework version, and local distribution version.
+- AC-2: PASS — missing and invalid marker inputs produce actionable findings
+  while safe project-directory checks continue from repository conventions.
+- AC-3: PASS — level 1 derives lifecycle and selected-tool directories from
+  the packaged scaffold, reports every missing directory, and permits extras.
+- AC-4: FAIL — `cli/src/ai_team/core/layout.py`, `resolve_layout` lines 168-175
+  and `check_level_4`: an invalid but available configured value is discarded.
+  For example, `framework_version = 42` produces a finding containing only
+  "invalid" and the current CLI version, although AC-4 requires configured and
+  current values when available. Preserve the raw configured value (separately
+  from any parsed valid version if needed), include it in the invalid-version
+  finding, and strengthen `cli/tests/test_layout.py` to assert that `42` is
+  reported.
+- AC-5: PASS — findings have all four required fields, sort deterministically,
+  and the checks do not mutate the repository.
+
+Stage 2 was skipped because Stage 1 failed, as required by the review process.
+The focused 10-test suite, complete 392-test suite, Ruff format check, and Ruff
+lint check all passed; the existing invalid-version assertion does not cover
+the missing configured-value requirement.
