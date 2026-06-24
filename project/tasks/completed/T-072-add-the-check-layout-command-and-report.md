@@ -1,7 +1,7 @@
 ---
 id: T-072
 title: Add the check-layout command and report
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-06-24'
