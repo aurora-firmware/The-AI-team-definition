@@ -93,6 +93,25 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-24
+
+Completed the T-073 documentation implementation in commit `4c4c748`,
+covering the exact development warning contract and issue URL,
+once-per-invocation stderr behavior, JSON/output separation, and the complete
+`check-layout` workflow. Added automated checks for the hand-written usage
+guide and generated command reference. The earlier isolated build attempt was
+blocked by unavailable PyPI access while resolving `hatchling` and
+`hatch-vcs`. On resumption, documentation generation and scaffold
+synchronization completed, all 422 tests passed, both Ruff checks passed, and
+the required isolated `UV_CACHE_DIR=/tmp/uv-cache uv build` succeeded after
+network permission was granted. A non-isolated build workaround was rejected
+because it would not satisfy the documented verification contract. No further
+implementation work remains; T-073 is ready for review and integration.
+
+Obstacles encountered: the isolated build first reproduced the prior sandbox
+DNS/network denial while resolving build dependencies. Retrying the exact
+command with network permission succeeded.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
