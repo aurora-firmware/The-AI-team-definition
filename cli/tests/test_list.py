@@ -149,16 +149,16 @@ def test_list_tasks_displays_all_states_in_rich_table_and_skips_templates(
     result = CliRunner().invoke(app, ["list", "tasks"])
 
     assert result.exit_code == 0
-    assert "ID" in result.output
-    assert "Title" in result.output
-    assert "State" in result.output
-    assert "Priority" in result.output
-    assert "Assigned-Role" in result.output
-    assert "T-001" in result.output
-    assert "T-002" in result.output
-    assert "T-003" in result.output
-    assert "Template task" not in result.output
-    assert "T-000" not in result.output
+    assert "ID" in result.stdout
+    assert "Title" in result.stdout
+    assert "State" in result.stdout
+    assert "Priority" in result.stdout
+    assert "Assigned-Role" in result.stdout
+    assert "T-001" in result.stdout
+    assert "T-002" in result.stdout
+    assert "T-003" in result.stdout
+    assert "Template task" not in result.stdout
+    assert "T-000" not in result.stdout
 
 
 def test_list_tasks_state_filter_only_includes_matching_folder(monkeypatch, tmp_path):
@@ -178,10 +178,10 @@ def test_list_tasks_state_filter_only_includes_matching_folder(monkeypatch, tmp_
     result = CliRunner().invoke(app, ["list", "tasks", "--state", "pending"])
 
     assert result.exit_code == 0
-    assert "T-001" in result.output
-    assert "Pending task" in result.output
-    assert "T-002" not in result.output
-    assert "In-progress task" not in result.output
+    assert "T-001" in result.stdout
+    assert "Pending task" in result.stdout
+    assert "T-002" not in result.stdout
+    assert "In-progress task" not in result.stdout
 
 
 def test_list_tasks_json_outputs_plain_list_without_rich_table(monkeypatch, tmp_path):
@@ -197,7 +197,7 @@ def test_list_tasks_json_outputs_plain_list_without_rich_table(monkeypatch, tmp_
     result = CliRunner().invoke(app, ["list", "tasks", "--json"])
 
     assert result.exit_code == 0
-    parsed = json.loads(result.output)
+    parsed = json.loads(result.stdout)
     assert parsed == [
         {
             "id": "T-001",
@@ -207,8 +207,8 @@ def test_list_tasks_json_outputs_plain_list_without_rich_table(monkeypatch, tmp_
             "assigned-role": "developer",
         }
     ]
-    assert "Tasks" not in result.output
-    assert "┏" not in result.output
+    assert "Tasks" not in result.stdout
+    assert "┏" not in result.stdout
 
 
 def test_list_bugs_renders_table_and_json_and_skips_templates(monkeypatch, tmp_path):
@@ -233,17 +233,17 @@ def test_list_bugs_renders_table_and_json_and_skips_templates(monkeypatch, tmp_p
 
     table_result = CliRunner().invoke(app, ["list", "bugs"])
     assert table_result.exit_code == 0
-    assert "ID" in table_result.output
-    assert "Title" in table_result.output
-    assert "State" in table_result.output
-    assert "Severity" in table_result.output
-    assert "B-001" in table_result.output
-    assert "B-002" in table_result.output
-    assert "Template bug" not in table_result.output
+    assert "ID" in table_result.stdout
+    assert "Title" in table_result.stdout
+    assert "State" in table_result.stdout
+    assert "Severity" in table_result.stdout
+    assert "B-001" in table_result.stdout
+    assert "B-002" in table_result.stdout
+    assert "Template bug" not in table_result.stdout
 
     json_result = CliRunner().invoke(app, ["list", "bugs", "--json"])
     assert json_result.exit_code == 0
-    parsed = json.loads(json_result.output)
+    parsed = json.loads(json_result.stdout)
     assert parsed == [
         {
             "id": "B-001",
@@ -258,7 +258,7 @@ def test_list_bugs_renders_table_and_json_and_skips_templates(monkeypatch, tmp_p
             "severity": "low",
         },
     ]
-    assert "Bugs" not in json_result.output
+    assert "Bugs" not in json_result.stdout
 
 
 def test_list_specs_and_adrs_include_expected_columns_and_fields(monkeypatch, tmp_path):
@@ -286,17 +286,17 @@ def test_list_specs_and_adrs_include_expected_columns_and_fields(monkeypatch, tm
 
     specs_table = CliRunner().invoke(app, ["list", "specs"])
     assert specs_table.exit_code == 0
-    assert "ID" in specs_table.output
-    assert "Title" in specs_table.output
-    assert "Status" in specs_table.output
-    assert "Version" in specs_table.output
-    assert "S-001" in specs_table.output
-    assert "CLI Spec" in specs_table.output
-    assert "Template spec" not in specs_table.output
+    assert "ID" in specs_table.stdout
+    assert "Title" in specs_table.stdout
+    assert "Status" in specs_table.stdout
+    assert "Version" in specs_table.stdout
+    assert "S-001" in specs_table.stdout
+    assert "CLI Spec" in specs_table.stdout
+    assert "Template spec" not in specs_table.stdout
 
     specs_json = CliRunner().invoke(app, ["list", "specs", "--json"])
     assert specs_json.exit_code == 0
-    assert json.loads(specs_json.output) == [
+    assert json.loads(specs_json.stdout) == [
         {
             "id": "S-001",
             "title": "CLI Spec",
@@ -307,15 +307,15 @@ def test_list_specs_and_adrs_include_expected_columns_and_fields(monkeypatch, tm
 
     adrs_table = CliRunner().invoke(app, ["list", "adrs"])
     assert adrs_table.exit_code == 0
-    assert "ID" in adrs_table.output
-    assert "Title" in adrs_table.output
-    assert "Status" in adrs_table.output
-    assert "ADR-001" in adrs_table.output
-    assert "Template adr" not in adrs_table.output
+    assert "ID" in adrs_table.stdout
+    assert "Title" in adrs_table.stdout
+    assert "Status" in adrs_table.stdout
+    assert "ADR-001" in adrs_table.stdout
+    assert "Template adr" not in adrs_table.stdout
 
     adrs_json = CliRunner().invoke(app, ["list", "adrs", "--json"])
     assert adrs_json.exit_code == 0
-    assert json.loads(adrs_json.output) == [
+    assert json.loads(adrs_json.stdout) == [
         {
             "id": "ADR-001",
             "title": "Use Rich tables",
@@ -347,15 +347,15 @@ def test_list_change_requests_displays_id_title_state_in_rich_table(
     result = CliRunner().invoke(app, ["list", "change-requests"])
 
     assert result.exit_code == 0
-    assert "ID" in result.output
-    assert "Title" in result.output
-    assert "State" in result.output
-    assert "CR-001" in result.output
-    assert "Add new step" in result.output
-    assert "CR-002" in result.output
-    assert "Revise scope" in result.output
-    assert "Template CR" not in result.output
-    assert "CR-000" not in result.output
+    assert "ID" in result.stdout
+    assert "Title" in result.stdout
+    assert "State" in result.stdout
+    assert "CR-001" in result.stdout
+    assert "Add new step" in result.stdout
+    assert "CR-002" in result.stdout
+    assert "Revise scope" in result.stdout
+    assert "Template CR" not in result.stdout
+    assert "CR-000" not in result.stdout
 
 
 def test_list_change_requests_json_outputs_machine_readable_rows(monkeypatch, tmp_path):
@@ -371,7 +371,7 @@ def test_list_change_requests_json_outputs_machine_readable_rows(monkeypatch, tm
     result = CliRunner().invoke(app, ["list", "change-requests", "--json"])
 
     assert result.exit_code == 0
-    parsed = json.loads(result.output)
+    parsed = json.loads(result.stdout)
     assert parsed == [
         {
             "id": "CR-001",
@@ -379,8 +379,8 @@ def test_list_change_requests_json_outputs_machine_readable_rows(monkeypatch, tm
             "state": "pending",
         }
     ]
-    assert "Change Requests" not in result.output
-    assert "┏" not in result.output
+    assert "Change Requests" not in result.stdout
+    assert "┏" not in result.stdout
 
 
 def test_list_change_requests_returns_empty_list_when_no_change_requests_exist(
@@ -395,7 +395,7 @@ def test_list_change_requests_returns_empty_list_when_no_change_requests_exist(
     result = CliRunner().invoke(app, ["list", "change-requests", "--json"])
 
     assert result.exit_code == 0
-    assert json.loads(result.output) == []
+    assert json.loads(result.stdout) == []
 
 
 def test_list_specs_reports_frontmatter_id_not_filename_stem_for_prefixed_filenames(
@@ -414,7 +414,7 @@ def test_list_specs_reports_frontmatter_id_not_filename_stem_for_prefixed_filena
     result = CliRunner().invoke(app, ["list", "specs", "--json"])
 
     assert result.exit_code == 0
-    parsed = json.loads(result.output)
+    parsed = json.loads(result.stdout)
     assert parsed == [
         {
             "id": "S-007",

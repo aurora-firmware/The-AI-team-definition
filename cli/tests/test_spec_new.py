@@ -27,7 +27,7 @@ def test_spec_new_creates_spec_with_defaults_and_prints_absolute_path(
     expected = tmp_path / "project" / "specs" / "S-001-launch-plan.md"
 
     assert result.exit_code == 0
-    assert result.output.strip() == str(expected)
+    assert result.stdout.strip() == str(expected)
 
     files = list((tmp_path / "project" / "specs").glob("*.md"))
     assert files == [expected]
@@ -65,11 +65,11 @@ def test_spec_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
     )
 
     expected = tmp_path / "project" / "specs" / "S-001-auth-spec.md"
-    payload = json.loads(result.output)
+    payload = json.loads(result.stdout)
 
     assert result.exit_code == 0
     assert payload == {"id": "S-001", "path": str(expected)}
-    assert "┏" not in result.output
+    assert "┏" not in result.stdout
 
     spec = parse_spec(expected)
     assert spec.title == "Auth Spec"
@@ -165,7 +165,7 @@ author: planner
     result = CliRunner().invoke(app, ["spec", "new", "Verification Spec", "--json"])
 
     expected = specs_dir / "S-003-verification-spec.md"
-    payload = json.loads(result.output)
+    payload = json.loads(result.stdout)
 
     assert result.exit_code == 0
     assert payload == {"id": "S-003", "path": str(expected)}

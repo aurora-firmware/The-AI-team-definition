@@ -27,7 +27,7 @@ def test_bug_new_creates_open_bug_with_defaults_and_prints_absolute_path(
     expected = tmp_path / "project" / "bugs" / "open" / "B-001-crash-on-launch.md"
 
     assert result.exit_code == 0
-    assert result.output.strip() == str(expected)
+    assert result.stdout.strip() == str(expected)
 
     files = list((tmp_path / "project" / "bugs" / "open").glob("*.md"))
     assert files == [expected]
@@ -63,11 +63,11 @@ def test_bug_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
     )
 
     expected = tmp_path / "project" / "bugs" / "open" / "B-001-fix-auth-race.md"
-    payload = json.loads(result.output)
+    payload = json.loads(result.stdout)
 
     assert result.exit_code == 0
     assert payload == {"id": "B-001", "path": str(expected)}
-    assert "┏" not in result.output
+    assert "┏" not in result.stdout
 
     bug = parse_bug(expected)
     assert bug.id == "B-001"

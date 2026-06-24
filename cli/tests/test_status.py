@@ -164,25 +164,25 @@ def test_status_rich_summary_includes_counts_and_key_lists(monkeypatch, tmp_path
     result = CliRunner().invoke(app, ["status"])
 
     assert result.exit_code == 0
-    assert "Active specs" in result.output
-    assert "1" in result.output
-    assert "Pending tasks" in result.output
-    assert "In progress" in result.output
-    assert "Completed" in result.output
-    assert "Blocked" in result.output
-    assert "Open bugs" in result.output
-    assert "Bugs in progress" in result.output
-    assert "ADRs" in result.output
+    assert "Active specs" in result.stdout
+    assert "1" in result.stdout
+    assert "Pending tasks" in result.stdout
+    assert "In progress" in result.stdout
+    assert "Completed" in result.stdout
+    assert "Blocked" in result.stdout
+    assert "Open bugs" in result.stdout
+    assert "Bugs in progress" in result.stdout
+    assert "ADRs" in result.stdout
 
-    assert "T-002" in result.output
-    assert "reviewer" in result.output
+    assert "T-002" in result.stdout
+    assert "reviewer" in result.stdout
 
-    assert "T-004" in result.output
-    assert "waiting on dependency" in result.output
+    assert "T-004" in result.stdout
+    assert "waiting on dependency" in result.stdout
 
-    assert "B-001" in result.output
-    assert "B-002" in result.output
-    assert "B-003" not in result.output
+    assert "B-001" in result.stdout
+    assert "B-002" in result.stdout
+    assert "B-003" not in result.stdout
 
 
 def test_status_json_emits_structured_payload_without_rich_table(monkeypatch, tmp_path):
@@ -201,7 +201,7 @@ def test_status_json_emits_structured_payload_without_rich_table(monkeypatch, tm
     result = CliRunner().invoke(app, ["status", "--json"])
 
     assert result.exit_code == 0
-    payload = json.loads(result.output)
+    payload = json.loads(result.stdout)
     assert payload["counts"]["specs_active"] == 1
     assert payload["counts"]["tasks"]["in_progress"] == 1
     assert payload["in_progress_tasks"] == [
@@ -224,7 +224,7 @@ def test_status_json_emits_structured_payload_without_rich_table(monkeypatch, tm
     }
     assert payload["counts"]["adrs"] == 0
     assert payload["latest_integration_result"] == "not found"
-    assert "┏" not in result.output
+    assert "┏" not in result.stdout
 
 
 def test_status_blocked_task_uses_latest_work_log_when_frontmatter_reason_missing(
@@ -260,7 +260,7 @@ stuck on reviewer approval
     result = CliRunner().invoke(app, ["status", "--json"])
 
     assert result.exit_code == 0
-    payload = json.loads(result.output)
+    payload = json.loads(result.stdout)
     assert payload["blocked_tasks"] == [
         {
             "id": "T-200",
@@ -307,7 +307,7 @@ def test_status_uses_latest_integration_commit_subject_when_available(
     result = CliRunner().invoke(app, ["status", "--json"])
 
     assert result.exit_code == 0
-    payload = json.loads(result.output)
+    payload = json.loads(result.stdout)
     assert payload["latest_integration_result"] == (
         "chore(tasks): merge T-099 synthetic integration"
     )
