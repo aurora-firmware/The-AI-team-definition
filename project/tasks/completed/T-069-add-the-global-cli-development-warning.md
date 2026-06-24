@@ -1,7 +1,7 @@
 ---
 id: T-069
 title: Add the global CLI development warning
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-06-24'
