@@ -102,6 +102,16 @@ validator was introduced. Nothing remains beyond review and integration.
 
 Obstacles encountered: none.
 
+### Session 2 — 2026-06-24
+
+Reproduced the invalid UTF-8 crash with a regression test, then extended the
+existing level-2 boundary to catch `UnicodeError` alongside `OSError`. The test
+confirms a blocked level-2 finding is returned and the independent level-3
+guidance check continues. Avoided a broad exception handler so unrelated
+failures remain visible. Nothing remains beyond review and integration.
+
+Obstacles encountered: none.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
