@@ -12,9 +12,17 @@ Covers:
 import importlib
 import importlib.metadata
 import importlib.util
+import json
+import socket
 import types
 
+import pytest
 from typer.testing import CliRunner
+
+DEVELOPMENT_WARNING = (
+    "Warning: ai-team is under development. Please report issues at "
+    "https://github.com/aurora-firmware/The-AI-team-definition/issues"
+)
 
 # ---------------------------------------------------------------------------
 # AC-2 and AC-3: version callback and entry point
@@ -38,6 +46,52 @@ def test_entry_point_resolves_to_cli_app():
     ai_team_ep = next((ep for ep in entry_points if ep.name == "ai-team"), None)
     assert ai_team_ep is not None, "No 'ai-team' entry point found in console_scripts"
     assert ai_team_ep.value == "ai_team.cli:app"
+
+
+@pytest.mark.parametrize(
+    ("args", "expected_exit_code"),
+    [
+        (["--help"], 0),
+        (["--version"], 0),
+        (["list", "tasks"], 0),
+        (["not-a-command"], 2),
+    ],
+)
+def test_every_invocation_emits_development_warning_once(args, expected_exit_code):
+    """Help, version, success, and errors each emit one stderr warning."""
+    from ai_team.cli import app
+
+    result = CliRunner().invoke(app, args)
+
+    assert result.exit_code == expected_exit_code
+    assert result.stderr.count(DEVELOPMENT_WARNING) == 1
+
+
+def test_json_command_keeps_warning_out_of_stdout():
+    """JSON output remains parseable because the warning is stderr-only."""
+    from ai_team.cli import app
+
+    result = CliRunner().invoke(app, ["list", "tasks", "--json"])
+
+    assert result.exit_code == 0
+    assert isinstance(json.loads(result.stdout), list)
+    assert DEVELOPMENT_WARNING not in result.stdout
+    assert result.stderr.count(DEVELOPMENT_WARNING) == 1
+
+
+def test_development_warning_does_not_make_a_network_request(monkeypatch):
+    """Displaying the warning performs no network connection."""
+    from ai_team.cli import app
+
+    def reject_network_request(*args, **kwargs):
+        pytest.fail("the development warning attempted a network request")
+
+    monkeypatch.setattr(socket, "create_connection", reject_network_request)
+
+    result = CliRunner().invoke(app, ["--help"])
+
+    assert result.exit_code == 0
+    assert result.stderr.count(DEVELOPMENT_WARNING) == 1
 
 
 # ---------------------------------------------------------------------------
