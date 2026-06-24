@@ -113,3 +113,22 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-06-24
+
+FAIL
+
+Stage 1 failed AC-5. The other acceptance criteria and the changed-file scope
+were verified, and the task's pytest and Ruff verification commands pass.
+
+- **File and location:** `cli/src/ai_team/core/layout.py`, `check_level_2`, the
+  exception handler around `validate_project`.
+- **What is wrong:** The handler catches only `OSError`, but the reused artifact
+  parsers read managed Markdown as UTF-8 and can raise `UnicodeDecodeError`
+  (a `UnicodeError`) for malformed input. That exception escapes
+  `check_level_2` and aborts `check_layout`, contrary to AC-5's requirement to
+  report a blocked check and continue independent checks.
+- **What should change:** Handle invalid text encoding as a blocked artifact
+  check without suppressing unrelated checks, and add a regression test with a
+  non-UTF-8 managed artifact that verifies a level-2 finding is returned and an
+  independent level-3 check still runs.
