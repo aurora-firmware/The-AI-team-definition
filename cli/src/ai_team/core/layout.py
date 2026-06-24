@@ -17,6 +17,15 @@ from ai_team.core.validate import validate_project
 
 _SUPPORTED_TOOLS = ("claude", "codex")
 _DEFAULT_PROJECT_DIR = "project"
+_GUIDANCE_BY_TOOL = {"claude": "CLAUDE.md", "codex": "AGENTS.md"}
+_GUIDANCE_HEADINGS = (
+    "Build and Install",
+    "Test",
+    "Run",
+    "Lint and Format",
+    "Key Conventions",
+)
+_HEADING_PATTERN = re.compile(r"^##[ \t]+(.+?)[ \t]*#*[ \t]*$", re.MULTILINE)
 _VERSION_PATTERN = re.compile(
     r"[0-9]+(?:\.[0-9]+)*(?:[A-Za-z][A-Za-z0-9.-]*[0-9]?|[.+-][A-Za-z0-9.-]+)*"
 )
@@ -45,6 +54,7 @@ class LayoutContract:
     current_version: str | None
     raw_configured_version: object = field(default=None, repr=False)
     marker_status: _Status = field(default="valid", repr=False)
+    tools_status: _Status = field(default="valid", repr=False)
     version_status: _Status = field(default="valid", repr=False)
 
 
@@ -137,8 +147,10 @@ def resolve_layout(
             )
 
     selected_tools: list[str] = []
+    tools_status: _Status = "valid"
     if marker_status == "valid":
         if not isinstance(tools_value, list):
+            tools_status = "missing" if tools_value is None else "invalid"
             findings.append(
                 _finding(
                     1,
@@ -161,6 +173,7 @@ def resolve_layout(
                 ):
                     selected_tools.append(value)
             if invalid_tools:
+                tools_status = "invalid"
                 findings.append(
                     _finding(
                         1,
@@ -169,6 +182,8 @@ def resolve_layout(
                         "Keep only supported tool names: 'claude' and/or 'codex'.",
                     )
                 )
+    else:
+        tools_status = marker_status
 
     version_status: _Status = "valid"
     configured_version: str | None = None
@@ -194,6 +209,7 @@ def resolve_layout(
             current_version=installed_version,
             raw_configured_version=version_value,
             marker_status=marker_status,
+            tools_status=tools_status,
             version_status=version_status,
         ),
         sorted(findings, key=_sort_key),
@@ -331,6 +347,101 @@ def check_level_2(contract: LayoutContract) -> list[LayoutFinding]:
     return sorted(findings, key=_sort_key)
 
 
+def _markdown_sections(content: str) -> dict[str, str]:
+    matches = list(_HEADING_PATTERN.finditer(content))
+    return {
+        match.group(1).strip(): content[
+            match.end() : matches[index + 1].start()
+            if index + 1 < len(matches)
+            else len(content)
+        ].strip()
+        for index, match in enumerate(matches)
+    }
+
+
+def _content_lines(content: str) -> set[str]:
+    return {
+        line.strip()
+        for line in content.splitlines()
+        if line.strip() and not line.strip().startswith("```")
+    }
+
+
+def _starter_guidance_sections(filename: str) -> dict[str, str]:
+    starter = resources.files("ai_team.init").joinpath("sources", "root", filename)
+    return _markdown_sections(starter.read_text(encoding="utf-8"))
+
+
+def _is_placeholder_section(content: str, starter_content: str) -> bool:
+    content_lines = _content_lines(content)
+    return not content_lines or content_lines <= _content_lines(starter_content)
+
+
+def check_level_3(contract: LayoutContract) -> list[LayoutFinding]:
+    """Report missing or placeholder root guidance for configured tools."""
+
+    findings: list[LayoutFinding] = []
+    if contract.tools_status != "valid":
+        findings.append(
+            _finding(
+                3,
+                ".ai-team.toml",
+                "Root guidance selection is blocked by missing or invalid configured tools.",
+                "Set [init].tools to an array containing 'claude' and/or 'codex', then rerun the layout check.",
+            )
+        )
+
+    for tool in contract.tools:
+        filename = _GUIDANCE_BY_TOOL[tool]
+        path = contract.repo / filename
+        if not path.is_file():
+            findings.append(
+                _finding(
+                    3,
+                    filename,
+                    f"Configured tool '{tool}' requires root guidance file '{filename}', but it is missing.",
+                    f"Create '{filename}' and fill every required project-guidance section.",
+                )
+            )
+            continue
+
+        try:
+            content = path.read_text(encoding="utf-8")
+            starter_sections = _starter_guidance_sections(filename)
+        except (OSError, UnicodeError) as exc:
+            findings.append(
+                _finding(
+                    3,
+                    filename,
+                    f"Root guidance checks for '{filename}' are blocked: {exc}",
+                    "Restore a readable UTF-8 guidance file, then rerun the layout check.",
+                )
+            )
+            continue
+
+        sections = _markdown_sections(content)
+        for heading in _GUIDANCE_HEADINGS:
+            if heading not in sections:
+                findings.append(
+                    _finding(
+                        3,
+                        filename,
+                        f"Root guidance file '{filename}' is missing required section '{heading}'.",
+                        f"Add a '## {heading}' section containing project-specific guidance.",
+                    )
+                )
+            elif _is_placeholder_section(sections[heading], starter_sections[heading]):
+                findings.append(
+                    _finding(
+                        3,
+                        filename,
+                        f"Required section '{heading}' in '{filename}' contains only starter-template placeholder content.",
+                        f"Replace the '{heading}' placeholder with project-specific guidance.",
+                    )
+                )
+    return sorted(findings, key=_sort_key)
+
+
 def check_level_4(contract: LayoutContract) -> list[LayoutFinding]:
     """Report missing, invalid, or non-exact framework version alignment."""
 
@@ -379,5 +490,7 @@ def check_layout(
 
     contract, findings = resolve_layout(repo, current_version=current_version)
     findings.extend(check_level_1(contract))
+    findings.extend(check_level_2(contract))
+    findings.extend(check_level_3(contract))
     findings.extend(check_level_4(contract))
     return sorted(findings, key=_sort_key)

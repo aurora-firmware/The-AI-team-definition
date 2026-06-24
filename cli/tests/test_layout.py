@@ -14,6 +14,7 @@ from ai_team.core.layout import (
     check_layout,
     check_level_1,
     check_level_2,
+    check_level_3,
     check_level_4,
     resolve_layout,
 )
@@ -68,6 +69,31 @@ def _write(path: Path, content: str) -> None:
 def _frontmatter(**values: str) -> str:
     fields = "\n".join(f"{key}: {value}" for key, value in values.items())
     return f"---\n{fields}\n---\n\nBody.\n"
+
+
+_VALID_GUIDANCE = """\
+# Project Guidance
+
+## Build and Install
+
+Run `uv build` from `cli/`.
+
+## Test
+
+Run `uv run pytest` from `cli/`.
+
+## Run
+
+This package is a CLI; run `uv run ai-team --help`.
+
+## Lint and Format
+
+Run `uv run ruff check .` and `uv run ruff format --check .`.
+
+## Key Conventions
+
+Keep framework sources separate from generated scaffolds.
+"""
 
 
 def test_resolve_layout_reads_valid_local_marker_and_distribution_version(
@@ -300,6 +326,102 @@ def test_level_2_reports_malformed_artifact_and_continues_independent_checks(
 
 
 @pytest.mark.parametrize(
+    ("tools", "required", "not_required"),
+    [
+        (("codex",), "AGENTS.md", "CLAUDE.md"),
+        (("claude",), "CLAUDE.md", "AGENTS.md"),
+    ],
+)
+def test_level_3_selects_root_guidance_from_configured_tools(
+    tmp_path: Path,
+    tools: tuple[str, ...],
+    required: str,
+    not_required: str,
+) -> None:
+    _write_marker(tmp_path, tools=tools)
+    _write(tmp_path / required, _VALID_GUIDANCE)
+    contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
+
+    assert check_level_3(contract) == []
+    assert not (tmp_path / not_required).exists()
+
+
+def test_level_3_requires_both_guidance_files_when_both_tools_are_configured(
+    tmp_path: Path,
+) -> None:
+    _write_marker(tmp_path, tools=("claude", "codex"))
+    _write(tmp_path / "CLAUDE.md", _VALID_GUIDANCE)
+    contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
+
+    findings = check_level_3(contract)
+
+    assert [finding.path for finding in findings] == ["AGENTS.md"]
+    assert "missing" in findings[0].problem.lower()
+    assert findings[0].suggested_fix
+
+
+def test_level_3_reports_each_missing_or_placeholder_contract_section(
+    tmp_path: Path,
+) -> None:
+    _write_marker(tmp_path, tools=("codex",))
+    starter = resources.files("ai_team.init").joinpath("sources", "root", "AGENTS.md")
+    _write(tmp_path / "AGENTS.md", starter.read_text(encoding="utf-8"))
+    contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
+
+    findings = check_level_3(contract)
+
+    assert len(findings) == 5
+    combined = " ".join(finding.problem for finding in findings)
+    for heading in (
+        "Build and Install",
+        "Test",
+        "Run",
+        "Lint and Format",
+        "Key Conventions",
+    ):
+        assert heading in combined
+    assert all(finding.level == 3 for finding in findings)
+    assert all("placeholder" in finding.problem.lower() for finding in findings)
+
+
+def test_level_3_reports_missing_section_without_executing_guidance_commands(
+    tmp_path: Path,
+) -> None:
+    _write_marker(tmp_path, tools=("codex",))
+    sentinel = tmp_path / "command-ran"
+    guidance = _VALID_GUIDANCE.replace(
+        "## Test\n\nRun `uv run pytest` from `cli/`.\n\n", ""
+    ).replace(
+        "Run `uv build` from `cli/`.",
+        f"Run `touch {sentinel}` to build.",
+    )
+    _write(tmp_path / "AGENTS.md", guidance)
+    contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
+
+    findings = check_level_3(contract)
+
+    assert len(findings) == 1
+    assert "Test" in findings[0].problem
+    assert "missing" in findings[0].problem.lower()
+    assert not sentinel.exists()
+
+
+def test_level_3_reports_unreadable_guidance_and_continues_other_file(
+    tmp_path: Path,
+) -> None:
+    _write_marker(tmp_path, tools=("claude", "codex"))
+    (tmp_path / "CLAUDE.md").write_bytes(b"\xff")
+    _write(tmp_path / "AGENTS.md", _VALID_GUIDANCE.replace("## Run", "## Start"))
+    contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
+
+    findings = check_level_3(contract)
+
+    assert {finding.path for finding in findings} == {"CLAUDE.md", "AGENTS.md"}
+    assert any("blocked" in finding.problem.lower() for finding in findings)
+    assert any("Run" in finding.problem for finding in findings)
+
+
+@pytest.mark.parametrize(
     ("configured", "problem_parts"),
     [
         (None, ("missing", "1.2.3")),
@@ -341,6 +463,17 @@ def test_level_4_accepts_only_an_exact_version_match(tmp_path: Path) -> None:
 
     assert resolution_findings == []
     assert check_level_4(contract) == []
+
+
+def test_check_layout_runs_artifact_and_guidance_levels(tmp_path: Path) -> None:
+    _write_marker(tmp_path, tools=("codex",))
+    _write(tmp_path / "project/tasks/pending/T-001-task.md", "not frontmatter")
+
+    findings = check_layout(tmp_path, current_version="1.2.3")
+
+    assert {finding.level for finding in findings} >= {2, 3}
+    assert any(finding.path.endswith("T-001-task.md") for finding in findings)
+    assert any(finding.path == "AGENTS.md" for finding in findings)
 
 
 def test_check_layout_returns_ordered_findings_without_modifying_repository(
