@@ -89,6 +89,23 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-24
+
+Implemented the auto-discovered `ai-team check-layout` command using two TDD
+cycles. It renders deterministic findings ordered by level and path, includes
+level, path, problem, and suggested fix, returns correct clean/issue exit
+codes, resolves nested repository roots, reports malformed prerequisites
+without crashing, and remains read-only. After Architect approval expanded
+scope, regenerated `cli/docs/commands.md` using the repository generator
+without hand-editing and committed only its generated delta. A second
+generator run produced no diff, and the exact `## \`ai-team check-layout\``
+heading is present. Targeted tests, the full suite, and Ruff all pass. Nothing
+remains for development; the task is ready for review.
+
+Obstacles encountered: the documentation scope conflict was resolved by the
+Architect. The initial generator run hit the read-only default `uv` cache;
+rerunning with `/tmp/uv-cache` succeeded.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
