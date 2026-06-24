@@ -123,3 +123,28 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-06-24
+
+PASS
+
+Stage 1 passed: all four acceptance criteria are satisfied. The usage guide
+preserves the exact development warning and issue URL, documents its
+once-per-invocation stderr behavior and stdout/JSON separation, and covers all
+four `check-layout` levels, report fields, deterministic clean/issue exits,
+read-only behavior, and the no-repair exclusion. Regenerated command
+documentation contains the shipped `check-layout` command without a
+hand-edited delta, and automated documentation checks cover both references.
+The implementation commit changes only the three expected files that required
+a delta; `cli/docs/commands.md` was already current from T-072.
+
+Stage 2 passed: the documentation and tests are focused, readable, and free of
+unrelated behavior. On commit `4c4c748`, command documentation generation and
+scaffold synchronization succeeded, all 422 tests passed, both Ruff checks
+passed, and the exact isolated `UV_CACHE_DIR=/tmp/uv-cache uv build` completed
+successfully.
+
+Next owner: active Development Loop.
+
+Obstacles Encountered: none remain. The previously blocked isolated build was
+re-run successfully with network permission during this review.
