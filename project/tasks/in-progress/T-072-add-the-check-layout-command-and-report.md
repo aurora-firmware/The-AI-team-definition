@@ -67,11 +67,13 @@ AC-5: The system shall leave every repository file and directory unchanged by a
 
 - `cli/src/ai_team/commands/check_layout.py` — add the discoverable command and report rendering.
 - `cli/tests/test_check_layout.py` — cover report fields, ordering, exit codes, aggregation, errors, and read-only behavior.
+- `cli/docs/commands.md` — regenerate the committed command reference after adding the discoverable command.
 
 ## Verification
 
 ```bash
 cd cli
+bash scripts/gen_docs.sh
 UV_CACHE_DIR=/tmp/uv-cache uv run pytest tests/test_check_layout.py tests/test_layout.py
 UV_CACHE_DIR=/tmp/uv-cache uv run ruff format --check .
 UV_CACHE_DIR=/tmp/uv-cache uv run ruff check .
