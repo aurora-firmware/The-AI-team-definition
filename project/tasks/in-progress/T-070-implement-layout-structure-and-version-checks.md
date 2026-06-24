@@ -106,6 +106,21 @@ implementation work remains; lifecycle bookkeeping and review are next.
 
 Obstacles encountered: none.
 
+### Session 2 — 2026-06-24
+
+Addressed review cycle 1's AC-4 failure using TDD. Strengthened the level-4
+tests to require preservation of the raw configured framework value,
+separation from the validated version, and inclusion of invalid value `42`
+alongside current CLI version `1.2.3`. The regression test failed on the
+missing raw-value field as expected. Added `raw_configured_version` to
+`LayoutContract`, retained the marker value during resolution, and used it in
+invalid-version findings. Rejected continuing to overload
+`configured_version`, since that field should remain reserved for a validated
+version string. Final targeted verification, Ruff checks, and the complete
+392-test suite pass. No implementation work remains.
+
+Obstacles encountered: none.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
