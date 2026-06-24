@@ -1,7 +1,7 @@
 ---
 id: T-073
 title: Document layout diagnostics and development warning
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-06-24'
