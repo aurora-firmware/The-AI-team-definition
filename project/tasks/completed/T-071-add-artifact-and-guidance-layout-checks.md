@@ -1,7 +1,7 @@
 ---
 id: T-071
 title: Add artifact and guidance layout checks
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-06-24'
