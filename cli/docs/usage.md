@@ -16,6 +16,20 @@ of every command, flag, and argument, see [commands.md](commands.md).
 
 ---
 
+## Development warning
+
+For every invocation, `ai-team` emits this warning exactly once:
+
+```text
+Warning: ai-team is under development. Please report issues at https://github.com/aurora-firmware/The-AI-team-definition/issues
+```
+
+The warning goes to stderr for help, version, successful commands, failed
+commands, and commands that emit JSON. Normal human-readable and JSON output
+remains on stdout, so redirect or parse stdout without including the warning.
+
+---
+
 ## Installation
 
 **Requirements:** Python 3.14 or later.
@@ -147,6 +161,39 @@ ai-team init . --tools all --no-interactive
 ---
 
 ## Daily Workflows
+
+### Check the repository layout
+
+Run the read-only layout diagnostic from anywhere inside an initialized
+repository:
+
+```bash
+ai-team check-layout
+```
+
+The command runs four ordered validation levels:
+
+1. **Level 1 — expected directories.** Checks the configured project directory,
+   every lifecycle directory in the current project scaffold, and the agent and
+   skill directories for each configured tool. Extra directories are allowed.
+2. **Level 2 — artifact names and frontmatter.** Checks managed specs, tasks,
+   bugs, change requests, and decisions for the expected filename, required
+   frontmatter, and agreement between lifecycle location and status.
+3. **Level 3 — root guidance.** Checks `CLAUDE.md` for configured Claude tools
+   and `AGENTS.md` for configured Codex tools. Each required file must contain
+   non-placeholder `Build and Install`, `Test`, `Run`, `Lint and Format`, and
+   `Key Conventions` guidance.
+4. **Level 4 — version alignment.** Checks that the framework version recorded
+   in `.ai-team.toml` exactly matches the running CLI distribution version.
+
+Each finding reports `Level`, `Path`, `Problem`, and `Suggested fix`. Findings
+are ordered by level and then path. A clean repository prints an explicit
+success message and returns exit code 0; one or more findings are all reported
+before the command returns exit code 1.
+
+`check-layout` only observes the repository: it does not repair, create, move,
+rename, rewrite, or delete files or directories. Suggested fixes are guidance
+for the user, and no project guidance command is executed.
 
 ### Create and ship a task
 

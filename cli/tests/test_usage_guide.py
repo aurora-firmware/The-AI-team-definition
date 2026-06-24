@@ -25,6 +25,10 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[2]
 USAGE_MD = REPO_ROOT / "cli" / "docs" / "usage.md"
 COMMANDS_MD = REPO_ROOT / "cli" / "docs" / "commands.md"
+DEVELOPMENT_WARNING = (
+    "Warning: ai-team is under development. Please report issues at "
+    "https://github.com/aurora-firmware/The-AI-team-definition/issues"
+)
 
 
 # ---------------------------------------------------------------------------
@@ -322,4 +326,69 @@ def test_usage_md_documents_scaffold_generator_script():
     """usage.md must name the scaffold generator script."""
     assert "sync_init_scaffolds.py" in _content(), (
         "usage.md must name sync_init_scaffolds.py in the maintainer section"
+    )
+
+
+# ---------------------------------------------------------------------------
+# T-073 AC-1: development warning contract
+# ---------------------------------------------------------------------------
+
+
+def test_usage_md_documents_exact_development_warning():
+    """usage.md must preserve the shipped warning text and issue URL exactly."""
+    assert DEVELOPMENT_WARNING in _content(), (
+        "usage.md must document the exact development warning contract"
+    )
+
+
+def test_usage_md_documents_warning_frequency_and_output_separation():
+    """usage.md must explain warning frequency and stderr output separation."""
+    lower = _lower()
+    assert "exactly once" in lower and "every invocation" in lower, (
+        "usage.md must state that the warning appears exactly once per invocation"
+    )
+    assert "stderr" in lower and "stdout" in lower and "json" in lower, (
+        "usage.md must distinguish the warning on stderr from normal and JSON stdout"
+    )
+
+
+# ---------------------------------------------------------------------------
+# T-073 AC-2: check-layout workflow contract
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "level_contract",
+    [
+        "Level 1 — expected directories",
+        "Level 2 — artifact names and frontmatter",
+        "Level 3 — root guidance",
+        "Level 4 — version alignment",
+    ],
+)
+def test_usage_md_documents_each_layout_validation_level(level_contract):
+    """usage.md must name and explain all four layout validation levels."""
+    assert level_contract in _content(), (
+        f"usage.md must document the validation contract: {level_contract}"
+    )
+
+
+def test_usage_md_documents_check_layout_report_and_read_only_behavior():
+    """usage.md must document check-layout report fields and read-only operation."""
+    content = _content()
+    lower = content.lower()
+    assert "ai-team check-layout" in content, "usage.md must document check-layout"
+    assert "read-only" in lower, "usage.md must state that check-layout is read-only"
+    for field in ("Level", "Path", "Problem", "Suggested fix"):
+        assert field in content, f"usage.md must document the {field!r} report field"
+
+
+def test_usage_md_documents_check_layout_exit_behavior_and_no_repair():
+    """usage.md must distinguish clean/issues exits and exclude automatic repair."""
+    lower = _lower()
+    assert "exit code 0" in lower and "exit code 1" in lower, (
+        "usage.md must document clean and issue exit codes"
+    )
+    assert "does not repair" in lower or "never repairs" in lower, (
+        "usage.md must state that check-layout does not repair repositories"
     )
