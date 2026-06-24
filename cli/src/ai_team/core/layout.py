@@ -39,6 +39,7 @@ class LayoutContract:
     tools: tuple[str, ...]
     configured_version: str | None
     current_version: str | None
+    raw_configured_version: object = field(default=None, repr=False)
     marker_status: _Status = field(default="valid", repr=False)
     version_status: _Status = field(default="valid", repr=False)
 
@@ -187,6 +188,7 @@ def resolve_layout(
             tools=tuple(selected_tools),
             configured_version=configured_version,
             current_version=installed_version,
+            raw_configured_version=version_value,
             marker_status=marker_status,
             version_status=version_status,
         ),
@@ -264,7 +266,7 @@ def check_level_4(contract: LayoutContract) -> list[LayoutFinding]:
             _finding(
                 4,
                 ".ai-team.toml",
-                f"Configured framework version is invalid; current CLI version is {current!r}.",
+                f"Configured framework version {contract.raw_configured_version!r} is invalid; current CLI version is {current!r}.",
                 "Set [init].framework_version to a valid version string matching the current CLI exactly.",
             )
         ]

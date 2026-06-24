@@ -79,6 +79,7 @@ def test_resolve_layout_reads_valid_local_marker_and_distribution_version(
         tools=("codex", "claude"),
         configured_version="2.4.0",
         current_version="2.4.0",
+        raw_configured_version="2.4.0",
     )
     assert findings == []
 
@@ -131,7 +132,7 @@ def test_level_1_reports_every_missing_current_scaffold_directory_and_allows_ext
     ("configured", "problem_parts"),
     [
         (None, ("missing", "1.2.3")),
-        (42, ("invalid", "1.2.3")),
+        (42, ("invalid", "42", "1.2.3")),
         ("1.2.2", ("1.2.2", "1.2.3")),
     ],
 )
@@ -153,6 +154,9 @@ def test_level_4_reports_missing_invalid_and_non_exact_versions(
 
     findings = [*resolution_findings, *check_level_4(contract)]
 
+    assert contract.raw_configured_version == configured
+    if configured == 42:
+        assert contract.configured_version is None
     assert any(finding.level == 4 for finding in findings)
     combined_problem = " ".join(finding.problem.lower() for finding in findings)
     assert all(part.lower() in combined_problem for part in problem_parts)
