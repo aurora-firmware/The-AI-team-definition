@@ -7,6 +7,7 @@ import importlib.resources as resources
 import re
 import tomllib
 from dataclasses import dataclass, field
+from importlib.resources.abc import Traversable
 from pathlib import Path
 from typing import Literal
 
@@ -15,6 +16,7 @@ _DEFAULT_PROJECT_DIR = "project"
 _VERSION_PATTERN = re.compile(
     r"[0-9]+(?:\.[0-9]+)*(?:[A-Za-z][A-Za-z0-9.-]*[0-9]?|[.+-][A-Za-z0-9.-]+)*"
 )
+_Status = Literal["valid", "missing", "invalid"]
 
 
 @dataclass(frozen=True)
@@ -37,12 +39,8 @@ class LayoutContract:
     tools: tuple[str, ...]
     configured_version: str | None
     current_version: str | None
-    marker_status: Literal["valid", "missing", "invalid"] = field(
-        default="valid", repr=False
-    )
-    version_status: Literal["valid", "missing", "invalid"] = field(
-        default="valid", repr=False
-    )
+    marker_status: _Status = field(default="valid", repr=False)
+    version_status: _Status = field(default="valid", repr=False)
 
 
 def _finding(
@@ -51,12 +49,7 @@ def _finding(
     problem: str,
     suggested_fix: str,
 ) -> LayoutFinding:
-    return LayoutFinding(
-        level=level,
-        path=path,
-        problem=problem,
-        suggested_fix=suggested_fix,
-    )
+    return LayoutFinding(level, path, problem, suggested_fix)
 
 
 def _is_project_dir_name(value: object) -> bool:
@@ -84,7 +77,7 @@ def resolve_layout(
     repo = repo.resolve()
     marker = repo / ".ai-team.toml"
     findings: list[LayoutFinding] = []
-    marker_status: Literal["valid", "missing", "invalid"] = "valid"
+    marker_status: _Status = "valid"
     data: object = {}
 
     if not marker.is_file():
@@ -172,7 +165,7 @@ def resolve_layout(
                     )
                 )
 
-    version_status: Literal["valid", "missing", "invalid"] = "valid"
+    version_status: _Status = "valid"
     configured_version: str | None = None
     if marker_status != "valid" or version_value is None:
         version_status = "missing"
@@ -201,12 +194,12 @@ def resolve_layout(
     )
 
 
-def _resource_directories(root: object) -> list[Path]:
+def _resource_directories(root: Traversable) -> list[Path]:
     """Return directory paths below an importlib Traversable resource root."""
 
     directories: list[Path] = []
 
-    def walk(node: object, relative: Path) -> None:
+    def walk(node: Traversable, relative: Path) -> None:
         for child in node.iterdir():
             if child.is_dir():
                 child_relative = relative / child.name
@@ -234,20 +227,13 @@ def _expected_directories(contract: LayoutContract) -> list[Path]:
     return expected
 
 
-def _display_path(path: Path, repo: Path) -> str:
-    try:
-        return path.relative_to(repo).as_posix()
-    except ValueError:
-        return str(path)
-
-
 def check_level_1(contract: LayoutContract) -> list[LayoutFinding]:
     """Report missing directories from current project and selected-tool scaffolds."""
 
     findings = []
     for path in _expected_directories(contract):
         if not path.is_dir():
-            display_path = _display_path(path, contract.repo)
+            display_path = path.relative_to(contract.repo).as_posix()
             findings.append(
                 _finding(
                     1,
@@ -295,12 +281,7 @@ def check_level_4(contract: LayoutContract) -> list[LayoutFinding]:
 
 
 def _sort_key(finding: LayoutFinding) -> tuple[int, str, str, str]:
-    return (
-        finding.level,
-        finding.path,
-        finding.problem,
-        finding.suggested_fix,
-    )
+    return finding.level, finding.path, finding.problem, finding.suggested_fix
 
 
 def check_layout(
