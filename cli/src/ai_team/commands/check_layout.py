@@ -39,6 +39,10 @@ def _sort_key(finding: LayoutFinding) -> tuple[int, str, str, str]:
 
 
 def _render_findings(findings: list[LayoutFinding]) -> None:
+    if not findings:
+        typer.echo("Layout check passed: no findings.")
+        return
+
     typer.echo(f"{len(findings)} layout findings")
     for finding in sorted(findings, key=_sort_key):
         typer.echo()
