@@ -27,7 +27,7 @@ def test_task_new_creates_pending_task_with_defaults_and_prints_absolute_path(
     expected = tmp_path / "project" / "tasks" / "pending" / "T-001-ship-api.md"
 
     assert result.exit_code == 0
-    assert result.output.strip() == str(expected)
+    assert result.stdout.strip() == str(expected)
 
     files = list((tmp_path / "project" / "tasks" / "pending").glob("*.md"))
     assert files == [expected]
@@ -68,11 +68,11 @@ def test_task_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
     expected = (
         tmp_path / "project" / "tasks" / "pending" / "T-001-build-auth-gateway.md"
     )
-    payload = json.loads(result.output)
+    payload = json.loads(result.stdout)
 
     assert result.exit_code == 0
     assert payload == {"id": "T-001", "path": str(expected)}
-    assert "┏" not in result.output
+    assert "┏" not in result.stdout
 
     task = parse_task(expected)
     assert task.id == "T-001"

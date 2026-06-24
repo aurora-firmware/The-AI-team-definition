@@ -29,7 +29,7 @@ def test_change_request_new_creates_file_and_prints_absolute_path(
     expected = tmp_path / "project" / "change-requests" / "CR-001-add-dark-mode.md"
 
     assert result.exit_code == 0, result.output
-    assert result.output.strip() == str(expected)
+    assert result.stdout.strip() == str(expected)
 
     files = list((tmp_path / "project" / "change-requests").glob("*.md"))
     assert files == [expected]
@@ -81,9 +81,9 @@ def test_change_request_new_json_flag_emits_id_and_path_without_table(
     expected = tmp_path / "project" / "change-requests" / "CR-001-add-dark-mode.md"
 
     assert result.exit_code == 0, result.output
-    payload = json.loads(result.output)
+    payload = json.loads(result.stdout)
     assert payload == {"id": "CR-001", "path": str(expected)}
-    assert "┏" not in result.output
+    assert "┏" not in result.stdout
 
 
 def test_change_request_new_refuses_to_overwrite_existing_path(monkeypatch, tmp_path):

@@ -6,13 +6,29 @@ import importlib.metadata
 from typing import Annotated, Optional
 
 import typer
+from typer.core import TyperGroup
 
 from ai_team.commands import discover_and_mount
+
+DEVELOPMENT_WARNING = (
+    "Warning: ai-team is under development. Please report issues at "
+    "https://github.com/aurora-firmware/The-AI-team-definition/issues"
+)
+
+
+class DevelopmentWarningGroup(TyperGroup):
+    """Root command group that warns once before processing an invocation."""
+
+    def main(self, *args, **kwargs):
+        typer.echo(DEVELOPMENT_WARNING, err=True)
+        return super().main(*args, **kwargs)
+
 
 app = typer.Typer(
     name="ai-team",
     help="Manage AI-team artifacts: specs, tasks, bugs, and ADRs.",
     add_completion=False,
+    cls=DevelopmentWarningGroup,
 )
 
 # Register all command modules discovered under ai_team.commands.

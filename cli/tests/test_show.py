@@ -94,8 +94,8 @@ def test_show_exact_id_single_match_prints_markdown(monkeypatch, tmp_path):
     result = CliRunner().invoke(app, ["show", "T-001"])
 
     assert result.exit_code == 0
-    assert "Initial scaffold" in result.output
-    assert "Task body line." in result.output
+    assert "Initial scaffold" in result.stdout
+    assert "Task body line." in result.stdout
 
 
 def test_show_json_outputs_path_frontmatter_and_body(monkeypatch, tmp_path):
@@ -111,7 +111,7 @@ def test_show_json_outputs_path_frontmatter_and_body(monkeypatch, tmp_path):
     result = CliRunner().invoke(app, ["show", "T-002", "--json"])
 
     assert result.exit_code == 0
-    payload = json.loads(result.output)
+    payload = json.loads(result.stdout)
     assert payload == {
         "path": str(task_path),
         "frontmatter": {
@@ -193,7 +193,7 @@ def test_show_resolves_ids_across_artifact_types_and_states(
     result = CliRunner().invoke(app, ["show", identifier])
 
     assert result.exit_code == 0
-    assert expected_text in result.output
+    assert expected_text in result.stdout
 
 
 def test_show_multiple_matches_prints_candidates_to_stderr_and_exits_non_zero(
