@@ -90,6 +90,18 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-24
+
+Implemented layout validation levels 2 and 3 using TDD. Level 2 reuses the
+existing artifact validator for managed filenames, required frontmatter, and
+lifecycle status consistency while ignoring placeholders and documentation.
+Level 3 validates configured root guidance files, required non-placeholder
+sections, and malformed or missing inputs without executing documented
+commands. Integrated both levels into ordered layout checks. No separate
+validator was introduced. Nothing remains beyond review and integration.
+
+Obstacles encountered: none.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
