@@ -1,7 +1,7 @@
 ---
 id: T-070
 title: Implement layout structure and version checks
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-06-24'
