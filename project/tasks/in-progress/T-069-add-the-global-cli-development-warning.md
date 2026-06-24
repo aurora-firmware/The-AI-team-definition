@@ -83,6 +83,26 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-06-24
+
+Implemented the exact process-wide development warning at the root Typer/Click
+group boundary, with coverage for help, version, successful commands, parse
+errors, JSON stdout separation, exact-once stderr emission, and no network
+activity. A callback-only approach was considered and rejected because eager
+help/version handling and parse failures bypass callbacks. The initial
+full-suite run exposed tests that conflated Click 8.2's combined
+`result.output` with stdout. Under the Architect-approved scope adjustment,
+mechanically migrated only stdout contract assertions and JSON parsers in the
+authorized test files to `result.stdout`; stderr assertions were preserved and
+combined `result.output` remains only as diagnostic failure context. The
+complete 382-test suite and both Ruff checks now pass. Nothing remains for
+implementation or verification.
+
+Obstacles encountered: Click 8.2 combines stderr into `Result.output`, causing
+35 legacy stdout assertions to fail once the required warning was added. The
+Architect resolved the task-file scope mismatch by authorizing the mechanical
+test migration.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
