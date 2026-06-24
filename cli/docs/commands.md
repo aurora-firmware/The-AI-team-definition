@@ -22,6 +22,7 @@ $ ai-team [OPTIONS] COMMAND [ARGS]...
 * `archive`: Archive old completed tasks and resolved...
 * `bug`: Create and manage bug artifacts.
 * `change-request`: Create and manage change-request artifacts.
+* `check-layout`: Check the repository layout and report...
 * `init`: Scaffold an AI-team repository.
 * `list`: List tasks, bugs, specs, ADRs, and change...
 * `report`: Write a Gate 5 progress report.
@@ -198,6 +199,20 @@ $ ai-team change-request new [OPTIONS] TITLE
 **Options**:
 
 * `--json`: Emit JSON output.
+* `--help`: Show this message and exit.
+
+## `ai-team check-layout`
+
+Check the repository layout and report actionable findings.
+
+**Usage**:
+
+```console
+$ ai-team check-layout [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
 * `--help`: Show this message and exit.
 
 ## `ai-team init`
