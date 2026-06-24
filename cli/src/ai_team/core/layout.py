@@ -322,7 +322,7 @@ def check_level_2(contract: LayoutContract) -> list[LayoutFinding]:
     for scope in scopes:
         try:
             artifact_findings = validate_project(root, **scope)
-        except OSError as exc:
+        except (OSError, UnicodeError) as exc:
             scope_name = next(iter(scope)).replace("_", " ")
             findings.append(
                 _finding(

@@ -325,6 +325,28 @@ def test_level_2_reports_malformed_artifact_and_continues_independent_checks(
     assert any("filename" in finding.problem.lower() for finding in findings)
 
 
+def test_invalid_artifact_encoding_is_blocked_and_guidance_check_continues(
+    tmp_path: Path,
+) -> None:
+    _write_marker(tmp_path, tools=("codex",))
+    artifact = tmp_path / "project/tasks/pending/T-001-invalid-encoding.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_bytes(b"\xff")
+
+    findings = check_layout(tmp_path, current_version="1.2.3")
+
+    assert any(
+        finding.level == 2 and "blocked" in finding.problem.lower()
+        for finding in findings
+    )
+    assert any(
+        finding.level == 3
+        and finding.path == "AGENTS.md"
+        and "missing" in finding.problem.lower()
+        for finding in findings
+    )
+
+
 @pytest.mark.parametrize(
     ("tools", "required", "not_required"),
     [
