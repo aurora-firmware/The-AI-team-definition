@@ -76,9 +76,11 @@ AC-4: The system shall include automated documentation checks that fail if the
 ```bash
 cd cli
 bash scripts/gen_docs.sh
-UV_CACHE_DIR=/tmp/uv-cache uv run pytest tests/test_usage_guide.py tests/test_gen_docs.py
+python scripts/sync_init_scaffolds.py
+UV_CACHE_DIR=/tmp/uv-cache uv run pytest
 UV_CACHE_DIR=/tmp/uv-cache uv run ruff format --check .
 UV_CACHE_DIR=/tmp/uv-cache uv run ruff check .
+UV_CACHE_DIR=/tmp/uv-cache uv build
 ```
 
 ## Work Log

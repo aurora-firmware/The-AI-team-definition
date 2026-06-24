@@ -64,7 +64,8 @@ AC-5: The system shall return deterministic read-only findings containing level,
 
 ## Dependencies
 
-- None.
+- `T-069` — completes phase 1's process-wide development warning before phase
+  2 layout validation begins, as required by S-003's implementation order.
 
 ## Files to Touch
 
