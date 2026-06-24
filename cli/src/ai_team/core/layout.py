@@ -11,6 +11,10 @@ from importlib.resources.abc import Traversable
 from pathlib import Path
 from typing import Literal
 
+from ai_team.core.locator import ProjectRoot
+from ai_team.core.validate import Finding as ArtifactFinding
+from ai_team.core.validate import validate_project
+
 _SUPPORTED_TOOLS = ("claude", "codex")
 _DEFAULT_PROJECT_DIR = "project"
 _VERSION_PATTERN = re.compile(
@@ -244,6 +248,86 @@ def check_level_1(contract: LayoutContract) -> list[LayoutFinding]:
                     "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools.",
                 )
             )
+    return sorted(findings, key=_sort_key)
+
+
+_LEVEL_2_CODES = {
+    "filename-pattern",
+    "frontmatter-invalid",
+    "id-missing",
+    "id-pattern",
+    "status-mismatch",
+}
+
+
+def _artifact_suggested_fix(finding: ArtifactFinding) -> str:
+    if finding.code == "filename-pattern":
+        return "Rename the artifact to the filename convention stated in the problem."
+    if finding.code == "status-mismatch":
+        return (
+            "Update the frontmatter status to match the lifecycle directory, or move "
+            "the artifact to the directory matching its current status."
+        )
+    if finding.code == "id-pattern":
+        return "Correct the frontmatter id to the required artifact ID pattern."
+    if finding.code == "id-missing":
+        return "Add the required artifact id to the YAML frontmatter."
+    return (
+        "Correct the YAML frontmatter and add every required field for this "
+        "artifact type."
+    )
+
+
+def check_level_2(contract: LayoutContract) -> list[LayoutFinding]:
+    """Report managed artifact naming, frontmatter, and lifecycle violations."""
+
+    if not contract.project_dir.is_dir():
+        display_path = contract.project_dir.relative_to(contract.repo).as_posix()
+        return [
+            _finding(
+                2,
+                display_path,
+                f"Artifact checks are blocked because project directory '{display_path}' is missing or is not a directory.",
+                "Restore the configured project directory, then rerun the layout check.",
+            )
+        ]
+
+    root = ProjectRoot._from_repo_and_project_dir_name(
+        contract.repo, contract.project_dir.name
+    )
+    findings: list[LayoutFinding] = []
+    scopes = (
+        {"specs": True},
+        {"tasks": True},
+        {"bugs": True},
+        {"change_requests": True},
+        {"adrs": True},
+    )
+    for scope in scopes:
+        try:
+            artifact_findings = validate_project(root, **scope)
+        except OSError as exc:
+            scope_name = next(iter(scope)).replace("_", " ")
+            findings.append(
+                _finding(
+                    2,
+                    contract.project_dir.relative_to(contract.repo).as_posix(),
+                    f"The {scope_name} artifact check is blocked: {exc}",
+                    "Restore readable managed artifact inputs, then rerun the layout check.",
+                )
+            )
+            continue
+
+        findings.extend(
+            _finding(
+                2,
+                finding.path,
+                finding.message,
+                _artifact_suggested_fix(finding),
+            )
+            for finding in artifact_findings
+            if finding.code in _LEVEL_2_CODES
+        )
     return sorted(findings, key=_sort_key)
 
 

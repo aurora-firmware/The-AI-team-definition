@@ -13,6 +13,7 @@ from ai_team.core.layout import (
     LayoutFinding,
     check_layout,
     check_level_1,
+    check_level_2,
     check_level_4,
     resolve_layout,
 )
@@ -57,6 +58,16 @@ def _snapshot(repo: Path) -> list[tuple[str, bool, bytes | None]]:
         )
         for path in sorted(repo.rglob("*"))
     ]
+
+
+def _write(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
+def _frontmatter(**values: str) -> str:
+    fields = "\n".join(f"{key}: {value}" for key, value in values.items())
+    return f"---\n{fields}\n---\n\nBody.\n"
 
 
 def test_resolve_layout_reads_valid_local_marker_and_distribution_version(
@@ -126,6 +137,166 @@ def test_level_1_reports_every_missing_current_scaffold_directory_and_allows_ext
     }
     assert all(finding.level == 1 for finding in findings)
     assert all(finding.problem and finding.suggested_fix for finding in findings)
+
+
+@pytest.mark.parametrize(
+    ("relative_path", "content", "expected_problem"),
+    [
+        (
+            "project/specs/Bad Spec.md",
+            _frontmatter(
+                id="S-001",
+                title="Spec",
+                version="'0.1'",
+                status="approved",
+                created="2026-06-24",
+                author="planner",
+            ),
+            "filename",
+        ),
+        (
+            "project/tasks/pending/T-001-task.md",
+            _frontmatter(
+                id="T-001",
+                title="Task",
+                status="pending",
+                priority="medium",
+                created="2026-06-24",
+            ),
+            "frontmatter",
+        ),
+        (
+            "project/bugs/open/not-a-bug.md",
+            _frontmatter(
+                id="B-001",
+                title="Bug",
+                severity="medium",
+                status="open",
+                created="2026-06-24",
+            ),
+            "filename",
+        ),
+        (
+            "project/change-requests/request.md",
+            _frontmatter(
+                id="CR-001",
+                title="Request",
+                status="pending",
+                created="2026-06-24",
+            ),
+            "filename",
+        ),
+        (
+            "project/decisions/decision.md",
+            _frontmatter(
+                id="ADR-001",
+                title="Decision",
+                status="accepted",
+                created="2026-06-24",
+            ),
+            "filename",
+        ),
+    ],
+)
+def test_level_2_reuses_artifact_filename_and_frontmatter_rules(
+    tmp_path: Path,
+    relative_path: str,
+    content: str,
+    expected_problem: str,
+) -> None:
+    _write_marker(tmp_path, tools=())
+    _write(tmp_path / relative_path, content)
+    contract, resolution_findings = resolve_layout(tmp_path, current_version="1.2.3")
+
+    findings = check_level_2(contract)
+
+    assert resolution_findings == []
+    assert findings
+    assert all(finding.level == 2 for finding in findings)
+    assert any(expected_problem in finding.problem.lower() for finding in findings)
+    assert all(finding.suggested_fix for finding in findings)
+
+
+@pytest.mark.parametrize(
+    ("relative_path", "status", "folder"),
+    [
+        ("project/tasks/pending/T-001-task.md", "completed", "pending"),
+        ("project/bugs/open/B-001-bug.md", "resolved", "open"),
+    ],
+)
+def test_level_2_reports_lifecycle_status_mismatches_with_actionable_fix(
+    tmp_path: Path, relative_path: str, status: str, folder: str
+) -> None:
+    _write_marker(tmp_path, tools=())
+    if "/tasks/" in relative_path:
+        content = _frontmatter(
+            id="T-001",
+            title="Task",
+            status=status,
+            priority="medium",
+            **{"assigned-role": "developer"},
+            created="2026-06-24",
+        )
+    else:
+        content = _frontmatter(
+            id="B-001",
+            title="Bug",
+            severity="medium",
+            status=status,
+            created="2026-06-24",
+        )
+    _write(tmp_path / relative_path, content)
+    contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
+
+    findings = check_level_2(contract)
+
+    mismatch = next(
+        finding for finding in findings if "does not match" in finding.problem
+    )
+    assert folder in mismatch.problem
+    assert "status" in mismatch.suggested_fix.lower()
+    assert "move" in mismatch.suggested_fix.lower()
+
+
+def test_level_2_ignores_placeholders_and_non_artifact_documentation(
+    tmp_path: Path,
+) -> None:
+    _write_marker(tmp_path, tools=())
+    _write(tmp_path / "project/tasks/pending/.gitkeep", "")
+    _write(tmp_path / "project/tasks/pending/TEMPLATE-task.md", "not frontmatter")
+    _write(tmp_path / "project/docs/Bad Documentation.md", "not frontmatter")
+    contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
+
+    assert check_level_2(contract) == []
+
+
+def test_level_2_reports_malformed_artifact_and_continues_independent_checks(
+    tmp_path: Path,
+) -> None:
+    _write_marker(tmp_path, tools=())
+    _write(
+        tmp_path / "project/tasks/pending/T-001-malformed.md",
+        "---\ninvalid: [yaml\n---\n",
+    )
+    _write(
+        tmp_path / "project/decisions/bad-name.md",
+        _frontmatter(
+            id="ADR-001",
+            title="Decision",
+            status="accepted",
+            created="2026-06-24",
+        ),
+    )
+    contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
+
+    findings = check_level_2(contract)
+
+    assert {finding.path for finding in findings} == {
+        "project/tasks/pending/T-001-malformed.md",
+        "project/decisions/bad-name.md",
+    }
+    assert any("frontmatter" in finding.problem.lower() for finding in findings)
+    assert any("filename" in finding.problem.lower() for finding in findings)
 
 
 @pytest.mark.parametrize(
