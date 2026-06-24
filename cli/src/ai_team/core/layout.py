@@ -11,8 +11,21 @@ from importlib.resources.abc import Traversable
 from pathlib import Path
 from typing import Literal
 
+from ai_team.core.locator import ProjectRoot
+from ai_team.core.validate import Finding as ArtifactFinding
+from ai_team.core.validate import validate_project
+
 _SUPPORTED_TOOLS = ("claude", "codex")
 _DEFAULT_PROJECT_DIR = "project"
+_GUIDANCE_BY_TOOL = {"claude": "CLAUDE.md", "codex": "AGENTS.md"}
+_GUIDANCE_HEADINGS = (
+    "Build and Install",
+    "Test",
+    "Run",
+    "Lint and Format",
+    "Key Conventions",
+)
+_HEADING_PATTERN = re.compile(r"^##[ \t]+(.+?)[ \t]*#*[ \t]*$", re.MULTILINE)
 _VERSION_PATTERN = re.compile(
     r"[0-9]+(?:\.[0-9]+)*(?:[A-Za-z][A-Za-z0-9.-]*[0-9]?|[.+-][A-Za-z0-9.-]+)*"
 )
@@ -41,6 +54,7 @@ class LayoutContract:
     current_version: str | None
     raw_configured_version: object = field(default=None, repr=False)
     marker_status: _Status = field(default="valid", repr=False)
+    tools_status: _Status = field(default="valid", repr=False)
     version_status: _Status = field(default="valid", repr=False)
 
 
@@ -133,8 +147,10 @@ def resolve_layout(
             )
 
     selected_tools: list[str] = []
+    tools_status: _Status = "valid"
     if marker_status == "valid":
         if not isinstance(tools_value, list):
+            tools_status = "missing" if tools_value is None else "invalid"
             findings.append(
                 _finding(
                     1,
@@ -157,6 +173,7 @@ def resolve_layout(
                 ):
                     selected_tools.append(value)
             if invalid_tools:
+                tools_status = "invalid"
                 findings.append(
                     _finding(
                         1,
@@ -165,6 +182,8 @@ def resolve_layout(
                         "Keep only supported tool names: 'claude' and/or 'codex'.",
                     )
                 )
+    else:
+        tools_status = marker_status
 
     version_status: _Status = "valid"
     configured_version: str | None = None
@@ -190,6 +209,7 @@ def resolve_layout(
             current_version=installed_version,
             raw_configured_version=version_value,
             marker_status=marker_status,
+            tools_status=tools_status,
             version_status=version_status,
         ),
         sorted(findings, key=_sort_key),
@@ -247,6 +267,181 @@ def check_level_1(contract: LayoutContract) -> list[LayoutFinding]:
     return sorted(findings, key=_sort_key)
 
 
+_LEVEL_2_CODES = {
+    "filename-pattern",
+    "frontmatter-invalid",
+    "id-missing",
+    "id-pattern",
+    "status-mismatch",
+}
+
+
+def _artifact_suggested_fix(finding: ArtifactFinding) -> str:
+    if finding.code == "filename-pattern":
+        return "Rename the artifact to the filename convention stated in the problem."
+    if finding.code == "status-mismatch":
+        return (
+            "Update the frontmatter status to match the lifecycle directory, or move "
+            "the artifact to the directory matching its current status."
+        )
+    if finding.code == "id-pattern":
+        return "Correct the frontmatter id to the required artifact ID pattern."
+    if finding.code == "id-missing":
+        return "Add the required artifact id to the YAML frontmatter."
+    return (
+        "Correct the YAML frontmatter and add every required field for this "
+        "artifact type."
+    )
+
+
+def check_level_2(contract: LayoutContract) -> list[LayoutFinding]:
+    """Report managed artifact naming, frontmatter, and lifecycle violations."""
+
+    if not contract.project_dir.is_dir():
+        display_path = contract.project_dir.relative_to(contract.repo).as_posix()
+        return [
+            _finding(
+                2,
+                display_path,
+                f"Artifact checks are blocked because project directory '{display_path}' is missing or is not a directory.",
+                "Restore the configured project directory, then rerun the layout check.",
+            )
+        ]
+
+    root = ProjectRoot._from_repo_and_project_dir_name(
+        contract.repo, contract.project_dir.name
+    )
+    findings: list[LayoutFinding] = []
+    scopes = (
+        {"specs": True},
+        {"tasks": True},
+        {"bugs": True},
+        {"change_requests": True},
+        {"adrs": True},
+    )
+    for scope in scopes:
+        try:
+            artifact_findings = validate_project(root, **scope)
+        except (OSError, UnicodeError) as exc:
+            scope_name = next(iter(scope)).replace("_", " ")
+            findings.append(
+                _finding(
+                    2,
+                    contract.project_dir.relative_to(contract.repo).as_posix(),
+                    f"The {scope_name} artifact check is blocked: {exc}",
+                    "Restore readable managed artifact inputs, then rerun the layout check.",
+                )
+            )
+            continue
+
+        findings.extend(
+            _finding(
+                2,
+                finding.path,
+                finding.message,
+                _artifact_suggested_fix(finding),
+            )
+            for finding in artifact_findings
+            if finding.code in _LEVEL_2_CODES
+        )
+    return sorted(findings, key=_sort_key)
+
+
+def _markdown_sections(content: str) -> dict[str, str]:
+    matches = list(_HEADING_PATTERN.finditer(content))
+    return {
+        match.group(1).strip(): content[
+            match.end() : matches[index + 1].start()
+            if index + 1 < len(matches)
+            else len(content)
+        ].strip()
+        for index, match in enumerate(matches)
+    }
+
+
+def _content_lines(content: str) -> set[str]:
+    return {
+        line.strip()
+        for line in content.splitlines()
+        if line.strip() and not line.strip().startswith("```")
+    }
+
+
+def _starter_guidance_sections(filename: str) -> dict[str, str]:
+    starter = resources.files("ai_team.init").joinpath("sources", "root", filename)
+    return _markdown_sections(starter.read_text(encoding="utf-8"))
+
+
+def _is_placeholder_section(content: str, starter_content: str) -> bool:
+    content_lines = _content_lines(content)
+    return not content_lines or content_lines <= _content_lines(starter_content)
+
+
+def check_level_3(contract: LayoutContract) -> list[LayoutFinding]:
+    """Report missing or placeholder root guidance for configured tools."""
+
+    findings: list[LayoutFinding] = []
+    if contract.tools_status != "valid":
+        findings.append(
+            _finding(
+                3,
+                ".ai-team.toml",
+                "Root guidance selection is blocked by missing or invalid configured tools.",
+                "Set [init].tools to an array containing 'claude' and/or 'codex', then rerun the layout check.",
+            )
+        )
+
+    for tool in contract.tools:
+        filename = _GUIDANCE_BY_TOOL[tool]
+        path = contract.repo / filename
+        if not path.is_file():
+            findings.append(
+                _finding(
+                    3,
+                    filename,
+                    f"Configured tool '{tool}' requires root guidance file '{filename}', but it is missing.",
+                    f"Create '{filename}' and fill every required project-guidance section.",
+                )
+            )
+            continue
+
+        try:
+            content = path.read_text(encoding="utf-8")
+            starter_sections = _starter_guidance_sections(filename)
+        except (OSError, UnicodeError) as exc:
+            findings.append(
+                _finding(
+                    3,
+                    filename,
+                    f"Root guidance checks for '{filename}' are blocked: {exc}",
+                    "Restore a readable UTF-8 guidance file, then rerun the layout check.",
+                )
+            )
+            continue
+
+        sections = _markdown_sections(content)
+        for heading in _GUIDANCE_HEADINGS:
+            if heading not in sections:
+                findings.append(
+                    _finding(
+                        3,
+                        filename,
+                        f"Root guidance file '{filename}' is missing required section '{heading}'.",
+                        f"Add a '## {heading}' section containing project-specific guidance.",
+                    )
+                )
+            elif _is_placeholder_section(sections[heading], starter_sections[heading]):
+                findings.append(
+                    _finding(
+                        3,
+                        filename,
+                        f"Required section '{heading}' in '{filename}' contains only starter-template placeholder content.",
+                        f"Replace the '{heading}' placeholder with project-specific guidance.",
+                    )
+                )
+    return sorted(findings, key=_sort_key)
+
+
 def check_level_4(contract: LayoutContract) -> list[LayoutFinding]:
     """Report missing, invalid, or non-exact framework version alignment."""
 
@@ -295,5 +490,7 @@ def check_layout(
 
     contract, findings = resolve_layout(repo, current_version=current_version)
     findings.extend(check_level_1(contract))
+    findings.extend(check_level_2(contract))
+    findings.extend(check_level_3(contract))
     findings.extend(check_level_4(contract))
     return sorted(findings, key=_sort_key)
