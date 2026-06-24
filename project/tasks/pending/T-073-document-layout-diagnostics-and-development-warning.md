@@ -1,0 +1,104 @@
+---
+id: T-073
+title: Document layout diagnostics and development warning
+status: pending
+priority: medium
+assigned-role: developer
+created: '2026-06-24'
+spec: S-003-project-layout-diagnostics-and-cli-development-warning
+---
+
+# Document layout diagnostics and development warning
+
+<!--
+Task Quality Rules (see the new-task skill for full details):
+  - Atomic — one clear outcome.
+  - One-shottable — ≤ 3–4 files touched, ≤ 5 ACs, Description ≈ 20 lines.
+  - Verifiable — concrete Verification command or explicit manual steps.
+  - Self-contained — Description is enough to start without follow-up questions.
+  - EARS — every AC matches one of the five EARS patterns below.
+  - Dependency-honest — list every prior task this one reads from or modifies.
+-->
+
+## Description
+
+Document both S-003 user-facing surfaces after implementation. Add the
+development warning contract and stderr behavior to the usage guide. Document
+`check-layout`, its four validation levels, read-only behavior, report fields,
+and exit semantics. Regenerate the exhaustive command reference from the Typer
+app and extend documentation tests so generated and hand-written references
+cannot drift from the shipped command.
+
+## Acceptance Criteria
+
+<!-- EARS pattern reference. Every criterion must match one pattern:
+  1. Ubiquitous            — The system shall [outcome]
+  2. Event-driven          — WHEN [trigger] THE SYSTEM SHALL [outcome]
+  3. Unwanted-behaviour    — IF [fault] THEN THE SYSTEM SHALL [outcome]
+  4. State-driven          — WHILE [state] THE SYSTEM SHALL [outcome]
+  5. Optional              — WHERE [feature included] THE SYSTEM SHALL [outcome]
+
+Examples:
+  AC-1: WHEN the user submits valid credentials THE SYSTEM SHALL
+        redirect to /dashboard within 200ms.
+  AC-2: IF the password is incorrect THEN THE SYSTEM SHALL return 401
+        and display "Invalid credentials".
+  AC-3: The system shall log every authentication attempt with user id
+        and outcome.
+-->
+
+AC-1: WHEN users read `cli/docs/usage.md` THE SYSTEM SHALL document the exact
+      development warning, its issue URL, its once-per-invocation behavior, and
+      stderr separation from normal and JSON output.
+AC-2: WHEN users read `cli/docs/usage.md` THE SYSTEM SHALL document
+      `ai-team check-layout`, all four validation levels, read-only operation,
+      report fields, clean and issue exit behavior, and the no-repair exclusion.
+AC-3: WHEN command documentation is regenerated THE SYSTEM SHALL include
+      `check-layout` in `cli/docs/commands.md` without hand-editing generated
+      command content.
+AC-4: The system shall include automated documentation checks that fail if the
+      usage guide or generated command reference omits the S-003 contracts.
+
+## Dependencies
+
+- `T-069` — supplies the final warning behavior and contract verification.
+- `T-072` — supplies the final command name, report, and exit behavior.
+
+## Files to Touch
+
+- `cli/docs/usage.md` — document the warning and layout-check workflow.
+- `cli/docs/commands.md` — regenerate the exhaustive command reference.
+- `cli/tests/test_usage_guide.py` — enforce hand-written S-003 documentation.
+- `cli/tests/test_gen_docs.py` — enforce generated `check-layout` documentation.
+
+## Verification
+
+```bash
+cd cli
+bash scripts/gen_docs.sh
+UV_CACHE_DIR=/tmp/uv-cache uv run pytest tests/test_usage_guide.py tests/test_gen_docs.py
+UV_CACHE_DIR=/tmp/uv-cache uv run ruff format --check .
+UV_CACHE_DIR=/tmp/uv-cache uv run ruff check .
+```
+
+## Work Log
+
+<!-- Mandatory. Append one entry per session boundary. Format:
+### Session N — YYYY-MM-DD
+Free-prose body: what was done this session, what was tried and
+rejected, decisions made, what remains for next session.
+
+Start every session by reading the entries below.
+The final entry serves as the handoff to the reviewer. -->
+
+## Review
+
+<!-- Reviewer: append verdict here after each review cycle.
+
+### Review Verdict — YYYY-MM-DD
+PASS | FAIL | ESCALATE
+
+- For FAIL: file, location, what is wrong, what should change.
+- For PASS: brief confirmation that both stages passed.
+- For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
+-->
