@@ -71,7 +71,7 @@ This document maps the ai-process roles, procedures, processes, and gates to the
 | Process Docs | Directory | Workflow and procedure definitions (spec layer only — not exported by `ai-team init`) | `ai-process/processes/` |
 | Guidelines | Directory | Standards and checklists (spec layer only — not exported by `ai-team init`) | `ai-process/guidelines/` |
 | Architecture Docs | Directory | System design documentation (spec layer only — not exported by `ai-team init`) | `ai-process/architecture/` |
-| Action Procedures | Directory | Automation for document creation and status reporting | `.claude/skills/` (with `disable-model-invocation: true` where no model reasoning is needed) |
+| Action Procedures | Directory | Automation for document creation and status reporting | `.claude/skills/` (`disable-model-invocation: true` only for human-only actions that no other skill invokes) |
 | CLI Scaffold Sources | Package assets | Authoritative source for agents, skills, and templates exported by `ai-team init` | `cli/src/ai_team/init/sources/` |
 
 ## CLI Command Mapping
