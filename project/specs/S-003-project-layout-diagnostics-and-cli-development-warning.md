@@ -1,0 +1,206 @@
+---
+title: Project layout diagnostics and CLI development warning
+version: '0.1'
+status: approved  # draft | review | approved | superseded
+created: '2026-06-24'
+author: planner
+id: S-003
+---
+
+# Project layout diagnostics and CLI development warning
+
+## Purpose
+
+AI-team commands currently discover malformed repository layouts only when a
+later operation fails, and the CLI does not tell users that its command
+contract is still evolving. This makes missing scaffolds, invalid artifacts,
+stale guidance, and version drift harder to diagnose than necessary. The CLI
+will provide a read-only `ai-team check-layout` command that reports every
+detected problem with a suggested correction, while every CLI invocation emits
+a one-line development warning. A correctly initialized and maintained project
+will produce a clean layout report without any filesystem mutation.
+
+## Exclusions
+
+What this specification explicitly does NOT cover:
+
+- **Automatic repair.** `check-layout` reports problems and suggested fixes but
+  never creates, moves, renames, rewrites, or deletes files or directories.
+- **Project-specific command validation.** The command checks that required
+  guidance sections exist and contain project guidance; it does not execute or
+  prove the correctness of build, test, run, lint, or formatting commands.
+- **Non-framework repository content.** Source code, arbitrary documentation,
+  and files outside AI-team-managed artifact and tool locations are not subject
+  to filename or frontmatter validation.
+- **A machine-readable report contract.** The first release requires a stable
+  human-readable report. A dedicated `check-layout --json` schema may be added
+  separately; existing commands that already support JSON must remain valid.
+- **Changing existing command failures.** Other commands are not required to
+  invoke `check-layout` or replace their current error messages with layout
+  diagnostics.
+
+## Architecture
+
+### Design Principles
+
+- **Observation only.** Every check is read-only and produces diagnostics rather
+  than changing repository state.
+- **Ordered diagnosis.** Checks run from structural prerequisites to deeper
+  content validation so the report distinguishes missing inputs from malformed
+  inputs.
+- **Current installed contract.** Expected scaffolds, guidance requirements, and
+  framework version are evaluated against the running CLI distribution, not a
+  network source or a hard-coded historical release.
+- **Actionable aggregation.** One invocation reports all issues it can safely
+  determine, and every issue identifies the affected path, the violated rule,
+  and a suggested correction.
+- **Output compatibility.** The development warning appears for every CLI
+  invocation without corrupting command output intended for machine parsing.
+
+### System Diagram
+
+```
+CLI invocation
+  |
+  +--> development warning ---------------------------> stderr
+  |
+  +--> check-layout
+         |
+         +--> level 1: expected directories
+         +--> level 2: artifact names + frontmatter
+         +--> level 3: configured root guidance
+         +--> level 4: scaffold/CLI version match
+         |
+         +--> aggregated issue report ----------------> CLI output
+```
+
+### Responsibility Separation
+
+| Component | Responsibility | Notes |
+|---|---|---|
+| CLI development warning | Tells users the CLI is evolving and where to report defects. | Emitted exactly once for every process invocation, including help, version, successful commands, failed commands, and commands using JSON output. |
+| Layout contract resolver | Determines the repository root, configured project directory, selected AI tools, expected scaffold directories, and running CLI version. | Consumes `.ai-team.toml` when present and the current installed package contract; does not consult the network. |
+| Layout checks | Evaluate the four validation levels without modifying the repository. | Later levels report blocked or missing prerequisites clearly instead of crashing. |
+| Issue reporter | Aggregates findings into human-readable CLI output. | Each finding exposes level, path, problem, and suggested fix; a clean project has an unambiguous success result. |
+
+## Components
+
+### Component 1: Development Warning
+
+**Purpose:** Emit a one-line warning on every `ai-team` invocation.
+**Estimated size:** Small.
+**Interfaces:** CLI process entry point and stderr; must preserve stdout command contracts.
+
+### Component 2: Layout Contract Resolution
+
+**Purpose:** Resolve the expected repository structure and tool-specific guidance from local configuration and the installed CLI.
+**Estimated size:** Medium.
+**Interfaces:** Project locator, `.ai-team.toml`, packaged scaffold contract, and installed distribution version.
+
+### Component 3: Hierarchical Layout Checks
+
+**Purpose:** Execute the four ordered validation levels and return structured findings without mutation.
+**Estimated size:** Medium.
+**Interfaces:** Resolved layout contract, existing artifact parsers and validators, and root guidance files.
+
+### Component 4: Layout Report
+
+**Purpose:** Present all detected issues and their suggested fixes in one CLI report.
+**Estimated size:** Small.
+**Interfaces:** `ai-team check-layout`, hierarchical check findings, terminal output, and process exit status.
+
+## Workflow
+
+```
+User invokes any ai-team command
+  +--> emit the development warning once on stderr
+  +--> continue normal command processing
+
+User invokes ai-team check-layout
+  ↓
+Resolve repository root, .ai-team.toml, selected tools, and installed version
+  ↓
+Check level 1: all expected project and selected-tool directories exist
+  ↓
+Check level 2: all managed artifact files have valid names and frontmatter
+  ↓
+Check level 3: relevant root guidance files contain the required sections
+  ↓
+Check level 4: configured framework version equals the running CLI version
+  ↓
+Render every finding with a suggested correction; do not modify the repository
+```
+
+The command must continue with independent checks after a finding whenever the
+required inputs for those checks are still available. When a missing or invalid
+prerequisite prevents a deeper check, the report must explain which check could
+not be completed rather than raising an unhandled exception.
+
+### Validation Contracts
+
+1. **Level 1 — expected directories.** The repository must contain the
+   configured project directory and every lifecycle directory in the current
+   CLI project scaffold. For each tool named in `.ai-team.toml`, its current
+   agent and skill scaffold directories must also exist. Extra directories are
+   permitted and are not findings.
+2. **Level 2 — artifact names and frontmatter.** Every managed artifact file in
+   specs, tasks, bugs, change requests, and decisions must match the filename
+   convention for its artifact type and must have syntactically valid,
+   type-appropriate required frontmatter. Lifecycle directory and frontmatter
+   status mismatches are findings. Scaffold placeholders such as `.gitkeep` and
+   non-artifact documentation are ignored.
+3. **Level 3 — root guidance.** A configured `claude` tool requires root
+   `CLAUDE.md`; a configured `codex` tool requires root `AGENTS.md`; configuring
+   both requires both files. Each relevant file must contain non-placeholder
+   guidance under `Build and Install`, `Test`, `Run`, `Lint and Format`, and
+   `Key Conventions`. Missing files, missing sections, or sections that retain
+   only starter-template placeholder text are findings.
+4. **Level 4 — version alignment.** `.ai-team.toml` must contain an init
+   framework version exactly equal to the running `ai-team` distribution
+   version. A missing marker, missing value, invalid value, or mismatch is a
+   finding that reports both configured and current values when available.
+
+The command exits successfully when no issues are found and unsuccessfully when
+one or more issues are reported. The report order follows validation level,
+then path, so repeated runs against unchanged input are deterministic.
+
+**Contract — warning text:** `Warning: ai-team is under development. Please report issues at https://github.com/aurora-firmware/The-AI-team-definition/issues`
+
+## Configuration Requirements
+
+- **What must exist:** The repository marker identifying the project directory,
+  configured tools, and scaffold framework version.
+  **Where it lives:** Root `.ai-team.toml`.
+  **Constraints:** The project directory is a usable relative directory name;
+  configured tools are supported by the running CLI; the framework version is
+  compared exactly with the installed distribution version.
+  **Missing-value behaviour:** Record an actionable finding and continue every
+  check that can still be evaluated safely from repository conventions.
+
+- **What must exist:** Root guidance for each configured AI tool.
+  **Where it lives:** Root `CLAUDE.md` for Claude and root `AGENTS.md` for Codex.
+  **Constraints:** Required sections contain project-specific, non-placeholder
+  guidance; no command in those sections is executed by `check-layout`.
+  **Missing-value behaviour:** Record an actionable finding naming the missing
+  file or section.
+
+- **What must exist:** A stable issue-reporting destination for the development
+  warning.
+  **Where it lives:** The CLI warning contract in this specification.
+  **Constraints:** The URL is public, emitted as part of the single warning
+  line, and no network request is made.
+  **Missing-value behaviour:** There is no fallback URL; changing the destination
+  requires a reviewed specification amendment.
+
+## Implementation Order
+
+| Phase | What | Depends On |
+|---|---|---|
+| 1 | Add the process-wide development warning while preserving all existing stdout and JSON contracts. | Nothing |
+| 2 | Establish local layout-contract resolution and the four read-only validation levels with automated coverage. | Phase 1 |
+| 3 | Expose `ai-team check-layout` with deterministic reporting, suggested fixes, and clean/issue exit behavior. | Phase 2 |
+| 4 | Update user and generated command documentation, then verify the complete CLI test, lint, scaffold-sync, and build checks. | Phases 1-3 |
+
+## Amendment Log
+
+<!-- No amendments. Add rows only after Gate 1 approval. -->

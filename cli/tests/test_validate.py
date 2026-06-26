@@ -134,7 +134,7 @@ def test_validate_exits_zero_and_reports_zero_findings_for_clean_project(
     result = CliRunner().invoke(app, ["validate"])
 
     assert result.exit_code == 0
-    assert "0 finding" in result.output
+    assert "0 finding" in result.stdout
 
 
 def test_validate_emits_error_when_status_disagrees_with_state_folder(
@@ -153,7 +153,7 @@ def test_validate_emits_error_when_status_disagrees_with_state_folder(
     result = CliRunner().invoke(app, ["validate", "--json"])
 
     assert result.exit_code != 0
-    findings = json.loads(result.output)
+    findings = json.loads(result.stdout)
     assert any(
         finding["code"] == "status-mismatch"
         and finding["path"].endswith("project/tasks/pending/T-002-status-mismatch.md")
@@ -199,7 +199,7 @@ def test_validate_emits_error_when_cross_references_do_not_resolve(
     result = CliRunner().invoke(app, ["validate", "--json"])
 
     assert result.exit_code != 0
-    findings = json.loads(result.output)
+    findings = json.loads(result.stdout)
     assert any(
         finding["code"] == "task-spec-missing" and "missing-spec" in finding["message"]
         for finding in findings
@@ -228,10 +228,10 @@ def test_validate_json_outputs_plain_list_without_rich_table(monkeypatch, tmp_pa
     result = CliRunner().invoke(app, ["validate", "--json"])
 
     assert result.exit_code != 0
-    parsed = json.loads(result.output)
+    parsed = json.loads(result.stdout)
     assert isinstance(parsed, list)
-    assert "┏" not in result.output
-    assert "Validation Findings" not in result.output
+    assert "┏" not in result.stdout
+    assert "Validation Findings" not in result.stdout
 
 
 def test_validate_exits_non_zero_when_any_error_finding_exists(monkeypatch, tmp_path):
@@ -248,7 +248,7 @@ def test_validate_exits_non_zero_when_any_error_finding_exists(monkeypatch, tmp_
     result = CliRunner().invoke(app, ["validate"])
 
     assert result.exit_code != 0
-    assert "status-mismatch" in result.output
+    assert "status-mismatch" in result.stdout
 
 
 def test_validate_detects_frontmatter_id_and_filename_violations(monkeypatch, tmp_path):
@@ -282,7 +282,7 @@ Body.
     result = CliRunner().invoke(app, ["validate", "--json"])
 
     assert result.exit_code != 0
-    findings = json.loads(result.output)
+    findings = json.loads(result.stdout)
     codes = {finding["code"] for finding in findings}
     assert "frontmatter-invalid" in codes
     assert "id-pattern" in codes
@@ -303,7 +303,7 @@ def test_validate_scope_flags_limit_checked_artifact_kinds(monkeypatch, tmp_path
     result = CliRunner().invoke(app, ["validate", "--tasks", "--json"])
 
     assert result.exit_code == 0
-    assert json.loads(result.output) == []
+    assert json.loads(result.stdout) == []
 
 
 CHANGE_REQUEST_TEMPLATE = """\
@@ -341,7 +341,7 @@ def test_validate_change_requests_reports_valid_cr_with_no_findings(
     result = CliRunner().invoke(app, ["validate", "--change-requests", "--json"])
 
     assert result.exit_code == 0
-    assert json.loads(result.output) == []
+    assert json.loads(result.stdout) == []
 
 
 def test_validate_change_requests_reports_frontmatter_error_for_missing_required_field(
@@ -367,7 +367,7 @@ Body.
     result = CliRunner().invoke(app, ["validate", "--change-requests", "--json"])
 
     assert result.exit_code != 0
-    findings = json.loads(result.output)
+    findings = json.loads(result.stdout)
     assert any(finding["code"] == "frontmatter-invalid" for finding in findings)
 
 
@@ -384,7 +384,7 @@ def test_validate_change_requests_reports_id_pattern_error(monkeypatch, tmp_path
     result = CliRunner().invoke(app, ["validate", "--change-requests", "--json"])
 
     assert result.exit_code != 0
-    findings = json.loads(result.output)
+    findings = json.loads(result.stdout)
     assert any(finding["code"] == "id-pattern" for finding in findings)
 
 
@@ -401,7 +401,7 @@ def test_validate_change_requests_reports_filename_pattern_error(monkeypatch, tm
     result = CliRunner().invoke(app, ["validate", "--change-requests", "--json"])
 
     assert result.exit_code != 0
-    findings = json.loads(result.output)
+    findings = json.loads(result.stdout)
     assert any(finding["code"] == "filename-pattern" for finding in findings)
 
 
@@ -427,7 +427,7 @@ def test_validate_scope_change_requests_flag_excludes_other_artifact_kinds(
     result = CliRunner().invoke(app, ["validate", "--change-requests", "--json"])
 
     assert result.exit_code == 0
-    assert json.loads(result.output) == []
+    assert json.loads(result.stdout) == []
 
 
 def test_validate_default_scope_includes_change_requests(monkeypatch, tmp_path):
@@ -452,7 +452,7 @@ Body.
     result = CliRunner().invoke(app, ["validate", "--json"])
 
     assert result.exit_code != 0
-    findings = json.loads(result.output)
+    findings = json.loads(result.stdout)
     assert any(finding["code"] == "frontmatter-invalid" for finding in findings)
 
 
@@ -471,7 +471,7 @@ def test_validate_specs_accepts_new_s_nnn_slug_filename_with_matching_id(
     result = CliRunner().invoke(app, ["validate", "--specs", "--json"])
 
     assert result.exit_code == 0
-    assert json.loads(result.output) == []
+    assert json.loads(result.stdout) == []
 
 
 def test_validate_specs_reports_filename_id_mismatch_when_prefix_does_not_match_frontmatter(
@@ -490,7 +490,7 @@ def test_validate_specs_reports_filename_id_mismatch_when_prefix_does_not_match_
     result = CliRunner().invoke(app, ["validate", "--specs", "--json"])
 
     assert result.exit_code != 0
-    findings = json.loads(result.output)
+    findings = json.loads(result.stdout)
     assert any(finding["code"] == "filename-pattern" for finding in findings)
 
 
@@ -509,4 +509,4 @@ def test_validate_specs_accepts_legacy_slug_only_filename_without_id_prefix(
     result = CliRunner().invoke(app, ["validate", "--specs", "--json"])
 
     assert result.exit_code == 0
-    assert json.loads(result.output) == []
+    assert json.loads(result.stdout) == []

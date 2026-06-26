@@ -104,6 +104,20 @@ def test_commands_md_contains_global_flags():
     assert "--help" in content, "commands.md must document the --help flag"
 
 
+def test_generated_commands_md_contains_check_layout_command():
+    """Regenerated command docs must include the shipped check-layout command."""
+    result = subprocess.run(
+        ["bash", str(GEN_DOCS_SCRIPT)],
+        capture_output=True,
+        text=True,
+        cwd=str(REPO_ROOT),
+    )
+    assert result.returncode == 0, f"gen_docs.sh failed: {result.stderr}"
+    content = COMMANDS_MD.read_text(encoding="utf-8")
+    assert "## `ai-team check-layout`" in content
+    assert "Check the repository layout and report actionable findings." in content
+
+
 # ---------------------------------------------------------------------------
 # AC-4: commands.md has a generated-file header note
 # ---------------------------------------------------------------------------
