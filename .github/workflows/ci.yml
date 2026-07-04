@@ -9,6 +9,9 @@ on:
       - "[0-9]+.[0-9]+.[0-9]+"
       - "[0-9]+.[0-9]+.[0-9]+-*"
 
+env:
+  SETUPTOOLS_SCM_PRETEND_VERSION: "0.0.0"
+
 jobs:
   lint:
     runs-on: [self-hosted, docker]
@@ -28,8 +31,11 @@ jobs:
         run: uv run ruff check .
       - name: Check generated docs are up to date
         run: |
+          before="$(mktemp)"
+          trap 'rm -f "$before"' EXIT
+          cp cli/docs/commands.md "$before"
           bash cli/scripts/gen_docs.sh
-          if ! git diff --exit-code cli/docs/commands.md; then
+          if ! diff -u "$before" cli/docs/commands.md; then
             echo "::error::cli/docs/commands.md is out of date. Run 'bash cli/scripts/gen_docs.sh' and commit the result."
             exit 1
           fi
