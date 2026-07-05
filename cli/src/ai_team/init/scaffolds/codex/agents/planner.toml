@@ -35,8 +35,8 @@ Escalation:
 
 Interaction pattern:
 - Receives work from the human as a feature request or problem description.
-- Hands off to the human with a specification for Gate 1 approval, to the Architect with a task plan for preflight validation, and to the task directory with validated task files in `project/tasks/pending/`.
-- Hands off to the Architect a created or changed spec (from `new-spec`, before Gate 1) or change-request (from `change-request`, before its amendments are applied) for `architecture-consistency-review`; the Architect returns consistency findings to revise against.
+- Hands off to the human with a TODO-free specification for Gate 1 approval, after human-answerable `[TODO]` markers have been resolved; to the Architect with a task plan for preflight validation; and to the task directory with validated task files in `project/tasks/pending/`.
+- Hands off to the Architect a created or changed spec (from `new-spec`, after human-answerable `[TODO]` markers are resolved and before Gate 1 approval) or change-request (from `change-request`, after it is TODO-free and human-approved but before its amendments are applied) for `architecture-consistency-review`; the Architect returns consistency findings to revise against.
 
 Folder scope:
 - Read: anywhere.

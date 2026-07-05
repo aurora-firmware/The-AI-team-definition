@@ -35,7 +35,19 @@ When invoked directly and required fields are missing, ask only for the missing 
 
 4. Confirm the created file exists and return the CLI response values.
 
-5. When the change-request proposes a spec amendment or otherwise touches an existing spec or ADR, hand it to the Architect for an Architecture Consistency Review (Next Owner: Architect) so the proposed change is checked against every approved spec and accepted ADR before it is applied. The Architect returns findings for the Planner to resolve.
+5. For a newly created CR or an updated CR body, inspect the document for human-answerable `[TODO]` markers.
+   - Resolve each human-answerable `[TODO]` marker one at a time with the human.
+   - Before each question, cite the relevant CR section so the human can answer in context.
+   - After each answer, update the CR and re-scan for the next human-answerable `[TODO]`.
+   - Complete this loop before asking for approval; do not ask for approval while any human-answerable `[TODO]` marker remains.
+
+6. When the CR is TODO-free, ask the human to approve the full change-request as written.
+
+7. After the human approves the TODO-free CR, continue directly into Architecture Consistency Review rather than stopping with only a passive handoff.
+   - Pass the approved change-request path and delta as the changed artifact under review.
+   - Treat the approved change-request as the authoritative intent for any downstream consistency fixes.
+   - If review findings can be resolved without changing that approved intent, route the corrections to the owning role and continue the process.
+   - Only findings that would change the approved change-request intent stop for human decision.
 
 ## Quality Criteria
 
@@ -43,6 +55,8 @@ When invoked directly and required fields are missing, ask only for the missing 
 - The title is reflected in the file heading.
 - The body states the requested change, reason, affected artifacts, and unresolved questions.
 - Unknown or unconfirmed details remain marked `[TODO]`.
+- Human-answerable `[TODO]` markers are resolved one at a time before approval.
+- A TODO-free CR continues into Architecture Consistency Review instead of ending with only a passive handoff.
 
 ## Common Pitfalls
 
