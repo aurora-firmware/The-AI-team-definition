@@ -98,6 +98,14 @@ I used the task verification grep as the red/green acceptance harness because th
 
 Nothing remains on the implementation branch. The next step is for the loop to append this Work Log entry to the canonical task file on `dev-agent` and send the task to review.
 
+### Session 2 — 2026-07-05
+
+Addressed the reviewer’s Stage 1 finding in `ai-process/processes/quality-gates.md`. The Architecture Consistency Review section now explicitly says that an amended spec must be made TODO-free before Architect consistency review continues, and the check paragraph now states that both draft specs and amended specs must have human-answerable `[TODO]` markers resolved before the Architect runs the consistency check. This keeps AC-1 aligned across both spec creation and spec amendment paths without changing the Gate 2 boundary.
+
+For the red step, I used a narrow text check looking for explicit amended-spec TODO-readiness language and confirmed it was absent. I rejected a broader grep first because it falsely matched lines that happened to contain both “amended” and “TODO” in different clauses. After the patch, I re-ran the narrow check, then the full task verification command, and confirmed the diff stayed limited to the requested file. The fix was committed on the task branch.
+
+Nothing remains on the implementation branch from this fix cycle. The next step is for the loop to append this Session 2 Work Log entry to the canonical task file on `dev-agent` and return the task to review.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
