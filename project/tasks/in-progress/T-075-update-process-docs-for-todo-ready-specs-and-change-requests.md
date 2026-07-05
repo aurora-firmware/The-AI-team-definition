@@ -124,3 +124,8 @@ FAIL
 - **File and location** — `ai-process/processes/quality-gates.md`, `Architecture Consistency Review` (`When` and `Check` paragraphs).
 - **What is wrong** — The new TODO-readiness rule is explicit for draft specs before Gate 1 and for change-requests before approval, but it is not documented for amended specs before Architect consistency review. AC-1 requires the process docs to state that when the Planner creates or amends a spec, human-answerable `[TODO]` markers are resolved before Architect review or Gate 1 approval.
 - **What should change** — Update the spec-amendment wording so the Architecture Consistency Review section also requires amended specs to be TODO-free before the Architect review proceeds, instead of limiting that readiness rule to draft specs.
+
+### Review Verdict — 2026-07-05
+PASS
+
+The prior AC-1 gap is resolved: `ai-process/processes/quality-gates.md` now explicitly requires amended specs to be made TODO-free before Architect consistency review continues, and the consistency-check description now covers both draft specs and amended specs. Stage 1 passes for all acceptance criteria, the change remains limited to the expected process-doc files, and Stage 2 passes for correctness, readability, and scope. Docs-only verification was appropriate here; the submitted grep checks and `git diff --check` support the result.
