@@ -32,12 +32,16 @@ When invoked directly by a human and required fields are missing, ask only for t
 
 4. Open the created spec file and fill its body sections from the supplied `description`, using the **content-boundary rule** and the **section recipes** below. Leave any section that still needs exploration marked `[TODO]`.
 
-5. Run the **pre-submission checklist** (below) against the filled spec. Fix any unchecked item before returning. Leave items genuinely unresolvable marked `[TODO]` so the human sees them at Gate 1.
+5. Run the **pre-submission checklist** (below) against the filled spec. Fix any unchecked item before returning. Leave items genuinely unresolvable marked `[TODO]`.
 
-6. Confirm the created file exists and return the CLI response values (`id` and `path`).
+6. Inspect the draft for human-answerable `[TODO]` markers before any review handoff.
+   - Human-answerable `[TODO]` markers must be resolved before Architecture Consistency Review.
+   - If any human-answerable `[TODO]` markers remain, explicitly report the blocker and stop instead of handing the draft to Architecture Consistency Review or Gate 1 approval.
 
-7. Remind that the new spec requires human Gate 1 approval unless the caller explicitly says it is already being prepared for that gate.
-8. Hand the draft spec to the Architect for an Architecture Consistency Review before Gate 1 (Next Owner: Architect). The Architect checks it against existing approved specs and accepted ADRs and returns findings — like a Gate 2 review, this does not amend the draft. Revise the draft on those findings until the Architect and Planner agree it is consistent; the human then approves at Gate 1 as usual.
+7. Confirm the created file exists and return the CLI response values (`id` and `path`).
+
+8. Remind that the new spec requires human Gate 1 approval unless the caller explicitly says it is already being prepared for that gate.
+9. Once human-answerable `[TODO]` markers are resolved before Architecture Consistency Review, hand the draft spec to the Architect for an Architecture Consistency Review before Gate 1 (Next Owner: Architect). The Architect checks it against existing approved specs and accepted ADRs and returns findings — like a Gate 2 review, this does not amend the draft. Revise the draft on those findings until the Architect and Planner agree it is consistent; the human then approves at Gate 1 as usual.
 
 ---
 
@@ -148,4 +152,4 @@ Before returning the created spec, confirm every item:
 - [ ] **Implementation Order has coarse phases**, not tasks.
 - [ ] **Amendment Log is empty** (until amendments arrive after Gate 1).
 
-Items genuinely unresolvable at write-time may be left `[TODO]` for the human to address at Gate 1. Everything else must be checked before returning.
+Items genuinely unresolvable at write-time may be left `[TODO]`, but human-answerable `[TODO]` markers block Architecture Consistency Review and Gate 1 until they are resolved. Everything else must be checked before returning.
