@@ -19,7 +19,7 @@ Whenever an architecture artifact changes:
 
 - **New or accepted ADR** — after `new-adr` records the decision (run by the Architect).
 - **New or amended spec** — after a spec is created (`new-spec`, before Gate 1 sign-off settles) or amended (an Amendment Log entry added during spec revision or change-request intake).
-- **Change-request** — before a change-request's proposed spec amendments are applied.
+- **Change-request** — after the human approves a TODO-free change-request and before the proposed spec amendments are applied. The approved change-request is the authoritative intent for any Planner-owned consistency fixes.
 
 ## Input Requirements
 
@@ -34,6 +34,8 @@ Whenever an architecture artifact changes:
 
 Identify exactly what decision, requirement, or contract the changed artifact now asserts. For an amendment or change-request, isolate the delta — not the whole document.
 
+For an approved change-request, treat the approved change-request itself as the authoritative intent. The review checks the binding set against that approved intent; it does not reinterpret the requested change through downstream draft wording.
+
 ### Step 2: Read the Binding Set
 
 Read every accepted ADR in `project/decisions/` and every approved spec in `project/specs/`. These are the artifacts the change must not contradict.
@@ -47,17 +49,20 @@ For each binding artifact, decide whether the changed artifact contradicts it �
 This review **reports** contradictions as findings to the owning role — it does not edit specs or apply amendments itself. This is the same model as `spec-breakdown-review`, which returns findings to the Planner for revision. Route each contradiction by which artifact is the wrong side:
 
 - **The changed artifact is a pre-Gate-1 draft spec** → return the findings to the Planner, who revises the draft directly. Do **not** add an Amendment Log entry — a draft's Amendment Log stays empty until Gate 1 approval. The Architect and Planner iterate until the draft is consistent; the human then approves at Gate 1 as usual.
-- **An approved spec is the affected side** → return the findings to the Planner, who amends the approved spec in place and records the change in its Amendment Log, naming the driving ADR ID when an ADR caused the change.
+- **An approved spec is the affected side** → return the findings to the Planner, who amends the approved spec in place and records the change in its Amendment Log, naming the driving ADR ID when an ADR caused the change. For findings raised from an approved change-request, the Planner uses the approved change-request as the authoritative intent while applying those consistency fixes.
 - **An ADR is the affected side** → the Architect amends or supersedes the ADR; use `new-adr` to record a superseding decision.
+- **A finding can be resolved procedurally without changing the approved change-request intent** → route the correction to the owning role and continue; Planner-owned amendments stay anchored to the approved change-request.
+- **A finding would change the approved change-request intent** → stop and ask the Human to revise, reject, or reaffirm the CR before any downstream artifact is amended.
 - **Reconciling the drift requires changing an approved spec beyond an in-flight amendment** → escalate to the human through the Planner per the escalation procedure.
 
-The Architect never edits specs; draft revision and approved-spec amendment are both the Planner's.
+The Architect reports findings and routing; the Architect never edits specs directly. Draft revision and approved-spec amendment are both the Planner's.
 
 ### Step 5: Produce the Verdict
 
 - No contradiction → `PASS`: the change is consistent with the binding set.
 - Contradictions with a clear owner and routing → `FAIL` with the named corrections.
 - A contradiction that requires changing an approved spec → `ESCALATE`.
+- A contradiction that would change approved change-request intent → `ESCALATE` to the Human so the CR can be revised, rejected, or reaffirmed.
 
 ## Output Format
 
@@ -86,7 +91,8 @@ Next owner:
 - Every accepted ADR and approved spec was read before the verdict.
 - Each contradiction names the exact conflicting statements, not a vague "may conflict."
 - Corrections are routed to the owning role (Planner for specs, Architect for ADRs); the Architect never edits specs directly.
-- Escalation is used only when reconciling the drift requires changing an approved specification.
+- An approved change-request remains the authoritative intent for Planner-owned consistency fixes until the Human changes that intent.
+- Escalation is used only when reconciling the drift requires changing an approved specification or would change approved change-request intent.
 
 ## Common Pitfalls
 
