@@ -79,11 +79,12 @@ This phase is **interactive**. The Planner does not produce a finished document 
 5. Asks follow-up questions on scope or behaviour if the chosen direction still has gaps. One round maximum.
 6. Confirms the approach in 2–3 sentences and gets explicit human sign-off before writing.
 7. Writes the specification.
+8. Resolves any remaining human-answerable `[TODO]` markers one at a time before handing the draft to the Architect for Architecture Consistency Review or to the human for Gate 1 approval.
 
 **Ends when:** Human approves the specification at Gate 1.
 Because the human shaped the spec throughout the dialogue, Gate 1 approval should be quick.
 
-**Lighter path — change-request:** For smaller changes that do not warrant a full new spec, the Planner uses a change-request document (`project/change-requests/CR-NNN-<slug>.md`) instead of the full brainstorm flow. A change-request records desired changes and possible spec amendments, then produces tasks and amendments as needed. Larger features still use the full brainstorm, Gate 1 approval, and task breakdown path. The CLI command `ai-team change-request new` creates a change-request document from the bundled template.
+**Lighter path — change-request:** For smaller changes that do not warrant a full new spec, the Planner uses a change-request document (`project/change-requests/CR-NNN-<slug>.md`) instead of the full brainstorm flow. A change-request records desired changes and possible spec amendments, then produces tasks and amendments as needed. The Planner resolves human-answerable `[TODO]` markers one at a time before the human approves the change-request. Once the human approves a TODO-free change-request, that approved artifact becomes the authoritative statement of intended scope for Planner-owned consistency fixes and spec amendments. Larger features still use the full brainstorm, Gate 1 approval, and task breakdown path. The CLI command `ai-team change-request new` creates a change-request document from the bundled template.
 
 ### 2. Task Breakdown + Gate 2
 
@@ -93,6 +94,8 @@ Because the human shaped the spec throughout the dialogue, Gate 1 approval shoul
 **Output:** Set of task files in `project/tasks/pending/`, validated by the Architect.
 
 During breakdown the Planner explicitly considers whether the spec changes require documentation updates or test coverage updates. When they do, those updates are planned as implementation tasks or acceptance criteria — not as prerequisites before task creation. If documentation and test updates are not needed, the Planner omits them without creating placeholder tasks.
+
+Before task breakdown starts, the input artifact must be ready for execution: an approved spec must already be free of human-answerable `[TODO]` markers, and an accepted change-request must already be TODO-free, human-approved, and reconciled against Architect consistency findings that do not change the approved intent. If a consistency finding would alter the approved change-request's intended scope, the process stops for a human decision instead of letting the Planner reinterpret the request.
 
 After the Planner writes the task files, the Architect automatically reviews the task plan at Gate 2. Gate 2 focuses on technical task-plan readiness — dependencies, file conflict risks, architectural consistency with existing decision records, atomicity, and verifiability. It does not reopen product or spec approval questions already settled at Gate 1.
 - Checks dependency correctness and completeness.
@@ -273,13 +276,13 @@ The bug-fix loop records Developer Diagnosis Log and Work Log handoffs in that c
 
 | Gate | Controls transition | Evaluator | Output |
 |---|---|---|---|
-| Gate 1: Specification Approval | Feature request → approved spec | Human | Approved specification |
+| Gate 1: Specification Approval | Feature request → TODO-free approved spec | Human | Approved specification |
 | Gate 2: Task Plan Preflight | Task plan draft (from approved spec **or** accepted change-request) → implementation-ready task queue | Architect | Approved task queue or correction request |
 | Gate 3: Code Review | Developer-complete task → integration-ready branch | Reviewer | PASS, FAIL, or ESCALATE |
 | Gate 4: Integration Tests | Reviewed branch → completed task or bug | Integration procedure | Merged/completed or regression report |
 | Gate 5: Final Merge Sign-off | Completed queue → production merge | Human | Approval to merge `dev-agent` to `main` |
 
-Change-requests are a lighter intake path that may bypass Gate 1 — they feed directly into Task Breakdown and then Gate 2. Full features still go through Brainstorm, Gate 1, and Task Breakdown.
+Change-requests are a lighter intake path that may bypass Gate 1, but they do not bypass intent completion: the Planner resolves human-answerable `[TODO]` markers before approval, the human approves the TODO-free request, and the Planner then carries forward only those Architect consistency fixes that preserve the approved intent. Accepted change-requests then feed into the existing Task Breakdown and Gate 2 flow without adding a new human review gate. Full features still go through Brainstorm, Gate 1, and Task Breakdown.
 
 Each gate defines its input artifact, evaluator, pass output, fail output, and next owner in `ai-process/processes/quality-gates.md`.
 
@@ -322,6 +325,6 @@ Five gates control the workflow (see `ai-process/processes/quality-gates.md` for
 | 5 | Final Merge Sign-off | Human | `dev-agent` → `main` |
 
 Gates 1 and 5 are human touchpoints — design approval and final production sign-off.
-Gate 1 is required for full feature specs; change-requests bypass it and proceed directly to Task Breakdown.
-Gate 2 is automated — it catches structural problems in the task plan before implementation starts.
+Gate 1 is required for full feature specs, and those specs must be TODO-free before Architecture Consistency Review and human approval. Change-requests bypass Gate 1, but they still must become TODO-free and human-approved before Architect consistency work and Task Breakdown continue.
+Gate 2 is automated — it catches structural problems in the task plan before implementation starts, not product-intent questions already settled by an approved spec or accepted change-request.
 Gates 3 and 4 are automated role and procedure checks — they catch defects during execution.
