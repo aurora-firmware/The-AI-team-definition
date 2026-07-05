@@ -46,9 +46,9 @@ The Planner enters the escalation chain when the `spec-breakdown` skill returns 
 - **Human** — a feature request or problem description.
 
 ### Hands Off To
-- **Human** — a specification document for Gate 1 approval (after the human has already shaped it interactively).
+- **Human** — a TODO-free specification document for Gate 1 approval (after the human has already shaped it interactively and human-answerable `[TODO]` markers have been resolved).
 - **Architect** — task plan for preflight validation (after `spec-breakdown` completes).
-- **Architect** — a created or changed spec (from `new-spec`, before Gate 1) or change-request (from `change-request`, before its amendments are applied) for `architecture-consistency-review`; the Architect returns consistency findings to revise against.
+- **Architect** — a created or changed spec (from `new-spec`, after human-answerable `[TODO]` markers are resolved and before Gate 1 approval) or change-request (from `change-request`, after it is TODO-free and human-approved but before its amendments are applied) for `architecture-consistency-review`; the Architect returns consistency findings to revise against.
 - **Task directory** — validated task files placed in `project/tasks/pending/`.
 
 ## Folder Scope

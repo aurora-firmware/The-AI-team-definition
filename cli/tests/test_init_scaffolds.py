@@ -470,6 +470,59 @@ def test_package_owned_agent_sources_cover_each_exported_role_for_both_tools() -
         )
 
 
+def test_planner_agents_document_todo_ready_architecture_review_handoff() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    planner_paths = (
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "agents"
+        / "claude"
+        / "planner.md",
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "agents"
+        / "codex"
+        / "planner.toml",
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "claude"
+        / "agents"
+        / "planner.md",
+        repo_root
+        / "src"
+        / "ai_team"
+        / "init"
+        / "scaffolds"
+        / "codex"
+        / "agents"
+        / "planner.toml",
+    )
+    required_phrases = (
+        "human-answerable `[TODO]` markers are resolved and before Gate 1 approval",
+        "after it is TODO-free and human-approved but before its amendments are applied",
+    )
+    forbidden_phrases = (
+        "from `new-spec`, before Gate 1",
+        "from `change-request`, before its amendments are applied",
+    )
+
+    for path in planner_paths:
+        text = path.read_text(encoding="utf-8")
+        for phrase in required_phrases:
+            assert phrase in text, f"{path} must include: {phrase!r}"
+        for phrase in forbidden_phrases:
+            assert phrase not in text, f"{path} must not include: {phrase!r}"
+
+
 def test_package_owned_codex_agents_use_supported_role_model_defaults() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     sources_root = (
