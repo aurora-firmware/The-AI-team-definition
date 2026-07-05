@@ -90,6 +90,14 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-07-05
+
+Updated `ai-process/processes/workflow-overview.md` and `ai-process/processes/quality-gates.md` to align the written process contract with S-004. The docs now state that human-answerable `[TODO]` markers must be resolved before a spec goes to Architecture Consistency Review or Gate 1, and before a change-request goes to human approval. They also state that once a TODO-free change-request is approved, the Planner uses that approved request as the authoritative statement of intent for consistency-driven amendments, and the process stops for human decision if an Architect finding would alter that approved intent.
+
+I used the task verification grep as the red/green acceptance harness because the task scope only allowed touching the two process-doc files. I checked the current workflow and quality-gate text first, compared it against the approved S-004 spec language, and rejected adding any new Gate 2 approval step because the task explicitly forbids that. After the wording update, I re-ran the verification command, checked the diff for scope and clarity, and committed the cycle on the task branch.
+
+Nothing remains on the implementation branch. The next step is for the loop to append this Work Log entry to the canonical task file on `dev-agent` and send the task to review.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
