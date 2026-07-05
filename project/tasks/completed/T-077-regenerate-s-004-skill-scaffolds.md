@@ -1,7 +1,7 @@
 ---
 id: T-077
 title: Regenerate S-004 skill scaffolds
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-07-05'
