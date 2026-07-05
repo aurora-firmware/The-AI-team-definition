@@ -25,7 +25,10 @@ What this specification explicitly does NOT cover:
 - **A hosted documentation site.** No MkDocs, Sphinx, Read the Docs, or published docs website. Documentation is plain Markdown read in-repo.
 - **`guides/` and `cli/README.md` as documentation homes.** The CLI documentation lives in `cli/docs/`. This spec does not add a `cli/README.md` or a `guides/cli-guide.md`; existing CLI mentions in `README.md` and `guides/setup-guide.md` stay as brief pointers and are updated only to link into `cli/docs/`.
 - **Changes to CLI behaviour.** This is a documentation spec. It does not add, remove, or alter any CLI command, flag, or output. The one code-adjacent change is adding the `typer-cli` tooling dependency required to run `utils docs`.
-- **Re-documenting the framework process.** `cli/docs/` documents the CLI tool. The AI-team workflow, gates, and roles remain owned by `ai-process/` and the `.claude/` skills and agents.
+- **Re-documenting the framework process.** `cli/docs/` documents the CLI tool.
+  The AI-team workflow, gates, and roles remain owned by `ai-process/` and the
+  package-owned scaffold source definitions that generate exported agent and
+  skill files.
 
 ## Architecture
 
@@ -183,7 +186,6 @@ dev = [
 
 ## Amendment Log
 
-<!--
 | Date | What changed | Why | Affected tasks |
 |------|-------------|-----|----------------|
--->
+| 2026-07-05 | Replaced stale repo-local `.claude/` ownership wording with package-owned scaffold source ownership. | S-004 architecture consistency review found the archived documentation spec contradicted the approved scaffold ownership model. | none |

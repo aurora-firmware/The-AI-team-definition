@@ -1,0 +1,100 @@
+---
+id: T-076
+title: Add spec TODO readiness to source spec-authoring skills
+status: pending
+priority: high
+assigned-role: developer
+created: '2026-07-05'
+---
+
+# Add spec TODO readiness to source spec-authoring skills
+
+<!--
+Task Quality Rules (see the new-task skill for full details):
+  - Atomic — one clear outcome.
+  - One-shottable — ≤ 3–4 files touched, ≤ 5 ACs, Description ≈ 20 lines.
+  - Verifiable — concrete Verification command or explicit manual steps.
+  - Self-contained — Description is enough to start without follow-up questions.
+  - EARS — every AC matches one of the five EARS patterns below.
+  - Dependency-honest — list every prior task this one reads from or modifies.
+-->
+
+## Description
+
+Update the source skill definitions that create specs so they follow S-004's
+pre-review TODO readiness rule.
+
+The brainstorm flow should still collect enough context before writing the spec,
+but after the spec exists it must scan for `[TODO]` markers and ask the human one
+contextual question at a time until human-answerable TODOs are resolved. The
+direct new-spec flow must not hand a spec to Architect consistency review while
+human-answerable TODOs remain.
+
+## Acceptance Criteria
+
+<!-- EARS pattern reference. Every criterion must match one pattern:
+  1. Ubiquitous            — The system shall [outcome]
+  2. Event-driven          — WHEN [trigger] THE SYSTEM SHALL [outcome]
+  3. Unwanted-behaviour    — IF [fault] THEN THE SYSTEM SHALL [outcome]
+  4. State-driven          — WHILE [state] THE SYSTEM SHALL [outcome]
+  5. Optional              — WHERE [feature included] THE SYSTEM SHALL [outcome]
+
+Examples:
+  AC-1: WHEN the user submits valid credentials THE SYSTEM SHALL
+        redirect to /dashboard within 200ms.
+  AC-2: IF the password is incorrect THEN THE SYSTEM SHALL return 401
+        and display "Invalid credentials".
+  AC-3: The system shall log every authentication attempt with user id
+        and outcome.
+-->
+
+AC-1: WHEN brainstorm creates a spec THE SYSTEM SHALL scan the created spec for
+`[TODO]` markers before setting or treating the spec as review-ready.
+AC-2: WHEN brainstorm finds a human-answerable `[TODO]` marker THE SYSTEM SHALL
+ask the human one contextual question and update the spec with the answer before
+continuing to the next marker.
+AC-3: IF human-answerable `[TODO]` markers remain in a created spec THEN THE
+SYSTEM SHALL NOT hand the spec to Architect consistency review or Gate 1
+approval.
+AC-4: WHEN new-spec prepares a draft for architecture consistency review THE
+SYSTEM SHALL require human-answerable TODOs to be resolved first or explicitly
+report the blocker.
+
+## Dependencies
+
+- `T-075` — process docs define the TODO readiness rule and review handoff.
+
+## Files to Touch
+
+- `cli/src/ai_team/init/sources/skills/brainstorm/body.md` — add the
+  post-creation TODO resolution loop before review readiness.
+- `cli/src/ai_team/init/sources/skills/new-spec/body.md` — prevent direct
+  new-spec handoff to architecture review while human-answerable TODOs remain.
+
+## Verification
+
+```bash
+rg -n "TODO|Architecture Consistency|Gate 1|review" cli/src/ai_team/init/sources/skills/brainstorm/body.md cli/src/ai_team/init/sources/skills/new-spec/body.md
+```
+
+## Work Log
+
+<!-- Mandatory. Append one entry per session boundary. Format:
+### Session N — YYYY-MM-DD
+Free-prose body: what was done this session, what was tried and
+rejected, decisions made, what remains for next session.
+
+Start every session by reading the entries below.
+The final entry serves as the handoff to the reviewer. -->
+
+## Review
+
+<!-- Reviewer: append verdict here after each review cycle.
+
+### Review Verdict — YYYY-MM-DD
+PASS | FAIL | ESCALATE
+
+- For FAIL: file, location, what is wrong, what should change.
+- For PASS: brief confirmation that both stages passed.
+- For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
+-->
