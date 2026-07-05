@@ -91,6 +91,14 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-07-05
+
+Implemented T-074 by adding a focused source-body test for the new change-request continuation contract, then updating the two source skill bodies to match it. The change-request skill now requires human-answerable `[TODO]` markers to be resolved one at a time with context before approval, requires approval of the TODO-free CR, and then continues directly into Architecture Consistency Review instead of stopping with only a passive handoff. The architecture-consistency-review skill now treats an approved change-request as authoritative intent for Planner-owned consistency fixes, routes those fixes to the Planner when they preserve that intent, and stops for Human decision only when a finding would change the approved change-request intent. The Architect boundary stays explicit: findings and routing only, never direct spec edits.
+
+For the red step, I created `cli/tests/test_t074_change_request_continuation.py` and ran it in isolation. The first attempt failed for environment reasons because `uv` tried to write to a read-only cache path, so I reran with `UV_CACHE_DIR` under `/tmp`; that produced the intended red state with four failing assertions across the new acceptance criteria. After patching the source files, the new test file passed, the existing T-068 change-request body test still passed, and the task verification grep succeeded. I also regenerated the bundled scaffold skill outputs with `python scripts/sync_init_scaffolds.py` so the generated init assets stay aligned with the source-of-truth skill bodies, and then committed the cycle on the task branch.
+
+I rejected two things while working: first, relying only on the task grep as the acceptance harness, because the repository already has a clear pattern of source-body tests and this change needed behavior-level assertions; second, leaving the scaffold outputs stale after changing source skill bodies, because that would break the repo’s source-of-truth and generated-output convention. Nothing remains on the implementation branch. The next step is for the loop to append this entry to the canonical task file on `dev-agent` and hand the task to review.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
