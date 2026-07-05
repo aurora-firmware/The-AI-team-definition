@@ -118,3 +118,30 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-07-05
+PASS
+
+Summary:
+- Stage 1 and Stage 2 passed. This is a verified no-op: the generated Claude and Codex scaffold outputs for change-request, architecture-consistency-review, brainstorm, and new-spec were already current, still contain the required CR continuation / approved-intent routing and spec TODO-readiness behavior, and synchronization produced no repository changes.
+
+Artifacts:
+- Updated canonical task file: `project/tasks/in-progress/T-077-regenerate-s-004-skill-scaffolds.md`
+- Reviewed task-owned scaffold outputs under `cli/src/ai_team/init/scaffolds/{claude,codex}/skills/{change-request,architecture-consistency-review,brainstorm,new-spec}/SKILL.md`
+- Checked source skill bodies under `cli/src/ai_team/init/sources/skills/{change-request,architecture-consistency-review,brainstorm,new-spec}/body.md`
+
+Evidence:
+- Read the canonical task file and acceptance criteria on `dev-agent`.
+- Confirmed the task branch has no implementation commit beyond branch setup with `git rev-list --left-right --count task/T-077-regenerate-s-004-skill-scaffolds...dev-agent` (`0 1`) and no scaffold diff against the task branch for the eight task-owned files.
+- Ran `cd cli && python scripts/sync_init_scaffolds.py && UV_CACHE_DIR=/tmp/uv-cache-t077-review uv run pytest tests/test_init_scaffolds.py tests/test_t064_skill_bodies_canonical.py tests/test_t066_codex_frontmatter_parity_decision.py` and observed `62 passed`.
+- Verified required generated content directly in the scaffold outputs and matching source bodies, including CR continuation into Architecture Consistency Review, approved change-request intent routing, TODO-readiness blocking, and spec `status` transition to `review`.
+- Confirmed `git diff --exit-code -- <8 task-owned scaffold files>` and `git status --short --untracked-files=no` were clean after sync.
+
+Obstacles Encountered:
+- none
+
+Next Owner:
+- Development Loop
+
+Next Action:
+- Treat T-077 as a verified no-op and continue task lifecycle handling on `dev-agent`; no implementation merge is required.
