@@ -1,7 +1,7 @@
 ---
 id: T-075
 title: Update process docs for TODO-ready specs and change requests
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-07-05'
