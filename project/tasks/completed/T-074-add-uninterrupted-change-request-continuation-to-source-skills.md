@@ -1,7 +1,7 @@
 ---
 id: T-074
 title: Add uninterrupted change-request continuation to source skills
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-07-05'
