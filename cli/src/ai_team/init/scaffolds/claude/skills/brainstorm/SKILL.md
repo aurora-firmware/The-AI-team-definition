@@ -119,10 +119,19 @@ Invoke the `new-spec` skill to create the specification file. Provide the full r
 
 When `new-spec` returns, also fill in the alternatives considered and why they were rejected (this is the brainstorm-specific content that the new-spec recipes do not generate).
 
-Mark any remaining open details with `[TODO]`.
-Update the spec `status` to `review`.
+Scan the created spec for `[TODO]` markers before setting or treating the spec as review-ready.
+- For each human-answerable `[TODO]` marker, ask the human one contextual question tied to that section or requirement.
+- After each answer, update the spec with the answer before continuing to the next marker.
+- Re-scan after each update so the next question reflects the current document state.
 
-The document is ready for Gate 1 (Spec Approval).
+If any human-answerable `[TODO]` markers remain, explicitly report the blocker and stop.
+- The spec must not hand the spec to Architecture Consistency Review while those markers remain.
+- The spec must not hand the spec to Gate 1 approval while those markers remain.
+
+Mark any remaining non-human-answerable open details with `[TODO]` when they still need later investigation.
+Once no human-answerable `[TODO]` markers remain, update the spec `status` to `review`.
+
+Only then is the document ready for Architecture Consistency Review and Gate 1 confirmation.
 Because the human shaped the spec interactively, Gate 1 should be a quick confirmation — not a cold review.
 
 ## Quality Criteria
