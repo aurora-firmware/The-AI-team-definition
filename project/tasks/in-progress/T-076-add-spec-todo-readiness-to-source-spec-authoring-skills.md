@@ -104,3 +104,30 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-07-05
+PASS
+
+Result: PASS
+
+Summary:
+- Reviewed T-076 against all four acceptance criteria plus Stage 2 quality checks; the brainstorm and new-spec source skill bodies now gate review readiness on resolving human-answerable `[TODO]` markers, and the focused tests plus regenerated scaffolds align with that behavior.
+
+Artifacts:
+- Updated canonical task file: `project/tasks/in-progress/T-076-add-spec-todo-readiness-to-source-spec-authoring-skills.md`
+- Reviewed diff from commit `103bcfb` on branch `task/T-076-add-spec-todo-readiness-to-source-spec-authoring-skills`
+- Primary files inspected: `cli/src/ai_team/init/sources/skills/brainstorm/body.md`, `cli/src/ai_team/init/sources/skills/new-spec/body.md`, `cli/tests/test_t076_spec_todo_readiness.py`, and the regenerated Claude/Codex scaffold skill files
+
+Evidence:
+- Stage 1 acceptance review: verified AC-1 through AC-4 directly in the reviewed source text, including the TODO scan, one-question-at-a-time resolution loop, review-handoff blocking, and explicit new-spec blocker behavior
+- Scope review: confirmed the change set is limited to the requested source files plus focused tests and regenerated scaffolds
+- Commands run on the implementation branch: `env UV_CACHE_DIR=/tmp/uv-cache-t076 uv run pytest tests/test_t076_spec_todo_readiness.py` (`5 passed`), `env UV_CACHE_DIR=/tmp/uv-cache-t076 uv run pytest tests/test_t064_skill_bodies_canonical.py` (`19 passed`), `env UV_CACHE_DIR=/tmp/uv-cache-t076 uv run pytest tests/test_init_scaffolds.py -k tool_skill_scaffolds_from_shared_body` (`1 passed`), `env UV_CACHE_DIR=/tmp/uv-cache-t076 uv run ruff check tests/test_t076_spec_todo_readiness.py`, and `rg -n "TODO|Architecture Consistency|Gate 1|review" cli/src/ai_team/init/sources/skills/brainstorm/body.md cli/src/ai_team/init/sources/skills/new-spec/body.md`
+
+Obstacles Encountered:
+- none
+
+Next Owner:
+- Development Loop
+
+Next Action:
+- none
