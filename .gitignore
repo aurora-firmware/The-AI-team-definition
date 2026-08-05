@@ -3,3 +3,10 @@
 .claude
 .pi
 .ai-team.toml
+
+# Python packages
+__pycache__/
+*.whl
+
+# pr review artifacts
+pr-*-review.md
