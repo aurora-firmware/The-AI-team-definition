@@ -54,13 +54,13 @@ def _replace_project_skeleton(destination: Path, source: Path) -> None:
         leaf_dir.mkdir(parents=True, exist_ok=True)
         (leaf_dir / ".gitkeep").write_text("", encoding="utf-8")
 
-    for guidance_file in ("CLAUDE.md", "AGENTS.md"):
-        src = source / guidance_file
+    for root_file in ("CLAUDE.md", "AGENTS.md", ".gitignore"):
+        src = source / root_file
         if not src.is_file():
             raise FileNotFoundError(
-                f"Expected project guidance source does not exist: {src}"
+                f"Expected project skeleton root file does not exist: {src}"
             )
-        shutil.copy2(src, destination / guidance_file)
+        shutil.copy2(src, destination / root_file)
 
 
 def _load_skill_metadata(path: Path) -> dict[str, str]:

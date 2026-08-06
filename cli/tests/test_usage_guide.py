@@ -136,6 +136,27 @@ def test_usage_md_describes_ai_team_toml_marker():
     )
 
 
+def test_usage_md_describes_ai_team_lock_sentinel_and_gitignore_coverage():
+    """B-017: usage.md must document the .ai-team.lock sentinel, why it persists,
+    that the shipped project/.gitignore covers it, and the pre-fix residual case."""
+    content = _content()
+    lower = _lower()
+
+    assert ".ai-team.lock" in content, (
+        "usage.md must document the .ai-team.lock sentinel file"
+    )
+    assert "flock" in lower, (
+        "usage.md must explain the sentinel persists by B-014's flock design"
+    )
+    assert ".gitignore" in content, (
+        "usage.md must document the shipped project/.gitignore covering the sentinel"
+    )
+    assert "before this" in lower or "retroactively" in lower, (
+        "usage.md must call out the residual case for projects that ran "
+        "`ai-team init` before the .gitignore fix shipped"
+    )
+
+
 def test_usage_md_describes_locator_resolution_order():
     """usage.md must describe the locator resolution order."""
     lower = _lower()

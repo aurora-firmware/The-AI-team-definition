@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess
 import tomllib
 
 from typer.testing import CliRunner
@@ -472,3 +473,60 @@ def test_force_flag_overwrites_existing_root_guidance_files(tmp_path):
 
     assert result.exit_code == 0
     assert existing_claude.read_text(encoding="utf-8") != "old content\n"
+
+
+def test_init_scaffolds_project_gitignore_ignoring_the_lock_sentinel(tmp_path):
+    """B-017: init writes project/.gitignore covering the .ai-team.lock sentinel."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    result = CliRunner().invoke(
+        app,
+        ["init", str(target), "--tools", "claude", "--no-interactive"],
+    )
+
+    assert result.exit_code == 0
+    gitignore = target / "project" / ".gitignore"
+    assert gitignore.is_file()
+    assert gitignore.read_text(encoding="utf-8") == ".ai-team.lock\n"
+
+
+def test_ai_team_lock_sentinel_is_not_untracked_after_task_creation(
+    monkeypatch, tmp_path
+):
+    """B-017 fix verification: after init + task new, .ai-team.lock is not untracked."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    result = CliRunner().invoke(
+        app,
+        ["init", str(target), "--tools", "claude", "--no-interactive"],
+    )
+    assert result.exit_code == 0
+
+    subprocess.run(["git", "init", "-q"], cwd=target, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.com"], cwd=target, check=True
+    )
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=target, check=True)
+    subprocess.run(["git", "add", "-A"], cwd=target, check=True)
+    subprocess.run(["git", "commit", "-q", "-m", "init"], cwd=target, check=True)
+
+    monkeypatch.chdir(target)
+    task_result = CliRunner().invoke(app, ["task", "new", "Anything", "--json"])
+    assert task_result.exit_code == 0
+
+    lock_file = target / "project" / ".ai-team.lock"
+    assert lock_file.is_file()
+
+    status = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=target,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "ai-team.lock" not in status.stdout, (
+        f"unexplained untracked .ai-team.lock in git status:\n{status.stdout}"
+    )

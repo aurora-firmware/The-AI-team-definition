@@ -100,6 +100,17 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
         repo / "cli" / "src" / "ai_team" / "init" / "sources" / "project" / "AGENTS.md",
         "# Project Guidance for Agents\n\nspecs tasks bugs decisions reports project-local docs\n",
     )
+    _write(
+        repo
+        / "cli"
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "project"
+        / ".gitignore",
+        ".ai-team.lock\n",
+    )
 
     # Seed stale generated output that should be removed.
     _write(
@@ -244,6 +255,7 @@ def test_sync_script_replaces_project_with_empty_lifecycle_skeleton(
         Path("docs/.gitkeep"),
         Path("CLAUDE.md"),
         Path("AGENTS.md"),
+        Path(".gitignore"),
     }
     actual_files = {
         (Path(root) / file_name).relative_to(project_root)
@@ -276,6 +288,52 @@ def test_sync_script_copies_project_guidance_files_from_source(
         assert scaffold_text == source_text, (
             f"scaffolds/project/{file_name} does not match sources/project/{file_name}"
         )
+
+
+def test_sync_script_copies_project_gitignore_ignoring_the_lock_sentinel(
+    tmp_path: Path,
+) -> None:
+    """B-017: generator copies project/.gitignore, and it ignores .ai-team.lock."""
+    repo = _setup_fake_repo(tmp_path)
+
+    subprocess.run(
+        [sys.executable, "cli/scripts/sync_init_scaffolds.py"],
+        cwd=repo,
+        check=True,
+    )
+
+    sources_root = repo / "cli" / "src" / "ai_team" / "init" / "sources" / "project"
+    project_root = repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "project"
+
+    source_text = (sources_root / ".gitignore").read_text(encoding="utf-8")
+    scaffold_text = (project_root / ".gitignore").read_text(encoding="utf-8")
+
+    assert scaffold_text == source_text, (
+        "scaffolds/project/.gitignore does not match sources/project/.gitignore"
+    )
+    assert scaffold_text == ".ai-team.lock\n"
+
+
+def test_package_owned_project_gitignore_source_ignores_the_lock_sentinel() -> None:
+    """B-017: the real (non-fixture) sources/project/.gitignore ships the lock entry."""
+    repo_root = Path(__file__).resolve().parents[1]
+    source_gitignore = (
+        repo_root / "src" / "ai_team" / "init" / "sources" / "project" / ".gitignore"
+    )
+    scaffold_gitignore = (
+        repo_root / "src" / "ai_team" / "init" / "scaffolds" / "project" / ".gitignore"
+    )
+
+    assert source_gitignore.is_file(), f"Missing source template: {source_gitignore}"
+    assert scaffold_gitignore.is_file(), (
+        f"Missing scaffold output: {scaffold_gitignore}"
+    )
+
+    source_text = source_gitignore.read_text(encoding="utf-8")
+    scaffold_text = scaffold_gitignore.read_text(encoding="utf-8")
+
+    assert source_text == ".ai-team.lock\n"
+    assert scaffold_text == source_text
 
 
 def test_package_owned_skill_sources_include_body_and_required_metadata() -> None:
