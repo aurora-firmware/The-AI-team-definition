@@ -3,7 +3,7 @@ id: B-013
 title: ai-team validate reports task-spec-missing for spec references the CLI 
   itself creates
 severity: high
-status: in-progress
+status: resolved
 created: '2026-08-05'
 ---
 
