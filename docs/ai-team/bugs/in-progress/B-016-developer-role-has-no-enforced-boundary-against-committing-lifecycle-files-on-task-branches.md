@@ -3,7 +3,7 @@ id: B-016
 title: Developer role has no enforced boundary against committing lifecycle 
   files on task branches
 severity: medium
-status: open
+status: in-progress
 created: '2026-08-05'
 ---
 
