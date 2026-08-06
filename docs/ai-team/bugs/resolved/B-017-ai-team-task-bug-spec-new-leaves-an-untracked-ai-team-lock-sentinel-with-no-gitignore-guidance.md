@@ -3,7 +3,7 @@ id: B-017
 title: ai-team task/bug/spec new leaves an untracked .ai-team.lock sentinel with
   no gitignore guidance
 severity: low
-status: in-progress
+status: resolved
 created: '2026-08-06'
 ---
 
