@@ -307,3 +307,70 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-08-06
+
+PASS
+
+Diagnosis→fix evidence chain (verified before Stage 1): the Diagnosis Log entry
+(Diagnosis 1, 2026-08-06) records reproduction status (confirmed by independent
+source inspection), evidence (line-cited excerpts from both Claude and Codex
+Developer sources, `git-conventions`, `tdd`/`debug`, `dev-loop`, `integrate`, and
+`pre-commit.sh`, plus a `git log -S` check), an isolated fault (two co-located
+textual gaps: the Folder Scope "Never touch" omission and the `git-conventions`
+Common-Pitfalls-not-Hard-Rules placement), and a root cause (no single
+authoritative, hard-stated prohibition backed by a technical control). Complete;
+proceeded to Stage 1.
+
+**Stage 1 — Bug criteria.** Both isolated-fault items are addressed:
+- `cli/src/ai_team/init/sources/agents/claude/developer.md:54` and
+  `cli/src/ai_team/init/sources/agents/codex/developer.toml:43` now list
+  `project/tasks/`, `project/bugs/` (except `project/bugs/open/`, via `new-bug`)
+  in "Never touch", and state explicitly that `git add`/commit under those paths
+  from an implementation branch is forbidden, not just Write/Edit — matching the
+  bug's Expected Behavior option (a) verbatim.
+- `cli/src/ai_team/init/sources/skills/git-conventions/body.md` had the
+  lifecycle-file-commit prohibition moved (not duplicated) from `## Common
+  Pitfalls` to `## Hard Rules`, reworded to the section's imperative style.
+  Verified independently: `git grep "Merging lifecycle-file edits"` at the bug
+  branch tip returns no hits anywhere under `cli/`, confirming a clean move.
+- No unrelated behavior added; `tdd`, `debug`, `dev-loop` prose left untouched
+  as the fix contract specified.
+
+**Stage 2 — Code quality / Fix Verification (independently re-run, not taken on
+the Developer's report):**
+- Regenerated scaffolds from a clean worktree checkout of the bug branch:
+  `python scripts/sync_init_scaffolds.py && uv run pytest` — 454 passed, 0
+  failed; `git status --porcelain cli/src/ai_team/init/scaffolds` empty
+  afterward. Confirmed the Claude and Codex scaffold copies (`developer.md`,
+  `developer.toml`, both `git-conventions/SKILL.md`) match source verbatim —
+  no hand-edited scaffolds.
+- `uv run ruff format --check .` and `uv run ruff check .` both clean
+  (`UV_CACHE_DIR` pointed at a scratch dir per the documented fallback).
+- Regression test `cli/tests/test_b016_developer_lifecycle_boundary.py`
+  follows the existing `test_t065_claude_agent_role_files.py` convention
+  (reads source + scaffold pairs, asserts on stable substrings, table-row vs.
+  bullet-line agnostic via `_never_touch_line`). Assertions are meaningful,
+  not tautological: they check for the specific lifecycle paths, the
+  `new-bug`/`project/bugs/open/` exception, the `git add`/`commit`/
+  "implementation branch" wording, presence under `## Hard Rules` specifically
+  (not just anywhere in the file), and absence of the old wording from
+  `## Common Pitfalls` (proving promotion, not duplication).
+- Independently reproduced red→green: copied the new test file into a
+  worktree at the pre-fix commit (`a0fa767`) — all 8 assertions failed as
+  expected. Ran the same file against the fix commit (`d3e7367`) — all 8
+  passed. This directly confirms the Work Log's claim rather than trusting it.
+- Fix is minimal: only the two agent sources, the two mirrored scaffolds, the
+  one skill source, its two mirrored scaffolds, and the new test file were
+  touched. No unrelated refactoring.
+- No lifecycle-file changes were committed on the bug branch itself
+  (`git diff dev-agent...bug/B-016-developer-lifecycle-boundary -- docs/ai-team/`
+  is empty) — the Developer's own conduct respects the boundary being added.
+
+Minor, non-blocking observation: `cli/tests/test_b016_developer_lifecycle_boundary.py`
+defines `SCAFFOLD_AGENTS` (line 19) but never references it — dead module-level
+constant. Ruff does not flag it (F841 only covers local variables), and it does
+not affect correctness. Not required to fix before merge; worth a follow-up
+cleanup if the file is touched again.
+
+Both stages pass. No FAIL or ESCALATE conditions found.
