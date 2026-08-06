@@ -382,3 +382,116 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-08-06
+
+FAIL
+
+Reviewed on `dev-agent`, diffed `git diff dev-agent...bug/B-015-integrate-post-merge-baseline`
+and inspected the bug branch's files directly with `git show`. Diagnosis Log and Work Log
+evidence chain checked first (Stage 1), then Stage 2 procedure-quality checks.
+
+**Stage 1 — Diagnosis and Fix Verification bullets**
+
+- Diagnosis Log (`### Diagnosis 1 — 2026-08-06`) is complete: reproduction status, evidence
+  (line-cited, verified against `dev-agent` HEAD), isolated fault, root cause, and a concrete
+  fix contract are all present. Evidence chain accepted.
+- Fix Verification bullet 1 (Step 6 states it runs the documented project baseline and defines
+  the no-baseline case) — met. `integrate/body.md` Step 6 preamble (lines 113-121 on the bug
+  branch) states the destination-branch check runs "the project's documented baseline command
+  ... plus the source-branch command ... when the two differ" and defines the coverage-gap
+  disclosure for the no-baseline case.
+- Fix Verification bullet 2 (Step 2 lookup order distinguishes source-branch from
+  destination-branch rather than defaulting both) — met. Item 7 is now explicitly scoped to
+  the source branch/Step 4; item 8 is a new, separately-derived destination-branch lookup with
+  an explicit "Do not default this to the source-branch command from item 7" instruction.
+- Fix Verification bullet 3 (task-authoring guidance requires `## Verification` to cover the
+  project baseline for shared/public-interface changes) — met. `spec-breakdown/body.md` Step 3's
+  "Verification command" bullet now requires the project baseline/full-suite command "in
+  addition to any module-scoped command" when a task changes a shared or public interface.
+- Fix Verification bullet 4 (exports stay in sync) — met, reproduced independently: checked out
+  `bug/B-015-integrate-post-merge-baseline`, ran `cd cli && uv run pytest` (446 passed),
+  `uv run ruff format --check .` (64 files already formatted) and `uv run ruff check .` (all
+  checks passed), then `python scripts/sync_init_scaffolds.py` followed by
+  `git status --porcelain src/ai_team/init/scaffolds` (empty — zero diff). Returned to
+  `dev-agent`; `git status --short` is clean.
+- Citation check: Step 2 item 8(b) cites "the same discovery order the `dev-loop` skill's
+  Step 2 Baseline Test Guard already owns." Verified `cli/src/ai_team/init/sources/skills/dev-loop/body.md`
+  lines 34-47 (`### Step 2: Baseline Test Guard` / `#### Discovery Order`) exist and the
+  four-step order quoted in `integrate` (root guidance → referenced project-local docs →
+  README/build config → smallest documented command that verifies the project is green) matches
+  `dev-loop`'s four numbered items verbatim in substance. Citation is accurate, not a dangling
+  reference.
+
+All four Fix Verification bullets pass. However, Stage 2 surfaced a correctness/internal-consistency
+defect in the same file that fails the "procedure is correct, unambiguous, actionable, and
+internally consistent" bar, so the overall verdict is FAIL.
+
+**Stage 2 — Blocking issue**
+
+- **File and location:** `cli/src/ai_team/init/sources/skills/integrate/body.md`, Step 6,
+  `#### Tests Fail → Regression Path`, items 1-2 (unchanged by this fix; on the bug branch these
+  are the same lines as on `dev-agent`, just renumbered by the new preamble paragraph inserted
+  above them).
+- **What is wrong:** Step 2 item 8(c) (new) and the Step 6 preamble (new) establish that Step 6
+  can now run a command that is strictly *broader* than Step 4's — the destination-branch check
+  runs the project baseline plus the source-branch command "when the two differ." Item 8(c)'s own
+  stated rationale for running both is to "preserve a like-for-like comparison against Step 4's
+  results," but the Regression Path text that actually performs that comparison was never updated
+  to account for the broadened scope. It still reads: "1. Compare the failing tests against the
+  pre-merge results from Step 4. 2. For each regression (a test that passed in Step 4 but fails
+  now): ...". A test that exists only in the newly-added baseline command (e.g., the
+  `admin-rpc` dispatch tests from the T-101/B-013 field incident this bug is modeled on) was never
+  run in Step 4 at all — it did not "pass in Step 4," nor did it fail there; it simply wasn't
+  executed. Read literally, such a test does not satisfy item 2's definition of "regression" ("a
+  test that passed in Step 4 but fails now"), so an agent following the procedure as written has
+  no instruction covering it: is it filed as a regression bug via the `new-bug` invocation in item
+  2, or does it fall outside the enumerated case and get silently omitted from bug-filing (while
+  the merge is still reverted per item 4, since the revert is unconditional inside the "Tests
+  Fail" branch)? This is exactly the ambiguity the review brief asked to check for, and it is
+  present: the fix makes Step 6 correctly *detect* the class of regression this bug is about (the
+  T-101 scenario would now produce a "Tests Fail" outcome), but the Regression Path's bug-filing
+  logic — the part of the skill that actually documents and routes the regression for a fix — was
+  not updated to recognize "failed in the baseline command, never run in Step 4" as a regression.
+  That silently reintroduces a narrower version of the same defect this bug reports: the specific
+  cross-module regression can end up reverted without ever being filed as a bug, losing the
+  evidence trail the rest of Step 6 (`new-bug` invocation, `source-branch` field, etc.) exists to
+  capture. A secondary, related ambiguity: items 1-2 assume Step 6 produced a single command's
+  output to diff against Step 4's single output; now Step 6 can run two separate commands (the
+  baseline and the source-branch command), and the text does not say how to reconcile two result
+  sets against Step 4's one when comparing "passed in Step 4 but fails now."
+- **What should change:** Update the Regression Path's item 1-2 wording so "regression" for
+  bug-filing purposes is defined to include any test that fails in Step 6's destination-branch
+  run — whether it was previously passing in Step 4 (a true regression) or was never executed in
+  Step 4 at all because it is only covered by the newly-discovered baseline command (a
+  previously-uncovered failure surfaced by the wider check). Both cases should route through the
+  same `new-bug` filing loop in item 2; the distinction (regressed vs. newly-covered-and-failing)
+  can be noted in the bug's `summary`/`evidence` fields if useful, but must not be a fork in
+  whether a bug gets filed at all. Also clarify how to reconcile two separate command outputs
+  (baseline and source-branch, when both ran per item 8(c)) against Step 4's single result set —
+  e.g., "treat the union of failures from both destination-branch commands as the post-merge
+  result set to compare."
+
+**Non-blocking observations (not required to change for PASS):**
+
+- `dev-loop/body.md` line 36 ("post-merge regressions are caught by the integrate skill's
+  destination-branch test step") was intentionally left unmodified per the Diagnosis Log
+  ("Flagged as evidence only; no change proposed to dev-loop here") and is out of this bug's
+  declared scope/Fix Verification bullets. After this fix (once the Stage 2 blocking issue above
+  is also resolved), the claim becomes true in the common case where a project baseline command
+  is discoverable, and is honestly qualified (not silently false) in the no-baseline case via the
+  coverage-gap flag. No action required here for this bug, but worth a follow-up note if a future
+  bug revisits `dev-loop`'s Step 2 rationale text for precision.
+- Placing the shared-interface `## Verification` rule in `spec-breakdown` Step 3 rather than
+  `new-task`'s Task Quality Rules is a defensible boundary call even though `new-task`'s own
+  docstring lists "verification" among per-task-shape items it owns — identifying whether an
+  interface is "consumed by code outside the task's own module" requires the whole-spec
+  dependency graph that only `spec-breakdown` has, which `new-task` (operating on one task at a
+  time) does not. Not a blocking issue.
+- No other section of `integrate/body.md` retains a stale single "verification command set"
+  reference outside the Regression Path items called out above; the Output Format, Common
+  Pitfalls, and `new-bug` invocation field descriptions were updated consistently or remain
+  correct under a `command(s)` reading.
+
+Next: Developer should revise the Regression Path definition in `integrate/body.md` Step 6 per
+the guidance above and resubmit for review.
