@@ -312,6 +312,84 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-08-06
+
+Read the existing Diagnosis Log (Diagnosis 1) as the fix contract and implemented
+option 1 + supplement 4 (options 2/3 were not revisited, per instructions). Followed
+TDD strictly, red before green, for every test file touched.
+
+**Cycle 1 (`fix(init): scaffold project/.gitignore to cover .ai-team.lock sentinel`,
+commit `4adfbdd`).** Wrote failing tests first: extended the hardcoded `expected_files`
+set in `test_sync_script_replaces_project_with_empty_lifecycle_skeleton`
+(`cli/tests/test_init_scaffolds.py`) to include `Path(".gitignore")`; added a fixture
+write for `sources/project/.gitignore` in `_setup_fake_repo` (needed because
+`_replace_project_skeleton`'s hand-curated copy loop would otherwise raise
+`FileNotFoundError` against the synthetic fixture repo); added
+`test_sync_script_copies_project_gitignore_ignoring_the_lock_sentinel` (fixture-based,
+mirrors the existing CLAUDE.md/AGENTS.md copy-parity test) and
+`test_package_owned_project_gitignore_source_ignores_the_lock_sentinel` (real,
+non-fixture repo, asserts the actual shipped file content is exactly
+`.ai-team.lock\n`). Confirmed all three failed for the expected reasons. Then added
+`cli/src/ai_team/init/sources/project/.gitignore` (single line `.ai-team.lock`) and
+extended `cli/scripts/sync_init_scaffolds.py::_replace_project_skeleton`'s copy loop
+from `("CLAUDE.md", "AGENTS.md")` to `("CLAUDE.md", "AGENTS.md", ".gitignore")`,
+renaming the loop variable/error message from "guidance_file"/"project guidance source"
+to "root_file"/"project skeleton root file" since the tuple no longer only holds
+guidance docs (refactor step). Regenerated scaffolds and confirmed all new tests plus
+the full suite went green.
+
+Also verified, per the diagnosis's item 3, that `init.py`'s existing
+`_iter_files`/`_plan_copies` flow (`root.rglob("*")`) needed no code change to deliver
+a dotfile — confirmed both by a standalone `rglob` probe and by two manual scratch-dir
+runs of the actual built CLI (`uv run --project cli ai-team init` + `git
+init`/`add`/`commit` + `ai-team task new --json` + `git status --short`/`git
+check-ignore -v`) in `/tmp/.../scratchpad/b017-verify` (default `project/` dir) and
+`/tmp/.../scratchpad/b017-verify-customdir` (relocated to `docs/ai-team` with
+`[project] dir` updated, mirroring this very repo's layout). Both confirmed
+`.ai-team.lock` no longer appears as untracked and `git check-ignore -v` reports the
+match against the shipped `project/.gitignore` (or `docs/ai-team/.gitignore` in the
+relocated case). Also built the wheel (`uv build`) and confirmed via `unzip -l` that
+`ai_team/init/scaffolds/project/.gitignore` (14 bytes) is actually packaged — this
+addressed a self-raised concern that hatchling's default VCS-based file selection might
+silently drop a `.gitignore` file from the built artifact; it does not, because
+`[tool.hatch.build] include = ["src/ai_team/**"]` already overrides VCS-based selection
+for this project.
+
+Added corresponding integration tests to `cli/tests/test_init.py`:
+`test_init_scaffolds_project_gitignore_ignoring_the_lock_sentinel` (asserts `init`
+delivers `project/.gitignore` with exact content `.ai-team.lock\n`) and
+`test_ai_team_lock_sentinel_is_not_untracked_after_task_creation` (runs real `git
+init`/`config`/`add`/`commit` then `task new --json`, then asserts `.ai-team.lock` does
+not appear in `git status --porcelain`). The first attempt at the second test was a
+false negative — without first committing a baseline, git collapses the whole untracked
+`project/` directory into a single `?? project/` line, hiding the lock file regardless
+of whether it's ignored, so the test passed even against the unfixed code. Fixed by
+committing a baseline before the artifact-creation step, matching the bug's own
+reproduction steps; re-verified this now fails against the pre-fix code and passes after
+the fix.
+
+**Cycle 2 (`docs(usage): document the .ai-team.lock sentinel and gitignore coverage`,
+commit `89e2ce8`).** Added a new "### The `.ai-team.lock` sentinel" subsection to
+`cli/docs/usage.md`'s "Project Folder Structure" section explaining why the file
+persists (B-014's flock design), that the shipped `project/.gitignore` covers it, and
+that projects which ran `ai-team init` before this fix must add the entry themselves.
+Added `test_usage_md_describes_ai_team_lock_sentinel_and_gitignore_coverage` to
+`cli/tests/test_usage_guide.py` first, verified it failed by temporarily stashing the
+doc change (`git stash push -- cli/docs/usage.md`), confirmed the red failure, then
+restored the doc change and confirmed green.
+
+Final verification: full `uv run pytest` from `cli/` — 459 passed; `uv run ruff format
+--check .` and `uv run ruff check .` — both clean (ruff format did reformat the two
+touched test files to its style; re-ran the full suite afterward, still green); `python
+scripts/sync_init_scaffolds.py` is idempotent against the committed scaffolds (`git
+status --porcelain cli/src/ai_team/init/scaffolds` is empty). No changes were needed to
+`cli/src/ai_team/core/lock.py` (untouched, per the contract) or to
+`cli/src/ai_team/commands/init.py` (its existing copy flow already handled the new file
+correctly). No changes to `cli/docs/commands.md` were needed since no command output or
+release guidance changed. Nothing remains outstanding from the fix contract; all five
+planned-verification items and the bug's own Fix Verification block were executed and
+passed.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
