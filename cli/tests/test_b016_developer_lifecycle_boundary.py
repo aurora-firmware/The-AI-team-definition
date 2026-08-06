@@ -16,7 +16,6 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SOURCE_AGENTS = REPO_ROOT / "src" / "ai_team" / "init" / "sources" / "agents"
-SCAFFOLD_AGENTS = REPO_ROOT / "src" / "ai_team" / "init" / "scaffolds" / "agents"
 SCAFFOLD_ROOT = REPO_ROOT / "src" / "ai_team" / "init" / "scaffolds"
 SOURCE_SKILLS = REPO_ROOT / "src" / "ai_team" / "init" / "sources" / "skills"
 
