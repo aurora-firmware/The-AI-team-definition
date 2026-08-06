@@ -8,5 +8,6 @@
 __pycache__/
 *.whl
 
-# pr review artifacts
-pr-*-review.md
+# pr review artifacts (repo root only — committed reports live in
+# docs/ai-team/docs/reports/ and must stay tracked)
+/pr-*-review.md

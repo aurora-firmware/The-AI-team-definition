@@ -3,7 +3,7 @@
 > Analysis date: 2026-08-03
 > Sources compared:
 > - `../superpowers` — 14 skills, ~3,200 lines of `SKILL.md` plus supporting prompt templates, scripts, and technique references
-> - `the-ai-team-definition` — 18 skills in `cli/src/ai_team/init/sources/skills/`, ~2,250 lines, plus `ai-process/processes/` (workflow, quality gates, escalation) and 5 role agents
+> - `the-ai-team-definition` — 19 skills in `cli/src/ai_team/init/sources/skills/`, ~2,250 lines, plus `ai-process/processes/` (workflow, quality gates, escalation) and 5 role agents
 
 ---
 
@@ -65,7 +65,7 @@ Supporting assets worth noting: `implementer-prompt.md`, `task-reviewer-prompt.m
 `defense-in-depth.md`, `condition-based-waiting.md`, `testing-skills-with-subagents.md`,
 plus executable scripts (`sdd-workspace`, `task-brief`, `review-package`).
 
-### The AI Team (18)
+### The AI Team (19)
 
 | Category | Skills |
 |---|---|

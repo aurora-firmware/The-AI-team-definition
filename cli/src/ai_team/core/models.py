@@ -332,6 +332,7 @@ _SPEC_FIELDS: list[tuple[str, str]] = [
     ("status", "status"),
     ("created", "created"),
     ("author", "author"),
+    ("id", "id"),  # optional — omitted when None (legacy specs carry no id)
 ]
 
 _ADR_FIELDS: list[tuple[str, str]] = [

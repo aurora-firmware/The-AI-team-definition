@@ -226,7 +226,7 @@ See `guides/setup-guide.md` for the complete file list, CLAUDE.md starter templa
 │   ├── processes/       Workflow definitions, quality gates, escalation procedures
 │   ├── guidelines/      Coding standards, review checklists, markdown conventions
 │   └── architecture/    AI team structure: roles, components, boundaries
-├── project/
+├── docs/ai-team/        This repo's own managed artifacts (see `[project] dir` in .ai-team.toml)
 │   ├── specs/           Feature specifications (with archive/ for superseded versions)
 │   ├── tasks/           Task tracking (pending/ → in-progress/ → completed/ | blocked/)
 │   ├── bugs/            Bug reports (open/ → in-progress/ → resolved/)
@@ -249,7 +249,7 @@ Changes to the framework follow the same workflow the framework defines.
 - **Changing an agent or skill**: verify that the change is consistent with — or explicitly revises — the relevant ai-process documents.
 - **Changing bundled init content**: update the package-owned source assets in `cli/src/ai_team/init/sources/` (`agents/`, `skills/`, `project/`, and `root/`), then run `python cli/scripts/sync_init_scaffolds.py` to regenerate the bundled scaffolds in `cli/src/ai_team/init/scaffolds/` so `ai-team init` ships the updated content.
 - **Changing a CLI command or flag**: update the source, then run `bash cli/scripts/gen_docs.sh` and commit the updated `cli/docs/commands.md` so the reference stays current.
-- **Architecture-affecting decisions**: record an ADR in `project/decisions/` before implementing.
+- **Architecture-affecting decisions**: record an ADR in `docs/ai-team/decisions/` before implementing.
 
 The ai-process is the specification.
 Agents and skills are the implementation.

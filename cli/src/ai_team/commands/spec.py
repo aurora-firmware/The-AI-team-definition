@@ -63,7 +63,6 @@ def new_spec(
 
         template = load_template("spec")
         source_map, body = _template_parts(template)
-        source_map["id"] = spec_id
 
         model = Spec(
             title=title,
@@ -71,6 +70,7 @@ def new_spec(
             status=status,
             created=date.today().isoformat(),
             author=author,
+            id=spec_id,
             _source_map=source_map,
         )
 
