@@ -37,11 +37,16 @@ Do not rely on task or bug file copies from the source branch or destination bra
 4. If no work item file is found, continue without work-item verification but note the absence in the final report.
 5. If a task file is found, read it completely — focus on the **Description**, **Acceptance Criteria**, **Verification**, **Work Log**, and **Review** sections.
 6. If a bug file is found, read it completely — focus on the **Summary**, **Diagnosis Log**, **Fix Verification**, **Work Log**, and **Review** sections.
-7. Determine the verification command set before checking out the source branch. Lookup order:
+7. Determine the source-branch verification command before checking out the source branch. Lookup order:
    - The work item's `## Verification` or `## Fix Verification` section, if it contains concrete automated command(s).
    - Target-project guidance such as the project `CLAUDE.md`, `project/docs/coding_guidelines.md`, README, build configuration, or human-provided instructions.
    - If no automated verification command can be determined, stop with `BLOCKED` and ask the human for the project verification command.
-8. Use the discovered command set for both pre-merge and post-merge verification unless the work item or project guidance explicitly defines separate source-branch and destination-branch checks.
+   This is the command Step 4 runs on the source branch. It is scoped to the work item and must not be assumed to also cover the destination branch.
+8. Determine the destination-branch verification command — the check Step 6 runs after the merge to catch regressions outside the work item's own declared scope. Do not default this to the source-branch command from item 7; determine it separately:
+   a. If the work item or project guidance explicitly defines a separate destination-branch or baseline check, use it.
+   b. Otherwise, discover the project's documented baseline command using the same discovery order the `dev-loop` skill's Step 2 Baseline Test Guard already owns (root guidance such as `CLAUDE.md`/`AGENTS.md` → project-local docs referenced from there → README/build configuration → the smallest documented automated command that verifies the project starts green enough for task work). Apply that discovery order directly here instead of re-deriving a second copy of it.
+   c. If the discovered baseline command differs from the source-branch command from item 7, Step 6 must run both.
+   d. If no project baseline command is discoverable at all, Step 6 falls back to running only the source-branch command, but record that fallback here as an explicit coverage-gap flag to carry into Step 6's report. A missing baseline must never be silently treated as sufficient coverage — and must never by itself block integration; only a genuinely failing test blocks Step 6.
 
 ### Step 2b: Verify the Latest Committed Review Verdict on dev-agent is PASS
 
@@ -107,11 +112,13 @@ Capture stdout and stderr. Evaluate the result:
 
 ### Step 6: Run Tests on the Destination Branch (Regression Check)
 
-After the merge, on the destination branch, run the discovered destination-branch verification command set:
+After the merge, on the destination branch, run the destination-branch verification command(s) determined in Step 2 item 8 — the project's documented baseline command, plus the source-branch command from item 7 when the two differ:
 
 ```text
-<destination verification command(s)>
+<destination-branch verification command(s)>
 ```
+
+If Step 2 recorded a coverage-gap flag (no project baseline command was discoverable), state that explicitly in the report for this step, for example: "post-merge check used the task-scoped command only; no project-wide baseline command was discoverable — coverage outside the task's declared scope was not verified." Do not report post-merge success as equivalent to Step 4's result without that qualification. The coverage gap is a reporting requirement, not a hard stop — do not block integration solely because no baseline is documented.
 
 Evaluate the result:
 
@@ -119,23 +126,26 @@ Evaluate the result:
 
 #### Tests Fail → Regression Path
 
-1. Compare the failing tests against the pre-merge results from Step 4.
-2. For each regression (a test that passed in Step 4 but fails now):
+1. Determine the post-merge failing test set: the union of failing tests across every destination-branch command Step 6 ran (the source-branch command from item 7 and, when it also ran, the discovered baseline command from item 8). This union — not either command's output alone — is the single result set compared against Step 4.
+2. For every test in that set, file a bug through the same loop below. Whether the test ran in Step 4 must never decide whether a bug gets filed — it only changes the classification recorded as evidence:
+   - Classify each failing test for evidence purposes only:
+     - **True regression** — the test passed in Step 4's source-branch run and fails now.
+     - **Previously-uncovered failure** — the test was never executed in Step 4 because it is covered only by the newly-discovered baseline command from item 8, and it fails now.
    - Determine which file(s) and logic are responsible.
    - Switch to `dev-agent`.
-   - Invoke the `new-bug` skill to file a canonical bug report for each regression. Provide the full required input set in the invocation text:
+   - Invoke the `new-bug` skill to file a canonical bug report for each failing test. Provide the full required input set in the invocation text:
      - `title`: concise regression title
      - `severity`: based on user impact, data risk, security risk, and how much of the system is blocked
-     - `summary`: include the merge commit that introduced the regression, the destination branch, and the source branch that was being integrated
+     - `summary`: include the merge commit that introduced the regression, the destination branch, the source branch that was being integrated, and the classification (true regression or previously-uncovered failure)
      - `reproduction-status`: `confirmed`
-     - `reproduction-steps`: the destination-branch verification command that now fails
+     - `reproduction-steps`: the destination-branch command that now fails
      - `expected-behavior`: the command should pass after integration
      - `actual-behavior`: the failing test name and error message
-     - `evidence`: failing command, stderr/stdout summary, merge commit, destination branch, and source branch
+     - `evidence`: failing command, stderr/stdout summary, merge commit, destination branch, source branch, and whether Step 4 ran and passed the test or never executed it
      - `environment`: current project/runtime details known from the verification run
      - `source-branch`: the source branch being integrated, so the bug-fix loop fixes the regression on that preserved branch before integration is retried
      - `suspected-area`: changed files implicated by the regression, or `unknown`
-     - `fix-verification`: the destination-branch verification command that must pass after the fix
+     - `fix-verification`: the destination-branch command that must pass after the fix
    - Commit the filed regression bug report(s) on `dev-agent`: `chore(bugs): file integration regression for <work-item-id>`.
 3. Switch back to the destination branch.
 4. After filing all regression bugs, **revert the merge commit**:
@@ -243,7 +253,7 @@ The active loop routes the request to the Architect via the `escalation-review` 
 
 - **Result:** `PASS`, `FAIL`, `BLOCKED`, or `ESCALATE`.
 - **Merge evidence:** source branch, destination branch, merge commit, and revert commit if one was produced.
-- **Verification:** pre-merge and post-merge command results, or why verification could not run.
+- **Verification:** pre-merge and post-merge command results, including the coverage-gap flag when no project baseline command was discoverable, or why verification could not run.
 - **State changes:** lifecycle file moves, regression bugs filed, and source branch deletion status.
 - **Next action:** whether the active loop can continue or which owner must act next.
 
@@ -258,6 +268,7 @@ The active loop routes the request to the Architect via the `escalation-review` 
 ## Common Pitfalls
 
 - Merging a branch whose tests already fail on the source branch.
+- Defaulting the destination-branch check to the same narrow command as the source-branch check instead of discovering the project baseline (Step 2 item 8), or silently skipping the coverage-gap flag when no baseline is discoverable.
 - Filing regression bugs without setting `source-branch` to the preserved branch.
 - Moving bug lifecycle state inside `integrate`; bug state is owned by `bug-loop`.
 - Treating conflict resolution as a textual choice instead of preserving both work items' intent.

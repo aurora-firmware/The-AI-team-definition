@@ -36,7 +36,7 @@ Then fill in the task body so it satisfies:
 - **Acceptance criteria**: Author every criterion using one of the five EARS patterns documented in the task template (`cli/src/ai_team/templates/task.md`) (Ubiquitous, Event-driven, Unwanted-behaviour, State-driven, Optional).
 - **Dependencies**: List of task IDs that must complete first.
 - **Files to touch**: Exact file paths that will be created or modified.
-- **Verification command**: Shell command that proves the task is done.
+- **Verification command**: Shell command that proves the task is done. If the task changes a shared or public interface (an API, schema, shared library function, or contract consumed by code outside the task's own module), `## Verification` must include the project's documented baseline/full-suite command in addition to any module-scoped command — a module-scoped command alone is not sufficient for such tasks.
 
 During task writing, consider documentation updates as implementation work derived from the approved spec, not as a prerequisite before creating tasks.
 If the spec changes user-facing behavior, commands, templates, guides, or workflow expectations, add the required documentation updates as tasks or acceptance criteria in this breakdown.
