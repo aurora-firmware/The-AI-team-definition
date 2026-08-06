@@ -1,8 +1,8 @@
 """Tests for T-066: Record the Codex skill-frontmatter parity decision.
 
-AC-1: An ADR in project/decisions/ SHALL record that Codex skill frontmatter
-      retains full parity with Claude, with rationale and the Skill()-wiring
-      implication.
+AC-1: An ADR in the project decisions directory SHALL record that Codex skill
+      frontmatter retains full parity with Claude, with rationale and the
+      Skill()-wiring implication.
 AC-2: The skill-authoring guide (guides/skill_template.md) SHALL state that
       [codex] headers keep the full frontmatter key set.
 """
@@ -12,7 +12,9 @@ from __future__ import annotations
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DECISIONS_DIR = REPO_ROOT / "project" / "decisions"
+# This repository sets [project] dir = "docs/ai-team" in .ai-team.toml, so its
+# own artifacts live there rather than under the default project/ directory.
+DECISIONS_DIR = REPO_ROOT / "docs" / "ai-team" / "decisions"
 SKILL_TEMPLATE = REPO_ROOT / "guides" / "skill_template.md"
 
 # Required frontmatter keys that must be mentioned in the ADR
@@ -30,13 +32,13 @@ FRONTMATTER_KEYS = (
 
 
 def test_adr_exists_for_codex_frontmatter_parity() -> None:
-    """AC-1: An ADR file must exist in project/decisions/ covering Codex
-    frontmatter parity with Claude."""
+    """AC-1: An ADR file must exist in the project decisions directory covering
+    Codex frontmatter parity with Claude."""
     adr_files = list(DECISIONS_DIR.glob("*.md"))
-    assert adr_files, "No ADR files found in project/decisions/"
+    assert adr_files, f"No ADR files found in {DECISIONS_DIR}"
     combined = "\n".join(f.read_text(encoding="utf-8") for f in adr_files)
     assert "codex" in combined.lower() or "parity" in combined.lower(), (
-        "No ADR in project/decisions/ mentions Codex frontmatter parity"
+        f"No ADR in {DECISIONS_DIR} mentions Codex frontmatter parity"
     )
 
 
