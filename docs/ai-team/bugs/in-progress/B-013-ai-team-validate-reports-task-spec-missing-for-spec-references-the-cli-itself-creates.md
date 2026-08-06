@@ -142,6 +142,105 @@ Root cause or fault hypothesis:
 Planned verification:
 -->
 
+### Diagnosis 1 — 2026-08-06
+
+Reproduction status: confirmed. Reproduced directly against this repository's
+configured project directory (`docs/ai-team`, per `.ai-team.toml`), which is the
+canonical project artifact set for this repo.
+
+Evidence captured:
+
+- `uv run --project cli ai-team validate --tasks --json` (from the repo root)
+  returned 12 `task-spec-missing` findings, all against tasks T-044 through
+  T-055, each with message: "Task spec reference
+  'coordinated-process-and-cli-workflow-improvements' does not resolve to an
+  existing spec file."
+- The referenced spec exists:
+  `grep -n "^spec:" docs/ai-team/tasks/completed/T-044-update-spec-breakdown-docs-and-test-planning.md`
+  returns `spec: coordinated-process-and-cli-workflow-improvements`, and
+  `docs/ai-team/specs/S-002-coordinated-process-and-cli-workflow-improvements.md`
+  exists with frontmatter `id: S-002`.
+- Archive exclusion confirmed: a non-recursive `Path('docs/ai-team/specs').glob('*.md')`
+  yields only S-002, S-003, and S-004 — `docs/ai-team/specs/archive/*.md` is
+  excluded because the glob is scoped to a single directory.
+- `cli/src/ai_team/core/validate.py:189-191` builds
+  `spec_slugs = {path.stem for path in _iter_markdown_files(root.specs) if path.suffix == ".md"}`,
+  producing only full stems — neither the frontmatter `id` nor the bare slug is a
+  member.
+- `cli/src/ai_team/core/validate.py:167-172` `_spec_reference_exists` only checks
+  `reference in spec_slugs`, or the same with a stripped `.md` suffix. Frontmatter
+  `id` is never consulted.
+- `cli/src/ai_team/commands/spec.py:58-64` (`ai-team spec new`) sets
+  `source_map["id"] = spec_id` and names the file `f"{spec_id}-{slug}.md"`, so
+  every CLI-created spec has stem `S-NNN-<slug>` — never the bare id or bare slug.
+- `cli/src/ai_team/commands/task.py:162,181` (`ai-team task new --spec`) records
+  the literal `--spec` value verbatim, so `--spec S-001` records `spec: S-001`,
+  which can never be a member of `spec_slugs` as currently built.
+- `cli/src/ai_team/core/models.py:231-235` — the `Spec` dataclass has no `id`
+  field at all (docstring states "specs have no id in their frontmatter"), even
+  though `ai-team spec new` writes one. Any fix matching on frontmatter `id` must
+  read it from raw frontmatter rather than the current `Spec` model.
+- `cli/tests/test_validate.py` `_seed_valid_project` (lines 96-98, ~106) only
+  exercises the legacy filename case (`specs/roadmap-spec.md` with
+  `spec: "roadmap-spec"`, where stem == reference by coincidence). No existing
+  regression test covers an `S-NNN-<slug>.md` spec referenced by bare id or bare
+  slug — exactly the false-positive path in this bug.
+- Precedent for the fix shape lives in the same file: `_existing_task_ids`
+  (`validate.py:380-393`) and `_existing_adr_ids` (`validate.py:396-403`) build
+  ID-based indexes by parsing each artifact's `id` field, not by filename stem.
+
+Isolated fault: `cli/src/ai_team/core/validate.py:189-191` (the `spec_slugs` index
+built in `validate_project` from `path.stem` over a non-recursive, single-directory
+glob of `root.specs`) and `cli/src/ai_team/core/validate.py:167-172`
+(`_spec_reference_exists`, which matches only against that stem-only index, with
+or without a `.md` suffix, and never consults frontmatter `id`).
+
+Root cause or fault hypothesis: Root cause, evidence-backed. The spec
+cross-reference index conflates three distinct identifiers that `ai-team` treats
+as valid ways to name a spec — the frontmatter `id` (`S-002`), the full filename
+stem (`S-002-coordinated-process-and-cli-workflow-improvements`), and the legacy
+bare slug (`coordinated-process-and-cli-workflow-improvements`) — into a single
+stem-derived value. Since `ai-team spec new` always produces `S-NNN-<slug>.md`
+filenames and `ai-team task new --spec` records whatever the caller passes
+(typically the bare `S-NNN` id), the stem index almost never matches the reference
+form the CLI itself produces on its own happy path. The same root cause excludes
+`root.specs / "archive"` entirely, because `_iter_markdown_files` performs a
+non-recursive `*.md` glob scoped to one directory, so references to archived specs
+are reported missing regardless of form. A secondary related gap: `Spec` and
+`parse_spec` (`cli/src/ai_team/core/models.py:231-249`) do not model spec
+frontmatter `id`, so an id-based index must either extend `Spec`/`parse_spec` or
+read frontmatter directly in `validate.py`.
+
+Planned fix contract (implementation target for the tdd cycle):
+
+1. In `validate_project` (`cli/src/ai_team/core/validate.py`), replace the single
+   `spec_slugs: set[str]` stem index with one that also captures (a) each spec's
+   frontmatter `id` — read from raw frontmatter, closing the `Spec`/`parse_spec`
+   id-modelling gap by either adding an `id: str | None` field to `Spec` populated
+   in `parse_spec` via `data.get("id")`, or reading frontmatter directly in
+   `validate.py` — and (b) the bare slug with any `S-NNN-` prefix stripped from
+   the stem. Extend the scanned folders to include `root.specs / "archive"`,
+   closing the archive indexing gap.
+2. Update `_spec_reference_exists` (or its call site) to accept a reference
+   matching any of: the frontmatter `id`, the full filename stem (with or without
+   a trailing `.md`), or the bare legacy slug.
+3. Add regression coverage in `cli/tests/test_validate.py` for (a) a task
+   referencing a spec by frontmatter `id` (`S-001`) where the spec file uses the
+   `S-NNN-<slug>.md` convention, (b) the same referenced by bare legacy slug, and
+   (c) a task referencing a spec under `specs/archive/`.
+4. Ensure `test_validate_emits_error_when_cross_references_do_not_resolve` (a
+   genuinely missing spec, `spec: "missing-spec"`) still produces a
+   `task-spec-missing` finding — the fix must widen acceptance without suppressing
+   true negatives.
+
+Planned verification: `uv run --project cli ai-team validate --tasks --json` from
+the repo root must return `[]` (baseline before fix: 12 findings, captured above).
+`cd cli && uv run pytest` must pass in full, including the new regression tests in
+item 3. Additionally run the bug's own Fix Verification block: in a scratch
+project, `ai-team spec new --json "First architecture spec"` →
+`ai-team task new "Implement thing one" --spec S-001 --json` →
+`ai-team validate --tasks --json` must return `[]`.
+
 ## Work Log
 
 <!-- Mandatory. Append one entry per session boundary. Format:
