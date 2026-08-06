@@ -66,10 +66,10 @@ chore(tasks): move T-004 to completed
 - No `--force` or `--force-with-lease` on shared branches (`dev-agent`, `main`).
 - No amending commits that have already been pushed.
 - Never commit secrets, `.env` files, or credentials.
+- Never commit or merge lifecycle-file edits (task or bug files) from an implementation branch — task and bug files are canonical on `dev-agent` only.
 
 ## Common Pitfalls
 
 - Repeating the task or bug ID in the commit message — the branch name already carries it.
 - Committing implementation code to `dev-agent` — implementation belongs on a task or bug branch.
-- Merging lifecycle-file edits from an implementation branch — task and bug files are canonical on `dev-agent`.
 - Using `--no-verify` to bypass a hook failure — fix the underlying cause instead.
