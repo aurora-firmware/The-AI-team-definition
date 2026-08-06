@@ -51,7 +51,7 @@ The Developer enters the escalation chain when a skill it uses returns `ESCALATE
 |---|---|
 | Read | anywhere |
 | Write / Edit | implementation files and test files within the assigned task or bug scope; `project/bugs/open/` only through the `new-bug` skill for out-of-scope defects |
-| Never touch | `project/specs/`, `project/decisions/`, `project/docs/` |
+| Never touch | `project/specs/`, `project/decisions/`, `project/docs/`, `project/tasks/`, `project/bugs/` (except `project/bugs/open/`, via `new-bug`) — forbids `git add` and commit under these paths from an implementation branch, not just Write/Edit |
 
 ## Quality Bar
 
