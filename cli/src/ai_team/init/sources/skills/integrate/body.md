@@ -126,23 +126,26 @@ Evaluate the result:
 
 #### Tests Fail → Regression Path
 
-1. Compare the failing tests against the pre-merge results from Step 4.
-2. For each regression (a test that passed in Step 4 but fails now):
+1. Determine the post-merge failing test set: the union of failing tests across every destination-branch command Step 6 ran (the source-branch command from item 7 and, when it also ran, the discovered baseline command from item 8). This union — not either command's output alone — is the single result set compared against Step 4.
+2. For every test in that set, file a bug through the same loop below. Whether the test ran in Step 4 must never decide whether a bug gets filed — it only changes the classification recorded as evidence:
+   - Classify each failing test for evidence purposes only:
+     - **True regression** — the test passed in Step 4's source-branch run and fails now.
+     - **Previously-uncovered failure** — the test was never executed in Step 4 because it is covered only by the newly-discovered baseline command from item 8, and it fails now.
    - Determine which file(s) and logic are responsible.
    - Switch to `dev-agent`.
-   - Invoke the `new-bug` skill to file a canonical bug report for each regression. Provide the full required input set in the invocation text:
+   - Invoke the `new-bug` skill to file a canonical bug report for each failing test. Provide the full required input set in the invocation text:
      - `title`: concise regression title
      - `severity`: based on user impact, data risk, security risk, and how much of the system is blocked
-     - `summary`: include the merge commit that introduced the regression, the destination branch, and the source branch that was being integrated
+     - `summary`: include the merge commit that introduced the regression, the destination branch, the source branch that was being integrated, and the classification (true regression or previously-uncovered failure)
      - `reproduction-status`: `confirmed`
-     - `reproduction-steps`: the destination-branch verification command that now fails
+     - `reproduction-steps`: the destination-branch command that now fails
      - `expected-behavior`: the command should pass after integration
      - `actual-behavior`: the failing test name and error message
-     - `evidence`: failing command, stderr/stdout summary, merge commit, destination branch, and source branch
+     - `evidence`: failing command, stderr/stdout summary, merge commit, destination branch, source branch, and whether Step 4 ran and passed the test or never executed it
      - `environment`: current project/runtime details known from the verification run
      - `source-branch`: the source branch being integrated, so the bug-fix loop fixes the regression on that preserved branch before integration is retried
      - `suspected-area`: changed files implicated by the regression, or `unknown`
-     - `fix-verification`: the destination-branch verification command that must pass after the fix
+     - `fix-verification`: the destination-branch command that must pass after the fix
    - Commit the filed regression bug report(s) on `dev-agent`: `chore(bugs): file integration regression for <work-item-id>`.
 3. Switch back to the destination branch.
 4. After filing all regression bugs, **revert the merge commit**:
