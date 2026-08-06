@@ -349,3 +349,136 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-08-06
+
+PASS
+
+Reviewed `bug/B-014-concurrent-id-allocation` (commits `1d85a0c`, `cf9942a`,
+`6be78df`, `6617cdb`) against `dev-agent` in an isolated git worktree, plus
+the committed Diagnosis Log and Work Log on this file.
+
+**Diagnosis → fix evidence chain:** `### Diagnosis 1 — 2026-08-06` records a
+confirmed reproduction (real parallel batches, all three sites), captured
+evidence (collision logs, a clean-baseline pytest run, a grep proving no
+existing lock primitive), a precisely isolated fault (the scan-then-write
+sequence in `ids.py` + `task.py`/`bug.py`/`spec.py`, with exact line
+references), a confirmed root cause (TOCTOU race), and a concrete fix +
+deterministic-test contract. Complete; not inferred from the diff.
+
+**Stage 1 — bug criteria:**
+- Fix addresses the isolated fault: `ai_team.core.lock.allocation_lock`
+  (fcntl.flock, bounded timeout, kernel-released on crash) plus
+  `create_artifact_with_lock`, the single shared scan+build+write helper,
+  now used by all three `new_*` commands (`task.py`, `bug.py`, `spec.py`).
+  Verified `write_artifact` is called *inside* the `with allocation_lock():`
+  block in `lock.py`, and each command's `build(id)` closure is called
+  inside the same locked section — the lock covers scan **and** write at
+  every site, not just the scan (risk point 6, confirmed by source read).
+- Fix Verification steps followed and re-run independently in an isolated
+  worktree with the untracked `.ai-team.toml` copied over:
+  - `cd cli && uv run pytest` → 446 passed.
+  - `uv run ruff format --check .` → 64 files already formatted;
+    `uv run ruff check .` → all checks passed.
+  - Parallel-creation script run for all three sites per the diagnosis (not
+    just `task new`): 8-way parallel `task new` → `T-001..T-008`, `bug new`
+    → `B-001..B-008`, `spec new` → `S-001..S-008`, zero duplicates in every
+    run (`grep -oE ... | sort | uniq -d` printed nothing each time).
+- No unrelated behavior added.
+
+**Stage 2 — code quality (bug-fix addendum):**
+- Minimal fix: one new module (`core/lock.py`) plus mechanical wiring of
+  the three call sites into `build(id)` closures; no unrelated refactoring
+  beyond ruff's import-order normalization, which is a direct, in-scope
+  side effect of the changed import lists (not scope creep). Confirmed
+  `bug.py`'s dropped `write_artifact` import is genuinely unused post-fix
+  (its only other write path, `_transition_bug`, uses `update_status` +
+  `move_artifact`, never `write_artifact`), while `task.py` correctly kept
+  the import since `_transition_task` still calls `write_artifact` directly.
+- Regression tests exist and are genuinely deterministic: `test_lock.py`,
+  `test_task_new.py`, `test_bug_new.py`, `test_spec_new.py` all coordinate
+  with `threading.Event`/bounded `.join(timeout=...)`/`.wait(timeout=...)`
+  as hang safety nets only; no `time.sleep` is used to control ordering
+  anywhere in the new tests (grepped for literal `time.sleep(` — none
+  found; only docstring mentions of deliberately avoiding it). Spot-checked
+  the red→green claim myself: reverted `task.py` to the pre-fix
+  (`dev-agent`) version in the worktree and re-ran
+  `test_task_new_allocates_distinct_ids_for_two_concurrent_callers` — it
+  failed (`second caller should still be blocked by the lock`) exactly as
+  expected, then passed again once the fix was restored.
+- Diagnosis fix contract matches the implementation: flock-based lock
+  (chosen over a create-exclusive lockfile, exactly as reasoned in the Work
+  Log), one shared helper rather than three duplicated critical sections,
+  bounded timeout raising `LockTimeout`, and the three-level test plan
+  (lock-primitive unit tests, call-site regression tests, manual
+  multi-process verification) all delivered as planned.
+
+**Risk points reviewed (from the task prompt), each independently verified:**
+1. `fcntl` is POSIX-only, but the project claims no Windows support
+   anywhere: no OS classifiers in `cli/pyproject.toml`, no Windows mention
+   in `README.md`/`guides/`, and `.github/workflows/ci.yml` only runs a
+   single Linux container matrix (`ghcr.io/astral-sh/uv:python3.14-trixie-slim`)
+   for lint/test/release. Unguarded `import fcntl` is not a portability
+   regression given the stated support surface.
+2. `.ai-team.lock` is created directly under `project_dir` and is not
+   covered by any `.gitignore` — confirmed this repo's own `.gitignore` has
+   no entry for it, and `ai-team init`'s scaffold sources
+   (`cli/src/ai_team/init/sources/`, `.../scaffolds/`) contain no
+   `.gitignore` template for consuming projects at all, so there was no
+   existing mechanism this fix could have extended. Checked every scanner
+   (`validate`/`core/validate.py`, `status`, `report`, `check-layout`/
+   `core/layout.py`, `core/ids.py`'s `_max_matching_number`): all of them
+   glob specific artifact-state subdirectories for `*.md` only, never the
+   project-dir root, and never match non-`.md` files — none trips over the
+   sentinel. Reproduced the untracked-file appearance live in a scratch
+   project. This is a real, non-blocking hygiene gap outside B-014's stated
+   acceptance criteria (duplicate-ID prevention); filed as a follow-up,
+   `B-017` (low severity).
+3. `LockTimeout` is caught at all three call sites (`task.py`, `bug.py`,
+   `spec.py`) with an identical `typer.echo(str(exc), err=True)` +
+   `raise typer.Exit(code=1)` pattern, matching the existing `ArtifactExists`
+   handling shape. Verified live end-to-end: held the lock externally,
+   invoked `ai-team task new` against the contended project, and got a
+   clean one-line error message and exit code 1 after the ~10s bounded
+   wait — no traceback, and no partial artifact file was left behind.
+4. Lock release on exception and no re-entrant deadlock: `allocation_lock`
+   releases via `finally: fcntl.flock(fd, LOCK_UN)` around the `yield`, and
+   closes the fd via an outer `finally: os.close(fd)`, so the lock is
+   released whether the critical section returns or raises. Confirmed none
+   of the three `build(id)` closures call back into `allocation_lock` or
+   `create_artifact_with_lock`, so there is no re-entrant deadlock path.
+   `test_allocation_lock_releases_even_when_the_block_raises` and
+   `test_create_artifact_with_lock_propagates_artifact_exists_without_leaking_the_lock`
+   cover this directly.
+5. Observable output/JSON shape of `task new`/`bug new`/`spec new` is
+   unchanged: the post-`try` block in each command (`absolute_path =
+   str(dest.resolve())`, then `print_json({"id": ..., "path": ...})` or
+   plain echo) is untouched by the diff, and `test_*_supports_custom_flags_and_json_output`
+   in each test file asserts the exact original payload shape. Regenerated
+   `cli/docs/commands.md` from the bug branch via `bash
+   cli/scripts/gen_docs.sh` and diffed against the committed file — zero
+   diff, confirming it genuinely did not need regeneration (no Typer
+   signature, help text, or docstring changed).
+6. Lock scope covers scan and write together at every site — see Stage 1
+   above; independently confirmed by reading `create_artifact_with_lock`'s
+   body (`allocate_id()` and `build()` and `write_artifact()` all execute
+   inside the same `with allocation_lock(...)` block) and by the
+   `test_create_artifact_with_lock_prevents_interleaved_scans_across_two_threads`
+   test, which asserts the exact serialized call order
+   `["scan-start-1", "scan-end-1", "scan-start-2", "scan-end-2"]`.
+
+**Process note:** while regenerating `cli/docs/commands.md` and while first
+running the parallel `task new` batch for live verification, I initially
+`cd`'d into the worktree's `cli/` directory, which — being nested under
+this repo's own `.ai-team.toml` — caused `find_project_root` to resolve to
+the worktree's real `docs/ai-team/` instead of my intended scratch
+directory, exactly as the same gotcha is described in this bug's own Work
+Log. Caught it via `git status --short` immediately, deleted the stray
+`.ai-team.lock` and `T-078`..`T-082` task files from the worktree before
+anything was staged, and re-ran all live verification using `uv run
+--project <worktree>/cli ai-team ...` invoked from an explicit scratch
+directory. Both the worktree and this repo's actual working tree were
+confirmed clean (`git status --short`) before and after; nothing from this
+incident reached any commit. The worktree itself has since been removed.
+
+No blocking issues found. Both review stages pass.
