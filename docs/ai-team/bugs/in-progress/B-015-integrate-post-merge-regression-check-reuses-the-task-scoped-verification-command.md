@@ -3,7 +3,7 @@ id: B-015
 title: integrate post-merge regression check reuses the task-scoped verification
   command
 severity: medium
-status: open
+status: in-progress
 created: '2026-08-05'
 ---
 
