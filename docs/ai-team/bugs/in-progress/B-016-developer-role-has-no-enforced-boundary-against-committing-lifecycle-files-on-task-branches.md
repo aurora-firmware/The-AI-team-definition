@@ -139,6 +139,113 @@ Root cause or fault hypothesis:
 Planned verification:
 -->
 
+### Diagnosis 1 — 2026-08-06
+
+Reproduction status: Confirmed by direct source inspection (not a runtime/test
+reproduction — the defect is an absent boundary in role/skill definitions, and the
+bug report's own reproduction status of "confirmed by source inspection, plus a
+field incident" was independently re-verified line by line against the current
+`dev-agent` source tree).
+
+Evidence captured:
+- `cli/src/ai_team/init/sources/agents/claude/developer.md:54` — Folder Scope "Never
+  touch" row reads exactly `project/specs/`, `project/decisions/`, `project/docs/`.
+  `project/tasks/` and `project/bugs/` are absent. Line 53 grants Write/Edit access to
+  `project/bugs/open/` via `new-bug`, with no corresponding restriction stated for
+  `project/tasks/` or the rest of `project/bugs/`.
+- `cli/src/ai_team/init/sources/agents/codex/developer.toml:43` — Codex "Never touch"
+  line carries the identical three-path list, same omission. Line 42 carries the same
+  `project/bugs/open/` exception with no matching restriction.
+- `cli/src/ai_team/init/sources/skills/git-conventions/body.md:68` — "Merging
+  lifecycle-file edits from an implementation branch" is listed under `## Common
+  Pitfalls` (advisory), not under `## Hard Rules` (lines 57-62, which cover
+  `--no-verify`, force-push, amending pushed commits, and secrets — none of which
+  mention lifecycle-file commits).
+- `cli/src/ai_team/init/sources/skills/tdd/body.md:9-10` and
+  `cli/src/ai_team/init/sources/skills/debug/body.md:14-15` — both carry only the
+  prose "return new log content/diagnosis content as a handoff … instead of editing
+  lifecycle files directly," with no cross-reference to a Folder Scope or Hard Rule.
+- `cli/src/ai_team/init/sources/skills/dev-loop/body.md:100` — single-line guard `>
+  Do not edit the task lifecycle file on the task branch.` inside a blockquote, not a
+  boundary in the Developer's own definition.
+- `git log --oneline -S "instead of editing lifecycle files directly" -- .../tdd/body.md
+  .../debug/body.md` returns only `483ea74` (2026-05-14, the sources migration commit)
+  — confirms this guard wording predates and is unchanged by the T-115 field incident,
+  i.e. no hardening was added in response.
+- `cli/src/ai_team/init/sources/skills/integrate/body.md:67-72` (Step 3, item 4 —
+  the "3.4" cited in the report) — confirms the only check is post-hoc: "Confirm the
+  source diff does not modify the canonical task or bug lifecycle file. If it does,
+  stop and ask the active loop to move lifecycle log or verdict content to `dev-agent`
+  before integration." This runs after implementation and review are already complete.
+- `cli/scripts/pre-commit.sh` — inspected as a possible technical control; it only
+  runs `ruff format --check .` on `cli/`. No lifecycle-path guard exists at the git
+  hook level or anywhere else in the tooling.
+- Generated scaffolds mirror the source defect exactly: `grep -n "Never touch"
+  cli/src/ai_team/init/scaffolds/claude/agents/developer.md:54` and
+  `cli/src/ai_team/init/scaffolds/codex/agents/developer.toml:43` both show the
+  identical three-path list; `cli/src/ai_team/init/scaffolds/{claude,codex}/skills/
+  git-conventions/SKILL.md:74` both list the pitfall under Common Pitfalls, not Hard
+  Rules — so both distributed agent flavors carry the same unenforced boundary.
+- `git status --porcelain` before and after inspection: clean — no production code or
+  lifecycle files were modified during this diagnosis.
+
+Isolated fault: Three co-located textual gaps, present identically in both the Claude
+and Codex Developer sources:
+1. `cli/src/ai_team/init/sources/agents/claude/developer.md:54` (Folder Scope,
+   "Never touch" row) and `cli/src/ai_team/init/sources/agents/codex/developer.toml:43`
+   (Folder scope, "Never touch:" line) omit `project/tasks/` and `project/bugs/`
+   (except `project/bugs/open/`, already carved out via `new-bug`).
+2. `cli/src/ai_team/init/sources/skills/git-conventions/body.md:68` places the
+   lifecycle-file-commit prohibition under `## Common Pitfalls` instead of `## Hard
+   Rules`, so it reads as advisory rather than a rule the Developer must obey.
+
+Root cause: The Developer agent definition is the canonical place where the role's
+hard boundaries are enumerated (Folder Scope table), and downstream skills (`tdd`,
+`debug`, `git-conventions`, `dev-loop`) only carry scattered prose reminders that
+presuppose the Developer already respects that boundary. Because the boundary was
+never added to the Folder Scope "Never touch" row when `project/tasks/` and
+`project/bugs/` write access was scoped for the `new-bug` exception, and because
+`git-conventions` still classifies the violation as a "pitfall" rather than a "hard
+rule," there is no single authoritative, hard-stated prohibition the Developer is
+bound by, and no technical control (pre-commit hook, CI check) backs it up. The only
+detection is `integrate` Step 3.4, which fires after implementation and review are
+already spent — exactly matching the T-115 field incident (commit `4540185`) where
+the Developer both returned a Work Log handoff *and* wrote/`git add`ed it directly on
+the task branch. This is a specification/definition gap, not a runtime logic bug —
+the fix is confirmed root cause, not a hypothesis, since every cited location was
+independently re-verified against current source.
+
+Planned fix (per the bug's Expected Behavior option (a) and Fix Verification section):
+- Add `project/tasks/` and `project/bugs/` (except `project/bugs/open/`, via
+  `new-bug`) to the "Never touch" row/line in both
+  `cli/src/ai_team/init/sources/agents/claude/developer.md` (Folder Scope table) and
+  `cli/src/ai_team/init/sources/agents/codex/developer.toml` (Folder scope block),
+  and state explicitly that this forbids `git add`/commit under those paths from an
+  implementation branch, not just Write/Edit.
+- Promote "Merging lifecycle-file edits from an implementation branch" (or an
+  equivalently worded Developer-side prohibition) from `## Common Pitfalls` to `##
+  Hard Rules` in `cli/src/ai_team/init/sources/skills/git-conventions/body.md`.
+- Leave `tdd`, `debug`, and `dev-loop` prose as supporting context; no change to
+  their wording is required by the fix contract unless implementation reveals a
+  conflict.
+
+Planned verification:
+- Documentary/structural checks: confirm the new "Never touch" wording appears
+  verbatim (with the `new-bug`/`project/bugs/open/` exception stated) in both
+  `cli/src/ai_team/init/sources/agents/claude/developer.md` and
+  `cli/src/ai_team/init/sources/agents/codex/developer.toml`, and confirm the
+  lifecycle-commit rule appears under `## Hard Rules` in
+  `cli/src/ai_team/init/sources/skills/git-conventions/body.md`.
+- Run, from `cli/`:
+  `python scripts/sync_init_scaffolds.py && uv run pytest`
+  then `git status --porcelain cli/src/ai_team/init/scaffolds` — must be empty,
+  confirming regenerated scaffolds match source and no existing test asserts on the
+  now-changed prose in a way that breaks the suite.
+- No new automated test can directly execute "the Developer refuses to commit a
+  lifecycle file" since these are prose agent/skill definitions consumed by an LLM,
+  not executable code; verification is therefore documentary per the bug's own Fix
+  Verification section.
+
 ## Work Log
 
 <!-- Mandatory. Append one entry per session boundary. Format:
