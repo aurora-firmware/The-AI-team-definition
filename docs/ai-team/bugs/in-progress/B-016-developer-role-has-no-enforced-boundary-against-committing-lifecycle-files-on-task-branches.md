@@ -256,6 +256,46 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-08-06
+
+Implemented the B-016 fix contract from the Diagnosis Log without deviation. Changed
+three source files: `cli/src/ai_team/init/sources/agents/claude/developer.md` and
+`.../agents/codex/developer.toml` both gained `project/tasks/` and `project/bugs/`
+(except `project/bugs/open/` via `new-bug`) in their Folder Scope "Never touch" entry,
+with wording that explicitly forbids `git add`/commit under those paths from an
+implementation branch — not just Write/Edit, matching the bug's stated gap that the
+prose-only prohibitions didn't reach the role's own hard-boundary table.
+`cli/src/ai_team/init/sources/skills/git-conventions/body.md` had its "Merging
+lifecycle-file edits from an implementation branch" line moved (not duplicated) from
+`## Common Pitfalls` into `## Hard Rules`, reworded slightly to "Never commit or merge
+lifecycle-file edits (task or bug files) from an implementation branch — task and bug
+files are canonical on `dev-agent` only" to match the Hard Rules section's imperative
+"No .../Never ..." style. Left `tdd`, `debug`, and `dev-loop` prose untouched, per the
+fix contract's explicit note that no change was required there.
+
+Before touching source, wrote a new regression test file,
+`cli/tests/test_b016_developer_lifecycle_boundary.py`, following the existing
+`test_t065_claude_agent_role_files.py` / `test_t064_skill_bodies_canonical.py` pattern
+of reading both `sources/` and the corresponding `scaffolds/` copy for each artifact and
+asserting on stable substrings. Ran it first to confirm all 8 assertions failed against
+the pre-fix source (red), then applied the three source edits, regenerated scaffolds
+with `python scripts/sync_init_scaffolds.py`, and reran — all 8 passed (green), and the
+full suite (454 tests) passed with no regressions. Confirmed scaffold regeneration is
+idempotent: running `sync_init_scaffolds.py` a second time after staging produced no
+further diff. Ran `uv run ruff format --check .` and `uv run ruff check .`; ruff
+auto-reformatted the new test file once (whitespace/line-wrap only), reran both checks
+clean afterward. `uv`'s default cache was unwritable in this sandbox, so `UV_CACHE_DIR`
+was pointed at a scratch directory per the repo's documented fallback — no other
+environment issues.
+
+Nothing was tried and rejected; the fix contract was unambiguous and matched cleanly to
+a single edit per file. No follow-up work remains on this bug from the Developer side —
+the boundary is now stated in both Claude and Codex Developer definitions and in
+`git-conventions` Hard Rules, scaffolds are in sync, and the full test/lint suite is
+green. Everything is committed in one TDD cycle (`d3e7367`) on
+`bug/B-016-developer-lifecycle-boundary`; no lifecycle files under `docs/ai-team/bugs/`
+or `docs/ai-team/tasks/` were staged or committed from this branch. Ready for review.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
