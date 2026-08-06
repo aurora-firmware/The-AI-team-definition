@@ -11,9 +11,10 @@ from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
 from slugify import slugify
 
-from ai_team.core.fs import ArtifactExists, write_artifact
+from ai_team.core.fs import ArtifactExists
 from ai_team.core.ids import next_spec_id
 from ai_team.core.locator import find_project_root
+from ai_team.core.lock import LockTimeout, create_artifact_with_lock
 from ai_team.core.models import Spec
 from ai_team.core.templates import load_template
 from ai_team.render import print_json
@@ -55,28 +56,37 @@ def new_spec(
 ) -> None:
     """Create a new specification artifact from the bundled template."""
     root = find_project_root(Path.cwd())
-    spec_id = next_spec_id(root)
-    slug = slugify(title)
-    dest = root.specs / f"{spec_id}-{slug}.md"
 
-    template = load_template("spec")
-    source_map, body = _template_parts(template)
-    source_map["id"] = spec_id
+    def build(spec_id: str) -> tuple[Path, Spec, str]:
+        slug = slugify(title)
+        dest = root.specs / f"{spec_id}-{slug}.md"
 
-    model = Spec(
-        title=title,
-        version="0.1",
-        status=status,
-        created=date.today().isoformat(),
-        author=author,
-        _source_map=source_map,
-    )
+        template = load_template("spec")
+        source_map, body = _template_parts(template)
+        source_map["id"] = spec_id
 
-    body = body.replace("# [Specification Title]", f"# {title}", 1)
+        model = Spec(
+            title=title,
+            version="0.1",
+            status=status,
+            created=date.today().isoformat(),
+            author=author,
+            _source_map=source_map,
+        )
+
+        body = body.replace("# [Specification Title]", f"# {title}", 1)
+        return dest, model, body
 
     try:
-        write_artifact(dest, model, body, overwrite=False)
+        spec_id, dest = create_artifact_with_lock(
+            root.project_dir,
+            allocate_id=lambda: next_spec_id(root),
+            build=build,
+        )
     except ArtifactExists as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+    except LockTimeout as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
 

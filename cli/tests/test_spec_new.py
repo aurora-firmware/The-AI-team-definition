@@ -1,6 +1,7 @@
 """Tests for T-012: ai-team spec new command."""
 
 import json
+import threading
 from datetime import date
 from pathlib import Path
 
@@ -170,3 +171,77 @@ author: planner
     assert result.exit_code == 0
     assert payload == {"id": "S-003", "path": str(expected)}
     assert "id: S-003" in expected.read_text(encoding="utf-8")
+
+
+def test_spec_new_allocates_distinct_ids_for_two_concurrent_callers(
+    monkeypatch, tmp_path
+):
+    """B-014: two racing `new_spec` calls must never write the same S-NNN id.
+
+    ``CliRunner.invoke`` is not thread-safe (it patches global ``sys.stdout``
+    per call), so this drives ``new_spec`` directly. It reproduces the
+    diagnosed race deterministically by delaying the *first* caller's
+    ``slugify`` call (the step between "id computed" and "file written") with
+    a ``threading.Event`` -- never ``time.sleep`` -- so the second caller's
+    directory scan is forced to attempt to run while the first is still
+    mid-critical-section.
+    """
+    import ai_team.commands.spec as spec_cmd
+
+    specs_dir = tmp_path / "project" / "specs"
+    _mkdir(specs_dir / "archive")
+
+    monkeypatch.chdir(tmp_path)
+
+    real_slugify = spec_cmd.slugify
+    call_count = {"value": 0}
+    count_lock = threading.Lock()
+    first_call_started = threading.Event()
+    release_first_call = threading.Event()
+
+    def patched_slugify(title: str) -> str:
+        with count_lock:
+            call_count["value"] += 1
+            this_call = call_count["value"]
+        result = real_slugify(title)
+        if this_call == 1:
+            first_call_started.set()
+            assert release_first_call.wait(timeout=5), "never released"
+        return result
+
+    monkeypatch.setattr(spec_cmd, "slugify", patched_slugify)
+
+    errors: list[BaseException] = []
+
+    def worker(title: str) -> None:
+        try:
+            spec_cmd.new_spec(
+                title=title,
+                author="planner",
+                status="draft",
+                as_json=False,
+            )
+        except BaseException as exc:  # noqa: BLE001 - surfaced via `errors`
+            errors.append(exc)
+
+    t1 = threading.Thread(target=worker, args=("Parallel Alpha",))
+    t1.start()
+    assert first_call_started.wait(timeout=5)
+
+    t2 = threading.Thread(target=worker, args=("Parallel Beta",))
+    t2.start()
+    t2.join(timeout=1)
+    assert t2.is_alive(), "second caller should still be blocked by the lock"
+
+    release_first_call.set()
+    t1.join(timeout=5)
+    t2.join(timeout=5)
+    assert not t1.is_alive()
+    assert not t2.is_alive()
+
+    assert errors == []
+
+    files = sorted(specs_dir.glob("S-*.md"))
+    assert len(files) == 2
+    ids = {parse_spec(path).id for path in files}
+    assert len(ids) == 2, f"expected two distinct spec ids, got files: {files}"
