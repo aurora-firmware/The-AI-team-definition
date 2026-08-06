@@ -251,6 +251,65 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-08-06
+
+Implemented the fix contract from the recorded Diagnosis Log. Root cause was that
+`validate_project` in `cli/src/ai_team/core/validate.py` indexed specs only by full
+filename stem (`{path.stem for path in _iter_markdown_files(root.specs) ...}`), so a
+task's `spec:` reference had to match the entire `S-NNN-<slug>` stem exactly —
+neither the bare frontmatter `id` (`S-001`) nor the bare legacy slug
+(`first-architecture-spec`) ever matched, and `specs/archive/` was excluded entirely
+because `_iter_markdown_files` globs a single non-recursive folder.
+
+Followed TDD: first added five regression tests to `cli/tests/test_validate.py` —
+resolution by frontmatter id, resolution by bare legacy slug of a new-style
+filename, resolution of an archived spec, and a true-negative check (a genuinely
+missing spec must still raise `task-spec-missing`). Ran the three new "resolves"
+tests and confirmed they failed against the pre-fix code (exit_code 1 instead of 0),
+establishing red. The true-negative test already passed pre-fix, as expected since
+it doesn't touch the id/slug/archive gaps.
+
+Implemented the minimal fix: added an optional `id: str | None = None` field to the
+`Spec` dataclass (`cli/src/ai_team/core/models.py`), populated in `parse_spec` from
+`data.get("id")`, since the dataclass previously had no way to carry the frontmatter
+`id` that `ai-team spec new` already writes. In `validate.py`, added
+`_spec_index_entries(path)` which returns the set of reference strings that should
+resolve to a given spec file — filename stem, bare slug (stem with `S-NNN-` prefix
+stripped, when the file matches the new-style filename pattern), and frontmatter `id`
+(parsed via `parse_spec`, skipping enrichment on `FrontmatterError`) — and
+`_build_spec_slugs(root)`, which unions these entries across both `root.specs` and
+`root.specs / "archive"`. Replaced the old stem-only set comprehension in
+`validate_project` with a call to `_build_spec_slugs(root)`. Left
+`_spec_reference_exists` unchanged since its membership-check logic (including the
+`.md`-suffix-stripping branch) already works correctly once the index itself is
+enriched.
+
+Considered and rejected: modifying `_spec_reference_exists` itself to accept a richer
+lookup structure (e.g., a dict of alias -> canonical path) — rejected as unnecessary
+complexity since a flat `set[str]` index satisfies the fix contract's three
+acceptance forms (id, full stem, bare slug) with no need to distinguish which alias
+matched. Considered reading frontmatter directly in `validate.py` instead of
+extending the `Spec` model — rejected in favor of the model change, per the Diagnosis
+Log's stated preference and because it keeps `Spec` consistent with what `ai-team
+spec new` already writes.
+
+Verified green: all 20 tests in `test_validate.py` pass, and the full suite (`cd cli
+&& uv run pytest`) passes at 437/437. Ran `cd cli && uv run ruff format --check . &&
+uv run ruff check .` — both clean. Ran the repo-level check `uv run --project cli
+ai-team validate --tasks --json` from the repo root: returns `[]` (was 12
+`task-spec-missing` findings before the fix). Also reproduced the bug's own Fix
+Verification block end-to-end in a scratch project created with `ai-team init .
+--no-interactive --tools claude` (the `--json` flag mentioned in the verification
+snippet does not exist on `ai-team init`; used the documented non-interactive flags
+instead) — `ai-team spec new --json "First architecture spec"` followed by `ai-team
+task new "Implement thing one" --spec S-001 --json` followed by `ai-team validate
+--tasks --json` returned `[]` as required. Scratch project was deleted after
+verification.
+
+Nothing remains outstanding for this bug's scope. No files outside
+`cli/src/ai_team/core/models.py`, `cli/src/ai_team/core/validate.py`, and
+`cli/tests/test_validate.py` were touched.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
