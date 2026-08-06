@@ -545,3 +545,90 @@ internally consistent" bar, so the overall verdict is FAIL.
 
 Next: Developer should revise the Regression Path definition in `integrate/body.md` Step 6 per
 the guidance above and resubmit for review.
+
+### Review Verdict — 2026-08-06
+
+PASS
+
+Review cycle 2. Reviewed `d8f0384 fix(skills): file bugs for baseline-only post-merge failures too`
+on `bug/B-015-integrate-post-merge-baseline` against the sole blocking Stage 2 finding from the
+previous FAIL verdict, plus a fresh check of the two spots the Developer explicitly considered and
+rejected changing.
+
+**Blocking finding resolution (both parts)**
+
+- File and location: `cli/src/ai_team/init/sources/skills/integrate/body.md`, Step 6,
+  `#### Tests Fail → Regression Path`, items 1-2.
+- Bug-filing fork — resolved. Item 2 now reads "For every test in that set, file a bug through the
+  same loop below. Whether the test ran in Step 4 must never decide whether a bug gets filed — it
+  only changes the classification recorded as evidence," with the classification defined as
+  **True regression** (passed in Step 4, fails now) vs. **Previously-uncovered failure** (never run
+  in Step 4, covered only by the item 8 baseline command, fails now). Every failing test in the
+  post-merge set now has an explicit, unambiguous path into the `new-bug` filing loop regardless of
+  whether it executed in Step 4. The T-101/B-013 field-incident scenario (five `admin-rpc` dispatch
+  tests covered only by the baseline command) now unambiguously gets a bug filed, not silently
+  reverted without one.
+- Two-result-set reconciliation — resolved. Item 1 now reads: "Determine the post-merge failing
+  test set: the union of failing tests across every destination-branch command Step 6 ran (the
+  source-branch command from item 7 and, when it also ran, the discovered baseline command from
+  item 8). This union — not either command's output alone — is the single result set compared
+  against Step 4." This directly names the union as the comparison set, closing the ambiguity about
+  how to reconcile two separate command outputs against Step 4's single result.
+- Traced the full path end to end: Step 6 preamble → "Tests Fail" → item 1 (union) → item 2 (file a
+  bug for every member of the union, classification is evidence-only) → item 3 (switch to
+  destination) → item 4 (revert, unconditional) → item 6 (report). There is no remaining branch
+  where Step 6 reverts a merge without a bug having been filed for each failing test — confirmed by
+  re-reading items 1-4 together, not just item 2 in isolation.
+- The `new-bug` invocation spec's `summary` and `evidence` sub-bullets were updated to carry the
+  classification through, and `reproduction-steps`/`fix-verification` were generalized from "the
+  destination-branch verification command" to "the destination-branch command," consistent with
+  Step 6 now potentially running more than one command. No ambiguity introduced by the
+  generalization — each filed bug is per failing test, so "the destination-branch command that now
+  fails" resolves to whichever specific command (source-branch or baseline) exposed that test.
+
+**Assessment of the two spots the Developer considered and rejected changing**
+
+- Item 4's revert-commit message template (`chore(<kind>): revert merge of <source-branch> —
+  regression in <test-names>`) and the Hard Stops table row (`Regressions found post-merge (Step 6)
+  | File bugs, revert merge, stop`) — agree with the Developer's judgement that these are
+  non-blocking. Neither gates or forks agent behavior: the actual decision logic (which tests get a
+  bug filed, when the merge reverts) lives entirely in items 1-2, already fixed and unconditional
+  for both classifications. Using "regression" loosely as a commit-message/table-label shorthand for
+  "whatever Step 6 found failing" does not cause an agent to omit a bug filing, skip a revert, or
+  take a different action for a previously-uncovered failure than for a true regression — it is
+  after-the-fact labeling, not definitional branching. Re-checked the rest of the file for the same
+  loose "regression" usage (Escalation section, Quality Criteria, Common Pitfalls, Commit
+  Conventions table) — all are similarly generic/non-gating and consistent with this reading. Not
+  misleading enough to require a change; the Developer's scope call holds.
+- One line not explicitly discussed by the Developer, `6. Stop and report: - Which regressions were
+  found`, falls in the same category (a report-content label, not a gating condition) — not
+  blocking, for the same reason.
+
+**Re-verification of prior Fix Verification bullets 1-3**
+
+Confirmed by diff that `d8f0384` touches only the Regression Path (items 1-2 and the `new-bug`
+field list) in `integrate/body.md`; Step 2 items 7-8, the Step 6 preamble, and
+`spec-breakdown/body.md` are byte-identical to the state already verified PASS-worthy in cycle 1.
+Bullets 1-3 still hold.
+
+**Fix Verification bullet 4 — re-run independently**
+
+Checked out `bug/B-015-integrate-post-merge-baseline` (HEAD `d8f0384`):
+- `cd cli && uv run pytest` — 446 passed, no regressions.
+- `uv run ruff format --check .` — 64 files already formatted.
+- `uv run ruff check .` — all checks passed.
+- `python scripts/sync_init_scaffolds.py` then `git status --porcelain src/ai_team/init/scaffolds`
+  — empty (zero diff); `git diff --stat dev-agent...bug/B-015-integrate-post-merge-baseline` shows
+  only the `integrate` scaffolds changed this cycle (`spec-breakdown` scaffolds untouched, matching
+  the source diff).
+Returned to `dev-agent`; `git status --short` is clean throughout and at the end of this review.
+
+**Non-blocking observations carried over (unchanged from cycle 1, still non-blocking)**
+
+- `dev-loop/body.md` line 36's rationale remains out of this bug's declared scope; now true in the
+  common case and honestly qualified via the coverage-gap flag in the no-baseline case.
+- The `spec-breakdown`-vs-`new-task` ownership placement for the shared-interface `## Verification`
+  rule remains a defensible boundary call.
+
+Both stages pass. Next owner: Bug-Fix Loop, to move B-015 through the remaining lifecycle steps
+(integration).
