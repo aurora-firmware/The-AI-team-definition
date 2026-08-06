@@ -300,6 +300,77 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-08-06
+
+Implemented the documentary fix for B-015 per the recorded Diagnosis Log's fix
+contract. This is a procedure/prose fix, not code, so the tdd red-green cycle did
+not apply directly; instead I treated each of the bug's four Fix Verification
+bullets as the target and proved them by quoting the resulting text plus running
+the scaffold parity and sync test suites.
+
+In `cli/src/ai_team/init/sources/skills/integrate/body.md`, Step 2 items 7-8
+(previously a single "determine the verification command set... use it for both
+pre-merge and post-merge" pair) were split into two genuinely distinct lookups.
+Item 7 keeps the original lookup order (work item `## Verification`/`## Fix
+Verification` first, project guidance as fallback) but is now explicitly scoped to
+the source branch and Step 4 only. Item 8 is new: it determines the
+destination-branch command by (a) checking for an explicit separate
+destination-branch/baseline check in the work item or project guidance, (b)
+otherwise discovering the project's documented baseline command using the same
+discovery order the `dev-loop` skill's Step 2 Baseline Test Guard already owns — I
+quoted that discovery order verbatim rather than re-deriving it, and verified the
+cited `dev-loop` section still exists and says what I claim (lines 34-47,
+"Discovery Order" list), (c) running both commands in Step 6 when they differ, and
+(d) falling back to the source-branch command with an explicit coverage-gap flag
+when no baseline is discoverable at all — the flag must be reported but must never
+by itself block integration. Step 6 was rewritten to consume item 8's output
+directly and to state the coverage-gap disclosure requirement in the report
+("post-merge check used the task-scoped command only; no project-wide baseline
+command was discoverable..."). I also added one line each to the Output Format
+verification bullet and the Common Pitfalls list so the skill stays internally
+consistent with the new behavior.
+
+In `cli/src/ai_team/init/sources/skills/spec-breakdown/body.md`, I extended the
+Step 3 "Verification command" bullet so Planners are told to include the project's
+documented baseline/full-suite command in `## Verification` (not only a
+module-scoped command) whenever a task changes a shared or public interface — an
+API, schema, shared library function, or contract consumed outside the task's own
+module.
+
+I checked `cli/src/ai_team/templates/task.md`'s `## Verification` section as
+required. It is a neutral placeholder comment ("# Command(s) to verify the task is
+complete") with no narrow-scope framing to correct, and the `new-task` skill's
+"Verifiable" quality bullet is similarly neutral (just requires a concrete
+command). I decided no change was needed there since the actual authoring rule
+change belongs in `spec-breakdown` Step 3, which is where task bodies are filled in
+after `new-task` scaffolds the file — duplicating the rule in a second place would
+violate the framework's "own it in one place" convention.
+
+I considered folding items (a)-(d) into fewer bullets to keep Step 2 shorter, but
+rejected that because the fix contract explicitly calls out four distinct branches
+of behavior (explicit override, discovery, dual-run, and no-baseline fallback with
+flag), and collapsing them risked losing the "must not silently treat the narrow
+command as sufficient" and "must not block on missing baseline alone" nuances that
+are the crux of the fix.
+
+Ran `python scripts/sync_init_scaffolds.py` after each source edit and confirmed
+`git status --porcelain cli/src/ai_team/init/scaffolds` was empty post-regeneration
+each time, so the four scaffold files (`claude`/`codex` × `integrate`/
+`spec-breakdown`) are exact derivations. Ran `uv run pytest` (446 passed, including
+`test_init_scaffolds.py`, `test_t064_skill_bodies_canonical.py`, and the
+pre-existing `test_t063_integration_guards.py` phrase assertions on `integrate`/
+`dev-loop`/`bug-loop`, all unaffected) and `uv run ruff format --check . && uv run
+ruff check .` (both clean). `cli/docs/commands.md` was not regenerated since neither
+CLI command output nor release guidance changed (verified no `integrate`/
+`spec-breakdown` references exist there).
+
+Committed in two logical increments on `bug/B-015-integrate-post-merge-baseline`:
+`d718b5a fix(skills): give integrate a distinct destination-branch baseline check`
+(integrate source + both scaffolds) and `ed72979 fix(skills): require baseline
+verification for shared-interface tasks` (spec-breakdown source + both scaffolds).
+Nothing remains outstanding against the bug's Fix Verification bullets; ready for
+review.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
