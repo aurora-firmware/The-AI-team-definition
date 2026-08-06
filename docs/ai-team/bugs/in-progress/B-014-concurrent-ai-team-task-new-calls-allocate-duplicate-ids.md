@@ -239,6 +239,105 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-08-06
+
+Read the recorded Diagnosis Log (there is no on-branch copy of the canonical bug
+file) and treated its fix contract as the implementation target: one
+project-local lock wrapping "scan for next ID → write" at all three allocation
+sites (`task new`, `bug new`, `spec new`), centralized in one shared helper rather
+than duplicated three times, using only the standard library.
+
+Confirmed the bug first, before writing any test: ran the bug's own Fix
+Verification script (5 parallel `ai-team task new` calls against a scratch project
+built with `ai-team init`) on the unmodified branch and got 2 collision pairs
+(`T-001` shared twice, `T-003` shared twice out of 5 calls), matching the diagnosis
+exactly.
+
+Implemented `ai_team.core.lock`: `allocation_lock(project_dir, timeout=10.0)`, a
+context manager built on `fcntl.flock(LOCK_EX | LOCK_NB)` against a sentinel file
+`<project_dir>/.ai-team.lock`, polled with a bounded retry/backoff loop and
+releasing in a `finally`. Chose `flock` over a create-exclusive lockfile
+specifically for the staleness requirement: `flock` locks are owned by the open
+file description, so the kernel releases them automatically when the holder's
+process exits for any reason (including a crash), which means there is no stale
+lock to detect, age-check, or clean up — the sentinel file itself is harmless to
+leave on disk indefinitely. Bounded-wait behavior: acquisition never blocks
+forever; after `timeout` seconds of contention it raises `LockTimeout` naming the
+lock path, so a wedged or very slow holder cannot hang a caller indefinitely. On
+top of that, added `create_artifact_with_lock(project_dir, allocate_id, build)` —
+the single shared "scan+build+write" helper the diagnosis asked for, so `task.py`,
+`bug.py`, and `spec.py` each supply only a zero-arg `allocate_id` callable and a
+`build(id) -> (dest, model, body)` callable instead of holding the lock
+themselves.
+
+Wrote `cli/tests/test_lock.py` first: mutual-exclusion (two real threads,
+`Event`-gated, asserted by call-order not timing), release-on-normal-exit,
+release-on-exception (never leaves the lock held if the critical section raises),
+and a bounded-timeout test proving `LockTimeout` fires rather than hanging when a
+lock is already held. Also added a `create_artifact_with_lock`-specific test that
+reproduces the exact diagnosed race shape (delayed "scan" step, forcing the second
+caller to attempt entry mid-scan) and asserts the two calls are fully serialized
+(`scan-start-1, scan-end-1, scan-start-2, scan-end-2`, never interleaved) and
+produce distinct IDs. All 6 passed on first implementation; ran 5x to rule out
+flakiness.
+
+Then went call site by call site, task → bug → spec, each following red→green:
+wrote a regression test that drives the command function directly (discovered along
+the way that `CliRunner.invoke()` is not thread-safe — it patches global
+`sys.stdout` per call, so concurrent `invoke()` calls in different threads corrupt
+each other; switched to calling `new_task`/`new_bug`/`new_spec` directly), forcing
+the race deterministically by monkeypatching each module's `slugify` (the
+diagnosis's named gap between "id computed" and "write happens") to pause the first
+caller on an `Event` with a bounded 5s safety-net wait. Verified each test failed
+against the pre-fix command code (for `spec.py` the fix had been applied before its
+test was written by mistake — caught this, used `git stash` to temporarily revert
+just that file, reran the test to confirm red, then restored the fix, to keep the
+red→green evidence honest). Refactored each command's `new_*` function to build a
+`build(id)` closure and call `create_artifact_with_lock`, catching both
+`ArtifactExists` and `LockTimeout` the same way the existing `ArtifactExists`
+handling already did. All three passed immediately after wiring.
+
+Ran the bug's full manual Fix Verification script (5-way parallel real
+subprocesses, not just in-process threads) against a fresh scratch project for all
+three commands post-fix: `task new` → `T-001..T-005`, `bug new` → `B-001..B-005`,
+`spec new` → `S-001..S-005`, zero duplicates in every run.
+
+One process hygiene incident worth flagging for the record: while running the
+manual verification script, an early version did `cd cli && uv run ai-team ...`
+which left the shell inside `cli/` — since `cli/` is nested under this repo's own
+`.ai-team.toml` (pointing at `docs/ai-team`), `find_project_root` walked up and
+resolved the *real* project directory instead of the intended scratch directory,
+briefly creating 5 real (untracked) task files under `docs/ai-team/tasks/pending/`
+plus a `.ai-team.lock` sentinel file under `docs/ai-team/`. Caught immediately via
+`git status --short`, deleted all of them before anything was staged or committed,
+and re-ran verification using subshells with explicit `cd "$SCRATCH"`.
+`git status --short` is clean; nothing from this incident is in any commit.
+
+Also caught and fixed a lint gap: the `bug.py` commit left an unused
+`write_artifact` import (the pre-commit hook only runs `ruff format --check`, not
+`ruff check`, so it didn't block the commit). Found it via `uv run ruff check .`
+while finishing the `spec new` cycle, fixed it with `ruff check --fix` (also
+normalized import ordering across all three command modules, which ruff's isort
+flagged once the import lists changed), and folded it into the `spec new` commit.
+Full suite (446 tests), `ruff format --check`, `ruff check`, and `uv build` are all
+clean at the end of the session.
+
+Nothing remains outstanding against the fix contract: all three allocation sites
+are fixed, tested at both the lock-primitive and call-site levels, and manually
+verified with real concurrent processes. Nothing in
+`cli/src/ai_team/init/sources/`, `cli/src/ai_team/templates/`, or
+`cli/docs/commands.md` needed changes — this fix is purely internal to the CLI's
+command implementation and doesn't alter any documented command signature or
+output format, so no scaffold sync or doc regeneration was needed. Flagged for the
+reviewer specifically: the choice of `flock` over a stale-timestamp-based lockfile
+(staleness handling is automatic/kernel-based rather than manually coded), the
+default 10s lock-acquisition timeout in `allocation_lock`/`create_artifact_with_lock`
+(not currently exposed as a CLI flag — judged out of scope for this bug), and the
+decision to centralize the shared helper in `core/lock.py` rather than
+`core/ids.py` (both were named as acceptable locations in the diagnosis; `lock.py`
+was chosen since the helper's job is fundamentally "hold the lock across
+scan+write", not id-computation itself).
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
