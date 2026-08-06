@@ -16,6 +16,7 @@ from ai_team.core.fs import (
     write_artifact,
 )
 from ai_team.core.ids import next_bug_id
+from ai_team.core.lock import LockTimeout, create_artifact_with_lock
 from ai_team.core.locator import ProjectRoot, find_project_root
 from ai_team.core.models import Bug
 from ai_team.core.templates import load_template
@@ -115,25 +116,34 @@ def new_bug(
 ) -> None:
     """Create a new open bug artifact from the bundled template."""
     root = find_project_root(Path.cwd())
-    bug_id = next_bug_id(root)
-    slug = slugify(title)
-    dest = root.bugs_open / f"{bug_id}-{slug}.md"
 
-    template = load_template("bug")
-    body = _template_body(template)
-    body = body.replace("# [Bug Title]", f"# {title}", 1)
-    model = Bug(
-        id=bug_id,
-        title=title,
-        severity=severity,
-        status="open",
-        created=date.today().isoformat(),
-        task=task,
-    )
+    def build(bug_id: str) -> tuple[Path, Bug, str]:
+        slug = slugify(title)
+        dest = root.bugs_open / f"{bug_id}-{slug}.md"
+
+        template = load_template("bug")
+        body = _template_body(template)
+        body = body.replace("# [Bug Title]", f"# {title}", 1)
+        model = Bug(
+            id=bug_id,
+            title=title,
+            severity=severity,
+            status="open",
+            created=date.today().isoformat(),
+            task=task,
+        )
+        return dest, model, body
 
     try:
-        write_artifact(dest, model, body, overwrite=False)
+        bug_id, dest = create_artifact_with_lock(
+            root.project_dir,
+            allocate_id=lambda: next_bug_id(root),
+            build=build,
+        )
     except ArtifactExists as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+    except LockTimeout as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
 
