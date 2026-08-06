@@ -371,6 +371,56 @@ verification for shared-interface tasks` (spec-breakdown source + both scaffolds
 Nothing remains outstanding against the bug's Fix Verification bullets; ready for
 review.
 
+### Session 2 — 2026-08-06
+
+The reviewer returned a FAIL verdict on the Session 1 work with one blocking Stage
+2 defect: all four Fix Verification bullets and the sync/test/lint evidence were
+confirmed correct, and the `dev-loop` Baseline Test Guard citation was confirmed
+accurate, but Step 6's `#### Tests Fail → Regression Path` items 1-2 were never
+updated to match the new Step 2 item 8(c)/(d) behavior. Those items still defined
+"regression" narrowly as "a test that passed in Step 4 but fails now," so a test
+covered only by the newly-discovered baseline command (never executed in Step 4 at
+all, exactly the `admin-rpc` dispatch tests from the T-101/B-013 field incident this
+bug models) had no instruction path into the `new-bug` filing loop — the merge would
+still get reverted unconditionally in item 4, but no bug would be filed, silently
+reintroducing a narrower version of B-015's own defect. The reviewer also flagged a
+secondary ambiguity: items 1-2 assumed Step 6 produced one command's output to diff
+against Step 4, but item 8(c) can now make Step 6 run two commands, and the text
+never said how to reconcile two result sets into one comparison.
+
+I rewrote items 1-2 in
+`cli/src/ai_team/init/sources/skills/integrate/body.md`. Item 1 now defines the
+post-merge failing test set as the union of failures across every destination-branch
+command Step 6 ran (source-branch command from item 7, plus the baseline command
+from item 8 when it also ran) — this directly answers the reconciliation question by
+naming the union as the single result set compared against Step 4. Item 2 now routes
+every test in that union through the same `new-bug` filing loop regardless of whether
+it ran in Step 4; whether it ran in Step 4 only changes a classification label ("true
+regression" vs "previously-uncovered failure") recorded in the filed bug's `summary`
+and `evidence` fields for context, but never determines whether a bug is filed at
+all. I updated the `summary` and `evidence` sub-bullets in the `new-bug` invocation
+spec to carry that classification through, and generalized "the destination-branch
+verification command" references in the reproduction-steps/fix-verification bullets
+to "the destination-branch command" since there can now be more than one.
+
+I considered also touching item 4's revert-commit message template ("regression in
+<test-names>") and the Hard Stops table's "Regressions found post-merge" label, since
+both use the word "regression" loosely enough to now cover previously-uncovered
+failures too. I rejected changing them: the reviewer's instruction was scoped to
+items 1-2, those other spots are generic labels for "whatever Step 6 found" rather
+than definitional text that forks agent behavior, and expanding the diff there would
+have been scope creep beyond the blocking finding.
+
+Re-ran `python scripts/sync_init_scaffolds.py` and confirmed
+`git status --porcelain cli/src/ai_team/init/scaffolds` was empty (only `integrate`'s
+two scaffolds changed, since `spec-breakdown` was untouched this session). Re-ran
+`uv run pytest` (446 passed, no regressions) and `uv run ruff format --check . && uv
+run ruff check .` (both clean). Committed the revision as a single commit,
+`d8f0384 fix(skills): file bugs for baseline-only post-merge failures too`, on
+`bug/B-015-integrate-post-merge-baseline`. Repo status is clean at the end of the
+session. Nothing else remains outstanding against the bug's Fix Verification bullets
+or the reviewer's blocking finding; ready for re-review.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
