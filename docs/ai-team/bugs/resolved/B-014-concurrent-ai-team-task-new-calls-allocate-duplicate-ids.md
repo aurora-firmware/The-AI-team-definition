@@ -2,7 +2,7 @@
 id: B-014
 title: Concurrent ai-team task new calls allocate duplicate IDs
 severity: high
-status: in-progress
+status: resolved
 created: '2026-08-05'
 ---
 
