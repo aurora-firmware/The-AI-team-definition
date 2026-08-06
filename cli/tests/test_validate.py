@@ -510,3 +510,120 @@ def test_validate_specs_accepts_legacy_slug_only_filename_without_id_prefix(
 
     assert result.exit_code == 0
     assert json.loads(result.stdout) == []
+
+
+def test_validate_resolves_task_spec_reference_by_frontmatter_id(monkeypatch, tmp_path):
+    """A task spec reference matching a new-style spec's frontmatter id resolves.
+
+    Regression for B-013: `ai-team spec new` produces `S-NNN-<slug>.md` files,
+    and `ai-team task new --spec S-NNN` records the bare id verbatim. That
+    combination must not raise `task-spec-missing`.
+    """
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "specs" / "S-001-launch-plan.md",
+        _spec("S-001", "Launch Plan"),
+    )
+    _write(
+        tmp_path / "project" / "tasks" / "pending" / "T-001-do-thing.md",
+        _task(
+            "T-001",
+            "Do Thing",
+            "pending",
+            extra_frontmatter='spec: "S-001"\n',
+        ),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--tasks", "--json"])
+
+    assert result.exit_code == 0
+    assert json.loads(result.stdout) == []
+
+
+def test_validate_resolves_task_spec_reference_by_bare_slug_of_new_style_filename(
+    monkeypatch, tmp_path
+):
+    """A task spec reference using the legacy bare slug of an S-NNN-<slug>.md spec resolves."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "specs" / "S-001-launch-plan.md",
+        _spec("S-001", "Launch Plan"),
+    )
+    _write(
+        tmp_path / "project" / "tasks" / "pending" / "T-001-do-thing.md",
+        _task(
+            "T-001",
+            "Do Thing",
+            "pending",
+            extra_frontmatter='spec: "launch-plan"\n',
+        ),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--tasks", "--json"])
+
+    assert result.exit_code == 0
+    assert json.loads(result.stdout) == []
+
+
+def test_validate_resolves_task_spec_reference_to_archived_spec(monkeypatch, tmp_path):
+    """A task spec reference to a spec under specs/archive/ resolves cleanly."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "specs" / "archive" / "S-001-launch-plan.md",
+        _spec("S-001", "Launch Plan"),
+    )
+    _write(
+        tmp_path / "project" / "tasks" / "pending" / "T-001-do-thing.md",
+        _task(
+            "T-001",
+            "Do Thing",
+            "pending",
+            extra_frontmatter='spec: "S-001"\n',
+        ),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--tasks", "--json"])
+
+    assert result.exit_code == 0
+    assert json.loads(result.stdout) == []
+
+
+def test_validate_still_reports_task_spec_missing_for_genuinely_missing_spec(
+    monkeypatch, tmp_path
+):
+    """A task spec reference that resolves to no spec at all is still an error.
+
+    Widening spec-reference resolution to accept ids and bare slugs must not
+    suppress true negatives.
+    """
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "project" / "specs" / "S-001-launch-plan.md",
+        _spec("S-001", "Launch Plan"),
+    )
+    _write(
+        tmp_path / "project" / "tasks" / "pending" / "T-001-do-thing.md",
+        _task(
+            "T-001",
+            "Do Thing",
+            "pending",
+            extra_frontmatter='spec: "missing-spec"\n',
+        ),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--tasks", "--json"])
+
+    assert result.exit_code != 0
+    findings = json.loads(result.stdout)
+    assert any(
+        finding["code"] == "task-spec-missing" and "missing-spec" in finding["message"]
+        for finding in findings
+    )
