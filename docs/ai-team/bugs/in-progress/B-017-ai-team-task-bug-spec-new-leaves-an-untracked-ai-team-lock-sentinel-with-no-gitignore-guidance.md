@@ -401,3 +401,114 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-08-06
+
+PASS
+
+**Diagnosis→fix evidence chain (verified before Stage 1):** Diagnosis 1 records
+confirmed reproduction status, evidence (fresh repro against a locally built
+CLI, plus a second repro under a customized `[project] dir`), an isolated
+fault spanning three coordinated points, a stated root cause, a fix-shape
+decision with rejected alternatives and rationale, and a planned-verification
+list. Complete; proceeded to Stage 1.
+
+**Stage 1 (bug criteria):**
+- Fix addresses the isolated fault/root cause exactly as diagnosed: adds
+  `cli/src/ai_team/init/sources/project/.gitignore` (`.ai-team.lock`), wires
+  it into `sync_init_scaffolds.py::_replace_project_skeleton`'s copy loop, and
+  documents the sentinel + gitignore coverage + retroactive-gap caveat in
+  `cli/docs/usage.md` — matches "option 1 CHOSEN + option 4 RETAINED as
+  supplement" from the fix-shape decision. `cli/src/ai_team/core/lock.py` and
+  `cli/src/ai_team/commands/init.py` are untouched (confirmed via
+  `git diff 1b7a811..4adfbdd` on both paths — empty diff), matching the
+  contract that lock.py stays out of scope per B-014 and that init.py's
+  existing `rglob`-based copy flow needed no change.
+- Fix Verification steps followed and independently reproduced (see Evidence
+  below) — not taken on the Developer's word.
+- No unrelated behavior added; diff is scoped to 7 files (source+scaffold
+  `.gitignore`, sync script, 3 test files, 1 doc file), matching the fix
+  contract's planned-verification list item-for-item.
+
+**Stage 2 (code quality) + Bug Fix Addendum:**
+- Correctness: independently confirmed via full test suite, ruff, and two
+  manual scratch-project runs (default `project/` dir and a customized
+  `docs/ai-team`-style dir) — `.ai-team.lock` no longer appears untracked in
+  either case, and `git check-ignore -v` confirms the match against the
+  shipped `.gitignore` in both.
+- Regression test genuinely red→green: extracted
+  `test_ai_team_lock_sentinel_is_not_untracked_after_task_creation` verbatim
+  from the post-fix tree (`89e2ce8`) and ran it, unmodified, against the
+  pre-fix tree (`1b7a811`) in an isolated git worktree — it fails there with
+  a real, non-collapsed `?? project/.ai-team.lock` line (not the
+  collapsed-directory false negative the Developer describes catching on
+  their first attempt), and passes cleanly on `89e2ce8`. The Developer's
+  claim is verified, not assumed.
+- Tests are meaningful, not tautological: they assert exact file content
+  (`.ai-team.lock\n`), source/scaffold parity, and a real git-status/
+  check-ignore outcome rather than just presence of files. They follow
+  existing repo conventions (fixture-based sync-script test mirroring the
+  existing CLAUDE.md/AGENTS.md copy-parity test; a package-owned/non-fixture
+  companion test mirroring the existing pattern for other package-owned
+  sources; CLI-runner + real subprocess `git` integration test mirroring
+  other `test_init.py` cases).
+- The `_setup_fake_repo` fixture change is additive only (adds a
+  `.gitignore` fixture write) — no existing fixture writes or assertions
+  were removed or weakened; every existing test in the file still passes.
+- The `_replace_project_skeleton` loop-variable/error-message rename
+  (`guidance_file`/"project guidance source" → `root_file`/"project skeleton
+  root file") is justified: the tuple no longer holds only guidance docs.
+  Grepped the full pre-fix tree for the old error string and old variable
+  name in `cli/tests/` and `cli/src/` — no test or other code asserts on
+  that literal string, so the rename does not break any existing
+  dependency.
+- Fix is minimal: no unrelated refactoring or feature code bundled in; the
+  rename above is the only "extra" and is directly necessitated by the fix,
+  not scope creep.
+- Scaffold regeneration discipline respected: confirmed
+  `git status --porcelain cli/src/ai_team/init/scaffolds` is empty after an
+  independent `python scripts/sync_init_scaffolds.py` run from a clean
+  worktree checkout of the branch tip — the committed scaffold output is not
+  hand-edited drift. Also independently ran `bash cli/scripts/gen_docs.sh`
+  and confirmed `cli/docs/commands.md` has no diff, corroborating the
+  Developer's claim that no command surface changed.
+
+**Minor, non-blocking observations:**
+- The Diagnosis Log's planned-verification note references "~lines 234-246,
+  745-747" in `test_init_scaffolds.py` for lists that would need a new
+  entry; the ~745-747 reference turned out to point at an unrelated
+  `required_phrases` substring check in a dev-loop skill test, not an
+  expected-files enumeration, so no change was needed there. The Developer
+  correctly identified and updated the one location that actually mattered
+  (~244-259); this is a minor imprecision in the diagnosis note, not a gap
+  in the implemented fix.
+- This repository's own `docs/ai-team/` (a pre-fix, already-`init`'d,
+  customized-dir consumer of this very framework) still has no
+  `.ai-team.lock` entry in its root `.gitignore` — this is the documented,
+  accepted "already ran init before this fix shipped" residual case from
+  the diagnosis and `usage.md`, correctly out of scope for this bug fix.
+
+**Evidence:**
+- `git diff 1b7a811..4adfbdd -- cli/src/ai_team/core/lock.py
+  cli/src/ai_team/commands/init.py` → empty.
+- Extracted-test red/green check in isolated `git worktree`s at `1b7a811`
+  and `89e2ce8`: fails pre-fix (`1 failed`, real untracked
+  `?? project/.ai-team.lock` line), passes post-fix (`1 passed`).
+- Independent manual Fix Verification in
+  `/tmp/.../scratchpad/b017-manual-verify/repo1` (default `project/` dir)
+  and `.../repo2` (customized `docs/ai-team` dir, mirroring this repo's own
+  layout): `git status --short` after `ai-team task new "Anything" --json`
+  shows only the new task file, never `.ai-team.lock`, in both cases; `git
+  check-ignore -v` in both cases resolves to the shipped `.gitignore`.
+- `python scripts/sync_init_scaffolds.py && uv run pytest` from `cli/` in a
+  clean worktree checkout of `89e2ce8` (with the repo's own gitignored
+  `.ai-team.toml` copied in so the CLI's own project-root locator resolves
+  correctly under `cli/`'s test suite) — 459 passed.
+- `git status --porcelain cli/src/ai_team/init/scaffolds` from repo root →
+  empty after regeneration.
+- `uv run ruff format --check .` → "65 files already formatted"; `uv run
+  ruff check .` → "All checks passed!".
+- `bash cli/scripts/gen_docs.sh` → `git status --porcelain
+  cli/docs/commands.md` → empty.
+
+Next owner: Bug-Fix Loop.
