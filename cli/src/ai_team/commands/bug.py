@@ -13,11 +13,10 @@ from ai_team.core.fs import (
     ArtifactExists,
     move_artifact,
     update_status,
-    write_artifact,
 )
 from ai_team.core.ids import next_bug_id
-from ai_team.core.lock import LockTimeout, create_artifact_with_lock
 from ai_team.core.locator import ProjectRoot, find_project_root
+from ai_team.core.lock import LockTimeout, create_artifact_with_lock
 from ai_team.core.models import Bug
 from ai_team.core.templates import load_template
 from ai_team.render import print_json

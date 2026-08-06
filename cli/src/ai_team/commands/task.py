@@ -18,8 +18,8 @@ from ai_team.core.fs import (
     write_artifact,
 )
 from ai_team.core.ids import next_task_id
-from ai_team.core.lock import LockTimeout, create_artifact_with_lock
 from ai_team.core.locator import ProjectRoot, find_project_root
+from ai_team.core.lock import LockTimeout, create_artifact_with_lock
 from ai_team.core.models import Task
 from ai_team.core.templates import load_template
 from ai_team.render import print_json
