@@ -407,6 +407,22 @@ Artifact filenames follow the patterns `T-NNN-<slug>.md` (tasks),
 for a given artifact type. Legacy spec files without the `S-NNN-` prefix are
 also accepted by validation.
 
+### The `.ai-team.lock` sentinel
+
+The first time `ai-team task new`, `bug new`, or `spec new` runs, it creates a
+project-local sentinel file at `<project_dir>/.ai-team.lock` to coordinate
+concurrent artifact-ID allocation across processes. This file is deliberately
+never deleted: the lock is a kernel-level `flock` on the file, released
+automatically when the holding process exits, so leaving the sentinel on disk
+is harmless and removing it would reopen the race the lock exists to prevent.
+
+`ai-team init` scaffolds a `project/.gitignore` containing a single
+`.ai-team.lock` entry, so the sentinel never shows up as untracked in `git
+status`. Projects that ran `ai-team init` before this `.gitignore` was added
+will not receive it retroactively — add a `.ai-team.lock` entry to your own
+`.gitignore` (at the repository root or inside the project directory) to get
+the same effect.
+
 ---
 
 ## For Maintainers
