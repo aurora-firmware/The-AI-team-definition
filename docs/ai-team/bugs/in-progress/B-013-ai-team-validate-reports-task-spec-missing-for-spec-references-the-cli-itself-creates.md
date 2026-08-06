@@ -321,3 +321,69 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-08-06
+
+PASS
+
+Stage 1 (bug criteria):
+
+- Diagnosis Log (`### Diagnosis 1 — 2026-08-06`) is complete: reproduction
+  status is `confirmed` with a real reproduction against this repo's
+  `docs/ai-team` project dir, evidence captured includes exact commands/output
+  and source-line citations, the isolated fault names two precise locations
+  (`validate.py` `spec_slugs` construction and `_spec_reference_exists`), the
+  root cause is evidence-backed (three distinct valid reference forms
+  conflated into one stem-only index, plus a non-recursive glob that excludes
+  `specs/archive/`), and a planned fix contract + planned verification are
+  both present.
+- The implemented fix matches the fix contract exactly: `Spec.id` was added
+  (`cli/src/ai_team/core/models.py`) and populated in `parse_spec`;
+  `_spec_index_entries` (per-file: stem, S-NNN-stripped bare slug, frontmatter
+  id) and `_build_spec_slugs` (unions entries across `root.specs` and
+  `root.specs / "archive"`) were added to `cli/src/ai_team/core/validate.py`,
+  replacing the old stem-only set comprehension in `validate_project`.
+  `_spec_reference_exists` was correctly left unchanged since its membership
+  check already worked once the index was enriched.
+- Fix Verification steps all reproduced independently on the fix branch
+  (`bug/B-013-validate-spec-reference-index`, commit `500749d`):
+  - `uv run --project cli ai-team validate --tasks --json` from the repo root
+    returns `[]` (was 12 `task-spec-missing` findings pre-fix).
+  - `cd cli && uv run pytest` → 437/437 passed.
+  - `cd cli && uv run ruff format --check . && uv run ruff check .` → both
+    clean.
+- No unrelated behavior: `git show --stat 500749d` touches exactly
+  `cli/src/ai_team/core/models.py`, `cli/src/ai_team/core/validate.py`, and
+  `cli/tests/test_validate.py` — nothing outside the fix contract's scope.
+
+Stage 2 (code quality) and Bug Fix Addendum:
+
+- Fix is minimal — only the index-building and model-field code required by
+  the isolated fault was changed; `_spec_reference_exists` was correctly left
+  untouched.
+- Regression tests exist and were independently verified red→green: using a
+  worktree pinned to the pre-fix parent commit (`500749d~1`) with the
+  post-fix `cli/tests/test_validate.py` copied in, the three "resolves" tests
+  (`test_validate_resolves_task_spec_reference_by_frontmatter_id`,
+  `..._by_bare_slug_of_new_style_filename`, `..._to_archived_spec`) fail with
+  `exit_code == 1` against the pre-fix source and pass against the fix commit
+  — confirming genuine red→green, not a test that never exercised the bug.
+- True-negative coverage confirmed both by the added test
+  (`test_validate_still_reports_task_spec_missing_for_genuinely_missing_spec`)
+  and by independent re-verification: it passes both pre- and post-fix (as
+  expected, since it doesn't touch the id/slug/archive gaps), and the widened
+  index does not suppress a genuinely missing spec reference.
+- Correctness / readability / no dead code: confirmed by reading
+  `_spec_index_entries` and `_build_spec_slugs` in full; docstrings are
+  accurate, `FrontmatterError` is the only exception `parse_spec` raises for
+  malformed frontmatter (verified via `_require`), so the narrow except
+  clause is correct and doesn't mask unrelated failures.
+- Non-blocking observation: stripping the `S-NNN-` prefix means two specs
+  with different ids but the same bare slug (e.g. `S-001-launch-plan.md` and
+  `S-002-launch-plan.md`) would both contribute the same `"launch-plan"`
+  entry to the flat existence set. This does not cause a false negative (a
+  genuinely absent spec still fails, verified above) and `task-spec-missing`
+  is an existence check only, not an identity/uniqueness check, so this
+  isn't a defect relative to the bug's stated Expected Behavior (which
+  explicitly requires bare-slug resolution for legacy specs). Flagging for
+  awareness only — not blocking this fix.
