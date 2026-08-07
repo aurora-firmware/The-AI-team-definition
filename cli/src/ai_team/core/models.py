@@ -137,13 +137,20 @@ class Bug:
 
 @dataclass
 class Spec:
-    """Frontmatter fields for a specification artifact (ID is filename-based)."""
+    """Frontmatter fields for a specification artifact.
+
+    Historically specs had no ``id`` in their frontmatter and were identified
+    solely by their filename slug. ``ai-team spec new`` now writes an ``id``
+    field (e.g. ``S-001``), so ``id`` is populated when present but remains
+    optional for legacy specs that predate it.
+    """
 
     title: str
     version: str
     status: str
     created: str
     author: str
+    id: str | None = None  # Optional frontmatter id, e.g. "S-001"
     # Holds the original CommentedMap from parsing so comments survive dump.
     _source_map: CommentedMap | None = field(default=None, compare=False, repr=False)
 
@@ -231,8 +238,9 @@ def parse_bug(path: Path) -> Bug:
 def parse_spec(path: Path) -> Spec:
     """Parse a spec artifact file and return a :class:`Spec`.
 
-    Note: specs have no ``id`` in their frontmatter — their identifier is the
-    filename slug.
+    Note: legacy specs have no ``id`` in their frontmatter — their identifier
+    is the filename slug. When ``id`` is present (as written by
+    ``ai-team spec new``), it is populated on the returned model.
 
     Raises
     ------
@@ -247,6 +255,7 @@ def parse_spec(path: Path) -> Spec:
         status=str(_require(data, "status", path)),
         created=str(_require(data, "created", path)),
         author=str(_require(data, "author", path)),
+        id=str(data["id"]) if data.get("id") is not None else None,
         _source_map=data,
     )
 
@@ -323,6 +332,7 @@ _SPEC_FIELDS: list[tuple[str, str]] = [
     ("status", "status"),
     ("created", "created"),
     ("author", "author"),
+    ("id", "id"),  # optional — omitted when None (legacy specs carry no id)
 ]
 
 _ADR_FIELDS: list[tuple[str, str]] = [

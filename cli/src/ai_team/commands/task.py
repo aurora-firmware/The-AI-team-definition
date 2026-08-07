@@ -19,6 +19,7 @@ from ai_team.core.fs import (
 )
 from ai_team.core.ids import next_task_id
 from ai_team.core.locator import ProjectRoot, find_project_root
+from ai_team.core.lock import LockTimeout, create_artifact_with_lock
 from ai_team.core.models import Task
 from ai_team.core.templates import load_template
 from ai_team.render import print_json
@@ -164,26 +165,35 @@ def new_task(
 ) -> None:
     """Create a new pending task artifact from the bundled template."""
     root = find_project_root(Path.cwd())
-    task_id = next_task_id(root)
-    slug = slugify(title)
-    dest = root.tasks_pending / f"{task_id}-{slug}.md"
 
-    template = load_template("task")
-    body = _template_body(template)
-    body = body.replace("# [Task Title]", f"# {title}", 1)
-    model = Task(
-        id=task_id,
-        title=title,
-        status="pending",
-        priority=priority,
-        assigned_role=assigned_role,
-        created=date.today().isoformat(),
-        spec=spec,
-    )
+    def build(task_id: str) -> tuple[Path, Task, str]:
+        slug = slugify(title)
+        dest = root.tasks_pending / f"{task_id}-{slug}.md"
+
+        template = load_template("task")
+        body = _template_body(template)
+        body = body.replace("# [Task Title]", f"# {title}", 1)
+        model = Task(
+            id=task_id,
+            title=title,
+            status="pending",
+            priority=priority,
+            assigned_role=assigned_role,
+            created=date.today().isoformat(),
+            spec=spec,
+        )
+        return dest, model, body
 
     try:
-        write_artifact(dest, model, body, overwrite=False)
+        task_id, dest = create_artifact_with_lock(
+            root.project_dir,
+            allocate_id=lambda: next_task_id(root),
+            build=build,
+        )
     except ArtifactExists as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+    except LockTimeout as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
 

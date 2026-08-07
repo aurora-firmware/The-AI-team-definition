@@ -143,8 +143,7 @@ def specs(
     rows: list[dict[str, str]] = []
     for path in _iter_markdown_files(root.specs):
         spec = parse_spec(path)
-        source_map = spec._source_map or {}
-        spec_id = str(source_map["id"]) if "id" in source_map else path.stem
+        spec_id = spec.id or path.stem
         rows.append(
             {
                 "id": spec_id,

@@ -57,9 +57,14 @@ def test_entry_point_resolves_to_cli_app():
         (["not-a-command"], 2),
     ],
 )
-def test_every_invocation_emits_development_warning_once(args, expected_exit_code):
+def test_every_invocation_emits_development_warning_once(
+    args, expected_exit_code, monkeypatch, tmp_path
+):
     """Help, version, success, and errors each emit one stderr warning."""
     from ai_team.cli import app
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "project").mkdir()
 
     result = CliRunner().invoke(app, args)
 
@@ -67,9 +72,12 @@ def test_every_invocation_emits_development_warning_once(args, expected_exit_cod
     assert result.stderr.count(DEVELOPMENT_WARNING) == 1
 
 
-def test_json_command_keeps_warning_out_of_stdout():
+def test_json_command_keeps_warning_out_of_stdout(monkeypatch, tmp_path):
     """JSON output remains parseable because the warning is stderr-only."""
     from ai_team.cli import app
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "project").mkdir()
 
     result = CliRunner().invoke(app, ["list", "tasks", "--json"])
 

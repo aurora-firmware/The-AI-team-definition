@@ -172,6 +172,39 @@ def _spec_reference_exists(reference: str, spec_slugs: set[str]) -> bool:
     return False
 
 
+def _spec_index_entries(path: Path) -> set[str]:
+    """Return every reference string that should resolve to the spec at *path*.
+
+    Accepts the full filename stem, the legacy bare slug (the stem with any
+    ``S-NNN-`` prefix stripped), and the frontmatter ``id`` when present.
+    """
+    entries = {path.stem}
+    prefix_match = SPEC_PREFIXED_FILENAME_RE.match(path.name)
+    if prefix_match:
+        bare_slug = path.stem.split("-", 2)[2]
+        entries.add(bare_slug)
+    try:
+        spec = parse_spec(path)
+    except FrontmatterError:
+        return entries
+    if spec.id is not None:
+        entries.add(spec.id)
+    return entries
+
+
+def _build_spec_slugs(root: ProjectRoot) -> set[str]:
+    """Build the set of reference strings that resolve to an existing spec.
+
+    Scans both ``specs/`` and ``specs/archive/`` so archived specs remain
+    resolvable by task ``spec:`` references.
+    """
+    spec_slugs: set[str] = set()
+    for folder in (root.specs, root.specs / "archive"):
+        for path in _iter_markdown_files(folder):
+            spec_slugs.update(_spec_index_entries(path))
+    return spec_slugs
+
+
 def validate_project(
     root: ProjectRoot,
     *,
@@ -186,9 +219,7 @@ def validate_project(
 
     # Cross-reference indexes are built independently from selected scopes so
     # `--tasks`, `--bugs`, and `--adrs` can still validate references.
-    spec_slugs = {
-        path.stem for path in _iter_markdown_files(root.specs) if path.suffix == ".md"
-    }
+    spec_slugs = _build_spec_slugs(root)
     task_ids = _existing_task_ids(root)
     adr_ids = _existing_adr_ids(root)
 

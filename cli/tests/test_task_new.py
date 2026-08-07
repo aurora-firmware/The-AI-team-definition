@@ -1,6 +1,7 @@
 """Tests for T-010: ai-team task new command."""
 
 import json
+import threading
 from datetime import date
 from pathlib import Path
 
@@ -121,3 +122,80 @@ def test_task_new_substitutes_body_h1_with_provided_title(monkeypatch, tmp_path)
 
     assert "# My New Task" in content
     assert "# [Task Title]" not in content
+
+
+def test_task_new_allocates_distinct_ids_for_two_concurrent_callers(
+    monkeypatch, tmp_path
+):
+    """B-014: two racing `new_task` calls must never write the same T-NNN id.
+
+    ``CliRunner.invoke`` is not thread-safe (it patches global ``sys.stdout``
+    per call), so this drives ``new_task`` directly. It reproduces the
+    diagnosed race deterministically by delaying the *first* caller's
+    ``slugify`` call (the step between "id computed" and "file written") with
+    a ``threading.Event`` -- never ``time.sleep`` -- so the second caller's
+    directory scan is forced to attempt to run while the first is still
+    mid-critical-section.
+    """
+    import ai_team.commands.task as task_cmd
+
+    pending = tmp_path / "project" / "tasks" / "pending"
+    _mkdir(pending)
+    for state in ("in-progress", "completed", "blocked"):
+        _mkdir(tmp_path / "project" / "tasks" / state)
+
+    monkeypatch.chdir(tmp_path)
+
+    real_slugify = task_cmd.slugify
+    call_count = {"value": 0}
+    count_lock = threading.Lock()
+    first_call_started = threading.Event()
+    release_first_call = threading.Event()
+
+    def patched_slugify(title: str) -> str:
+        with count_lock:
+            call_count["value"] += 1
+            this_call = call_count["value"]
+        result = real_slugify(title)
+        if this_call == 1:
+            first_call_started.set()
+            assert release_first_call.wait(timeout=5), "never released"
+        return result
+
+    monkeypatch.setattr(task_cmd, "slugify", patched_slugify)
+
+    errors: list[BaseException] = []
+
+    def worker(title: str) -> None:
+        try:
+            task_cmd.new_task(
+                title=title,
+                priority="medium",
+                assigned_role="unassigned",
+                spec=None,
+                as_json=False,
+            )
+        except BaseException as exc:  # noqa: BLE001 - surfaced via `errors`
+            errors.append(exc)
+
+    t1 = threading.Thread(target=worker, args=("Parallel Alpha",))
+    t1.start()
+    assert first_call_started.wait(timeout=5)
+
+    t2 = threading.Thread(target=worker, args=("Parallel Beta",))
+    t2.start()
+    t2.join(timeout=1)
+    assert t2.is_alive(), "second caller should still be blocked by the lock"
+
+    release_first_call.set()
+    t1.join(timeout=5)
+    t2.join(timeout=5)
+    assert not t1.is_alive()
+    assert not t2.is_alive()
+
+    assert errors == []
+
+    files = sorted(pending.glob("T-*.md"))
+    assert len(files) == 2
+    ids = {parse_task(path).id for path in files}
+    assert len(ids) == 2, f"expected two distinct task ids, got files: {files}"

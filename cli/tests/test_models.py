@@ -623,6 +623,39 @@ def test_dump_frontmatter_task_optional_field_present_when_set(tmp_path):
     assert "spec:" in dumped
 
 
+def test_dump_frontmatter_spec_optional_id_present_when_set(tmp_path):
+    """
+    dump_frontmatter emits the optional 'id' key for a hand-built Spec, so a
+    spec model carrying an S-NNN identifier survives serialisation even when
+    it did not come from parse_spec (and therefore has no source map).
+    """
+    model = Spec(
+        title="ai-team Python CLI",
+        version="0.1",
+        status="approved",
+        created="2026-05-10",
+        author="planner",
+        id="S-002",
+    )
+    dumped = dump_frontmatter(model, "# ai-team Python CLI\n")
+    assert "id: S-002" in dumped
+
+    roundtrip_path = write_file(tmp_path, "S-002-spec.md", dumped)
+    assert parse_spec(roundtrip_path).id == "S-002"
+
+
+def test_dump_frontmatter_spec_optional_id_omitted_when_none(tmp_path):
+    """
+    dump_frontmatter does not emit the optional 'id' key for a legacy spec
+    whose frontmatter never carried one.
+    """
+    path = write_file(tmp_path, "spec.md", VALID_SPEC_CONTENT)
+    model = parse_spec(path)
+    assert model.id is None
+    dumped = dump_frontmatter(model, "# ai-team Python CLI\n")
+    assert "id:" not in dumped
+
+
 def test_dump_frontmatter_preserves_inline_comments(tmp_path):
     """
     dump_frontmatter preserves inline YAML comments from the original file

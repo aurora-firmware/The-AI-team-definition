@@ -3,3 +3,11 @@
 .claude
 .pi
 .ai-team.toml
+
+# Python packages
+__pycache__/
+*.whl
+
+# pr review artifacts (repo root only — committed reports live in
+# docs/ai-team/docs/reports/ and must stay tracked)
+/pr-*-review.md
