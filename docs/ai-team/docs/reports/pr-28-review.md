@@ -10,9 +10,13 @@ comparison document.
 
 Review was run with three parallel scoped agents (source, framework contract,
 documentation), each at `full` tier with repository context. **8 findings**: 6 `warning`,
-2 `suggestion`. All 8 were triaged as real and addressed on the branch — 2 were code
-defects, 5 were stale or inaccurate documentation, 1 was a framework-convention
-violation. A second review round over the fix commit is recorded under
+2 `suggestion`. All 8 were triaged as real: 2 were code defects, 5 were stale or
+inaccurate documentation, and 1 was a framework-convention violation. **7 are fixed on
+the branch in `cdf3e32`.** The eighth — the inaccurate PR title and description — could
+not be applied because the authenticated `gh` account lacks permission to edit the pull
+request; it needs the PR author. See that finding for the exact correction required.
+
+A second review round over the fix commit returned **0 findings**; details under
 "Review notes" below.
 
 | Scope | Files | Lines changed | Tier | Findings |
@@ -126,10 +130,18 @@ Logs; none are fixed here." At head, five bugs (B-013 through B-017) are in
 `bugs/resolved/` with `status: resolved`, complete Diagnosis and Work Logs, and committed
 PASS verdicts. The title also named only "B-013 through B-016", omitting B-017.
 
-**Maintainer response — real, fixed.** The description was written early and never
-refreshed as the branch grew. Title and body both updated to describe five filed *and
-fixed* bugs, and the stale verification numbers were corrected (the body claimed 433
-tests; the branch had 459 before this review's fixes, 461 after).
+**Maintainer response — real, NOT fixed; blocked on permissions.** The description was
+written early and never refreshed as the branch grew. A corrected title and body were
+drafted, but `gh pr edit 28` failed: the authenticated account (`daneel-r`) lacks
+`UpdatePullRequest` permission on this repository. This is the one round-1 finding that
+remains open, and it requires the PR author or a maintainer to apply.
+
+The correction needed: the title should say "fix B-013 through B-017" (five bugs, not
+four, and fixed rather than merely filed); the body's claim that "All four new bugs are
+`status: open` with empty Diagnosis and Work Logs; none are fixed here" should be replaced
+with an accurate description of five filed *and resolved* bugs; and the stale verification
+numbers should be refreshed (the body claims 433 tests; the branch had 459 before this
+review's fixes and 461 after).
 
 ## Skipped files
 
@@ -163,5 +175,23 @@ tests; the branch had 459 before this review's fixes, 461 after).
   `uv run ruff format --check .` — 65 files already formatted; `uv run ruff check .` —
   all checks passed; `python scripts/sync_init_scaffolds.py` — no drift;
   `bash cli/scripts/gen_docs.sh` — `commands.md` unchanged.
-- Round 2: pending — three fresh agents re-review the fix commit against the round-1
-  findings. Result to be recorded here.
+- Round 2: two fresh agents re-reviewed the fix commit `cdf3e32` at `full` tier — one on
+  the source scope, one on the documentation and framework-contract scopes — each asked to
+  verify every round-1 fix independently and to review the fix commit as new code in its
+  own right. **Result: 0 findings.** Independent verification performed in that round
+  included driving `ai-team spec new` end-to-end in a scratch directory to confirm the
+  emitted frontmatter key order matches the existing spec files; tracing both
+  `dump_frontmatter` branches to confirm `id`-last is correct for source-map and
+  hand-built models alike; confirming with `git check-ignore` that the reports directory
+  is no longer ignored while root-level notes still are; re-running
+  `sync_init_scaffolds.py` to confirm zero source/scaffold drift; and re-running the full
+  verification suite to confirm the numbers quoted in this report.
+- One observation raised in round 2 and deliberately not filed as a finding: this repo's
+  `docs/ai-team/CLAUDE.md` still opens "This `project/` directory...". That file arrived
+  by pure rename and is generated from
+  `cli/src/ai_team/init/sources/project/CLAUDE.md`, the generic template shipped to every
+  consuming project — where `project/` remains the default `[project] dir`. Editing this
+  repo's copy would create template drift, so it was left alone. Correct handling would be
+  to make the template path-agnostic, which is out of scope for this PR.
+- Remaining open item: the PR title and description on GitHub are still inaccurate and
+  need the PR author to apply the correction described above.
