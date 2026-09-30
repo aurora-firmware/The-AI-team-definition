@@ -65,6 +65,12 @@ I read the task, the S-005 spec (system diagram, responsibility table, tool cont
 
 I kept the statements about generated resources, the unchanged claude/codex exports, per-implementation locks and unsupported mixed concurrency explicit. The edits are docs only, and the existing CLI Command Mapping table is unchanged. I rejected adding a new pytest doc-check file because it is outside Files to Touch. The paths `pi/src/` and the runner locations (pytest runner under `cli/tests/`, vitest runner under `pi/`) are my best reading of the spec, which leaves the layout open. The Phase 2 and 3 tasks should confirm or correct them. Verification: grep for `pi/` was 0 before and 17/6 hits after; pytest 461 passed, ruff format and check clean. Nothing else remains for this task.
 
+### Session 2 — 2026-09-30
+
+I addressed the FAIL review finding that `pi/src/` and the runner locations were presented as settled when S-005 leaves them open. In the "Pi Extension Components" table of `ai-process/architecture/component-map.md`, I changed the pi adapter and TS artifact core rows to the spec-level owner `pi/`. I changed the fixture runners row to "One pytest runner and one vitest runner", with no location. I kept the "All paths are repo-relative" sentence as it is. Every path left in the table is now named by the spec, so it no longer gives authority to unspecified locations. Committed on `task/T-079-component-map-system-overview` as `01d1c0c`.
+
+I rejected adding a "provisional" marker instead. Dropping the sub-paths is simpler and consistent with the already-unspecified TS lock row. I checked `system-overview.md` and found only spec-level paths (`pi/`, `pi/resources/`, `fixtures/parity/`), so I made no change there. Nothing else was changed. Verification: pytest 461 passed and ruff format is clean. Nothing remains. The Phase 2 and 3 tasks can add concrete layout when it is decided.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
