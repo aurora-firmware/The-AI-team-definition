@@ -1,7 +1,7 @@
 ---
 id: T-092
 title: Seed fixtures for validate and archive
-status: pending
+status: in-progress
 priority: high
 assigned-role: developer
 created: '2026-09-30'
