@@ -100,3 +100,22 @@ Findings:
 Checked and fine: the pi commands (`npm ci`, `npm run typecheck`, `npm test`) come from the task description and the spec's "TypeScript toolchain for type checking and tests"; no runner location or `pi/src` layout is asserted; no project-specific build commands were added to framework sources beyond this repo's own CLAUDE.md; ADR-004 fixture-first wording is consistent; the setup guide section is spec-backed (local-path install, one-time sync, Level 4 mismatch, unsupported mixed allocation, pi init behaviour). The "can produce duplicate IDs" phrasing in the setup guide is a reasonable reading of the spec's lock rationale (non-blocking).
 
 Next owner: Developer (via the Development Loop).
+
+### Review Verdict — 2026-09-30 (cycle 2)
+PASS
+
+Stage 1 (acceptance criteria): reviewed the full branch diff against `feat/pi-extension` (5606e0f + 5ebdcc6); only `CLAUDE.md` and `guides/setup-guide.md` changed.
+- AC-1: `CLAUDE.md` documents `npm run typecheck`, `npm test`, `npm ci` and sync-first. Met.
+- AC-2: Key Conventions rows mark `pi/resources/` as generated and `fixtures/parity/` as the reviewed contract (ADR-004), with fixture-first wording. Met.
+- AC-3: the setup guide gives the one-time sync followed by `pi install <path-to-pi>`. Met.
+- AC-4: the setup guide states mixed concurrent allocation is unsupported and the cross-commit Level 4 mismatch is expected. Met.
+- AC-5: the setup guide states pi `init` writes an empty `[init].tools` and creates no `.claude/` or `.codex/`. Met.
+- Prior finding 1 (unsupported claim that typecheck and tests fail without the version file): resolved. The text now says only that the sync renders `pi/resources/`, writes the git-ignored version file, and that the package fails to load without it.
+- Prior finding 2 (contradictory working directory): resolved. The sync is run from `cli/` first, then the npm commands from `pi/`.
+- No unspecified behaviour or extra files.
+
+Stage 2 (quality): the wording is accurate and spec-backed, with no asserted open details (runner location, `pi/src` layout). The docs are clear and the Markdown is consistent with the surrounding sections. Nothing is hardcoded into framework sources beyond this repo's own CLAUDE.md. The Developer reported V-PY green (pytest 461 passed, ruff clean); this is a docs-only diff, so I did not re-run it.
+
+Non-blocking: the setup guide phrase "can produce duplicate IDs" is a reasonable reading of the spec's lock rationale.
+
+Next owner: Development Loop.
