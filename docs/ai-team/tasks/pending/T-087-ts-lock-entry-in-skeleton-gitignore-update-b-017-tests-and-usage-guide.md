@@ -1,0 +1,83 @@
+---
+id: T-087
+title: TS lock entry in skeleton .gitignore; update B-017 tests and usage guide
+status: pending
+priority: high
+assigned-role: developer
+created: '2026-09-30'
+spec: S-005
+---
+
+# TS lock entry in skeleton .gitignore; update B-017 tests and usage guide
+
+<!--
+Task Quality Rules (see the new-task skill for full details):
+  - Atomic — one clear outcome.
+  - One-shottable — ≤ 3–4 files touched, ≤ 5 ACs, Description ≈ 20 lines.
+  - Verifiable — concrete Verification command or explicit manual steps.
+  - Self-contained — Description is enough to start without follow-up questions.
+  - EARS — every AC matches one of the five EARS patterns below.
+  - Dependency-honest — list every prior task this one reads from or modifies.
+-->
+
+## Description
+
+Part of **S-005** (`docs/ai-team/specs/S-005-pi-extension-package-skeleton-and-artifact-core.md`), Implementation Order **Phase 1**. Binding ADRs: ADR-001 to ADR-004 in `docs/ai-team/decisions/`. Planned as P10 in the Gate-2-approved plan (plan IDs are mapped to task IDs below).
+
+- choose the TS lock path inside the artifact dir, distinct from .ai-team.lock, entry matching file or directory; add to skeleton .gitignore; V-SYNC; update B-017 tests and usage.md (entry reserved for the pi package lock); regenerate command docs. T-109 consumes the path. Out of scope: TS lock implementation, Python flock (unchanged).
+
+Size note (accepted at Gate 2, ruling 7): over guideline, SC-6 binds them, one-line edits.
+
+## Acceptance Criteria
+
+AC-1: skeleton .gitignore has both entries (SC-6, ADR-003).
+AC-2: V-SYNC gives identical scaffolds/project/.gitignore.
+AC-3: B-017 tests assert both entries.
+AC-4: usage.md documents the TS entry.
+AC-5: V-DOCS no unintended diff (SC-6).
+
+## Dependencies
+
+- `T-078` — Update the skill guide for the pi target and the marker contract
+- `T-079` — Update the component map and system overview
+- `T-080` — CLAUDE.md pi checks and setup-guide pi install steps
+
+## Files to Touch
+
+- cli/src/ai_team/init/sources/project/.gitignore
+- scaffolds/project/.gitignore (generated)
+- cli/tests/test_init_scaffolds.py
+- test_init.py
+- test_usage_guide.py
+- cli/docs/usage.md
+
+## Verification
+
+```bash
+# V-SYNC; V-PY; V-DOCS.
+# V-SYNC: the sync command documented in CLAUDE.md's Build section (currently: cd cli && python scripts/sync_init_scaffolds.py)
+# V-DOCS: bash cli/scripts/gen_docs.sh && git diff --exit-code cli/docs/commands.md
+# V-PY: cd cli && uv run pytest && uv run ruff format --check . && uv run ruff check .   # set UV_CACHE_DIR under /tmp if uv cannot write its cache
+```
+
+## Work Log
+
+<!-- Mandatory. Append one entry per session boundary. Format:
+### Session N — YYYY-MM-DD
+Free-prose body: what was done this session, what was tried and
+rejected, decisions made, what remains for next session.
+
+Start every session by reading the entries below.
+The final entry serves as the handoff to the reviewer. -->
+
+## Review
+
+<!-- Reviewer: append verdict here after each review cycle.
+
+### Review Verdict — YYYY-MM-DD
+PASS | FAIL | ESCALATE
+
+- For FAIL: file, location, what is wrong, what should change.
+- For PASS: brief confirmation that both stages passed.
+- For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
+-->

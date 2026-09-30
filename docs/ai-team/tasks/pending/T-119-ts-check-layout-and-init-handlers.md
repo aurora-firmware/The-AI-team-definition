@@ -1,0 +1,77 @@
+---
+id: T-119
+title: TS check-layout and init handlers
+status: pending
+priority: high
+assigned-role: developer
+created: '2026-09-30'
+spec: S-005
+---
+
+# TS check-layout and init handlers
+
+<!--
+Task Quality Rules (see the new-task skill for full details):
+  - Atomic — one clear outcome.
+  - One-shottable — ≤ 3–4 files touched, ≤ 5 ACs, Description ≈ 20 lines.
+  - Verifiable — concrete Verification command or explicit manual steps.
+  - Self-contained — Description is enough to start without follow-up questions.
+  - EARS — every AC matches one of the five EARS patterns below.
+  - Dependency-honest — list every prior task this one reads from or modifies.
+-->
+
+## Description
+
+Part of **S-005** (`docs/ai-team/specs/S-005-pi-extension-package-skeleton-and-artifact-core.md`), Implementation Order **Phase 3**. Binding ADRs: ADR-001 to ADR-004 in `docs/ai-team/decisions/`. Planned as P42 in the Gate-2-approved plan (plan IDs are mapped to task IDs below).
+
+- check-layout on T-111, porting check_layout.py `_repository_root` (AI_TEAM_ROOT, else walk up for .ai-team.toml or project/, else the start directory; never fails not-found) [G2 B7]; init (path, force, dryRun, createRootGuidance), always non-interactive, writes project skeleton from pi/resources plus .ai-team.toml with empty [init].tools and runtime version, root guidance only when asked, never the declined note, never .claude/.codex. Out of scope: hint rewriting.
+
+## Acceptance Criteria
+
+AC-1: V-PI-F check-layout--, init-- pass (SC-5).
+AC-2: init writes empty tools and runtime framework_version (Tool contract).
+AC-3: check-layout on init output has zero findings (SC-8).
+AC-4: zero type errors (SC-9).
+
+## Dependencies
+
+- `T-093` — Seed fixtures for check-layout and init, incl. init→check-layout chain
+- `T-099` — Pi target in the sync; generate pi/resources/
+- `T-107` — Port filesystem layer and slug generation
+- `T-111` — Port the layout-diagnostics core
+- `T-112` — TS parity runner, command registry, handler stubs
+
+## Files to Touch
+
+- pi/src/core/commands/{check-layout,init}.ts
+
+## Verification
+
+```bash
+# V-SYNC; V-PI-F per prefix; full V-PI. [G2 B4]
+# V-SYNC: the sync command documented in CLAUDE.md's Build section (currently: cd cli && python scripts/sync_init_scaffolds.py)
+# V-PI-F: cd pi && npm test -- parity -t "<prefix>"   # a subset of parity cases
+# V-PI: cd pi && npm ci && npm run typecheck && npm test   # after V-SYNC
+```
+
+## Work Log
+
+<!-- Mandatory. Append one entry per session boundary. Format:
+### Session N — YYYY-MM-DD
+Free-prose body: what was done this session, what was tried and
+rejected, decisions made, what remains for next session.
+
+Start every session by reading the entries below.
+The final entry serves as the handoff to the reviewer. -->
+
+## Review
+
+<!-- Reviewer: append verdict here after each review cycle.
+
+### Review Verdict — YYYY-MM-DD
+PASS | FAIL | ESCALATE
+
+- For FAIL: file, location, what is wrong, what should change.
+- For PASS: brief confirmation that both stages passed.
+- For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
+-->
