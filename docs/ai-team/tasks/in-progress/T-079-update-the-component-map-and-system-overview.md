@@ -76,3 +76,27 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-09-30
+FAIL
+
+Reviewed `b97549d` on `task/T-079-component-map-system-overview` against `feat/pi-extension`, S-005 and ADR-001..004. Stage 1 fails on one point; Stage 2 was skipped per the skill.
+
+Verified as correct:
+- The "Pi Tool Command Mapping" table matches the S-005 Tool contract row for row. Every command, required and optional field, and camelCase flag name agrees, and so do the `init` omissions (`--tools`, `--no-interactive`) and the "no `json` field" rule.
+- The table also matches the actual CLI (`ai-team <cmd> --help`). Flags, positionals, `task block --reason`, and the `validate`, `archive` and `init` flags are all covered.
+- AC-1 to AC-3 content agrees with the S-005 system diagram, ADR-003 (separate locks, mixed concurrent allocation unsupported) and ADR-004 (co-equal, shared fixtures, two runners).
+- AC-4: generated `pi/resources/` is stated as never hand-edited. The claude/codex exports are unchanged apart from the deliberate TS lock `.gitignore` entry, which S-005 and ADR-003 sanction.
+- Only the two files in "Files to Touch" were changed in the docs.
+
+Failed check:
+- **Provisional paths asserted as settled.** S-005 never names `pi/src/` or the runner locations. It says only "a `pi/` npm package beside `cli/`", "One pytest runner and one vitest runner", and `fixtures/parity/`. The Developer's Work Log admits these are a "best reading" that later tasks should confirm. The docs nonetheless present them as fact.
+  - `ai-process/architecture/component-map.md`, "Pi Extension Components" table, rows "Pi adapter" (`pi/src/ (extension entry)`) and "TS artifact core" (`pi/src/ (pure core modules)`).
+  - Same table, row "Fixture runners": `pytest runner under cli/tests/; vitest runner under pi/`.
+  - The intro sentence "All paths are repo-relative" adds further authority to these paths.
+  - The TS lock row is already correctly left unspecified, so these rows are inconsistent with it.
+  - What should change: either drop the unspecified sub-paths and use spec-level owners (`pi/` for the adapter and TS core, "one pytest runner and one vitest runner" with no location), or keep them but mark them explicitly as provisional and not spec-binding (for example "provisional layout, to be confirmed by the Phase 2/3 tasks"). Put the marker in the table itself or in the sentence directly above it, not only in the Work Log.
+
+Non-blocking: the Generation Flow block is fine as is. No Verification rerun was needed for a docs-only change; the Developer reported pytest 461 passed and ruff clean.
+
+Next owner: Developer (via the Development Loop).
