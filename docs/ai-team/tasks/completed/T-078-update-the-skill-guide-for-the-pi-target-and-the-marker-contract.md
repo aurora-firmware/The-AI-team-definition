@@ -1,7 +1,7 @@
 ---
 id: T-078
 title: Update the skill guide for the pi target and the marker contract
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
