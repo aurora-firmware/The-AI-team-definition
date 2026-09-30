@@ -1,7 +1,7 @@
 ---
 id: T-094
 title: Command map plus agreement test against the Typer CLI
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
