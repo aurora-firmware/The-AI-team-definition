@@ -76,3 +76,20 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-09-30
+PASS
+
+Reviewed commit cf2e678 on `task/T-091-seed-fixtures-for-list-show-status-report` against `feat/pi-extension`.
+
+Stage 1 (acceptance criteria):
+- AC-1: met. Every leaf command (list tasks/bugs/specs/adrs/change-requests, show, status, report) has a success case, and show covers task, bug, spec, adr and unknown-id.
+- AC-2: met. Every task state (pending, in-progress, completed, blocked) and bug state (open, in-progress, resolved) has a filter case, and spec and ADR status values appear in unfiltered listings.
+- AC-3: met. `UV_CACHE_DIR=/tmp/uvcache uv run pytest` gives 769 passed. `ruff format --check` and `ruff check` are clean.
+- No unspecified behaviour was added. The only file beyond the fixture case dirs is the guard test `cli/tests/test_parity_query_fixtures.py`, which is reasonable.
+
+Stage 2 (quality): the fixtures were recorded through `parity_support.record_case`. The guard tests are independent and check coverage in a meaningful way, including state-only filters and report output files. No issues.
+
+Non-blocking observations:
+- Skipping `--state` cases for `list specs` and `list adrs` is sound, since the Python handlers ignore `state` there. The Architect may want to decide whether the tool contract should define that behaviour.
+- `latest_integration_result` is always "not found" because the temp tree is outside a git repo. This is acceptable for determinism.
