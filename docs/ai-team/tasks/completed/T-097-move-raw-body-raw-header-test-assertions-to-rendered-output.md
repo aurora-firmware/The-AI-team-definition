@@ -1,7 +1,7 @@
 ---
 id: T-097
 title: Move raw-body/raw-header test assertions to rendered output
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
