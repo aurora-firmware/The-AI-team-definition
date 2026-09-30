@@ -60,6 +60,11 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-09-30
+Read the empty Work Log and the T-088 fixture format, then wrote the guard test `cli/tests/test_parity_query_fixtures.py` first and confirmed it failed with no cases present. I then seeded 28 cases through `parity_support.record_case`, so the recorded results come from the Python implementation and were not hand-edited. One shared populated tree (6 tasks across all four states, 4 bugs across three states and several severities, 4 specs, 3 ADRs, 2 change requests) backs most cases. Every `list tasks` and `list bugs` state value has its own filter case. There is also an unknown-state filter case (`archived`) that yields an empty list, and an empty-project case for each list command. `list specs`, `list adrs` and `list change-requests` have populated and empty cases; their status values all appear in the unfiltered listing. `show` has one case per artifact kind plus unknown-id. `status` has a populated case, `report` has default, explicit `out` and empty-project cases. The guard test checks each leaf command has a success case, every list state value appears, each task/bug filter returns only its own state, `show` covers all four kinds and the not-found path, `status` has a populated case, and both report cases write the file they report.
+Rejected: seeding `--state` cases for `list specs` and `list adrs`. The Python handlers silently ignore `state` for those, and recording that would make an accidental behaviour part of the contract the TS port must match. A reviewer or the Architect may want to decide whether the tool contract should define it.
+Remaining: nothing for this task. `latest_integration_result` is always "not found" in these fixtures because the isolated temp tree is outside any git repo.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
