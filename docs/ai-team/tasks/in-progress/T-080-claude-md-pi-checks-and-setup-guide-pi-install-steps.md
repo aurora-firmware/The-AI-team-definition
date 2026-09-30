@@ -1,7 +1,7 @@
 ---
 id: T-080
 title: CLAUDE.md pi checks and setup-guide pi install steps
-status: pending
+status: in-progress
 priority: high
 assigned-role: developer
 created: '2026-09-30'
