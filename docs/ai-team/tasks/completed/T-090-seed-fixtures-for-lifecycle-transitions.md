@@ -1,7 +1,7 @@
 ---
 id: T-090
 title: Seed fixtures for lifecycle transitions
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
