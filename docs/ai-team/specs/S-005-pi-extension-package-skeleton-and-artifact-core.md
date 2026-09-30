@@ -1,6 +1,6 @@
 ---
 title: 'Pi extension: package skeleton and artifact core'
-version: '0.3'
+version: '0.4'
 status: draft  # draft | review | approved | superseded
 created: '2026-09-30'
 author: planner
@@ -27,7 +27,8 @@ them through lifecycle states, listing, validating and reporting. We want the pi
 agent to run the whole AI-team process natively as a pi package, and the first
 prerequisite is a package that pi can load plus an in-process replacement for the binary.
 When this spec is done, `pi install <path-to-pi-package>` gives a pi session an `ai_team`
-tool that performs every CLI action with no Python installed. The session also gets
+tool that performs every CLI action with no Python needed at runtime. Building the
+package from a checkout needs a one-time sync. The session also gets
 pi-rendered AI-team skills that call that tool instead of the shell. Every action
 produces the same artifacts and the same structured result as the Python CLI for the
 same inputs. Success is measured by a shared golden-fixture suite that passes against
@@ -157,13 +158,14 @@ What this specification explicitly does NOT cover:
 |---|---|---|
 | Framework docs | Describe the pi target, placeholder contract, command map and parity fixtures | `guides/skill_template.md`, `ai-process/architecture/component-map.md`, `ai-process/architecture/system-overview.md`, `CLAUDE.md`, `guides/setup-guide.md`. Updated before implementation. |
 | Scaffold sync (extended) | Renders sources for the claude, codex and pi targets, including marker rendering and pi header derivation, and writes the pi package's version file | Existing script, gains a `pi` target. Consumes the command map. |
-| Command map | Single table of CLI commands, arguments, flags, defaults, tool-field names, and the framework version | Generated or maintained in one place and consumed by the sync, the TS schema and the TS `init`. |
+| Command map | Single table of CLI commands, arguments, flags, defaults and tool-field names | Generated or maintained in one place and consumed by the sync and the TS schema. Holds no version. |
+| Pi version file | Carries the `ai-team` distribution version into the pi package | Written by the sync, git-ignored, read by the TS `init` and `check-layout`. |
 | Pi package manifest | Declares the extension entry and the generated skills to pi, excluding orchestrator skills | Pi host packages are peer dependencies. |
 | Pi adapter | Registers the `ai_team` tool, validates input, resolves the project root from the session, and shapes results, errors and pi-specific hints | The only component importing the pi API. |
 | TS artifact core | Implements every CLI action: models, IDs, locking, filesystem, locator, layout, validation, templates, command handlers | Pure TypeScript. Injectable clock and version. |
 | Parity fixtures | Declare the expected tree, exit status and structured result for each command case | Repo-level. Owned by neither implementation. |
 | Fixture runners | Execute every fixture case against one implementation | One pytest runner and one vitest runner. Both auto-discover cases. |
-| Python CLI (amended) | Gains an internal structured result for every command (with separate message and hint fields) and an injectable clock and version | The user-facing CLI output and flags are unchanged. |
+| Python CLI (amended) | Gains an internal structured result for every command (with separate message and hint fields) and an injectable clock and version | CLI stdout, stderr, exit codes and flags are unchanged. The project skeleton `.gitignore` gains the TS lock entry. |
 
 ## Components
 
@@ -207,7 +209,7 @@ What this specification explicitly does NOT cover:
 
 **Purpose:** Gives every command module an internal structured result used by the fixture runner, and adds a single injectable source of "today" and of the framework version.
 **Estimated size:** Medium.
-**Interfaces:** Structured result per command, internal to the package. Clock and version overrides (see Configuration Requirements). The locking mechanism and the user-facing output are unchanged.
+**Interfaces:** Structured result per command, internal to the package. Clock and version overrides (see Configuration Requirements). The locking mechanism and the CLI's stdout, stderr and exit codes are unchanged. `init`'s project skeleton gains the TS lock entry in `.gitignore`, and the B-017 tests (`test_init_scaffolds.py`, `test_init.py`, `test_usage_guide.py`) and `cli/docs/usage.md` are updated deliberately to match.
 
 ## Tool contract
 
@@ -260,42 +262,48 @@ and flags become camelCase fields with the CLI's defaults and allowed values.
 
 ## Skill marker contract
 
-**Contract.** A shared skill body refers to a CLI action only through the marker
-`{{ai-team <argv>}}`. The content is exactly the text the claude and codex targets emit
-today after `ai-team `. That includes `--json` where the body uses it today, and the
-existing `<placeholder>` and `[optional]` conventions. Surrounding backticks and code
+**Contract.** A shared skill body refers to the CLI only through one of three explicit
+marker kinds. The sync rejects any `{{…}}` whose kind prefix is unknown, and any marker
+whose content doesn't parse against the command map. Surrounding backticks and code
 fences stay in `body.md`, outside the marker.
 
-- **Claude and codex:** the marker renders as `ai-team <argv>`, verbatim. Nothing is
-  appended or removed, so today's generated text is reproduced exactly.
-- **Pi, call form:** a marker whose argv includes every required positional of its
-  command renders as an instruction to call the `ai_team` tool with the equivalent input
-  object. `--json` is dropped. A code fence whose only content is markers renders for pi
-  as prose tool-call instructions, with no fence. The sync fails if a fence mixes markers
-  with other shell lines.
-- **Pi, mention form:** a marker whose argv omits required positionals, such as the
-  shortened `adr new --json` references in skill introductions, renders as a descriptive
-  mention of the `ai_team` tool's command (for example "the `ai_team` tool's `adr new`
-  command"), not as a call.
-- **Pi, flag-fragment form:** a marker whose argv is a command followed only by optional
-  flags, such as `{{ai-team adr new --supersedes "<supersedes>"}}` in a sentence that
-  already names the command, renders for claude and codex as the flag text alone, exactly
-  as today, and for pi as "set `<field>`" using the command map's field name.
-- **Noun marker:** `{{ai-team-cli}}` refers to the CLI itself. It renders as "`ai-team` CLI"
-  (or today's exact wording at each site) for claude and codex, and as "the `ai_team` tool"
-  for pi. Every bare mention of the CLI in bodies and in `[claude]` descriptions uses it,
-  including phrases such as "Build the CLI command" and "CLI response values". The skill
-  guide gives the wording rule so each claude and codex site reproduces today's text.
+- **Command marker, `{{ai-team <argv>}}`.** The content is exactly the text the claude
+  and codex targets emit today after `ai-team `. That includes `--json` where the body
+  uses it today, and the existing `<placeholder>` and `[optional]` conventions.
+  - **Claude and codex:** renders as `ai-team <argv>`, verbatim.
+  - **Pi, call form:** used when the argv includes every required positional of its
+    command. A command with no required positionals (for example `status`, `report`,
+    `list …`, `validate`, `archive`, `check-layout`) always uses the call form. It renders
+    as an instruction to call the `ai_team` tool with the equivalent input object, with
+    `--json` dropped. A code fence whose only content is command markers renders for pi as
+    prose tool-call instructions, with no fence. The sync fails if a fence mixes markers
+    with other shell lines.
+  - **Pi, mention form:** used when the argv omits a required positional, such as the
+    shortened `adr new --json` references in skill introductions. It renders as a
+    descriptive mention of the tool's command (for example "the `ai_team` tool's `adr new`
+    command"), not as a call.
+  - Call and mention are decided only by the presence of required positionals, so each
+    command marker matches exactly one pi form.
+- **Flag marker, `{{ai-team-flag <command> <flags>}}`.** Used for flags given on their own
+  in a sentence that already names the command. Claude and codex render only the flag
+  text, verbatim, exactly as today. Pi renders "set `<field>`" using the command map's
+  field name. Every flag must be defined for the named command.
+- **Noun marker, `{{ai-team-cli|<claude/codex text>|<pi text>}}`.** Used for every bare
+  mention of the CLI, in bodies and in `[claude]` descriptions. It carries both texts
+  explicitly: claude and codex render the first verbatim (reproducing each site's current
+  wording, such as "the `ai-team` CLI", "AI team CLI", or "CLI"), and pi renders the
+  second (for example "the `ai_team` tool" or "tool"), chosen so the surrounding sentence
+  reads naturally.
 - **Call-form placeholders:** in a call-form snippet, `<placeholder>` values are checked
   for field name and presence against the tool schema, not for value. Enum-typed fields
   with a placeholder value are valid.
 - **Inline context:** a pi call-form render must read correctly inside the inline
   backticks that already surround the marker in `body.md` (for example "Run `…`").
-- **Prose mentions:** mentions of the CLI in prose use a marker too, so pi-rendered text
-  never refers to running a binary.
+- **Prose mentions:** every mention of the CLI in prose uses one of the three markers, so
+  pi-rendered text never refers to running a binary.
 - **Pi headers:** derived by the sync from the `name` and `description` in each skill's
-  `[claude]` header, per the Agent Skills specification that pi implements, with the noun
-  marker rule applied to the description. No `[pi]`
+  `[claude]` header, per the Agent Skills specification that pi implements. Noun markers
+  in the description render with their pi text. No `[pi]`
   section is authored. This extends ADR-001 to a third target without changing the
   Claude/Codex parity it decided. The Architect records the extension as an ADR.
 - **Pi applicability of other skill conventions:** in-body `Skill(<name>)` references,
@@ -348,6 +356,9 @@ Model receives a summary plus the structured result
     override is test-only. A pi package and a Python CLI built from different commits
     report an S-003 Level 4 version mismatch on each other's projects. This is expected
     behaviour, and the setup guide documents it.
+  - **Source:** the sync computes the version from the source tree through hatch-vcs, not
+    from installed package metadata, because an editable install freezes its version at
+    install time.
   - **Missing-value behaviour:** the sync fails if it cannot determine the distribution
     version. If the version file is missing at runtime, the pi package fails to load the
     tool with a message telling the user to run the sync. A missing override means the
@@ -392,7 +403,8 @@ Model receives a summary plus the structured result
 1. `guides/skill_template.md`, `ai-process/architecture/component-map.md`,
    `ai-process/architecture/system-overview.md`, `CLAUDE.md` and `guides/setup-guide.md`
    describe the pi target, the marker contract, the pi header derivation, the command
-   map, the parity fixtures and the pi package checks. They are merged before any Phase 2
+   map, the parity fixtures, the pi package checks, and the pi install steps (including
+   the one-time sync needed when building from a checkout). They are merged before any Phase 2
    task starts.
 2. At the end of Phase 2, the generated `scaffolds/claude` and `scaffolds/codex` trees are
    byte-identical to those on the merge-base with `main`, checked once by an automated
@@ -412,8 +424,11 @@ Model receives a summary plus the structured result
 5. The same fixture suite passes under the Python runner and the TS runner. Tree, exit
    status and structured result all match, with no normalisation beyond absolute root
    paths.
-6. The Python CLI's user-facing output (stdout, stderr and exit codes) for every existing
-   test is unchanged by the structured-result, clock and version amendments.
+6. The Python CLI's stdout, stderr and exit codes for every existing test are unchanged by
+   the structured-result, clock and version amendments. The only intended change to
+   generated output is the TS lock entry in the project skeleton `.gitignore`. The B-017
+   tests and `cli/docs/usage.md` are updated to match, and the generated command docs are
+   regenerated.
 7. Two concurrent TS processes creating tasks in the same project never produce a
    duplicate ID across at least 50 repetitions. A TS lock holder killed mid-allocation
    does not block the next allocation beyond the bounded wait. The unsupported mixed
@@ -423,7 +438,9 @@ Model receives a summary plus the structured result
    by the Python CLI passes the TS `check-layout` with zero findings.
 9. Type checking of the pi package reports zero errors. Unit and parity tests pass.
 10. No file under the pi package's generated skills contains a shell invocation of, or a
-    bare reference to, the `ai-team` binary or CLI (checked by an automated guard). Every call-form `ai_team` snippet in
+    bare reference to, the `ai-team` binary or CLI. This is checked by an automated guard
+    that matches the lowercase `ai-team` token case-sensitively, so framework prose such as
+    "AI-team process" doesn't trip it. The sync rejects every ambiguous or unknown marker. Every call-form `ai_team` snippet in
     a rendered pi skill validates against the tool schema (checked by an automated test).
     The pi manifest ships no orchestrator skill.
 11. Every variant of the tool's input union maps to a core handler, checked by an
@@ -439,7 +456,7 @@ Model receives a summary plus the structured result
 
 | Phase | What | Depends On |
 |---|---|---|
-| 0 | Framework guide and architecture doc updates. Architect records the ADRs for the pi header derivation and the per-implementation lock decision | Nothing |
+| 0 | Framework guide and architecture doc updates. Architect records three ADRs: pi header derivation (extends ADR-001), per-implementation locks, and two implementations held to a shared parity-fixture contract | Nothing |
 | 1 | Python parity groundwork: structured result per command, injectable clock and version, fixture format and Python runner, fixtures seeded from the amended CLI | Phase 0 |
 | 2 | Command map, sync `pi` target with marker rendering and derived pi headers, skill bodies converted to markers, scaffold golden comparison, pi package skeleton | Phase 0 (parallel with 1) |
 | 3 | TS artifact core, TS lock, and TS fixture runner, reaching full parity with the fixture suite | Phases 1 and 2 |
