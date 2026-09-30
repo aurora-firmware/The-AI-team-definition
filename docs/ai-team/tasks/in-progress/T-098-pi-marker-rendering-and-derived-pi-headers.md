@@ -74,3 +74,26 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Reviewed `feat/pi-extension...task/T-098-pi-marker-rendering-and-derived-pi-headers` (0cf003c) against S-005 "Skill marker contract". Full suite from `cli/`: 942 passed; `ruff format --check` and `ruff check` clean.
+
+Stage 1 (acceptance):
+- AC-1 met. Call form is used when all required positionals are present (and always for commands with none), mention form otherwise, and `--json` is dropped. Covered by tests.
+- AC-2 met. A fence holding only command markers becomes prose lines. A fence mixing markers with other lines, or with noun markers, raises `MarkerError`. Claude output for mixed fences is unchanged.
+- AC-3 met. A flag marker renders "set `field`" outside backticks and the bare camelCase field inside a span, so no nested span appears.
+- AC-4 met. `derive_pi_header` keeps only `name` and `description`, drops `allowed-tools`, and renders noun markers with their pi text.
+- AC-5 met. Placeholder values are checked for field name and presence only. Missing required fields, extra positionals, flags with no tool field and enum placeholders are all tested.
+- No out-of-scope behaviour: nothing writes `pi/resources` (T-099).
+
+Deviations judged:
+- `cli/tests/test_skill_rendering_helper.py` (and two assertions in `test_skill_markers.py`) were edited outside Files to Touch. Acceptable. Those tests asserted that `pi` raises as an unsupported target, which is no longer true, so they had to change. The edit is minimal (`pi` becomes `bogus`) and it was flagged in the work log.
+- `skill_markers.py` is now 357 lines, over the 300-line guideline in coding-standards.md. The guideline says "consider splitting" and is not a hard limit, and the task listed a single marker module. Accepted, but non-blocking follow-up: split the pi rendering into its own module when convenient, for example in T-099 or the next Phase 2 task.
+
+Stage 2 (quality): logic is sound, errors name the source file and marker, and tests cover success and failure paths independently. No security concerns.
+
+Non-blocking observations:
+- `derive_pi_header` emits `description:` unquoted. A rendered description containing `: ` or other YAML-special text would need quoting. Worth an assertion when the sync is wired in T-099.
+- A mention-form command marker in a fence raises (a fence line must be a complete call). This is reasonable, but the spec does not say so explicitly.
