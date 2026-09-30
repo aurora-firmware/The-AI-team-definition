@@ -60,6 +60,9 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Extended `cli/scripts/skill_markers.py` with the pi target, test-first. Command markers render as a call form when every required positional is present, and as a mention form otherwise. The call form carries a JSON input object with `--json` dropped, and placeholders are checked for field name and presence only. A fence containing only command markers becomes prose lines. A fence that mixes markers with other lines, or holds non-command markers, raises a `MarkerError`. Flag markers render "set `field`", or the bare camelCase field inside backticks. Noun markers render their pi text. A command marker that is alone in a backtick span has the backticks stripped so no spans nest. A command marker inside a longer span is an explicit error. Added `derive_pi_header`, which keeps only `name` and `description` and renders noun markers for pi. Added `cli/tests/test_skill_markers_pi.py`. Updated two older tests that expected `pi` to raise, so they use an unknown target instead. `cli/tests/test_skill_rendering_helper.py` is outside the listed files, and I flagged it above. Considered and rejected: a separate pi module, to honour the listed files. As a result the marker module is over 300 lines. Remaining: T-099 wires pi rendering and headers into the sync and writes `pi/resources`. The marker module may warrant a split. Converting the skill bodies to markers is a separate Phase 2 task, and it will exercise the new paths against real text.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
