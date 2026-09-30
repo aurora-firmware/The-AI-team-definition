@@ -70,6 +70,9 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-09-30
+I picked the TS lock path `.ai-team-ts.lock`, a bare name in `project/.gitignore`. Because it has no trailing slash it matches a file or a directory, so T-109 can implement either. It is distinct from Python's `.ai-team.lock`, which stays unchanged. I followed TDD. First I updated the B-017 tests in `test_init_scaffolds.py` and `test_init.py` to expect both entries, and added a `test_usage_guide.py` test that the TS entry is documented as reserved for the pi package lock. Three tests failed, as expected. Then I changed the source `.gitignore`, ran the scaffold sync so the generated copy is identical, and rewrote the `usage.md` sentinel section to describe both entries. The section now says the Python CLI never creates the TS entry and tells pre-existing projects to add both entries manually. The full pytest suite (545 tests), ruff format and ruff check pass. Regenerating `cli/docs/commands.md` produced no diff. I committed everything as `ca67f65`. Two small fixes along the way: a ruff reformat of `test_init.py`, and a line-wrap fix in `usage.md` so "pi package" stays on one line for the test. Nothing remains. The reviewer should confirm that the path name `.ai-team-ts.lock` is acceptable for T-109 and the parity fixtures. No fixtures currently reference the `.gitignore` content.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
