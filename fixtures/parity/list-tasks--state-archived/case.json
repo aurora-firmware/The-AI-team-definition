@@ -1,0 +1,14 @@
+{
+  "command": "list tasks",
+  "env": {},
+  "expected": {
+    "payload": [],
+    "status": 0
+  },
+  "input": {
+    "state": "archived"
+  },
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

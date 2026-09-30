@@ -1,0 +1,55 @@
+{
+  "command": "status",
+  "env": {},
+  "expected": {
+    "payload": {
+      "blocked_tasks": [
+        {
+          "blocking_reason": "Waiting on vendor access",
+          "id": "T-005",
+          "title": "Wait for access"
+        },
+        {
+          "blocking_reason": "Blocked on reviewer availability",
+          "id": "T-006",
+          "title": "Await review"
+        }
+      ],
+      "counts": {
+        "adrs": 3,
+        "bugs": {
+          "in_progress": 1,
+          "open": 2,
+          "resolved": 1
+        },
+        "specs_active": 4,
+        "tasks": {
+          "blocked": 2,
+          "completed": 1,
+          "in_progress": 1,
+          "pending": 2
+        }
+      },
+      "critical_high_open_bugs": [
+        {
+          "id": "B-001",
+          "severity": "critical",
+          "title": "Crash on empty input"
+        }
+      ],
+      "in_progress_tasks": [
+        {
+          "assigned_role": "developer",
+          "id": "T-003",
+          "title": "Build the parser"
+        }
+      ],
+      "latest_integration_result": "not found"
+    },
+    "status": 0
+  },
+  "input": {},
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

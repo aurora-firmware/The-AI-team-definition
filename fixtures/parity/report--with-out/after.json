@@ -1,0 +1,158 @@
+[
+  {
+    "path": "out",
+    "type": "dir"
+  },
+  {
+    "path": "out/custom-report.md",
+    "text": "---\ntitle: \"Progress Report — 2026-01-15\"\nstatus: draft  # draft | final\ncreated: 2026-01-15\n---\n\n# Progress Report — 2026-01-15\n\n## Summary\n\nActive specs: 4. Pending tasks: 2. In progress tasks: 1. Completed tasks: 1. Blocked tasks: 2. Open bugs: 2. Bugs in progress: 1. Resolved bugs: 1. ADRs: 3. Latest integration result: not found.\n\n## Specifications\n\n| Spec | Status | Notes |\n|---|---|---|\n| S-001-draft-spec.md | draft | Review in progress |\n| S-002-review-spec.md | review | Review in progress |\n| S-003-approved-spec.md | approved | Current Gate 5 target |\n| S-004-old-spec.md | superseded | Review in progress |\n\n## Integration Evidence\n\n- Latest integration-test result: not found\n- Source: git log --all --grep=merge|integration|verification|test -n 1\n- Date: 2026-01-15\n\n## Completed\n\n| Task ID | Title | Agent Role |\n|---|---|---|\n| T-004 | Set up the repo | integrator |\n\n## In Progress\n\n| Task ID | Title | Agent Role | Notes |\n|---|---|---|---|\n| T-003 | Build the parser | developer | actively progressing |\n\n## Blocked\n\n| Task ID | Title | Blocked By | Action Needed |\n|---|---|---|---|\n| T-005 | Wait for access | Waiting on vendor access | Resolve blocker: Waiting on vendor access |\n| T-006 | Await review | Blocked on reviewer availability | Resolve blocker: Blocked on reviewer availability |\n\n## Bugs\n\n| Bug ID | Title | Severity | Status | Diagnosis Status |\n|---|---|---|---|---|\n| B-001 | Crash on empty input | critical | open | n/a |\n| B-002 | Typo in help text | low | open | n/a |\n| B-003 | Slow startup | high | in-progress | in progress |\n| B-004 | Wrong exit code | medium | resolved | complete |\n\n## Decisions\n\n| ADR | Title | Status |\n|---|---|---|\n| ADR-001 | Proposed decision | proposed |\n| ADR-002 | Accepted decision | accepted |\n| ADR-003 | Replaced decision | superseded |\n\n## Next Actions\n\n1. Unblock T-005: Waiting on vendor access\n2. Unblock T-006: Blocked on reviewer availability\n3. Triage B-001: Crash on empty input\n\n## Risks and Concerns\n\n- Blocked tasks may delay delivery.\n- Critical/high bugs may impact release quality.\n",
+    "type": "file"
+  },
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress/B-003-slow-startup.md",
+    "text": "---\nid: B-003\ntitle: Slow startup\nseverity: high\nstatus: in-progress\ncreated: '2026-01-12'\n---\n\n# Slow startup\n\n## Description\n\nBody of Slow startup.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/bugs/open",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/open/B-001-crash-on-empty-input.md",
+    "text": "---\nid: B-001\ntitle: Crash on empty input\nseverity: critical\nstatus: open\ncreated: '2026-01-12'\n---\n\n# Crash on empty input\n\n## Description\n\nBody of Crash on empty input.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/bugs/open/B-002-typo-in-help-text.md",
+    "text": "---\nid: B-002\ntitle: Typo in help text\nseverity: low\nstatus: open\ncreated: '2026-01-12'\n---\n\n# Typo in help text\n\n## Description\n\nBody of Typo in help text.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/bugs/resolved",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/resolved/B-004-wrong-exit-code.md",
+    "text": "---\nid: B-004\ntitle: Wrong exit code\nseverity: medium\nstatus: resolved\ncreated: '2026-01-12'\n---\n\n# Wrong exit code\n\n## Description\n\nBody of Wrong exit code.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/change-requests",
+    "type": "dir"
+  },
+  {
+    "path": "project/change-requests/CR-001-add-export-option.md",
+    "text": "---\nid: CR-001\ntitle: Add export option\nstatus: pending\ncreated: '2026-01-14'\n---\n\n# Add export option\n\n## Description\n\nBody of Add export option.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/change-requests/CR-002-rename-flag.md",
+    "text": "---\nid: CR-002\ntitle: Rename flag\nstatus: pending\ncreated: '2026-01-14'\n---\n\n# Rename flag\n\n## Description\n\nBody of Rename flag.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/decisions",
+    "type": "dir"
+  },
+  {
+    "path": "project/decisions/ADR-001-proposed-decision.md",
+    "text": "---\nid: ADR-001\ntitle: Proposed decision\nstatus: proposed\ncreated: '2026-01-06'\n---\n\n# Proposed decision\n\n## Description\n\nBody of Proposed decision.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/decisions/ADR-002-accepted-decision.md",
+    "text": "---\nid: ADR-002\ntitle: Accepted decision\nstatus: accepted\ncreated: '2026-01-06'\n---\n\n# Accepted decision\n\n## Description\n\nBody of Accepted decision.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/decisions/ADR-003-replaced-decision.md",
+    "text": "---\nid: ADR-003\ntitle: Replaced decision\nstatus: superseded\ncreated: '2026-01-06'\n---\n\n# Replaced decision\n\n## Description\n\nBody of Replaced decision.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/specs",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs/S-001-draft-spec.md",
+    "text": "---\ntitle: Draft spec\nversion: '0.1'\nstatus: draft\ncreated: '2026-01-05'\nauthor: planner\nid: S-001\n---\n\n# Draft spec\n\n## Description\n\nBody of Draft spec.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/specs/S-002-review-spec.md",
+    "text": "---\ntitle: Review spec\nversion: '0.2'\nstatus: review\ncreated: '2026-01-05'\nauthor: planner\nid: S-002\n---\n\n# Review spec\n\n## Description\n\nBody of Review spec.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/specs/S-003-approved-spec.md",
+    "text": "---\ntitle: Approved spec\nversion: '0.3'\nstatus: approved\ncreated: '2026-01-05'\nauthor: planner\nid: S-003\n---\n\n# Approved spec\n\n## Description\n\nBody of Approved spec.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/specs/S-004-old-spec.md",
+    "text": "---\ntitle: Old spec\nversion: '0.4'\nstatus: superseded\ncreated: '2026-01-05'\nauthor: planner\nid: S-004\n---\n\n# Old spec\n\n## Description\n\nBody of Old spec.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked/T-005-wait-for-access.md",
+    "text": "---\nid: T-005\ntitle: Wait for access\nstatus: blocked\npriority: high\nassigned-role: developer\ncreated: '2026-01-10'\nblocking-reason: Waiting on vendor access\n---\n\n# Wait for access\n\n## Description\n\nBody of Wait for access.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks/blocked/T-006-await-review.md",
+    "text": "---\nid: T-006\ntitle: Await review\nstatus: blocked\npriority: medium\nassigned-role: reviewer\ncreated: '2026-01-10'\n---\n\n# Await review\n\n## Description\n\nBody of Await review.\n\n## Work Log\n\n### Session 1 — 2026-01-11\nBlocked on reviewer availability\n",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks/completed",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/completed/T-004-set-up-the-repo.md",
+    "text": "---\nid: T-004\ntitle: Set up the repo\nstatus: completed\npriority: critical\nassigned-role: integrator\ncreated: '2026-01-10'\n---\n\n# Set up the repo\n\n## Description\n\nBody of Set up the repo.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/in-progress/T-003-build-the-parser.md",
+    "text": "---\nid: T-003\ntitle: Build the parser\nstatus: in-progress\npriority: high\nassigned-role: developer\ncreated: '2026-01-10'\n---\n\n# Build the parser\n\n## Description\n\nBody of Build the parser.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks/pending",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending/T-001-plan-the-release.md",
+    "text": "---\nid: T-001\ntitle: Plan the release\nstatus: pending\npriority: low\nassigned-role: planner\ncreated: '2026-01-10'\n---\n\n# Plan the release\n\n## Description\n\nBody of Plan the release.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks/pending/T-002-write-the-docs.md",
+    "text": "---\nid: T-002\ntitle: Write the docs\nstatus: pending\npriority: medium\nassigned-role: developer\ncreated: '2026-01-10'\n---\n\n# Write the docs\n\n## Description\n\nBody of Write the docs.\n",
+    "type": "file"
+  }
+]

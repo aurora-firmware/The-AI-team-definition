@@ -1,0 +1,15 @@
+{
+  "command": "report",
+  "env": {},
+  "expected": {
+    "payload": {
+      "content": "---\ntitle: \"Progress Report — 2026-01-15\"\nstatus: draft  # draft | final\ncreated: 2026-01-15\n---\n\n# Progress Report — 2026-01-15\n\n## Summary\n\nActive specs: 0. Pending tasks: 0. In progress tasks: 0. Completed tasks: 0. Blocked tasks: 0. Open bugs: 0. Bugs in progress: 0. Resolved bugs: 0. ADRs: 0. Latest integration result: not found.\n\n## Specifications\n\n| Spec | Status | Notes |\n|---|---|---|\n| none | n/a | No active specs |\n\n## Integration Evidence\n\n- Latest integration-test result: not found\n- Source: git log --all --grep=merge|integration|verification|test -n 1\n- Date: 2026-01-15\n\n## Completed\n\n| Task ID | Title | Agent Role |\n|---|---|---|\n| none | n/a | n/a |\n\n## In Progress\n\n| Task ID | Title | Agent Role | Notes |\n|---|---|---|---|\n| none | n/a | n/a | no in-progress tasks |\n\n## Blocked\n\n| Task ID | Title | Blocked By | Action Needed |\n|---|---|---|---|\n| none | n/a | n/a | no action needed |\n\n## Bugs\n\n| Bug ID | Title | Severity | Status | Diagnosis Status |\n|---|---|---|---|---|\n| none | n/a | n/a | n/a | n/a |\n\n## Decisions\n\n| ADR | Title | Status |\n|---|---|---|\n| none | n/a | n/a |\n\n## Next Actions\n\n1. No immediate actions.\n\n## Risks and Concerns\n\n- No immediate risks identified.\n",
+      "path": "<ROOT>/project/docs/reports/progress-report-2026-01-15.md"
+    },
+    "status": 0
+  },
+  "input": {},
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

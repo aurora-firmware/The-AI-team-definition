@@ -1,0 +1,37 @@
+{
+  "command": "list bugs",
+  "env": {},
+  "expected": {
+    "payload": [
+      {
+        "id": "B-001",
+        "severity": "critical",
+        "state": "open",
+        "title": "Crash on empty input"
+      },
+      {
+        "id": "B-002",
+        "severity": "low",
+        "state": "open",
+        "title": "Typo in help text"
+      },
+      {
+        "id": "B-003",
+        "severity": "high",
+        "state": "in-progress",
+        "title": "Slow startup"
+      },
+      {
+        "id": "B-004",
+        "severity": "medium",
+        "state": "resolved",
+        "title": "Wrong exit code"
+      }
+    ],
+    "status": 0
+  },
+  "input": {},
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

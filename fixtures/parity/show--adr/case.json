@@ -1,0 +1,23 @@
+{
+  "command": "show",
+  "env": {},
+  "expected": {
+    "payload": {
+      "body": "# Accepted decision\n\n## Description\n\nBody of Accepted decision.\n",
+      "frontmatter": {
+        "created": "2026-01-06",
+        "id": "ADR-002",
+        "status": "accepted",
+        "title": "Accepted decision"
+      },
+      "path": "<ROOT>/project/decisions/ADR-002-accepted-decision.md"
+    },
+    "status": 0
+  },
+  "input": {
+    "identifier": "ADR-002"
+  },
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

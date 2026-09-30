@@ -1,0 +1,25 @@
+{
+  "command": "show",
+  "env": {},
+  "expected": {
+    "payload": {
+      "body": "# Approved spec\n\n## Description\n\nBody of Approved spec.\n",
+      "frontmatter": {
+        "author": "planner",
+        "created": "2026-01-05",
+        "id": "S-003",
+        "status": "approved",
+        "title": "Approved spec",
+        "version": "0.3"
+      },
+      "path": "<ROOT>/project/specs/S-003-approved-spec.md"
+    },
+    "status": 0
+  },
+  "input": {
+    "identifier": "S-003"
+  },
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

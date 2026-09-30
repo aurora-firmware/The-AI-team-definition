@@ -1,0 +1,25 @@
+{
+  "command": "show",
+  "env": {},
+  "expected": {
+    "payload": {
+      "body": "# Build the parser\n\n## Description\n\nBody of Build the parser.\n",
+      "frontmatter": {
+        "assigned-role": "developer",
+        "created": "2026-01-10",
+        "id": "T-003",
+        "priority": "high",
+        "status": "in-progress",
+        "title": "Build the parser"
+      },
+      "path": "<ROOT>/project/tasks/in-progress/T-003-build-the-parser.md"
+    },
+    "status": 0
+  },
+  "input": {
+    "identifier": "T-003"
+  },
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}
