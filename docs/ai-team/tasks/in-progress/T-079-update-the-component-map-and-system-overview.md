@@ -1,7 +1,7 @@
 ---
 id: T-079
 title: Update the component map and system overview
-status: pending
+status: in-progress
 priority: high
 assigned-role: developer
 created: '2026-09-30'
