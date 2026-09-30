@@ -61,6 +61,26 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Seeded the `check-layout` and `init` parity fixtures and added `cli/tests/test_parity_layout_init_fixtures.py` as a coverage guard, following the T-091/T-092 pattern. I wrote the guard first and saw 12 failures. I then recorded the cases from the Python CLI with `parity_support.record_case` and reviewed the outputs. The suite now passes with 866 tests, and ruff is clean.
+
+The `init` cases all run in the empty-tools mode, use no `.claude` or `.codex` content, and cover:
+- defaults and explicit-false flags
+- root guidance on and off
+- dry-run, including dry-run combined with root guidance
+- a `path` subdirectory, with and without guidance
+- a refused overwrite, plus a dry-run refused overwrite
+- forced overwrite, and `force` together with `createRootGuidance` over existing guidance
+- existing root guidance being kept
+
+Every successful non-dry-run init has a chained `check-layout--after-init-*` case expecting zero findings. The two `path` cases are chained by stripping the `sub/` prefix from the after-tree, because `check-layout` has no `path` input. The `check-layout` cases cover a clean tree and broken trees at levels 1 to 4. They also cover claude-only, codex-only and both-tool trees that contain only their scaffold directories. Root-not-found sets `AI_TEAM_ROOT=<ROOT>`.
+
+The runner's `check-layout` dispatch ignores `AI_TEAM_ROOT`, so that case behaves as an empty tree. I did not touch `parity_support.py`, since it is outside the task's files.
+
+Nothing was tried and rejected apart from adding a `chain_prefix` field to `case.json`. I dropped it because the README field table does not list it, and derived the prefix from the init input instead.
+
+Remaining for T-120: `check-layout--invalid-marker` records Python `tomllib` wording, and `init--refuses-overwrite` depends on Python's sorted collision order. Both need the TS implementation to match the recorded output, or a reviewed fixture change.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
