@@ -11,6 +11,7 @@ from typer.core import TyperGroup
 
 from ai_team.core.fs import read_artifact
 from ai_team.core.locator import ProjectRoot, find_project_root
+from ai_team.core.result import Result
 from ai_team.render import console, print_json
 
 NAME = "show"
@@ -100,43 +101,48 @@ def _frontmatter_dict(model: object) -> dict[str, object]:
     return frontmatter
 
 
+def show_artifact(root: ProjectRoot, identifier: str) -> Result:
+    """Resolve *identifier* to one artifact; return its path, frontmatter and body."""
+    search_roots = _search_roots(root)
+    matches = _resolve_matches(identifier, search_roots)
+    if not matches:
+        searched = ", ".join(str(path) for path in search_roots)
+        return Result(
+            status=1,
+            message=f"Artifact '{identifier}' not found. Searched roots: {searched}",
+        )
+
+    if len(matches) > 1:
+        lines = [f"Multiple artifacts matched '{identifier}':"]
+        lines.extend(f"- {match}" for match in matches)
+        return Result(status=1, message="\n".join(lines))
+
+    selected = matches[0]
+    model, body = read_artifact(selected, _kind_for_path(selected))
+    return Result(
+        status=0,
+        payload={
+            "path": str(selected),
+            "frontmatter": _frontmatter_dict(model),
+            "body": body,
+        },
+    )
+
+
 @app.callback()
 def default(
     identifier: str,
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     """Show an artifact file by ID or slug fragment."""
-    root = find_project_root(Path.cwd())
-    search_roots = _search_roots(root)
-    matches = _resolve_matches(identifier, search_roots)
-    if not matches:
-        searched = ", ".join(str(path) for path in search_roots)
-        typer.echo(
-            f"Artifact '{identifier}' not found. Searched roots: {searched}",
-            err=True,
-        )
-        raise typer.Exit(code=1)
+    result = show_artifact(find_project_root(Path.cwd()), identifier)
+    if result.status != 0:
+        typer.echo(result.text(), err=True)
+        raise typer.Exit(code=result.status)
 
-    if len(matches) > 1:
-        typer.echo(
-            f"Multiple artifacts matched '{identifier}':",
-            err=True,
-        )
-        for match in matches:
-            typer.echo(f"- {match}", err=True)
-        raise typer.Exit(code=1)
-
-    selected = matches[0]
     if as_json:
-        model, body = read_artifact(selected, _kind_for_path(selected))
-        print_json(
-            {
-                "path": str(selected),
-                "frontmatter": _frontmatter_dict(model),
-                "body": body,
-            }
-        )
+        print_json(result.payload)
         return
 
     # AC-1 requires rendering markdown output through Rich.
-    console.print(Markdown(selected.read_text(encoding="utf-8")))
+    console.print(Markdown(Path(result.payload["path"]).read_text(encoding="utf-8")))
