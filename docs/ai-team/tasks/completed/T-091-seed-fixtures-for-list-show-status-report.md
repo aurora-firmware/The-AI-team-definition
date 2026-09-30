@@ -1,7 +1,7 @@
 ---
 id: T-091
 title: Seed fixtures for list, show, status, report
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
