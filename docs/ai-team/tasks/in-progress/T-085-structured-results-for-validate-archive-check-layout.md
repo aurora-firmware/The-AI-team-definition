@@ -63,6 +63,21 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-09-30
+
+The Work Log was empty, so I started from the acceptance criteria and followed the T-082 to T-084 pattern: a pure handler returning `core.result.Result`, with the Typer wrapper only printing. I wrote `cli/tests/test_structured_results_checks.py` first and confirmed it failed on import.
+
+- **validate**: `validate_artifacts(root, all_scopes, tasks, bugs, specs, adrs, change_requests)` returns the `as_dict()` findings list as the payload. Status is 1 when any finding is error-level, which is the same condition the wrapper used before, so the exit code is unchanged. The `--json` output equals the handler payload, and a test checks this.
+- **archive**: `archive_artifacts(root, older_than, dry_run)` returns `{dry_run, moves: [{source, destination}]}`. The real run moves files and `--dry-run` only lists them. The wrapper still prints `WOULD MOVE: src -> dst` for a dry run and the resolved destination path for a real run. An invalid duration is now `Result(status=1, message=...)`, and the wrapper echoes it to stderr and exits 1 as before.
+- **check-layout**: `check_repository_layout(repo)` sorts the findings with the existing `_sort_key`. It returns them as `{level, path, message, suggested_fix}`, where `message` is the old `problem`. I kept the module-level `run_layout_checks` name because the existing test monkeypatches it. The rendered text is identical.
+- **Tests**: they cover handler payloads, the selecting flags, status for clean and failing projects, dry-run leaving the filesystem untouched, archive and check-layout rejecting `--json`, and CLI output and exit codes matching the handlers.
+
+Decisions: the three commands went in one commit because the shared test file would have left earlier commits failing. "Files to Touch" `archive.py`/`check_layout.py` were taken as `commands/archive.py` and `commands/check_layout.py`.
+
+Rejected: putting a `moved`/`would_move` split into the archive payload. A single `moves` list plus a `dry_run` flag is simpler and keeps one shape for both modes.
+
+Verification: full pytest 530 passed, ruff format/check clean, `gen_docs.sh` leaves `cli/docs/commands.md` unchanged. Nothing remains.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
