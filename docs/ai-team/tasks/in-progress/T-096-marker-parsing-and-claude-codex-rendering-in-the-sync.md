@@ -90,3 +90,14 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Stage 1: AC-1 met (claude/codex return marker content verbatim; parametrised tests over both targets). AC-2 met (MarkerError names source file and marker; sync exits non-zero with "sync failed"; tests cover body and header). AC-3 met (header and body both rendered per target in the sync). AC-4 met: after running the sync on the branch, `git status` shows no scaffold changes and V-GOLD diff against the merge-base with main is empty. Files changed match Files to Touch (plus no stray files); fake-repo setup updated per G2 B1.
+
+Stage 2: `uv run pytest` 910 passed; `ruff format --check` and `ruff check` clean. Logic is sound (longest-prefix kind dispatch, flag validation incl. bracketed and `=value` forms), tests cover success and failure paths.
+
+Non-blocking observations:
+- `{{...}}` with a non-marker prefix is now always an error; fine today since no sources contain markers (test asserts this), but future skill text with literal `{{` will need care.
+- Noun marker renders `parts[0]` only; pi text is validated but unused until T-098.
