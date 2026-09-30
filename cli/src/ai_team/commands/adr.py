@@ -10,8 +10,9 @@ from slugify import slugify
 
 from ai_team.core.fs import ArtifactExists, write_artifact
 from ai_team.core.ids import next_adr_id
-from ai_team.core.locator import find_project_root
+from ai_team.core.locator import ProjectRoot, find_project_root
 from ai_team.core.models import Adr
+from ai_team.core.result import Result
 from ai_team.core.runtime import today
 from ai_team.core.templates import load_template
 from ai_team.render import print_json
@@ -38,15 +39,13 @@ def _template_body(template: str) -> str:
     return body
 
 
-@app.command("new")
-def new_adr(
+def create_adr(
+    root: ProjectRoot,
     title: str,
-    status: AdrStatus = typer.Option("proposed", "--status"),
-    supersedes: str | None = typer.Option(None, "--supersedes"),
-    as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
-) -> None:
-    """Create a new ADR artifact from the bundled template."""
-    root = find_project_root(Path.cwd())
+    status: AdrStatus = "proposed",
+    supersedes: str | None = None,
+) -> Result:
+    """Create an ADR under *root*; return its id/path or a domain-error result."""
     adr_id = next_adr_id(root)
     slug = slugify(title)
     dest = root.decisions / f"{adr_id}-{slug}.md"
@@ -64,12 +63,27 @@ def new_adr(
     try:
         write_artifact(dest, model, body, overwrite=False)
     except ArtifactExists as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(code=1) from exc
+        return Result(status=1, message=str(exc))
 
-    absolute_path = str(dest.resolve())
+    return Result(status=0, payload={"id": adr_id, "path": str(dest.resolve())})
+
+
+@app.command("new")
+def new_adr(
+    title: str,
+    status: AdrStatus = typer.Option("proposed", "--status"),
+    supersedes: str | None = typer.Option(None, "--supersedes"),
+    as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
+) -> None:
+    """Create a new ADR artifact from the bundled template."""
+    root = find_project_root(Path.cwd())
+    result = create_adr(root, title, status, supersedes)
+    if result.status != 0:
+        typer.echo(result.text(), err=True)
+        raise typer.Exit(code=result.status)
+
     if as_json:
-        print_json({"id": adr_id, "path": absolute_path})
+        print_json(result.payload)
         return
 
-    typer.echo(absolute_path)
+    typer.echo(result.payload["path"])
