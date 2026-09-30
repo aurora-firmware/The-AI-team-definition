@@ -68,6 +68,12 @@ Read the empty Work Log and the S-005 spec sections on the version file, `init` 
 
 I deliberately left out a runner location and the `pi/src` layout, since the spec leaves them open. The check passes and the full V-PY verification is green (pytest 461 passed, ruff format and check clean). There was no scaffold or docs regeneration to do. `pi/` and `fixtures/` do not exist yet, so the pi commands are documented only. Review should confirm that "sync first" is worded accurately: `CLAUDE.md` describes the sync as `python scripts/sync_init_scaffolds.py` run from `cli/`, which matches the spec's "existing script gains a pi target". Nothing remains. The pi README (T-100) and other guides are out of scope.
 
+### Session 2 — 2026-09-30
+
+I read the Work Log and the FAIL review verdict from `feat/pi-extension`, then fixed both findings in the "Test and Check the pi Package" section of `CLAUDE.md` and changed nothing else. For the first finding, I removed the claim that typecheck and tests fail without the version file. The text now says only what S-005 states. The sync renders `pi/resources/` and writes the git-ignored version file, the pi package fails to load without it, and so the sync runs first. For the second finding, the working directories are now explicit: run the sync from `cli/` first, then run `npm ci`, `npm run typecheck` and `npm test` from `pi/`. Committed on `task/T-080-claude-md-pi-checks-setup-guide` as `5ebdcc6`.
+
+I kept the session 1 grep check. Every required phrase is still present, so the check needed no changes. I considered mentioning which tool reports the load failure, but rejected it because S-005 leaves that detail open. V-PY is green: pytest 461 passed, and ruff format and check are clean. Nothing remains. I left the setup-guide "duplicate IDs" wording unchanged, as the reviewer marked it non-blocking.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
