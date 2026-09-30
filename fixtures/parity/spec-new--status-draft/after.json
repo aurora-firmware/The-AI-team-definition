@@ -1,0 +1,67 @@
+[
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/open",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/resolved",
+    "type": "dir"
+  },
+  {
+    "path": "project/change-requests",
+    "type": "dir"
+  },
+  {
+    "path": "project/decisions",
+    "type": "dir"
+  },
+  {
+    "path": "project/docs",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs/S-001-spec-draft.md",
+    "text": "---\ntitle: Spec draft\nversion: '0.1'\nstatus: draft  # draft | review | approved | superseded\ncreated: '2026-01-15'\nauthor: planner\nid: S-001\n---\n\n# Spec draft\n\n<!--\nThis spec describes requirements and measurable criteria in prose.\nIt is not the implementation. Do not paste full configuration files,\nbuild manifests, or implementation code into the sections below.\nConcrete code belongs in the tasks the spec-breakdown skill produces\nand in the Developer's output. See the Spec Authoring Guide for the\ncontent contract this template implements.\n-->\n\n## Purpose\n\n<!-- Recipe (3–4 sentences):\n  1. The problem (what is broken or missing today).\n  2. Why it matters now (the trigger or constraint that forced this spec).\n  3. The outcome (what is observably true when the work is done).\n  4. Optional: the metric that confirms success.\n  Do not restate the title. Always name the *why*.\n-->\n\nWhat problem does this solve?\nWhy is it being built?\nWhat is the expected outcome?\n\n## Exclusions\n\n<!-- For every alternative rejected during brainstorm, and every scope-expanding\n  question the human said \"no\" to, record an explicit exclusion with the reason.\n  Almost every spec has at least one. \"No exclusions apply\" should be rare and\n  should follow an explicit human confirmation. -->\n\nWhat this specification explicitly does NOT cover:\n\n- **Exclusion title.** This specification excludes the work because it belongs in a separate follow-up decision.\n- **Another exclusion.** This specification excludes the behavior because it is outside the approved scope.\n\n## Architecture\n\n### Design Principles\n\n<!-- Each principle is a constraint on the design space — a property the design\n  must satisfy. Not an implementation choice.\n  Good: \"Validation must run in under three minutes on the median PR.\"\n  Bad:  \"Use GitHub Actions.\" -->\n\nState the guiding principles for this design.\n\n### System Diagram\n\n<!-- ASCII boxes and arrows. One screen wide. Components labelled. Show data\n  flow, not the call graph. Class diagrams of internal classes do not belong\n  here. -->\n\n```\n[ASCII diagram showing components and their relationships]\n```\n\n### Responsibility Separation\n\n<!-- One row per component. Stay at the interface level — no method signatures\n  or attribute lists. -->\n\n| Component | Responsibility | Notes |\n|---|---|---|\n| Component A | What it does | Additional context |\n| Component B | What it does | Additional context |\n\n## Components\n\n<!-- One short block per component, three lines max:\n  - Purpose: one sentence — what it does.\n  - Estimated size: small / medium / large, or rough effort.\n  - Interfaces: exposed and consumed, named at the interface level.\n  No function lists. No field lists. -->\n\n### Component 1: [Name]\n\n**Purpose:** One-line description.\n**Estimated size:** Rough complexity estimate.\n**Interfaces:** What it exposes and consumes.\n\n### Component 2: [Name]\n\n**Purpose:** One-line description.\n**Estimated size:** Rough complexity estimate.\n**Interfaces:** What it exposes and consumes.\n\n## Workflow\n\n<!-- End-to-end flow from trigger to completion. Each step is a sentence or\n  short phrase. Mark human gates with ★. Show error paths only when a failure\n  mode is interesting. -->\n\nDescribe the end-to-end flow from trigger to completion.\n\n```\nStep 1\n  ↓\nStep 2\n  ↓\n★ Step 3 (human gate if applicable)\n  ↓\nStep 4\n```\n\n## Configuration Requirements\n\nDescribe the settings, environment variables, or external configuration the work depends on, **as requirements**:\n\n- **What** setting must exist and **why** (the constraint it satisfies).\n- **Where** it lives (env var, config file, CI variable) — described, not pasted.\n- **Constraints** on its value (allowed range, format, security class).\n- **Default behavior** when the setting is missing or invalid.\n\nDo not paste a real configuration file here. The Developer writes the file against the project's conventions; this section tells them what the file must guarantee.\n\nIf — and only if — a literal value is itself the contract (e.g. a fixed external API key name, a wire-protocol field), include it inline and mark it explicitly as **Contract**, not as **Example**.\n\n## Implementation Order\n\n<!-- Coarse phases (typically two to five). Each phase delivers an observable\n  outcome. A phase is NOT a task — the spec-breakdown skill produces the actual\n  tasks from these phases. -->\n\n| Phase | What | Depends On |\n|---|---|---|\n| 1 | First deliverable | Nothing |\n| 2 | Second deliverable | Phase 1 |\n| 3 | Third deliverable | Phase 1 |\n\n## Amendment Log\n\n<!-- Optional. Use when an approved spec is amended after tasks are in flight.\n| Date | What changed | Why | Affected tasks |\n|------|-------------|-----|----------------|\n| YYYY-MM-DD | Description of change | Reason for amendment | T-XXX, T-YYY |\n-->\n",
+    "type": "file"
+  },
+  {
+    "path": "project/specs/archive",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/completed",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending",
+    "type": "dir"
+  }
+]
