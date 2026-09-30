@@ -1,7 +1,7 @@
 ---
 id: T-096
 title: Marker parsing and claude/codex rendering in the sync
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
