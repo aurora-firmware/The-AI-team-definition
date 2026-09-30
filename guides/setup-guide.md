@@ -48,6 +48,34 @@ ai-team report
 
 For a full usage walkthrough see [`cli/docs/usage.md`](../cli/docs/usage.md); for an exhaustive command and flag reference see [`cli/docs/commands.md`](../cli/docs/commands.md).
 
+### Using the pi coding agent (optional)
+
+The pi package gives a pi session an in-process `ai_team` tool that performs the same
+actions as the CLI with no Python needed at runtime. Building the package from a checkout
+needs a one-time sync, which renders the pi resources and writes the version file the
+package reads at load time:
+
+```bash
+cd cli && python scripts/sync_init_scaffolds.py
+```
+
+Then install the package from its local path:
+
+```bash
+pi install <path-to-pi>
+```
+
+Things to know when running both implementations:
+
+- **Version mismatch across commits is expected.** A pi package and a Python CLI built
+  from different commits report an S-003 Level 4 version mismatch on each other's
+  projects. This is expected behavior, not a defect.
+- **Mixed concurrent allocation is unsupported.** Each implementation owns its own ID
+  allocation lock, so running the Python CLI and the pi tool at the same time to create
+  artifacts in the same project is unsupported and can produce duplicate IDs.
+- **pi `init` is tool-neutral.** It writes `.ai-team.toml` with an empty `[init].tools`
+  list and creates no `.claude/` or `.codex/` directories.
+
 ### Release hygiene
 
 Public releases must not include secrets, tokens, passwords, environment
