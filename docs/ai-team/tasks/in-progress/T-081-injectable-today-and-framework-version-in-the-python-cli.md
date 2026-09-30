@@ -1,7 +1,7 @@
 ---
 id: T-081
 title: Injectable "today" and framework version in the Python CLI
-status: pending
+status: in-progress
 priority: high
 assigned-role: developer
 created: '2026-09-30'
