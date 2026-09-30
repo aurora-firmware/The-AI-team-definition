@@ -61,6 +61,19 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Chose a hand-authored map, stored as `cli/src/ai_team/init/sources/command_map.json`, over one generated from Typer. A generated map could not catch a CLI change, because the test would compare Typer with itself. A separate table can disagree with the CLI, and then the test fails. I first dumped the real Typer surface (leaf commands, params, defaults, choices) and used that to build the JSON. The test helper that walks the Typer app produced the initial file, and I committed the result as a static file.
+
+Each command entry has `positionals` (`cliName`, `field`, `required`, `default`) and `flags` (`flag`, `field`, `cliOnly`, `required`, `default`, `choices`, `boolean`). `--json`, `init --tools` and `init --no-interactive` are `cliOnly` with a null field. The map holds no version.
+
+`cli/tests/test_command_map.py` has four checks:
+- **Agreement with Typer:** compares the map to the live Typer app.
+- **Tool contract:** compares the required and optional tool fields per command to a hard-coded copy of the S-005 tool-contract table.
+- **CLI-only options:** checks that they carry no tool field.
+- **No version:** checks that the map file contains no version string.
+
+I also added mutation tests to show that disagreements are actually detected. Nothing was rejected beyond the generated-map option. Nothing remains for this task. The later sync and TS schema tasks will consume the JSON file.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
