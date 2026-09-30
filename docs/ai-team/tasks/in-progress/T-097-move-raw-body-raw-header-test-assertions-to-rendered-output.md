@@ -60,6 +60,19 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+I added `cli/tests/skill_rendering.py`. It exposes `rendered_skill_body`, `rendered_skill_header` and `rendered_skill_text`. They load `scripts/skill_markers.py` by file path and render through `render_markers` with `command_map.json`, for the claude or codex target. `test_skill_rendering_helper.py` checks that the helper's output equals the generated `SKILL.md` scaffold and that an unsupported target such as `pi` is rejected.
+
+I then converted the tests that read a skill's raw `body.md` or raw `[claude]`/`[codex]` header:
+- **Body readers:** t063, t064, t068, t074, t076, `test_bug_evidence_chain`, `test_b016`, `test_init_scaffolds` and the loop-body read in `test_status_report_invocation` now call `rendered_skill_body(...)`.
+- **Header readers:** the two header reads in `test_status_report_invocation` now call `rendered_skill_header(...)`.
+- **Source-vs-scaffold check:** `test_package_owned_skill_sources_include_body_and_required_metadata` now compares the rendered body and header to the scaffold. It still checks the source structure (one `body.md`, one `metadata.toml`, a non-empty header), which is legitimate.
+- **Left alone:** the fixture writes in `test_init_scaffolds.py`, and `test_t066` (which reads docs and ADRs, not skill sources).
+
+I did not touch the scaffold `SKILL.md` reads, because they are already rendered output. The `source` element of the `(source, claude, codex)` tuples now holds rendered claude text, so its assertions partly duplicate the claude ones. I kept both to stay inside "out of scope: changing what is asserted".
+
+I considered giving each test its own target parameter and rejected it, since the current sources contain no markers and the claude and codex renders are identical. Nothing remains for this task. A later task could drop the now-redundant `source` tuple element.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
