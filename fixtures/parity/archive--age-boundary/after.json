@@ -1,0 +1,101 @@
+[
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/archive",
+    "type": "dir"
+  },
+  {
+    "path": "project/archive/2025-12",
+    "type": "dir"
+  },
+  {
+    "path": "project/archive/2025-12/T-004-month-bucket.md",
+    "text": "---\nid: T-004\ntitle: Month bucket\nstatus: completed\npriority: medium\nassigned-role: developer\ncreated: '2025-12-31'\n---\n\n# Month bucket\n\n## Description\n\nBody of Month bucket.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/archive/2026-01",
+    "type": "dir"
+  },
+  {
+    "path": "project/archive/2026-01/B-001-day-before-cutoff.md",
+    "text": "---\nid: B-001\ntitle: Day before cutoff\nseverity: medium\nstatus: resolved\ncreated: '2026-01-29'\n---\n\n# Day before cutoff\n\n## Description\n\nBody of Day before cutoff.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/archive/2026-01/T-001-day-before-cutoff.md",
+    "text": "---\nid: T-001\ntitle: Day before cutoff\nstatus: completed\npriority: medium\nassigned-role: developer\ncreated: '2026-01-29'\n---\n\n# Day before cutoff\n\n## Description\n\nBody of Day before cutoff.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/bugs",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/open",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/resolved",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/resolved/B-002-on-cutoff.md",
+    "text": "---\nid: B-002\ntitle: On cutoff\nseverity: medium\nstatus: resolved\ncreated: '2026-01-30'\n---\n\n# On cutoff\n\n## Description\n\nBody of On cutoff.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/bugs/resolved/B-003-day-after-cutoff.md",
+    "text": "---\nid: B-003\ntitle: Day after cutoff\nseverity: medium\nstatus: resolved\ncreated: '2026-01-31'\n---\n\n# Day after cutoff\n\n## Description\n\nBody of Day after cutoff.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/change-requests",
+    "type": "dir"
+  },
+  {
+    "path": "project/decisions",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/completed",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/completed/T-002-on-cutoff.md",
+    "text": "---\nid: T-002\ntitle: On cutoff\nstatus: completed\npriority: medium\nassigned-role: developer\ncreated: '2026-01-30'\n---\n\n# On cutoff\n\n## Description\n\nBody of On cutoff.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks/completed/T-003-day-after-cutoff.md",
+    "text": "---\nid: T-003\ntitle: Day after cutoff\nstatus: completed\npriority: medium\nassigned-role: developer\ncreated: '2026-01-31'\n---\n\n# Day after cutoff\n\n## Description\n\nBody of Day after cutoff.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending",
+    "type": "dir"
+  }
+]

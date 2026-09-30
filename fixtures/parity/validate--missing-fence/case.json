@@ -1,0 +1,21 @@
+{
+  "command": "validate",
+  "env": {},
+  "expected": {
+    "payload": [
+      {
+        "code": "frontmatter-invalid",
+        "level": "error",
+        "message": "No YAML frontmatter block found in <ROOT>/project/tasks/pending/T-003-no-fence.md",
+        "path": "project/tasks/pending/T-003-no-fence.md"
+      }
+    ],
+    "status": 1
+  },
+  "input": {
+    "tasks": true
+  },
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}

@@ -1,0 +1,21 @@
+{
+  "command": "validate",
+  "env": {},
+  "expected": {
+    "payload": [
+      {
+        "code": "adr-supersedes-missing",
+        "level": "error",
+        "message": "ADR supersedes reference 'ADR-099' does not resolve to an existing ADR.",
+        "path": "project/decisions/ADR-003-dangling.md"
+      }
+    ],
+    "status": 1
+  },
+  "input": {
+    "adrs": true
+  },
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}

@@ -1,0 +1,14 @@
+{
+  "command": "archive",
+  "env": {},
+  "expected": {
+    "message": "Invalid --older-than 'soon'. Expected format: <number><d|w|m|y>.",
+    "status": 1
+  },
+  "input": {
+    "olderThan": "soon"
+  },
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}

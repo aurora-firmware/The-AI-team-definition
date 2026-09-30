@@ -1,0 +1,27 @@
+{
+  "command": "validate",
+  "env": {},
+  "expected": {
+    "payload": [
+      {
+        "code": "id-pattern",
+        "level": "error",
+        "message": "Spec id 'S-2' does not match expected pattern '^S-\\d{3}$'.",
+        "path": "project/specs/S-002-bad-id.md"
+      },
+      {
+        "code": "filename-pattern",
+        "level": "error",
+        "message": "Spec filename 'S-002-bad-id.md' id prefix 'S-002' does not match frontmatter id 'S-2'.",
+        "path": "project/specs/S-002-bad-id.md"
+      }
+    ],
+    "status": 1
+  },
+  "input": {
+    "specs": true
+  },
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}

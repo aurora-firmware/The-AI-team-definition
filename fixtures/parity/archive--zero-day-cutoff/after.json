@@ -1,0 +1,123 @@
+[
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/archive",
+    "type": "dir"
+  },
+  {
+    "path": "project/archive/2024-11",
+    "type": "dir"
+  },
+  {
+    "path": "project/archive/2024-11/T-001-oldest-task.md",
+    "text": "---\nid: T-001\ntitle: Oldest task\nstatus: completed\npriority: medium\nassigned-role: developer\ncreated: '2024-11-15'\n---\n\n# Oldest task\n\n## Description\n\nBody of Oldest task.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/archive/2025-02",
+    "type": "dir"
+  },
+  {
+    "path": "project/archive/2025-02/B-001-old-bug.md",
+    "text": "---\nid: B-001\ntitle: Old bug\nseverity: medium\nstatus: resolved\ncreated: '2025-02-10'\n---\n\n# Old bug\n\n## Description\n\nBody of Old bug.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/archive/2025-09",
+    "type": "dir"
+  },
+  {
+    "path": "project/archive/2025-09/T-002-autumn-task.md",
+    "text": "---\nid: T-002\ntitle: Autumn task\nstatus: completed\npriority: medium\nassigned-role: developer\ncreated: '2025-09-01'\n---\n\n# Autumn task\n\n## Description\n\nBody of Autumn task.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/archive/2026-01",
+    "type": "dir"
+  },
+  {
+    "path": "project/archive/2026-01/T-003-january-task.md",
+    "text": "---\nid: T-003\ntitle: January task\nstatus: completed\npriority: medium\nassigned-role: developer\ncreated: '2026-01-20'\n---\n\n# January task\n\n## Description\n\nBody of January task.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/archive/2026-02",
+    "type": "dir"
+  },
+  {
+    "path": "project/archive/2026-02/B-002-recent-bug.md",
+    "text": "---\nid: B-002\ntitle: Recent bug\nseverity: medium\nstatus: resolved\ncreated: '2026-02-10'\n---\n\n# Recent bug\n\n## Description\n\nBody of Recent bug.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/archive/2026-02/T-004-february-task.md",
+    "text": "---\nid: T-004\ntitle: February task\nstatus: completed\npriority: medium\nassigned-role: developer\ncreated: '2026-02-20'\n---\n\n# February task\n\n## Description\n\nBody of February task.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/archive/2026-02/T-005-recent-task.md",
+    "text": "---\nid: T-005\ntitle: Recent task\nstatus: completed\npriority: medium\nassigned-role: developer\ncreated: '2026-02-27'\n---\n\n# Recent task\n\n## Description\n\nBody of Recent task.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/bugs",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/open",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/open/B-003-old-open.md",
+    "text": "---\nid: B-003\ntitle: Old open\nseverity: medium\nstatus: open\ncreated: '2024-01-01'\n---\n\n# Old open\n\n## Description\n\nBody of Old open.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/bugs/resolved",
+    "type": "dir"
+  },
+  {
+    "path": "project/change-requests",
+    "type": "dir"
+  },
+  {
+    "path": "project/decisions",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/completed",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending/T-006-old-pending.md",
+    "text": "---\nid: T-006\ntitle: Old pending\nstatus: pending\npriority: medium\nassigned-role: developer\ncreated: '2024-01-01'\n---\n\n# Old pending\n\n## Description\n\nBody of Old pending.\n",
+    "type": "file"
+  }
+]
