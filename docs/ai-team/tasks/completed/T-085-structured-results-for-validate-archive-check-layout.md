@@ -1,7 +1,7 @@
 ---
 id: T-085
 title: Structured results for validate, archive, check-layout
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
