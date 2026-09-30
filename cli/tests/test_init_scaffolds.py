@@ -9,6 +9,8 @@ import sys
 import tomllib
 from pathlib import Path
 
+from tests.skill_rendering import rendered_skill_body, rendered_skill_header
+
 
 def _write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -370,7 +372,6 @@ def test_package_owned_skill_sources_include_body_and_required_metadata() -> Non
         assert len(body_files) == 1
         assert len(metadata_files) == 1
 
-        body = body_files[0].read_text(encoding="utf-8")
         metadata = tomllib.loads(metadata_files[0].read_text(encoding="utf-8"))
 
         assert isinstance(metadata.get("claude", {}).get("header"), str)
@@ -381,8 +382,8 @@ def test_package_owned_skill_sources_include_body_and_required_metadata() -> Non
         scaffold_text = skill_scaffold_path.read_text(encoding="utf-8")
         scaffold_header, scaffold_body = scaffold_text.split("\n\n", maxsplit=1)
 
-        assert body == scaffold_body
-        assert metadata["claude"]["header"].strip() == scaffold_header.strip()
+        assert rendered_skill_body(skill_name, "claude") == scaffold_body
+        assert rendered_skill_header(skill_name, "claude") == scaffold_header.strip()
 
 
 def test_init_scaffolds_export_change_request_skill_and_project_directory() -> None:
@@ -624,16 +625,7 @@ def test_package_owned_codex_agents_use_supported_role_model_defaults() -> None:
 
 def _spec_breakdown_skill_texts() -> tuple[str, str, str]:
     repo_root = Path(__file__).resolve().parents[1]
-    source = (
-        repo_root
-        / "src"
-        / "ai_team"
-        / "init"
-        / "sources"
-        / "skills"
-        / "spec-breakdown"
-        / "body.md"
-    ).read_text(encoding="utf-8")
+    source = rendered_skill_body("spec-breakdown")
     claude = (
         repo_root
         / "src"
@@ -661,16 +653,7 @@ def _spec_breakdown_skill_texts() -> tuple[str, str, str]:
 
 def _spec_breakdown_review_skill_texts() -> tuple[str, str, str]:
     repo_root = Path(__file__).resolve().parents[1]
-    source = (
-        repo_root
-        / "src"
-        / "ai_team"
-        / "init"
-        / "sources"
-        / "skills"
-        / "spec-breakdown-review"
-        / "body.md"
-    ).read_text(encoding="utf-8")
+    source = rendered_skill_body("spec-breakdown-review")
     claude = (
         repo_root
         / "src"
@@ -757,16 +740,7 @@ def test_spec_breakdown_review_preserves_existing_output_format_and_verdicts() -
 
 def _dev_loop_skill_texts() -> tuple[str, str, str]:
     repo_root = Path(__file__).resolve().parents[1]
-    source = (
-        repo_root
-        / "src"
-        / "ai_team"
-        / "init"
-        / "sources"
-        / "skills"
-        / "dev-loop"
-        / "body.md"
-    ).read_text(encoding="utf-8")
+    source = rendered_skill_body("dev-loop")
     claude = (
         repo_root
         / "src"
@@ -944,16 +918,7 @@ def test_project_guidance_sources_exist_and_describe_project_artifact_folders() 
 
 def _new_task_skill_texts() -> tuple[str, str, str]:
     repo_root = Path(__file__).resolve().parents[1]
-    source = (
-        repo_root
-        / "src"
-        / "ai_team"
-        / "init"
-        / "sources"
-        / "skills"
-        / "new-task"
-        / "body.md"
-    ).read_text(encoding="utf-8")
+    source = rendered_skill_body("new-task")
     claude = (
         repo_root
         / "src"

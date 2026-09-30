@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import re
-import tomllib
 from pathlib import Path
+
+from tests.skill_rendering import rendered_skill_body, rendered_skill_header
 
 CLI_ROOT = Path(__file__).resolve().parents[1]
 SKILL_SOURCES = CLI_ROOT / "src" / "ai_team" / "init" / "sources" / "skills"
@@ -17,17 +18,14 @@ MODEL_INVOCATION_DISABLED = re.compile(
 
 
 def _headers(skill_name: str) -> dict[str, str]:
-    metadata = SKILL_SOURCES / skill_name / "metadata.toml"
-    raw = tomllib.loads(metadata.read_text(encoding="utf-8"))
-    return {tool: raw[tool]["header"] for tool in TOOLS}
+    return {tool: rendered_skill_header(skill_name, tool) for tool in TOOLS}
 
 
 def test_skill_invocation_targets_allow_model_invocation() -> None:
     """A skill named in Skill(...) must be callable by the invoking model."""
     for metadata in SKILL_SOURCES.glob("*/metadata.toml"):
-        raw = tomllib.loads(metadata.read_text(encoding="utf-8"))
         for tool in TOOLS:
-            caller_header = raw[tool]["header"]
+            caller_header = rendered_skill_header(metadata.parent.name, tool)
             for target_name in SKILL_INVOCATION.findall(caller_header):
                 target_header = _headers(target_name)[tool]
                 assert not MODEL_INVOCATION_DISABLED.search(target_header), (
@@ -49,7 +47,7 @@ def test_status_report_is_model_invocable_in_generated_scaffolds() -> None:
 def test_loops_invoke_status_report_when_the_queue_drains() -> None:
     """Both autonomous loops retain the canonical Gate 5 reporting handoff."""
     for loop_name in ("dev-loop", "bug-loop"):
-        body = (SKILL_SOURCES / loop_name / "body.md").read_text(encoding="utf-8")
+        body = rendered_skill_body(loop_name)
         queue_step = body.split("### Step 1: Check the Queue", 1)[1].split(
             "### Step 2:", 1
         )[0]

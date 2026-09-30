@@ -17,20 +17,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests.skill_rendering import rendered_skill_body
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _skill_source(skill_name: str) -> str:
-    return (
-        REPO_ROOT
-        / "src"
-        / "ai_team"
-        / "init"
-        / "sources"
-        / "skills"
-        / skill_name
-        / "body.md"
-    ).read_text(encoding="utf-8")
+    return rendered_skill_body(skill_name)
 
 
 def _skill_scaffold(skill_name: str, tool: str) -> str:
