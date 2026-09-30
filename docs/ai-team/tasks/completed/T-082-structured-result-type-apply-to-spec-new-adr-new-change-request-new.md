@@ -1,7 +1,7 @@
 ---
 id: T-082
 title: Structured-result type; apply to spec new, adr new, change-request new
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
