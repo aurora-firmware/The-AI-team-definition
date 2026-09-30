@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import date
 from pathlib import Path
 from typing import Literal
 
@@ -13,6 +12,7 @@ from ai_team.core.fs import ArtifactExists, write_artifact
 from ai_team.core.ids import next_adr_id
 from ai_team.core.locator import find_project_root
 from ai_team.core.models import Adr
+from ai_team.core.runtime import today
 from ai_team.core.templates import load_template
 from ai_team.render import print_json
 
@@ -57,7 +57,7 @@ def new_adr(
         id=adr_id,
         title=title,
         status=status,
-        created=date.today().isoformat(),
+        created=today().isoformat(),
         supersedes=supersedes,
     )
 

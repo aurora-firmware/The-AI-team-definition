@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import date
 from pathlib import Path
 from typing import Literal
 
@@ -18,6 +17,7 @@ from ai_team.core.ids import next_bug_id
 from ai_team.core.locator import ProjectRoot, find_project_root
 from ai_team.core.lock import LockTimeout, create_artifact_with_lock
 from ai_team.core.models import Bug
+from ai_team.core.runtime import today
 from ai_team.core.templates import load_template
 from ai_team.render import print_json
 
@@ -128,7 +128,7 @@ def new_bug(
             title=title,
             severity=severity,
             status="open",
-            created=date.today().isoformat(),
+            created=today().isoformat(),
             task=task,
         )
         return dest, model, body

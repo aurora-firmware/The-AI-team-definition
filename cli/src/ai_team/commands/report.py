@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +10,7 @@ import typer
 from ai_team.commands.status import _payload
 from ai_team.core.locator import find_project_root
 from ai_team.core.models import parse_adr, parse_bug, parse_spec, parse_task
+from ai_team.core.runtime import today
 from ai_team.core.templates import load_template
 
 NAME = "report"
@@ -244,7 +244,7 @@ def default(
 ) -> None:
     """Write the bundled progress-report template to disk."""
     root = find_project_root(Path.cwd())
-    report_date = date.today().isoformat()
+    report_date = today().isoformat()
     payload: dict[str, Any] = _payload(root)
 
     destination = out

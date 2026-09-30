@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-import importlib.metadata
 import importlib.resources as resources
 import shutil
 from pathlib import Path
 
 import tomli_w
 import typer
+
+from ai_team.core.runtime import framework_version
 
 NAME = "init"
 app = typer.Typer(
@@ -211,7 +212,7 @@ def init_command(
             "project": {"dir": "project"},
             "init": {
                 "tools": selected_tools,
-                "framework_version": importlib.metadata.version("ai-team"),
+                "framework_version": framework_version(),
             },
         }
         marker.parent.mkdir(parents=True, exist_ok=True)
