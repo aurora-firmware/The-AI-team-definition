@@ -81,3 +81,27 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-09-30
+PASS
+
+Stage 1 (acceptance criteria), checked against the diff of `a45dc18` and `c77a602`:
+- AC-1 met. `cli/src/ai_team/core/runtime.py` is the only module in `commands/` or `core/` that calls `date.today()` or `importlib.metadata.version`. The one other call is `cli.py:40` (`--version`), which is exempt.
+- AC-2 met. `today()` is used for created dates in spec, task, bug, adr and change_request, for the task work-log session date, for the report date and for the archive cut-off.
+- AC-3 met. `framework_version()` supplies the init marker's `framework_version` and the installed version compared in `core/layout.py`.
+- AC-4 met. The changes are one-line swaps with unchanged output. The full suite passes with no overrides set.
+- AC-5 met. An invalid `AI_TEAM_TODAY` raises `ValueError` naming the variable. It is uncaught, which fits the task's out-of-scope note on structured results.
+- AC-6 met. `importlib.metadata.version` is looked up at call time with no from-import. The `test_layout.py` monkeypatch still works.
+- The file count is over the guideline, but that was accepted at Gate 2. No unspecified behaviour was added.
+
+Stage 2 (code quality):
+- The module is small and readable. The override names are recorded in the maintainer note, which is kept out of `usage.md`. No dead code. Tests cover each override, the invalid-date failure path, and a source-grep for AC-1.
+- I ran V-PY from `cli/` on the task branch: `uv run pytest` gave 478 passed, `ruff format --check` was clean and `ruff check` passed.
+- This is consistent with S-005 (injectable clock and version) and ADR-001..004. Generated scaffolds are untouched, which is correct.
+
+Non-blocking observations:
+- An empty `AI_TEAM_FRAMEWORK_VERSION` is accepted as the version string. Only matters if a test sets it empty.
+- The invalid-date error surfaces as a traceback. T-082 onward should map it to a formatted error.
+
+Next owner: Development Loop.
+
