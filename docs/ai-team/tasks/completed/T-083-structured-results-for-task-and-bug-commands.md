@@ -1,7 +1,7 @@
 ---
 id: T-083
 title: Structured results for task and bug commands
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
