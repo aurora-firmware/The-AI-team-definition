@@ -83,3 +83,19 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-09-30
+PASS
+
+Stage 1 (acceptance): AC-1 met: task-start, task-complete, task-unblock, bug-start and bug-resolve each have a valid-from-source case; task-block has one per source state (pending, in-progress, completed, blocked-as-already) plus a unicode reason, and its work-log entry on the fixed clock (2026-01-15) is recorded. AC-2 met: every invalid source state per command is a case whose recorded result is the not-found error listing the searched folders. AC-3 met: each command has an already-in-destination case (status 0, changed:false, tree unchanged) and an empty-project not-found case. AC-4 met: run from a detached worktree of the task branch, pytest passes (720), ruff format --check and ruff check are clean. Spot-checked case.json/after.json for task-block--appends-after-existing-session, task-start--invalid-from-completed, task-complete--already-completed and bug-resolve--invalid-from-open; they match actual command behaviour. The diff touches only fixtures/parity/ case dirs plus one test file.
+
+Stage 2 (quality): the guard test is independent, parametrised over every command, covers success and failure paths, and is readable. The Developer saw it fail (25 failed) on the empty set before seeding.
+
+Rulings:
+(a) Extra guard test `cli/tests/test_parity_lifecycle_fixtures.py` is outside Files to Touch. Accepted as sound, consistent with the T-089 precedent; it adds no product behaviour.
+(b) The omitted missing-Work-Log-heading case: bug claim independently verified. In `_append_work_log_entry` (cli/src/ai_team/commands/task.py:77-78), after `lines.extend(["", heading, ""])` the `start = len(lines) - 3` is the blank line before the heading, so the `## ` scan from `start + 1` hits the new heading immediately and the entry is inserted above `## Work Log`. The defect is real and pre-existing. Omitting the case is compatible with the ACs: none of AC-1 to AC-3 requires it (the description lists "task block with reason appends a work-log entry", which the seeded cases cover), and recording the defect as reviewed contract would make the TS core reproduce a bug. Reject-not-record was the right call.
+
+Non-blocking observations:
+- Follow-up: file a bug for `_append_work_log_entry` with no `## Work Log` heading; after the fix, seed `task-block--creates-missing-work-log` through a reviewed fixture change.
+- task-block--appends-after-existing-session records the new entry abutting the following `## Review` heading with no blank line. It is the current real behaviour and is documented in the Work Log, so the TS core must match it byte for byte. It is arguably a quirk worth a future cleanup, which would need a reviewed fixture change.
+
