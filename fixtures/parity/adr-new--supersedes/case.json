@@ -1,0 +1,19 @@
+{
+  "command": "adr new",
+  "env": {},
+  "expected": {
+    "payload": {
+      "id": "ADR-002",
+      "path": "<ROOT>/project/decisions/ADR-002-replacement.md"
+    },
+    "status": 0
+  },
+  "input": {
+    "status": "accepted",
+    "supersedes": "ADR-001",
+    "title": "Replacement"
+  },
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

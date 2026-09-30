@@ -1,0 +1,72 @@
+[
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/open",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/resolved",
+    "type": "dir"
+  },
+  {
+    "path": "project/change-requests",
+    "type": "dir"
+  },
+  {
+    "path": "project/decisions",
+    "type": "dir"
+  },
+  {
+    "path": "project/decisions/ADR-001-original.md",
+    "text": "---\nid: ADR-001\ntitle: Existing\n---\n\n# Existing\n",
+    "type": "file"
+  },
+  {
+    "path": "project/decisions/ADR-002-replacement.md",
+    "text": "---\nid: ADR-002\ntitle: Replacement\nstatus: accepted\ncreated: '2026-01-15'\nsupersedes: ADR-001\n---\n\n# ADR-000: [Decision Title]\n\n## Context\n\nWhat is the situation that requires a decision?\nWhat forces are at play?\nWhat constraints exist?\n\n## Decision\n\nWhat is the change being proposed or decided?\nState it clearly in one or two sentences, then elaborate as needed.\n\n## Consequences\n\n### Positive\n\n- Benefit 1\n- Benefit 2\n\n### Negative\n\n- Trade-off 1\n- Trade-off 2\n\n### Neutral\n\n- Side effect that is neither positive nor negative\n\n## Alternatives Considered\n\n### Alternative A: [Name]\n\n**Description:** What this alternative entails.\n**Rejected because:** Why it was not chosen.\n\n### Alternative B: [Name]\n\n**Description:** What this alternative entails.\n**Rejected because:** Why it was not chosen.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/docs",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs/archive",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/completed",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending",
+    "type": "dir"
+  }
+]
