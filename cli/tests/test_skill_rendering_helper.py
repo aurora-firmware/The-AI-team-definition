@@ -31,5 +31,5 @@ def test_rendered_skill_text_is_header_then_body(tool: str) -> None:
 
 
 def test_rendered_skill_body_rejects_unknown_tool() -> None:
-    with pytest.raises(ValueError, match="pi"):
-        rendered_skill_body("tdd", "pi")
+    with pytest.raises(ValueError, match="bogus"):
+        rendered_skill_body("tdd", "bogus")
