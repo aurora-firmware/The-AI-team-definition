@@ -1,0 +1,19 @@
+{
+  "command": "task block",
+  "env": {},
+  "expected": {
+    "payload": {
+      "changed": true,
+      "id": "T-001",
+      "path": "<ROOT>/project/tasks/blocked/T-001-example-task.md"
+    },
+    "status": 0
+  },
+  "input": {
+    "id": "T-001",
+    "reason": "Esperando acceso — ação pendente: café ☕"
+  },
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

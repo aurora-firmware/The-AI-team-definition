@@ -1,0 +1,19 @@
+{
+  "command": "task complete",
+  "env": {},
+  "expected": {
+    "message": "Task T-001 already in completed.",
+    "payload": {
+      "changed": false,
+      "id": "T-001",
+      "path": "<ROOT>/project/tasks/completed/T-001-example-task.md"
+    },
+    "status": 0
+  },
+  "input": {
+    "id": "T-001"
+  },
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

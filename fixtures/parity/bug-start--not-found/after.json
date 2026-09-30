@@ -1,0 +1,22 @@
+[
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/open",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/resolved",
+    "type": "dir"
+  }
+]

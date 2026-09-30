@@ -1,0 +1,27 @@
+[
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress/B-001-example-bug.md",
+    "text": "---\nid: B-001\ntitle: Example bug\nseverity: medium\nstatus: in-progress\ncreated: '2026-01-10'\n---\n\n# Example bug\n\n## Description\n\nIt breaks.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/bugs/open",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/resolved",
+    "type": "dir"
+  }
+]

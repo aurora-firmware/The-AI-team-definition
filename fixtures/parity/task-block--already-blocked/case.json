@@ -1,0 +1,20 @@
+{
+  "command": "task block",
+  "env": {},
+  "expected": {
+    "message": "Task T-001 already in blocked.",
+    "payload": {
+      "changed": false,
+      "id": "T-001",
+      "path": "<ROOT>/project/tasks/blocked/T-001-example-task.md"
+    },
+    "status": 0
+  },
+  "input": {
+    "id": "T-001",
+    "reason": "Waiting on API access"
+  },
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

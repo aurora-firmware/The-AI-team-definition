@@ -1,0 +1,31 @@
+[
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked/T-001-example-task.md",
+    "text": "---\nid: T-001\ntitle: Example task\nstatus: blocked\npriority: medium\nassigned-role: developer\ncreated: '2026-01-10'\n---\n\n# Example task\n\n## Description\n\nDo the thing.\n\n\n### Session 1 — 2026-01-15\nBlocked: Esperando acceso — ação pendente: café ☕\n## Work Log\n",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks/completed",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending",
+    "type": "dir"
+  }
+]
