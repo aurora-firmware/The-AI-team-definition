@@ -8,8 +8,9 @@ from typing import Any
 import typer
 
 from ai_team.commands.status import _payload
-from ai_team.core.locator import find_project_root
+from ai_team.core.locator import ProjectRoot, find_project_root
 from ai_team.core.models import parse_adr, parse_bug, parse_spec, parse_task
+from ai_team.core.result import Result
 from ai_team.core.runtime import today
 from ai_team.core.templates import load_template
 
@@ -234,6 +235,24 @@ def _render_report(
     return report
 
 
+def write_report(root: ProjectRoot, out: Path | None) -> Result:
+    """Write the progress report; return its resolved path and rendered content."""
+    report_date = today().isoformat()
+    payload: dict[str, Any] = _payload(root)
+
+    destination = out
+    if destination is None:
+        destination = root.docs / "reports" / f"progress-report-{report_date}.md"
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    content = _render_report(load_template("report"), payload, report_date, root)
+    destination.write_text(content, encoding="utf-8")
+    return Result(
+        status=0,
+        payload={"path": str(destination.resolve()), "content": content},
+    )
+
+
 @app.callback()
 def default(
     out: Path | None = typer.Option(
@@ -243,18 +262,5 @@ def default(
     ),
 ) -> None:
     """Write the bundled progress-report template to disk."""
-    root = find_project_root(Path.cwd())
-    report_date = today().isoformat()
-    payload: dict[str, Any] = _payload(root)
-
-    destination = out
-    if destination is None:
-        destination = root.docs / "reports" / f"progress-report-{report_date}.md"
-
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    template = load_template("report")
-    destination.write_text(
-        _render_report(template, payload, report_date, root),
-        encoding="utf-8",
-    )
-    typer.echo(str(destination.resolve()))
+    result = write_report(find_project_root(Path.cwd()), out)
+    typer.echo(result.payload["path"])

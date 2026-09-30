@@ -14,6 +14,7 @@ from ai_team.commands.list import (
     list_specs,
     list_tasks,
 )
+from ai_team.commands.report import write_report
 from ai_team.commands.show import show_artifact
 from ai_team.commands.status import status_summary
 from ai_team.core.locator import ProjectRoot, find_project_root
@@ -226,3 +227,43 @@ def test_status_handler_reports_integration_result_not_found_outside_git(tmp_pat
     result = status_summary(root)
 
     assert result.payload["latest_integration_result"] == "not found"
+
+
+# AC-1, AC-3
+def test_report_handler_returns_default_path_and_content_without_out(
+    tmp_path, monkeypatch
+):
+    root = _root(tmp_path)
+    _write(
+        root.tasks_in_progress / "T-001-a.md",
+        TASK.format(id="T-001", title="Alpha", status="in-progress"),
+    )
+    monkeypatch.setenv("AI_TEAM_TODAY", "2026-01-02")
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = write_report(root, None)
+
+    expected = (root.docs / "reports" / "progress-report-2026-01-02.md").resolve()
+    assert result.status == 0
+    assert Path(result.payload["path"]) == expected
+    assert expected.read_text(encoding="utf-8") == result.payload["content"]
+    assert "Progress Report — 2026-01-02" in result.payload["content"]
+    assert "T-001 | Alpha" in result.payload["content"]
+    assert "Latest integration-test result: not found" in result.payload["content"]
+
+
+def test_report_handler_writes_to_out_path_and_cli_prints_same_path(
+    tmp_path, monkeypatch
+):
+    root = _root(tmp_path)
+    destination = tmp_path / "custom" / "nested" / "report.md"
+    monkeypatch.chdir(tmp_path)
+
+    result = write_report(root, destination)
+    cli = CliRunner().invoke(app, ["report", "--out", str(destination)])
+
+    assert Path(result.payload["path"]) == destination.resolve()
+    assert destination.is_file()
+    assert cli.stdout.strip() == result.payload["path"]
