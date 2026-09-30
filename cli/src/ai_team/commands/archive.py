@@ -11,6 +11,7 @@ import typer
 from ai_team.core.fs import move_artifact
 from ai_team.core.locator import find_project_root
 from ai_team.core.models import parse_bug, parse_task
+from ai_team.core.runtime import today
 
 NAME = "archive"
 app = typer.Typer(
@@ -64,7 +65,7 @@ def archive(
 
     root = find_project_root(Path.cwd())
     archive_root = root.project_dir / "archive"
-    cutoff = date.today() - delta
+    cutoff = today() - delta
 
     moves: list[tuple[Path, Path]] = []
     for source in _iter_markdown_files(root.tasks_completed):

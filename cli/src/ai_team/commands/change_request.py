@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import date
 from pathlib import Path
 
 import typer
@@ -12,6 +11,7 @@ from ai_team.core.fs import ArtifactExists, write_artifact
 from ai_team.core.ids import next_change_request_id
 from ai_team.core.locator import find_project_root
 from ai_team.core.models import ChangeRequest
+from ai_team.core.runtime import today
 from ai_team.core.templates import load_template
 from ai_team.render import print_json
 
@@ -57,7 +57,7 @@ def new_change_request(
         id=cr_id,
         title=title,
         status="pending",
-        created=date.today().isoformat(),
+        created=today().isoformat(),
     )
 
     try:

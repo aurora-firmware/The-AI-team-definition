@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import date
 from pathlib import Path
 from typing import Literal
 
@@ -16,6 +15,7 @@ from ai_team.core.ids import next_spec_id
 from ai_team.core.locator import find_project_root
 from ai_team.core.lock import LockTimeout, create_artifact_with_lock
 from ai_team.core.models import Spec
+from ai_team.core.runtime import today
 from ai_team.core.templates import load_template
 from ai_team.render import print_json
 
@@ -68,7 +68,7 @@ def new_spec(
             title=title,
             version="0.1",
             status=status,
-            created=date.today().isoformat(),
+            created=today().isoformat(),
             author=author,
             id=spec_id,
             _source_map=source_map,

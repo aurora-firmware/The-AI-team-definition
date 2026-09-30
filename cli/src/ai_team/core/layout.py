@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import importlib.metadata
 import importlib.resources as resources
 import re
 import tomllib
@@ -12,6 +11,7 @@ from pathlib import Path
 from typing import Literal
 
 from ai_team.core.locator import ProjectRoot
+from ai_team.core.runtime import framework_version
 from ai_team.core.validate import Finding as ArtifactFinding
 from ai_team.core.validate import validate_project
 
@@ -195,9 +195,7 @@ def resolve_layout(
         version_status = "invalid"
 
     installed_version = (
-        importlib.metadata.version("ai-team")
-        if current_version is None
-        else current_version
+        framework_version() if current_version is None else current_version
     )
     return (
         LayoutContract(
