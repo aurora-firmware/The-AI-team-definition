@@ -71,6 +71,29 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-09-30
+I built the parity fixture format and the Python runner, in three red→green cycles. First I wrote the tree-manifest, lock-scoping and discovery code. Then the runner and recorder. Last the seed helper, README and smoke case.
+
+Format decisions:
+- A case is a directory `<command-slug>--<case>` holding `case.json` (command, tool-contract `input`, `today`, `version`, optional `env` and `project_dir`, and `expected` with status and payload or message), plus `before.json` and `after.json`. The two tree files are serialised manifests: sorted entries of dir or file, with `text` as UTF-8 and `base64` otherwise, so empty directories, `.ai-team.lock`, nested `.gitignore` and exact line endings survive git.
+- Remediation hints are never recorded; errors compare the message only.
+- Only the absolute root is normalised, to `<ROOT>`, in results and file text.
+- `lock-sentinels.json` lists exactly `<project_dir>/.ai-team.lock` and `<project_dir>/.ai-team-ts.lock`. They are dropped from the after tree, including anything beneath the TS path, with no globs. `project/sub/.ai-team.lock` is still compared.
+- The runner unsets `AI_TEAM_ROOT` unless the case sets it, and sets `GIT_CEILING_DIRECTORIES` to the temp parent. It materialises the tree in a fresh temp directory and passes an explicit root unless the case sets `AI_TEAM_ROOT`. It sets clock and version only through `AI_TEAM_TODAY` and `AI_TEAM_FRAMEWORK_VERSION`. It restores the environment and cwd afterwards.
+- `record_case` and the seed script refuse to overwrite an existing case and reject names that are not slug`--`case.
+- Dispatch covers every command in the tool table, not only `status`, so the bulk-case tasks (T-089 to T-093) need no runner changes. `init` runs with an empty tools list. `ProjectRootNotFound` becomes a status-1 result carrying the message.
+
+Tried and rejected:
+- Committing raw directory trees. The root `.gitignore` ignores `.claude`, `.codex`, `.pi` and `.ai-team.toml`, and git drops empty directories.
+- Per-case lock lists, and passing the lock file location into `_execute`. A single repo-level file is what the TS runner will load.
+
+Verification: full pytest 567 passed, ruff format/check clean. Commits df400a3, 296d908, 6956fba.
+
+What remains:
+- The bulk cases (T-089 to T-093) and the TS runner (T-112).
+- The runner's `<ROOT>` and `env` conventions should be mirrored exactly in the TS runner.
+- The pi lock path was taken from the T-087 skeleton `.gitignore`: `.ai-team-ts.lock` directly under `project_dir`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
