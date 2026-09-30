@@ -107,3 +107,32 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Reviewed `feat/pi-extension...task/T-099-pi-target-in-the-sync-generate-pi-resources` (869a04e, ed5dd7b) in a detached worktree of the branch head.
+
+Stage 1 (acceptance criteria):
+- AC-1: the sync produces every listed output: `skills/*/SKILL.md` (19, orchestrators included), `skill-calls/*.json`, `templates/`, `project/` (with `.gitignore` and leaf dirs), `root/`, `scaffold-dirs.json` (project, claude, codex), `command-map.json` and `version.txt`.
+- AC-2: `pi/.gitignore` ignores `resources/version.txt`. `git status --ignored` shows it as `!!`, and it is not tracked. The value `0.10.3.dev149+ged5dd7bbf` equals the hatch output.
+- AC-3: `test_sync_fails_clearly_when_the_version_cannot_be_determined` asserts the failure. The version is computed before any output is written.
+- AC-4: two consecutive syncs leave `git status --porcelain pi cli/src` empty apart from the ignored version file. V-GOLD (diff of the claude and codex scaffolds against the merge-base with main) is empty.
+- AC-5: a test compares the computed version with `hatchling version` run under `cli/pyproject.toml`. I ran the same command by hand and got an identical value.
+- Generated `pi/resources/` is committed and everything except `version.txt` is tracked. This matches the task ("no committed diff") and ADR-004, which forbids only committing the version.
+
+Deviations judged:
+- `cli/tests/test_skill_markers.py` (autouse version pin and fake-repo fixtures for templates and root) is acceptable. Its fake repos run the real sync, which now needs a version and the new source inputs. The change is minimal and needed to keep the suite green.
+- `CLAUDE.md` and `cli/docs/usage.md` are in Files to Touch under G2 N2. They are needed for the `uv` dependency and the override variable, and the edits are small and accurate.
+- Regex extraction of skill-calls from the rendered body is acceptable. `skill_markers.py` is outside the task's files, and the regex matches both renderer forms (`tool with` and `tool call`). Tests cover the extracted calls and the empty case.
+- Computing the version with `uv run --no-project --with hatchling --with hatch-vcs ... hatchling version` follows ADR-004. The version comes from the source tree via hatch-vcs, is never committed, and is not read from installed metadata. The script stays stdlib-only, so bare `python` works.
+
+Stage 2 (quality): the code is focused and readable. Failure paths are tested (undeterminable version, unrenderable marker, stale-file removal, idempotence). Tests are independent and use tmp_path. Nothing hardcodes secrets. Checks run: `uv run pytest` (959 passed), `ruff format --check` and `ruff check` both clean.
+
+Non-blocking observations:
+- All 19 `skill-calls/*.json` are `[]` today because the source skills hold no markers yet. That is expected before the skill conversions.
+- The call regex `\{[^`]*\}` would truncate a call whose JSON value contains a backtick. The sync would then fail loudly on invalid JSON rather than emit bad output. Revisit if a flag value can contain a backtick.
+- The Developer's follow-up about quoting pi header descriptions in `skill_markers.py` stands (T-123).
+
+Next owner: Development Loop.
+
