@@ -64,6 +64,12 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-09-30
+
+Added `cli/src/ai_team/core/runtime.py` as the only place that supplies today's date and the framework version. The override variables are `AI_TEAM_TODAY` (an ISO date) and `AI_TEAM_FRAMEWORK_VERSION`. All `date.today()` calls in the spec, adr, change_request, task, bug, report and archive commands now go through `today()`. The marker write in `init` and the installed-version lookup in `core/layout.py` go through `framework_version()`. The version lookup uses `importlib.metadata.version` at call time, so the `test_layout.py` monkeypatch still works. An invalid date override raises a `ValueError` that names `AI_TEAM_TODAY`. `cli.py --version` is left as is, per AC-1. New tests in `cli/tests/test_t081_runtime_overrides.py` cover each override and include a source-grep test for AC-1. A maintainer note was added at `cli/docs/maintainer-runtime-overrides.md`. Committed on `task/T-081-injectable-today-and-version` as `a45dc18` (feat) and `c77a602` (docs).
+
+The new tests first failed (17 failed) and then passed. Full V-PY passes (478 tests, ruff format and ruff check clean). Test-setup obstacles: the `new` commands need an initialised project tree, so tests run `init` first; the YAML writer quotes the `created` date, so the assertion accepts optional quotes. The bad-date error is an uncaught `ValueError` rather than a formatted CLI error, because structured results are out of scope for this task (T-082 onward). No scaffold sync or `gen_docs.sh` was needed. Nothing remains.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
