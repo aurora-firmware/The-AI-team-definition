@@ -1,7 +1,7 @@
 ---
 id: T-098
 title: Pi marker rendering and derived pi headers
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
