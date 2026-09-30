@@ -1,0 +1,94 @@
+[
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/open",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/open/B-001-crash.md",
+    "text": "---\nid: B-001\ntitle: Crash\nseverity: medium\nstatus: open\ncreated: '2026-01-04'\ntask: T-001\n---\n\n# Crash\n\n## Description\n\nBody of Crash.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/bugs/resolved",
+    "type": "dir"
+  },
+  {
+    "path": "project/change-requests",
+    "type": "dir"
+  },
+  {
+    "path": "project/change-requests/CR-001-add-export.md",
+    "text": "---\nid: CR-001\ntitle: Add export\nstatus: pending\ncreated: '2026-01-14'\n---\n\n# Add export\n\n## Description\n\nBody of Add export.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/decisions",
+    "type": "dir"
+  },
+  {
+    "path": "project/decisions/ADR-001-first-decision.md",
+    "text": "---\nid: ADR-001\ntitle: First decision\nstatus: accepted\ncreated: '2026-01-06'\n---\n\n# First decision\n\n## Description\n\nBody of First decision.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/decisions/ADR-002-second-decision.md",
+    "text": "---\nid: ADR-002\ntitle: Second decision\nstatus: accepted\ncreated: '2026-01-06'\nsupersedes: ADR-001\n---\n\n# Second decision\n\n## Description\n\nBody of Second decision.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/specs",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs/S-001-first-spec.md",
+    "text": "---\ntitle: First spec\nversion: '0.1'\nstatus: draft\ncreated: '2026-01-05'\nauthor: planner\nid: S-001\n---\n\n# First spec\n\n## Description\n\nBody of First spec.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/completed",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/completed/T-002-set-up-repo.md",
+    "text": "---\nid: T-002\ntitle: Set up repo\nstatus: completed\npriority: medium\nassigned-role: developer\ncreated: '2026-01-03'\n---\n\n# Set up repo\n\n## Description\n\nBody of Set up repo.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending/T-001-plan-release.md",
+    "text": "---\nid: T-001\ntitle: Plan release\nstatus: pending\npriority: medium\nassigned-role: developer\ncreated: '2026-01-02'\nspec: S-001\n---\n\n# Plan release\n\n## Description\n\nBody of Plan release.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks/pending/T-003-no-title.md",
+    "text": "---\nid: T-003\nstatus: pending\npriority: medium\nassigned-role: developer\ncreated: '2026-01-05'\n---\n\n# No title\n",
+    "type": "file"
+  }
+]

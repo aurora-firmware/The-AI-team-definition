@@ -1,0 +1,26 @@
+{
+  "command": "archive",
+  "env": {},
+  "expected": {
+    "payload": {
+      "dry_run": false,
+      "moves": [
+        {
+          "destination": "<ROOT>/project/archive/2024-11/T-001-oldest-task.md",
+          "source": "<ROOT>/project/tasks/completed/T-001-oldest-task.md"
+        },
+        {
+          "destination": "<ROOT>/project/archive/2025-02/B-001-old-bug.md",
+          "source": "<ROOT>/project/bugs/resolved/B-001-old-bug.md"
+        }
+      ]
+    },
+    "status": 0
+  },
+  "input": {
+    "olderThan": "1y"
+  },
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}

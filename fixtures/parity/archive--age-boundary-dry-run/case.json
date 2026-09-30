@@ -1,0 +1,31 @@
+{
+  "command": "archive",
+  "env": {},
+  "expected": {
+    "payload": {
+      "dry_run": true,
+      "moves": [
+        {
+          "destination": "<ROOT>/project/archive/2026-01/T-001-day-before-cutoff.md",
+          "source": "<ROOT>/project/tasks/completed/T-001-day-before-cutoff.md"
+        },
+        {
+          "destination": "<ROOT>/project/archive/2025-12/T-004-month-bucket.md",
+          "source": "<ROOT>/project/tasks/completed/T-004-month-bucket.md"
+        },
+        {
+          "destination": "<ROOT>/project/archive/2026-01/B-001-day-before-cutoff.md",
+          "source": "<ROOT>/project/bugs/resolved/B-001-day-before-cutoff.md"
+        }
+      ]
+    },
+    "status": 0
+  },
+  "input": {
+    "dryRun": true,
+    "olderThan": "30d"
+  },
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}
