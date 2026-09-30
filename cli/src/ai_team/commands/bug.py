@@ -17,6 +17,7 @@ from ai_team.core.ids import next_bug_id
 from ai_team.core.locator import ProjectRoot, find_project_root
 from ai_team.core.lock import LockTimeout, create_artifact_with_lock
 from ai_team.core.models import Bug
+from ai_team.core.result import Result
 from ai_team.core.runtime import today
 from ai_team.core.templates import load_template
 from ai_team.render import print_json
@@ -52,33 +53,39 @@ def _bug_state_folders(root: ProjectRoot) -> dict[BugState, Path]:
     }
 
 
-def _exit_not_found(bug_id: str, folders: list[Path]) -> None:
+def _not_found(bug_id: str, folders: list[Path]) -> Result:
     searched = ", ".join(str(path) for path in folders)
-    typer.echo(
-        f"Bug '{bug_id}' not found. Searched folders: {searched}",
-        err=True,
+    return Result(
+        status=1,
+        message=f"Bug '{bug_id}' not found. Searched folders: {searched}",
     )
-    raise typer.Exit(code=1)
 
 
 def _transition_bug(
+    root: ProjectRoot,
     bug_id: str,
     *,
     source_state: BugState,
     destination_state: BugState,
     new_status: BugState,
-) -> None:
-    root = find_project_root(Path.cwd())
+) -> Result:
     folders = _bug_state_folders(root)
 
     in_destination = _find_bug_file(bug_id, folders[destination_state])
     if in_destination is not None:
-        typer.echo(f"Bug {bug_id} already in {destination_state}.")
-        return
+        return Result(
+            status=0,
+            payload={
+                "id": bug_id,
+                "path": str(in_destination.resolve()),
+                "changed": False,
+            },
+            message=f"Bug {bug_id} already in {destination_state}.",
+        )
 
     source = _find_bug_file(bug_id, folders[source_state])
     if source is None:
-        _exit_not_found(
+        return _not_found(
             bug_id,
             [folders["open"], folders["in-progress"], folders["resolved"]],
         )
@@ -87,7 +94,21 @@ def _transition_bug(
     destination.parent.mkdir(parents=True, exist_ok=True)
     update_status(source, new_status)
     move_artifact(source, destination)
-    typer.echo(str(destination.resolve()))
+    return Result(
+        status=0,
+        payload={"id": bug_id, "path": str(destination.resolve()), "changed": True},
+    )
+
+
+def _emit_transition(result: Result) -> None:
+    """Print a transition result exactly as the CLI always has."""
+    if result.status != 0:
+        typer.echo(result.text(), err=True)
+        raise typer.Exit(code=result.status)
+    if result.message:
+        typer.echo(result.message)
+        return
+    typer.echo(result.payload["path"])
 
 
 def _template_body(template: str) -> str:
@@ -106,15 +127,13 @@ def _template_body(template: str) -> str:
     return body
 
 
-@app.command("new")
-def new_bug(
+def create_bug(
+    root: ProjectRoot,
     title: str,
-    severity: Severity = typer.Option("medium", "--severity"),
-    task: str | None = typer.Option(None, "--task"),
-    as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
-) -> None:
-    """Create a new open bug artifact from the bundled template."""
-    root = find_project_root(Path.cwd())
+    severity: Severity = "medium",
+    task: str | None = None,
+) -> Result:
+    """Create an open bug under *root*; return its id/path or a domain-error result."""
 
     def build(bug_id: str) -> tuple[Path, Bug, str]:
         slug = slugify(title)
@@ -139,25 +158,16 @@ def new_bug(
             allocate_id=lambda: next_bug_id(root),
             build=build,
         )
-    except ArtifactExists as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(code=1) from exc
-    except LockTimeout as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(code=1) from exc
+    except (ArtifactExists, LockTimeout) as exc:
+        return Result(status=1, message=str(exc))
 
-    absolute_path = str(dest.resolve())
-    if as_json:
-        print_json({"id": bug_id, "path": absolute_path})
-        return
-
-    typer.echo(absolute_path)
+    return Result(status=0, payload={"id": bug_id, "path": str(dest.resolve())})
 
 
-@app.command("start")
-def start_bug(bug_id: str) -> None:
+def start_bug(root: ProjectRoot, bug_id: str) -> Result:
     """Move an open bug to in-progress and update status."""
-    _transition_bug(
+    return _transition_bug(
+        root,
         bug_id,
         source_state="open",
         destination_state="in-progress",
@@ -165,12 +175,45 @@ def start_bug(bug_id: str) -> None:
     )
 
 
-@app.command("resolve")
-def resolve_bug(bug_id: str) -> None:
+def resolve_bug(root: ProjectRoot, bug_id: str) -> Result:
     """Move an in-progress bug to resolved and update status."""
-    _transition_bug(
+    return _transition_bug(
+        root,
         bug_id,
         source_state="in-progress",
         destination_state="resolved",
         new_status="resolved",
     )
+
+
+@app.command("new")
+def new_bug(
+    title: str,
+    severity: Severity = typer.Option("medium", "--severity"),
+    task: str | None = typer.Option(None, "--task"),
+    as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
+) -> None:
+    """Create a new open bug artifact from the bundled template."""
+    root = find_project_root(Path.cwd())
+    result = create_bug(root, title, severity, task)
+    if result.status != 0:
+        typer.echo(result.text(), err=True)
+        raise typer.Exit(code=result.status)
+
+    if as_json:
+        print_json(result.payload)
+        return
+
+    typer.echo(result.payload["path"])
+
+
+@app.command("start")
+def start_bug_command(bug_id: str) -> None:
+    """Move an open bug to in-progress and update status."""
+    _emit_transition(start_bug(find_project_root(Path.cwd()), bug_id))
+
+
+@app.command("resolve")
+def resolve_bug_command(bug_id: str) -> None:
+    """Move an in-progress bug to resolved and update status."""
+    _emit_transition(resolve_bug(find_project_root(Path.cwd()), bug_id))
