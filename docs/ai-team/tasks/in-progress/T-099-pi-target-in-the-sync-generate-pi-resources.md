@@ -71,6 +71,31 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Done: I added the pi target to `cli/scripts/sync_init_scaffolds.py`. It runs in two cycles, both committed on the task branch.
+
+Cycle 1 covers the version. `compute_framework_version` returns `SETUPTOOLS_SCM_PRETEND_VERSION` if it is set. Otherwise it shells out to hatchling through `uv run --no-project --with hatchling --with hatch-vcs`, run from `cli/`. That applies the pyproject raw-options and avoids the frozen editable-install metadata, and it keeps the script stdlib-only, so bare `python` still works. The version is computed first and the sync fails with "cannot determine the framework version" if it can't be found. It is written to `pi/resources/version.txt`, which `pi/.gitignore` ignores.
+
+Cycle 2 writes the rest of `pi/resources/`:
+- `skills/<name>/SKILL.md` for every skill, including the orchestrators: the header is derived via `derive_pi_header` and the body is rendered for pi.
+- `skill-calls/<name>.json`: an array of the call-form input objects in each rendered skill. The array is empty for skills without calls.
+- `templates/`
+- `project/` (skeleton with `.gitignore` and `.gitkeep` leaf dirs)
+- `root/` (root guidance sources)
+- `scaffold-dirs.json`: directory lists for project, claude and codex, for `check-layout` Level 1
+- `command-map.json`: a byte copy of the source map
+
+The sync replaces `pi/resources` wholesale each run, so stale files don't survive.
+
+Tried and rejected:
+- Switching the documented command to `uv run python ...`, because the subprocess approach keeps the documented command unchanged.
+- Modifying `skill_markers.py` to collect calls, because the file is out of scope (I used a regex on rendered output).
+- Committing the version anywhere, which the ADR forbids.
+
+Follow-up from the T-098 review: `derive_pi_header` emits the description unquoted, and I did not quote it. It lives in `skill_markers.py`, which is not in this task's files. I checked all 19 generated pi descriptions, and none contains a colon-space or a leading YAML-special character, so nothing is broken today. A later task that touches `skill_markers.py` should quote or escape the value. T-123 could assert that the pi headers parse as YAML.
+
+Remaining: T-100 should extend `pi/.gitignore` with the node entries (mine holds only `resources/version.txt`). T-105 reads `pi/resources/version.txt` and should use that name. T-119 and T-111 read `pi/resources/scaffold-dirs.json`, `pi/resources/root/` and `pi/resources/project/`.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
