@@ -191,8 +191,8 @@ def test_command_marker_without_argv_is_rejected(command_map) -> None:
 
 
 def test_unsupported_target_is_rejected(command_map) -> None:
-    with pytest.raises(ValueError, match="pi"):
-        _render("{{ai-team status}}", "pi", command_map)
+    with pytest.raises(ValueError, match="bogus"):
+        _render("{{ai-team status}}", "bogus", command_map)
 
 
 # AC-3: header markers rendered per target (via the sync).
