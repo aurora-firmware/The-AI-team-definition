@@ -1,0 +1,17 @@
+{
+  "command": "bug new",
+  "env": {},
+  "expected": {
+    "payload": {
+      "id": "B-009",
+      "path": "<ROOT>/project/bugs/open/B-009-beyond-resolved.md"
+    },
+    "status": 0
+  },
+  "input": {
+    "title": "Beyond resolved"
+  },
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}
