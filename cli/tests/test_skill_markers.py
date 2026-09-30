@@ -221,6 +221,11 @@ def _fake_repo(tmp_path: Path, body: str, metadata: str) -> Path:
     project.mkdir()
     for name in ("CLAUDE.md", "AGENTS.md", ".gitignore"):
         (project / name).write_text("x\n", encoding="utf-8")
+    (init_root.parent / "templates").mkdir()
+    (init_root.parent / "templates" / "task.md").write_text("t\n", encoding="utf-8")
+    (sources / "root").mkdir()
+    for name in ("CLAUDE.md", "AGENTS.md"):
+        (sources / "root" / name).write_text("x\n", encoding="utf-8")
     scripts = repo / "cli" / "scripts"
     scripts.mkdir(parents=True)
     for name in ("sync_init_scaffolds.py", "skill_markers.py"):

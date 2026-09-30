@@ -17,6 +17,9 @@ uv build
 ```
 
 Run `python scripts/sync_init_scaffolds.py` whenever source scaffolds change.
+The sync also writes `pi/resources/` and the git-ignored `pi/resources/version.txt`.
+It asks `uv` for the hatch-vcs version of the source tree, so `uv` must be on the
+PATH; set `SETUPTOOLS_SCM_PRETEND_VERSION` to supply a version without git history.
 If you update command output or release guidance, regenerate `cli/docs/commands.md`
 with `bash cli/scripts/gen_docs.sh` before committing.
 

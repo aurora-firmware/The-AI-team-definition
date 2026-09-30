@@ -1,0 +1,615 @@
+{
+  "commands": [
+    {
+      "command": "adr new",
+      "positionals": [
+        {
+          "cliName": "title",
+          "field": "title",
+          "required": true,
+          "default": null
+        }
+      ],
+      "flags": [
+        {
+          "flag": "--status",
+          "field": "status",
+          "cliOnly": false,
+          "required": false,
+          "default": "proposed",
+          "choices": [
+            "proposed",
+            "accepted",
+            "superseded"
+          ],
+          "boolean": false
+        },
+        {
+          "flag": "--supersedes",
+          "field": "supersedes",
+          "cliOnly": false,
+          "required": false,
+          "default": null,
+          "choices": null,
+          "boolean": false
+        },
+        {
+          "flag": "--json",
+          "field": null,
+          "cliOnly": true,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        }
+      ]
+    },
+    {
+      "command": "archive",
+      "positionals": [],
+      "flags": [
+        {
+          "flag": "--older-than",
+          "field": "olderThan",
+          "cliOnly": false,
+          "required": false,
+          "default": "90d",
+          "choices": null,
+          "boolean": false
+        },
+        {
+          "flag": "--dry-run",
+          "field": "dryRun",
+          "cliOnly": false,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        }
+      ]
+    },
+    {
+      "command": "bug new",
+      "positionals": [
+        {
+          "cliName": "title",
+          "field": "title",
+          "required": true,
+          "default": null
+        }
+      ],
+      "flags": [
+        {
+          "flag": "--severity",
+          "field": "severity",
+          "cliOnly": false,
+          "required": false,
+          "default": "medium",
+          "choices": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ],
+          "boolean": false
+        },
+        {
+          "flag": "--task",
+          "field": "task",
+          "cliOnly": false,
+          "required": false,
+          "default": null,
+          "choices": null,
+          "boolean": false
+        },
+        {
+          "flag": "--json",
+          "field": null,
+          "cliOnly": true,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        }
+      ]
+    },
+    {
+      "command": "bug start",
+      "positionals": [
+        {
+          "cliName": "bug_id",
+          "field": "id",
+          "required": true,
+          "default": null
+        }
+      ],
+      "flags": []
+    },
+    {
+      "command": "bug resolve",
+      "positionals": [
+        {
+          "cliName": "bug_id",
+          "field": "id",
+          "required": true,
+          "default": null
+        }
+      ],
+      "flags": []
+    },
+    {
+      "command": "change-request new",
+      "positionals": [
+        {
+          "cliName": "title",
+          "field": "title",
+          "required": true,
+          "default": null
+        }
+      ],
+      "flags": [
+        {
+          "flag": "--json",
+          "field": null,
+          "cliOnly": true,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        }
+      ]
+    },
+    {
+      "command": "check-layout",
+      "positionals": [],
+      "flags": []
+    },
+    {
+      "command": "init",
+      "positionals": [
+        {
+          "cliName": "path",
+          "field": "path",
+          "required": false,
+          "default": "."
+        }
+      ],
+      "flags": [
+        {
+          "flag": "--tools",
+          "field": null,
+          "cliOnly": true,
+          "required": false,
+          "default": null,
+          "choices": null,
+          "boolean": false
+        },
+        {
+          "flag": "--force",
+          "field": "force",
+          "cliOnly": false,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        },
+        {
+          "flag": "--dry-run",
+          "field": "dryRun",
+          "cliOnly": false,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        },
+        {
+          "flag": "--no-interactive",
+          "field": null,
+          "cliOnly": true,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        },
+        {
+          "flag": "--create-root-guidance",
+          "field": "createRootGuidance",
+          "cliOnly": false,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        }
+      ]
+    },
+    {
+      "command": "list tasks",
+      "positionals": [],
+      "flags": [
+        {
+          "flag": "--state",
+          "field": "state",
+          "cliOnly": false,
+          "required": false,
+          "default": null,
+          "choices": null,
+          "boolean": false
+        },
+        {
+          "flag": "--json",
+          "field": null,
+          "cliOnly": true,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        }
+      ]
+    },
+    {
+      "command": "list bugs",
+      "positionals": [],
+      "flags": [
+        {
+          "flag": "--state",
+          "field": "state",
+          "cliOnly": false,
+          "required": false,
+          "default": null,
+          "choices": null,
+          "boolean": false
+        },
+        {
+          "flag": "--json",
+          "field": null,
+          "cliOnly": true,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        }
+      ]
+    },
+    {
+      "command": "list specs",
+      "positionals": [],
+      "flags": [
+        {
+          "flag": "--state",
+          "field": "state",
+          "cliOnly": false,
+          "required": false,
+          "default": null,
+          "choices": null,
+          "boolean": false
+        },
+        {
+          "flag": "--json",
+          "field": null,
+          "cliOnly": true,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        }
+      ]
+    },
+    {
+      "command": "list adrs",
+      "positionals": [],
+      "flags": [
+        {
+          "flag": "--state",
+          "field": "state",
+          "cliOnly": false,
+          "required": false,
+          "default": null,
+          "choices": null,
+          "boolean": false
+        },
+        {
+          "flag": "--json",
+          "field": null,
+          "cliOnly": true,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        }
+      ]
+    },
+    {
+      "command": "list change-requests",
+      "positionals": [],
+      "flags": [
+        {
+          "flag": "--json",
+          "field": null,
+          "cliOnly": true,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        }
+      ]
+    },
+    {
+      "command": "report",
+      "positionals": [],
+      "flags": [
+        {
+          "flag": "--out",
+          "field": "out",
+          "cliOnly": false,
+          "required": false,
+          "default": null,
+          "choices": null,
+          "boolean": false
+        }
+      ]
+    },
+    {
+      "command": "show",
+      "positionals": [
+        {
+          "cliName": "identifier",
+          "field": "identifier",
+          "required": true,
+          "default": null
+        }
+      ],
+      "flags": [
+        {
+          "flag": "--json",
+          "field": null,
+          "cliOnly": true,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        }
+      ]
+    },
+    {
+      "command": "spec new",
+      "positionals": [
+        {
+          "cliName": "title",
+          "field": "title",
+          "required": true,
+          "default": null
+        }
+      ],
+      "flags": [
+        {
+          "flag": "--author",
+          "field": "author",
+          "cliOnly": false,
+          "required": false,
+          "default": "planner",
+          "choices": null,
+          "boolean": false
+        },
+        {
+          "flag": "--status",
+          "field": "status",
+          "cliOnly": false,
+          "required": false,
+          "default": "draft",
+          "choices": [
+            "draft",
+            "review",
+            "approved",
+            "superseded"
+          ],
+          "boolean": false
+        },
+        {
+          "flag": "--json",
+          "field": null,
+          "cliOnly": true,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        }
+      ]
+    },
+    {
+      "command": "status",
+      "positionals": [],
+      "flags": [
+        {
+          "flag": "--json",
+          "field": null,
+          "cliOnly": true,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        }
+      ]
+    },
+    {
+      "command": "task new",
+      "positionals": [
+        {
+          "cliName": "title",
+          "field": "title",
+          "required": true,
+          "default": null
+        }
+      ],
+      "flags": [
+        {
+          "flag": "--priority",
+          "field": "priority",
+          "cliOnly": false,
+          "required": false,
+          "default": "medium",
+          "choices": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ],
+          "boolean": false
+        },
+        {
+          "flag": "--assigned-role",
+          "field": "assignedRole",
+          "cliOnly": false,
+          "required": false,
+          "default": "unassigned",
+          "choices": null,
+          "boolean": false
+        },
+        {
+          "flag": "--spec",
+          "field": "spec",
+          "cliOnly": false,
+          "required": false,
+          "default": null,
+          "choices": null,
+          "boolean": false
+        },
+        {
+          "flag": "--json",
+          "field": null,
+          "cliOnly": true,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        }
+      ]
+    },
+    {
+      "command": "task start",
+      "positionals": [
+        {
+          "cliName": "task_id",
+          "field": "id",
+          "required": true,
+          "default": null
+        }
+      ],
+      "flags": []
+    },
+    {
+      "command": "task complete",
+      "positionals": [
+        {
+          "cliName": "task_id",
+          "field": "id",
+          "required": true,
+          "default": null
+        }
+      ],
+      "flags": []
+    },
+    {
+      "command": "task unblock",
+      "positionals": [
+        {
+          "cliName": "task_id",
+          "field": "id",
+          "required": true,
+          "default": null
+        }
+      ],
+      "flags": []
+    },
+    {
+      "command": "task block",
+      "positionals": [
+        {
+          "cliName": "task_id",
+          "field": "id",
+          "required": true,
+          "default": null
+        }
+      ],
+      "flags": [
+        {
+          "flag": "--reason",
+          "field": "reason",
+          "cliOnly": false,
+          "required": true,
+          "default": null,
+          "choices": null,
+          "boolean": false
+        }
+      ]
+    },
+    {
+      "command": "validate",
+      "positionals": [],
+      "flags": [
+        {
+          "flag": "--all",
+          "field": "all",
+          "cliOnly": false,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        },
+        {
+          "flag": "--tasks",
+          "field": "tasks",
+          "cliOnly": false,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        },
+        {
+          "flag": "--bugs",
+          "field": "bugs",
+          "cliOnly": false,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        },
+        {
+          "flag": "--specs",
+          "field": "specs",
+          "cliOnly": false,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        },
+        {
+          "flag": "--adrs",
+          "field": "adrs",
+          "cliOnly": false,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        },
+        {
+          "flag": "--change-requests",
+          "field": "changeRequests",
+          "cliOnly": false,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        },
+        {
+          "flag": "--json",
+          "field": null,
+          "cliOnly": true,
+          "required": false,
+          "default": false,
+          "choices": null,
+          "boolean": true
+        }
+      ]
+    }
+  ]
+}

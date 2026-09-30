@@ -122,6 +122,20 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
         ".ai-team.lock\n.ai-team-ts.lock\n",
     )
 
+    # Package-owned artifact templates and root guidance sources (pi resources).
+    _write(
+        repo / "cli" / "src" / "ai_team" / "templates" / "task.md",
+        "---\nid: {id}\n---\n",
+    )
+    _write(
+        repo / "cli" / "src" / "ai_team" / "init" / "sources" / "root" / "CLAUDE.md",
+        "# Root Claude\n\n## Commands\n",
+    )
+    _write(
+        repo / "cli" / "src" / "ai_team" / "init" / "sources" / "root" / "AGENTS.md",
+        "# Root Agents\n\n## Commands\n",
+    )
+
     # Seed stale generated output that should be removed.
     _write(
         repo
