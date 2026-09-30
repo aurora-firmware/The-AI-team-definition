@@ -106,3 +106,18 @@ Failed check:
 Non-blocking: the Generation Flow block is fine as is. No Verification rerun was needed for a docs-only change; the Developer reported pytest 461 passed and ruff clean.
 
 Next owner: Developer (via the Development Loop).
+
+### Review Verdict — 2026-09-30
+PASS
+
+Re-review (cycle 2) of the full branch diff `task/T-079-component-map-system-overview` against `feat/pi-extension` (`b97549d` + `01d1c0c`).
+
+Prior finding resolved: in the "Pi Extension Components" table of `ai-process/architecture/component-map.md`, the pi adapter and TS artifact core rows now use the spec-level owner `pi/`, and the fixture runners row reads "One pytest runner and one vitest runner" with no location. No unspecified `pi/src/` or `cli/tests/` path remains. `system-overview.md` carries only spec-level paths (`pi/`, `pi/resources/`, `fixtures/parity/`).
+
+Stage 1: AC-1 (each component has an owning path and interface), AC-2 (sync -> pi resources -> adapter -> TS core flow, fixtures binding both implementations), AC-3 (own locks, mixed concurrency unsupported, ADR-003) and AC-4 (`pi/resources/` generated and never hand-edited, claude/codex exports unchanged apart from the sanctioned TS lock `.gitignore` entry) are all met. Only the two files in "Files to Touch" changed. The command mapping table was verified in cycle 1 and is unchanged.
+
+Stage 2: docs-only change; content is accurate, consistent with S-005 and ADR-003/004, and has no dead or duplicated text. Developer reported pytest 461 passed and ruff clean; not rerun for a docs-only diff.
+
+Non-blocking: the TS lock path remains unspecified, which is consistent with S-005.
+
+Next owner: Development Loop.
