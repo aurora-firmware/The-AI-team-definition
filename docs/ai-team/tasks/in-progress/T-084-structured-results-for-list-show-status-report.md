@@ -63,6 +63,17 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-09-30
+Implemented T-084 in four TDD cycles on the task branch, one commit per cycle. `list.py` now has `list_tasks(root, state)`, `list_bugs(root, state)`, `list_specs(root)`, `list_adrs(root)` and `list_change_requests(root)`. Each returns `Result(status=0, payload=rows)`, where the rows are exactly what `--json` prints. The Typer commands resolve the root from the cwd, call the handler, and print JSON or the same Rich table as before. `show.py` has `show_artifact(root, identifier)`. It returns `{path, frontmatter, body}` on success, and on failure a `Result` with status 1 whose message is today's text (not found with searched roots, or the ambiguous-match header plus one `- path` line per match, joined by newlines). The wrapper echoes `result.text()` to stderr and exits 1, so the output is identical. `status.py` has `status_summary(root)`, which wraps the existing `_payload`, including `_latest_integration_result` and its "not found" fallback. A test pins that fallback outside a git repo. `report.py` has `write_report(root, out)`, which writes the file and returns `{path, content}` with the resolved path. The wrapper prints the path as before.
+
+Tests are in `cli/tests/test_structured_results_query.py`. They call the handlers with an explicit root while the cwd is elsewhere, and compare payloads with `--json` CLI output.
+
+Two caveats for the reviewer.
+- Because the handler always returns body and frontmatter, `show` in text mode now parses the artifact even for specs. Before, only `--json` parsed a matched spec. A malformed spec would now fail in text mode where it previously just rendered. Normal inputs are unaffected and all existing show tests pass.
+- The list handlers put a list in `Result.payload`, which is annotated as `dict | None`. `core/result.py` was out of scope, so the annotation should be widened in a follow-up.
+
+Rejected: wrapping the list rows in a dict, such as `{"rows": ...}`, because AC-2 requires the payload to equal `--json`. Nothing remains for this task.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
