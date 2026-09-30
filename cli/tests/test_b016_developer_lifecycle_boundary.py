@@ -14,10 +14,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests.skill_rendering import rendered_skill_body
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SOURCE_AGENTS = REPO_ROOT / "src" / "ai_team" / "init" / "sources" / "agents"
 SCAFFOLD_ROOT = REPO_ROOT / "src" / "ai_team" / "init" / "scaffolds"
-SOURCE_SKILLS = REPO_ROOT / "src" / "ai_team" / "init" / "sources" / "skills"
 
 
 def _claude_developer_texts() -> tuple[str, str]:
@@ -37,7 +38,7 @@ def _codex_developer_texts() -> tuple[str, str]:
 
 
 def _git_conventions_texts() -> tuple[str, str, str]:
-    source = (SOURCE_SKILLS / "git-conventions" / "body.md").read_text(encoding="utf-8")
+    source = rendered_skill_body("git-conventions")
     claude_scaffold = (
         SCAFFOLD_ROOT / "claude" / "skills" / "git-conventions" / "SKILL.md"
     ).read_text(encoding="utf-8")

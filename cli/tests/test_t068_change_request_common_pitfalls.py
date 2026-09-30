@@ -10,21 +10,11 @@ AC-2: The Common Pitfalls section SHALL cover the common misuses — using a
 
 from __future__ import annotations
 
-from pathlib import Path
+from tests.skill_rendering import rendered_skill_body
 
 
 def _skill_source(skill_name: str) -> str:
-    repo_root = Path(__file__).resolve().parents[1]
-    return (
-        repo_root
-        / "src"
-        / "ai_team"
-        / "init"
-        / "sources"
-        / "skills"
-        / skill_name
-        / "body.md"
-    ).read_text(encoding="utf-8")
+    return rendered_skill_body(skill_name)
 
 
 def _common_pitfalls_section(body: str) -> str:

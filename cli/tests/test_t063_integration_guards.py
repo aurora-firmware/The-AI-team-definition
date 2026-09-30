@@ -5,19 +5,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests.skill_rendering import rendered_skill_body
+
 
 def _integrate_skill_texts() -> tuple[str, str, str]:
     repo_root = Path(__file__).resolve().parents[1]
-    source = (
-        repo_root
-        / "src"
-        / "ai_team"
-        / "init"
-        / "sources"
-        / "skills"
-        / "integrate"
-        / "body.md"
-    ).read_text(encoding="utf-8")
+    source = rendered_skill_body("integrate")
     claude = (
         repo_root
         / "src"
@@ -45,16 +38,7 @@ def _integrate_skill_texts() -> tuple[str, str, str]:
 
 def _dev_loop_skill_texts() -> tuple[str, str, str]:
     repo_root = Path(__file__).resolve().parents[1]
-    source = (
-        repo_root
-        / "src"
-        / "ai_team"
-        / "init"
-        / "sources"
-        / "skills"
-        / "dev-loop"
-        / "body.md"
-    ).read_text(encoding="utf-8")
+    source = rendered_skill_body("dev-loop")
     claude = (
         repo_root
         / "src"
@@ -82,16 +66,7 @@ def _dev_loop_skill_texts() -> tuple[str, str, str]:
 
 def _bug_loop_skill_texts() -> tuple[str, str, str]:
     repo_root = Path(__file__).resolve().parents[1]
-    source = (
-        repo_root
-        / "src"
-        / "ai_team"
-        / "init"
-        / "sources"
-        / "skills"
-        / "bug-loop"
-        / "body.md"
-    ).read_text(encoding="utf-8")
+    source = rendered_skill_body("bug-loop")
     claude = (
         repo_root
         / "src"

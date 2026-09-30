@@ -16,21 +16,11 @@ AC-5: The system shall preserve the Architect boundary: the Architect reports
 
 from __future__ import annotations
 
-from pathlib import Path
+from tests.skill_rendering import rendered_skill_body
 
 
 def _skill_source(skill_name: str) -> str:
-    repo_root = Path(__file__).resolve().parents[1]
-    return (
-        repo_root
-        / "src"
-        / "ai_team"
-        / "init"
-        / "sources"
-        / "skills"
-        / skill_name
-        / "body.md"
-    ).read_text(encoding="utf-8")
+    return rendered_skill_body(skill_name)
 
 
 def test_change_request_resolves_human_answerable_todos_one_at_a_time() -> None:
