@@ -1,0 +1,67 @@
+[
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/open",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/resolved",
+    "type": "dir"
+  },
+  {
+    "path": "project/change-requests",
+    "type": "dir"
+  },
+  {
+    "path": "project/decisions",
+    "type": "dir"
+  },
+  {
+    "path": "project/docs",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs/archive",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/completed",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending/T-001-role-developer.md",
+    "text": "---\nid: T-001\ntitle: Role developer\nstatus: pending\npriority: medium\nassigned-role: developer\ncreated: '2026-01-15'\n---\n\n# Role developer\n\n<!--\nTask Quality Rules (see the new-task skill for full details):\n  - Atomic — one clear outcome.\n  - One-shottable — ≤ 3–4 files touched, ≤ 5 ACs, Description ≈ 20 lines.\n  - Verifiable — concrete Verification command or explicit manual steps.\n  - Self-contained — Description is enough to start without follow-up questions.\n  - EARS — every AC matches one of the five EARS patterns below.\n  - Dependency-honest — list every prior task this one reads from or modifies.\n-->\n\n## Description\n\nWhat needs to be done and why.\nInclude enough context that an agent can start working without asking questions.\n\n## Acceptance Criteria\n\n<!-- EARS pattern reference. Every criterion must match one pattern:\n  1. Ubiquitous            — The system shall [outcome]\n  2. Event-driven          — WHEN [trigger] THE SYSTEM SHALL [outcome]\n  3. Unwanted-behaviour    — IF [fault] THEN THE SYSTEM SHALL [outcome]\n  4. State-driven          — WHILE [state] THE SYSTEM SHALL [outcome]\n  5. Optional              — WHERE [feature included] THE SYSTEM SHALL [outcome]\n\nExamples:\n  AC-1: WHEN the user submits valid credentials THE SYSTEM SHALL\n        redirect to /dashboard within 200ms.\n  AC-2: IF the password is incorrect THEN THE SYSTEM SHALL return 401\n        and display \"Invalid credentials\".\n  AC-3: The system shall log every authentication attempt with user id\n        and outcome.\n-->\n\nAC-1: ...\nAC-2: ...\nAC-3: ...\n\n## Dependencies\n\n- `T-XXX` — brief description of what must be completed first\n- None (if no dependencies)\n\n## Files to Touch\n\n- `path/to/file-a.ext` — what changes are needed\n- `path/to/file-b.ext` — what changes are needed\n\n## Verification\n\n```bash\n# Command(s) to verify the task is complete\n```\n\n## Work Log\n\n<!-- Mandatory. Append one entry per session boundary. Format:\n### Session N — YYYY-MM-DD\nFree-prose body: what was done this session, what was tried and\nrejected, decisions made, what remains for next session.\n\nStart every session by reading the entries below.\nThe final entry serves as the handoff to the reviewer. -->\n\n## Review\n\n<!-- Reviewer: append verdict here after each review cycle.\n\n### Review Verdict — YYYY-MM-DD\nPASS | FAIL | ESCALATE\n\n- For FAIL: file, location, what is wrong, what should change.\n- For PASS: brief confirmation that both stages passed.\n- For ESCALATE: design issue and why normal Developer fixes cannot resolve it.\n-->\n",
+    "type": "file"
+  }
+]
