@@ -1,7 +1,7 @@
 ---
 id: T-093
 title: Seed fixtures for check-layout and init, incl. init→check-layout chain
-status: pending
+status: in-progress
 priority: high
 assigned-role: developer
 created: '2026-09-30'
