@@ -79,3 +79,19 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Reviewed commit 1d840ee on `task/T-092-seed-fixtures-for-validate-and-archive` against `feat/pi-extension`. Changes: 84 fixture files (28 validate/archive cases) under `fixtures/parity/` plus `cli/tests/test_parity_validate_archive_fixtures.py`. No unexpected files were touched.
+
+Stage 1 (acceptance):
+- AC-1 met. Every validate flag (tasks, bugs, specs, adrs, changeRequests) has an alone case whose findings stay in its own scope. Combined, `all`, no-flag and clean cases exist. Archive covers d/w/m/y units, the default, dry-run true and false, invalid value, empty project and `0d`.
+- AC-2 met. `validate--missing-fence`, `validate--missing-required-key` and `validate--invalid-id-pattern` each fail with status 1 and the expected finding codes.
+- AC-3 met. `archive--age-boundary` (and the dry-run variant) use a fixed clock of 2026-03-01 with `30d`. The cut-off is 2026-01-30; one day before is moved and the cut-off and one day after are kept, for both tasks and bugs. The test asserts offsets -1, 0 and +1.
+- AC-4 met. `UV_CACHE_DIR=/tmp/uvcache uv run pytest` gives 814 passed, which includes the Python parity runner over the new cases.
+
+Stage 2 (quality): ruff format and ruff check are clean. The coverage tests are independent, cover both success and failure paths, and derive the cut-off rather than hard-coding it. Fixtures are deterministic (fixed `today`, `<ROOT>` normalisation).
+
+Non-blocking observation: the `<ROOT>`-normalised frontmatter error text is now part of the contract, and the TS runner must match it.
+
