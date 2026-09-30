@@ -93,3 +93,36 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-09-30
+PASS
+
+Both stages passed on commit 1e96ab4 (branch `task/T-082-structured-result-type`, reviewed against `feat/pi-extension`).
+
+Stage 1 (acceptance criteria, S-005 and ADR-001..004):
+- AC-1 met: frozen `Result(status, payload, message, hint)` in `core/result.py`, no Typer dependency; `text()` joins message and hint.
+- AC-2 met: wrappers print `result.payload` via `print_json`; the `--json` output equals the handler payload.
+- AC-3 met: `create_spec`, `create_adr` and `create_change_request` take an explicit `ProjectRoot` and typed input; none uses Typer or `Path.cwd()`.
+- AC-4 met: `ArtifactExists` and `LockTimeout` become `Result(status=1, message=str(exc))`, which is today's stderr text (those errors had no hint).
+- AC-5 met: see the byte-identity check below.
+- AC-6 met: `ProjectRootNotFound(message, hint)` exposes both fields and `str()` joins them with one space. All three raise sites use a shared `_INIT_HINT`.
+- Only the listed files changed (plus the new test file). No new public flags (ADR-004).
+
+Stage 2 (quality):
+- Code is small, focused and readable. The repeated emit lines in the three wrappers are an accepted tradeoff to stay inside the task's file list.
+- Tests cover the result type, the handlers, `--json` equality and the locator split.
+- Checks run from `cli/` on the task branch: `uv run pytest` gave 490 passed; `ruff format --check` and `ruff check` were clean.
+
+Byte-identity check (reviewer-run; `feat/pi-extension` versus the task branch, in temp projects created with `ai-team init --no-interactive`, `AI_TEAM_TODAY=2026-01-02`):
+- Compared: `spec new`, `adr new` and `change-request new`, covering plain, `--json`, `spec --author/--status`, `adr --status/--supersedes`, and the no-project-root case (cwd walk-up and `AI_TEAM_ROOT`).
+- stdout and exit codes are identical for every case. Generated artifact trees and file contents are identical. The only difference is `framework_version` in `.ai-team.toml`, which comes from the git describe of each checkout.
+- For the no-root case, the uncaught `ProjectRootNotFound` exception message is identical, including the hint. The only stderr differences are source line numbers and code snippets inside Rich's traceback frames, which is inherent to the code change.
+- Forced already-exists (real collision for `adr` and `change-request`) and `ArtifactExists`/`LockTimeout` (monkeypatched for `spec`) were compared in-process with CliRunner: identical exit code 1, empty stdout and identical stderr.
+- The plain duplicate-title case does not collide because IDs auto-increment; that is why collisions were forced.
+
+Non-blocking observations:
+- `ProjectRootNotFound` is not caught by the wrappers, so it still surfaces as a traceback. This is the same as before, and out of scope.
+- The pickling caveat in the Work Log is noted and harmless.
+
+Next owner: Development Loop.
+
