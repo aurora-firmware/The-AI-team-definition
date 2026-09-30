@@ -157,6 +157,20 @@ def test_usage_md_describes_ai_team_lock_sentinel_and_gitignore_coverage():
     )
 
 
+def test_usage_md_documents_reserved_ts_lock_entry():
+    """S-005/ADR-003: usage.md documents the .ai-team-ts.lock entry reserved for
+    the pi package's own lock, distinct from the Python flock sentinel."""
+    content = _content()
+    lower = _lower()
+
+    assert ".ai-team-ts.lock" in content, (
+        "usage.md must document the .ai-team-ts.lock gitignore entry"
+    )
+    assert "pi package" in lower, (
+        "usage.md must say the entry is reserved for the pi package lock"
+    )
+
+
 def test_usage_md_describes_locator_resolution_order():
     """usage.md must describe the locator resolution order."""
     lower = _lower()

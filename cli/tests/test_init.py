@@ -476,7 +476,7 @@ def test_force_flag_overwrites_existing_root_guidance_files(tmp_path):
 
 
 def test_init_scaffolds_project_gitignore_ignoring_the_lock_sentinel(tmp_path):
-    """B-017: init writes project/.gitignore covering the .ai-team.lock sentinel."""
+    """B-017: init writes project/.gitignore covering both lock sentinels."""
     from ai_team.cli import app
 
     target = tmp_path / "repo"
@@ -488,7 +488,7 @@ def test_init_scaffolds_project_gitignore_ignoring_the_lock_sentinel(tmp_path):
     assert result.exit_code == 0
     gitignore = target / "project" / ".gitignore"
     assert gitignore.is_file()
-    assert gitignore.read_text(encoding="utf-8") == ".ai-team.lock\n"
+    assert gitignore.read_text(encoding="utf-8") == ".ai-team.lock\n.ai-team-ts.lock\n"
 
 
 def test_ai_team_lock_sentinel_is_not_untracked_after_task_creation(
