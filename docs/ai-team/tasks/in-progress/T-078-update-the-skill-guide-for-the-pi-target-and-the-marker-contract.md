@@ -88,3 +88,28 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-09-30
+PASS
+
+Stage 1 (acceptance criteria), checked against the diff `feat/pi-extension...task/T-078-pi-skill-guide-marker-contract` (only `guides/skill_template.md`, +61 lines, in scope):
+- AC-1 met: the new section defines syntax and per-target rendering of the command, flag and noun markers, call versus mention selection by required-positional presence, and the fence rules (marker-only fence becomes prose for pi, mixed fence fails). It matches the S-005 "Skill marker contract".
+- AC-2 met: the pi header is derived from `[claude]` `name` and `description`, there is no `[pi]` section, noun markers render their pi text, and the guide states it extends ADR-001 (ADR-002).
+- AC-3 met: applicability of `Skill()`, the `.claude/` rule and `allowed-tools` to pi is defined.
+- AC-4 met: orchestrators (`dev-loop`, `bug-loop`, `integrate`) are rendered but excluded from the pi manifest until sub-project 5.
+- AC-5 met: the command map is named as the single command surface (ADR-004).
+- No unexpected files changed. The Verification greps hit and `uv run pytest` gives 461 passed (the change is docs-only).
+
+Stage 2 (quality): the section is accurate to the spec, free of duplicated command syntax, and readable. No security or test concerns for a docs-only change.
+
+Pi applicability readings confirmed against S-005 and ADR-001..004:
+- `Skill()` not rendered for pi: consistent. ADR-002 says pi gets only `name` and `description`, and pi has no `allowed-tools`.
+- In-body references only to skills that ship to pi: consistent with the orchestrator exclusion in S-005. It is a sensible reading of the open "defined by the guide" item.
+- No `.claude/` paths in pi output: consistent with S-005 SC-10 and the pi package layout.
+- `allowed-tools` not rendered for pi, with tool scoping from the process layer: matches the ADR-002 Negative consequence verbatim.
+
+Non-blocking observations:
+- The `.claude/` rule bullet says to use "`${CLAUDE_SKILL_DIR}`-style or skill-relative references that the sync can render per target". The spec does not require a render mechanism for this, so Phase 2 should confirm or adjust it.
+- "Pi loads skills by name" is asserted without a spec citation. It is plausible under the Agent Skills spec.
+
+Next owner: Development Loop.
