@@ -253,6 +253,67 @@ full parity with the `[claude]` section. Do not strip keys from Codex headers. I
 particular, skill-to-skill wiring expressed as `Skill(<name>)` in `allowed-tools` must
 be preserved unchanged in both sections.
 
+## Render Targets and the CLI Marker Contract
+
+Every skill has one shared `body.md` and one `metadata.toml` with hand-authored `[claude]` and `[codex]` headers. The scaffold sync renders three targets from that source: `claude`, `codex` and `pi`. The claude and codex targets emit today's text unchanged. The pi target has no binary to run, so pi-rendered text never tells the reader to run `ai-team`. It points at the `ai_team` tool instead.
+
+A shared body refers to the CLI only through one of three marker kinds. The sync rejects any `{{...}}` whose kind prefix is unknown, and any marker whose content does not parse against the command map. Backticks and code fences stay in `body.md`, outside the marker.
+
+### Command marker: `{{ai-team <argv>}}`
+
+The content is exactly the text claude and codex emit after `ai-team `. That includes `--json` where the body uses it, and the existing `<placeholder>` and `[optional]` conventions.
+
+| Target | Rendering |
+|---|---|
+| claude, codex | `ai-team <argv>`, verbatim |
+| pi, call form | An instruction to call the `ai_team` tool with the equivalent input object. `--json` is dropped |
+| pi, mention form | A descriptive mention, such as "the `ai_team` tool's `adr new` command". It is not a call |
+
+The form is decided only by required positionals. If the argv includes every required positional of its command, pi renders the call form. If it omits one (for example the shortened `adr new --json` in a skill introduction), pi renders the mention form. A command with no required positionals (`status`, `report`, `list ...`, `validate`, `archive`, `check-layout`) always uses the call form. Each command marker therefore matches exactly one pi form.
+
+Example: `` `{{ai-team task start <id>}}` `` renders verbatim for claude and codex, and as a call to the `ai_team` tool with `command` set to `task start` and `id` set to the placeholder for pi.
+
+### Flag marker: `{{ai-team-flag <command> <flags>}}`
+
+Use it for flags given on their own in a sentence that already names the command. Claude and codex render only the flag text, verbatim. Pi renders "set `<field>`", using the field name from the command map. Inside existing backticks, pi renders the bare field name (for example `supersedes`), never a nested code span. Every flag must be defined for the named command.
+
+### Noun marker: `{{ai-team-cli|<claude/codex text>|<pi text>}}`
+
+Use it for every bare mention of the CLI, in bodies and in `[claude]` descriptions. It carries both texts. Claude and codex render the first verbatim, reproducing the site's current wording ("the `ai-team` CLI", "AI team CLI", "CLI"). Pi renders the second (for example "the `ai_team` tool" or "tool"), chosen so the sentence reads naturally.
+
+### Fence rules
+
+- A code fence whose only content is command markers renders for pi as prose tool-call instructions, with no fence.
+- A fence that mixes markers with other shell lines fails the sync. Split it into a marker-only fence and a separate fence.
+
+### Placeholders and inline context
+
+- In a call-form snippet, `<placeholder>` values are checked against the tool schema by field name and presence, not by value. An enum-typed field with a placeholder value is valid.
+- Every pi render (call, mention, flag and noun) must read correctly inside the context that surrounds the marker in `body.md`, including inline backticks.
+- Every mention of the CLI in prose uses one of the three markers.
+
+### Markers in headers
+
+Markers are allowed in the `[claude]` and `[codex]` headers. The sync renders each for its own target, so those headers stay byte-identical to today's and ADR-001 key parity is unchanged. Use the noun marker for "via the ai-team CLI" in descriptions.
+
+### Pi headers (ADR-002)
+
+The sync derives the pi header from the `name` and `description` in the skill's `[claude]` header. Do not author a `[pi]` section. Noun markers in the description render with their pi text. Pi receives only `name` and `description`: `allowed-tools`, `argument-hint`, `effort` and `disable-model-invocation` are not emitted. This extends ADR-001 to a third target and leaves claude/codex parity as decided there.
+
+### Pi applicability of other skill conventions
+
+- **`Skill(<name>)`:** in `allowed-tools`, it exists only in the claude and codex headers and is preserved there unchanged. Pi has no `allowed-tools`, so the declaration is not rendered. In-body references to another skill by its backticked name stay valid for pi, because pi loads skills by name. A pi skill may only reference skills that ship to pi.
+- **Self-contained `.claude/` rule:** a skill may reference only content inside its own skill directory (`assets/`, `references/`, `scripts/`) and its shared source. It must not point at `ai-process/` or at repo-local `.claude/` paths. Pi resources live under the pi package, so `.claude/skills/<skill>/...` paths must not appear in pi output. Use `${CLAUDE_SKILL_DIR}`-style or skill-relative references that the sync can render per target.
+- **`allowed-tools`:** remains the claude/codex mechanism for tool scoping. Pi skill metadata carries none, so any pi tool scoping comes from the process layer, not from the skill header.
+
+### Orchestrators in pi
+
+Orchestrator skills (`dev-loop`, `bug-loop`, `integrate`) are rendered for pi like any other skill but are excluded from the pi package manifest, so they do not ship to pi until sub-project 5 delivers orchestration there.
+
+### The command map is the single command surface (ADR-004)
+
+The command map lists every CLI command, argument, flag, default and tool-field name. The sync, the `ai_team` tool schema and the marker checks all consume it. When a CLI command changes, change the command map; do not restate command syntax in this guide or in skills beyond marker content.
+
 ## Explicit Skill Invocation
 
 When one skill invokes another in-process, declare it in `allowed-tools` as `Skill(other-skill)` and reference it in prose by its backticked name. Example audit pattern:
