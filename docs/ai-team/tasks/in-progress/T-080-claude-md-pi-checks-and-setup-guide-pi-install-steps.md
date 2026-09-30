@@ -79,3 +79,18 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-09-30
+FAIL
+
+Stage 1 (acceptance criteria): AC-1 to AC-5 are all addressed in the diff (commit 5606e0f), only `CLAUDE.md` and `guides/setup-guide.md` were touched, and the Level 4 mismatch, unsupported mixed allocation, empty `[init].tools` and no `.claude/`/`.codex/` statements match S-005 (Config section, SC-7). Stage 1 is otherwise satisfied, but one CLAUDE.md statement is not spec-backed and the section is self-contradictory (below), so the work does not meet the "spec-backed, no asserted open details" bar.
+
+Findings:
+
+1. **`CLAUDE.md`, "Test and Check the pi Package", second sentence** ("...the git-ignored version file the pi package needs at load time, so typecheck and tests fail without it.") - S-005 only says that a missing version file makes the pi package fail to load the tool at runtime, with a message telling the user to run the sync. It does not say `npm run typecheck` or `npm test` fail without it, and the spec leaves the runner and toolchain layout open. What should change: restate what the spec says, e.g. that the sync renders `pi/resources/` and writes the git-ignored version file, that the package fails to load without it, and that the sync therefore runs first. Drop the claim that typecheck and tests fail.
+
+2. **`CLAUDE.md`, same section, first sentence** - "From `pi/`, run the scaffold sync first (from `cli/`: `python scripts/sync_init_scaffolds.py`)" is contradictory about the working directory. What should change: make it unambiguous, e.g. "Run the scaffold sync first, from `cli/`: `python scripts/sync_init_scaffolds.py`. Then, from `pi/`, run:" followed by the npm block.
+
+Checked and fine: the pi commands (`npm ci`, `npm run typecheck`, `npm test`) come from the task description and the spec's "TypeScript toolchain for type checking and tests"; no runner location or `pi/src` layout is asserted; no project-specific build commands were added to framework sources beyond this repo's own CLAUDE.md; ADR-004 fixture-first wording is consistent; the setup guide section is spec-backed (local-path install, one-time sync, Level 4 mismatch, unsupported mixed allocation, pi init behaviour). The "can produce duplicate IDs" phrasing in the setup guide is a reasonable reading of the spec's lock rationale (non-blocking).
+
+Next owner: Developer (via the Development Loop).
