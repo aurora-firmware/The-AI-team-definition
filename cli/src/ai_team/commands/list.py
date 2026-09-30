@@ -7,7 +7,7 @@ from pathlib import Path
 import typer
 from rich.table import Table
 
-from ai_team.core.locator import find_project_root
+from ai_team.core.locator import ProjectRoot, find_project_root
 from ai_team.core.models import (
     parse_adr,
     parse_bug,
@@ -15,6 +15,7 @@ from ai_team.core.models import (
     parse_spec,
     parse_task,
 )
+from ai_team.core.result import Result
 from ai_team.render import console, print_json
 
 NAME = "list"
@@ -68,15 +69,8 @@ def _render_table(title: str, columns: list[str], rows: list[dict[str, str]]) ->
     console.print(table)
 
 
-@app.command()
-def tasks(
-    state: str | None = typer.Option(
-        None, "--state", help="Filter by task state folder."
-    ),
-    as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
-) -> None:
-    """List tasks from the project task folders."""
-    root = find_project_root(Path.cwd())
+def list_tasks(root: ProjectRoot, state: str | None) -> Result:
+    """Return task rows (the ``--json`` payload), optionally for one state folder."""
     rows = _collect_from_state_folders(
         [
             ("pending", root.tasks_pending),
@@ -94,21 +88,11 @@ def tasks(
             "assigned-role": task.assigned_role,
         },
     )
-    if as_json:
-        print_json(rows)
-        return
-    _render_table("Tasks", ["ID", "Title", "State", "Priority", "Assigned-Role"], rows)
+    return Result(status=0, payload=rows)
 
 
-@app.command()
-def bugs(
-    state: str | None = typer.Option(
-        None, "--state", help="Filter by bug state folder."
-    ),
-    as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
-) -> None:
-    """List bugs from the project bug folders."""
-    root = find_project_root(Path.cwd())
+def list_bugs(root: ProjectRoot, state: str | None) -> Result:
+    """Return bug rows (the ``--json`` payload), optionally for one state folder."""
     rows = _collect_from_state_folders(
         [
             ("open", root.bugs_open),
@@ -124,10 +108,75 @@ def bugs(
             "severity": bug.severity,
         },
     )
+    return Result(status=0, payload=rows)
+
+
+def list_specs(root: ProjectRoot) -> Result:
+    """Return spec rows (the ``--json`` payload)."""
+    rows: list[dict[str, str]] = []
+    for path in _iter_markdown_files(root.specs):
+        spec = parse_spec(path)
+        rows.append(
+            {
+                "id": spec.id or path.stem,
+                "title": spec.title,
+                "status": spec.status,
+                "version": spec.version,
+            }
+        )
+    return Result(status=0, payload=rows)
+
+
+def list_adrs(root: ProjectRoot) -> Result:
+    """Return ADR rows (the ``--json`` payload)."""
+    rows: list[dict[str, str]] = []
+    for path in _iter_markdown_files(root.decisions):
+        adr = parse_adr(path)
+        rows.append({"id": adr.id, "title": adr.title, "status": adr.status})
+    return Result(status=0, payload=rows)
+
+
+def list_change_requests(root: ProjectRoot) -> Result:
+    """Return change-request rows (the ``--json`` payload)."""
+    rows: list[dict[str, str]] = []
+    for path in _iter_markdown_files(root.change_requests):
+        cr = parse_change_request(path)
+        rows.append({"id": cr.id, "title": cr.title, "state": cr.status})
+    return Result(status=0, payload=rows)
+
+
+def _emit_rows(result: Result, as_json: bool, title: str, columns: list[str]) -> None:
+    """Print a list result as JSON or as the Rich table the CLI always printed."""
     if as_json:
-        print_json(rows)
+        print_json(result.payload)
         return
-    _render_table("Bugs", ["ID", "Title", "State", "Severity"], rows)
+    _render_table(title, columns, result.payload)
+
+
+@app.command()
+def tasks(
+    state: str | None = typer.Option(
+        None, "--state", help="Filter by task state folder."
+    ),
+    as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
+) -> None:
+    """List tasks from the project task folders."""
+    result = list_tasks(find_project_root(Path.cwd()), state)
+    _emit_rows(
+        result, as_json, "Tasks", ["ID", "Title", "State", "Priority", "Assigned-Role"]
+    )
+
+
+@app.command()
+def bugs(
+    state: str | None = typer.Option(
+        None, "--state", help="Filter by bug state folder."
+    ),
+    as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
+) -> None:
+    """List bugs from the project bug folders."""
+    result = list_bugs(find_project_root(Path.cwd()), state)
+    _emit_rows(result, as_json, "Bugs", ["ID", "Title", "State", "Severity"])
 
 
 @app.command()
@@ -139,23 +188,8 @@ def specs(
 ) -> None:
     """List specs from the project specs folder."""
     _ = state
-    root = find_project_root(Path.cwd())
-    rows: list[dict[str, str]] = []
-    for path in _iter_markdown_files(root.specs):
-        spec = parse_spec(path)
-        spec_id = spec.id or path.stem
-        rows.append(
-            {
-                "id": spec_id,
-                "title": spec.title,
-                "status": spec.status,
-                "version": spec.version,
-            }
-        )
-    if as_json:
-        print_json(rows)
-        return
-    _render_table("Specs", ["ID", "Title", "Status", "Version"], rows)
+    result = list_specs(find_project_root(Path.cwd()))
+    _emit_rows(result, as_json, "Specs", ["ID", "Title", "Status", "Version"])
 
 
 @app.command()
@@ -167,21 +201,8 @@ def adrs(
 ) -> None:
     """List ADRs from the project decisions folder."""
     _ = state
-    root = find_project_root(Path.cwd())
-    rows: list[dict[str, str]] = []
-    for path in _iter_markdown_files(root.decisions):
-        adr = parse_adr(path)
-        rows.append(
-            {
-                "id": adr.id,
-                "title": adr.title,
-                "status": adr.status,
-            }
-        )
-    if as_json:
-        print_json(rows)
-        return
-    _render_table("ADRs", ["ID", "Title", "Status"], rows)
+    result = list_adrs(find_project_root(Path.cwd()))
+    _emit_rows(result, as_json, "ADRs", ["ID", "Title", "Status"])
 
 
 @app.command("change-requests")
@@ -189,18 +210,5 @@ def change_requests(
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     """List change requests from the project change-requests folder."""
-    root = find_project_root(Path.cwd())
-    rows: list[dict[str, str]] = []
-    for path in _iter_markdown_files(root.change_requests):
-        cr = parse_change_request(path)
-        rows.append(
-            {
-                "id": cr.id,
-                "title": cr.title,
-                "state": cr.status,
-            }
-        )
-    if as_json:
-        print_json(rows)
-        return
-    _render_table("Change Requests", ["ID", "Title", "State"], rows)
+    result = list_change_requests(find_project_root(Path.cwd()))
+    _emit_rows(result, as_json, "Change Requests", ["ID", "Title", "State"])
