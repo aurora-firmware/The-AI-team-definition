@@ -23,7 +23,19 @@ from pathlib import Path
 
 
 class ProjectRootNotFound(RuntimeError):
-    """Raised when no project root can be resolved from the given cwd."""
+    """Raised when no project root can be resolved from the given cwd.
+
+    ``message`` says what was searched; ``hint`` says what to do next.
+    ``str()`` joins them with a single space.
+    """
+
+    def __init__(self, message: str, hint: str) -> None:
+        super().__init__(f"{message} {hint}")
+        self.message = message
+        self.hint = hint
+
+
+_INIT_HINT = "Run 'ai-team init' to bootstrap the project structure."
 
 
 @dataclass(frozen=True)
@@ -131,8 +143,8 @@ def find_project_root(
         if (repo / dir_name).is_dir():
             return ProjectRoot._from_repo_and_project_dir_name(repo, dir_name)
         raise ProjectRootNotFound(
-            f"No '{dir_name}/' folder found under the provided --root {repo!s}. "
-            "Run 'ai-team init' to bootstrap the project structure."
+            f"No '{dir_name}/' folder found under the provided --root {repo!s}.",
+            _INIT_HINT,
         )
 
     # ------------------------------------------------------------------
@@ -145,8 +157,8 @@ def find_project_root(
         if (repo / dir_name).is_dir():
             return ProjectRoot._from_repo_and_project_dir_name(repo, dir_name)
         raise ProjectRootNotFound(
-            f"No '{dir_name}/' folder found under AI_TEAM_ROOT={repo!s}. "
-            "Run 'ai-team init' to bootstrap the project structure."
+            f"No '{dir_name}/' folder found under AI_TEAM_ROOT={repo!s}.",
+            _INIT_HINT,
         )
 
     # ------------------------------------------------------------------
@@ -183,8 +195,8 @@ def find_project_root(
     searched_str = ", ".join(str(p) for p in searched)
     raise ProjectRootNotFound(
         f"Could not locate a '{project_dir}/' directory by walking up from "
-        f"{cwd!s}. Searched: {searched_str}. "
-        "Run 'ai-team init' to bootstrap the project structure."
+        f"{cwd!s}. Searched: {searched_str}.",
+        _INIT_HINT,
     )
 
 
