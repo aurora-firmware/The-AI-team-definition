@@ -1,0 +1,32 @@
+{
+  "command": "status",
+  "env": {},
+  "expected": {
+    "payload": {
+      "blocked_tasks": [],
+      "counts": {
+        "adrs": 0,
+        "bugs": {
+          "in_progress": 0,
+          "open": 0,
+          "resolved": 0
+        },
+        "specs_active": 0,
+        "tasks": {
+          "blocked": 0,
+          "completed": 0,
+          "in_progress": 0,
+          "pending": 0
+        }
+      },
+      "critical_high_open_bugs": [],
+      "in_progress_tasks": [],
+      "latest_integration_result": "not found"
+    },
+    "status": 0
+  },
+  "input": {},
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

@@ -1,0 +1,6 @@
+{
+  "after_tree_excluded_paths": [
+    "<project_dir>/.ai-team.lock",
+    "<project_dir>/.ai-team-ts.lock"
+  ]
+}
