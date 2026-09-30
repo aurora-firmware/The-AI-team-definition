@@ -1,7 +1,7 @@
 ---
 id: T-099
 title: Pi target in the sync; generate pi/resources/
-status: pending
+status: in-progress
 priority: high
 assigned-role: developer
 created: '2026-09-30'
