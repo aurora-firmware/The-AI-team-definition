@@ -34,9 +34,11 @@ under `/tmp`.
 
 ## Test and Check the pi Package
 
-From `pi/`, run the scaffold sync first (from `cli/`: `python scripts/sync_init_scaffolds.py`).
-The sync renders `pi/resources/` and writes the git-ignored version file the pi
-package needs at load time, so typecheck and tests fail without it.
+Run the scaffold sync first, from `cli/`: `python scripts/sync_init_scaffolds.py`.
+The sync renders `pi/resources/` and writes the git-ignored version file. The pi
+package fails to load without that file, so the sync runs first.
+
+Then, from `pi/`, run:
 
 ```bash
 npm ci
