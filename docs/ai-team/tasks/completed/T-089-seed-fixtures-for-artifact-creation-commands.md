@@ -1,7 +1,7 @@
 ---
 id: T-089
 title: Seed fixtures for artifact-creation commands
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
