@@ -1,7 +1,7 @@
 ---
 title: 'Pi extension: package skeleton and artifact core'
-version: '0.5'
-status: draft  # draft | review | approved | superseded
+version: '1.0'
+status: approved  # draft | review | approved | superseded
 created: '2026-09-30'
 author: planner
 id: S-005
