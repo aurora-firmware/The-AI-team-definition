@@ -84,3 +84,22 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Reviewed the triple-dot diff of `task/T-097-...` against `feat/pi-extension` (commits 0186305, 3e321f3).
+
+Stage 1 (acceptance criteria):
+- AC-1 met. On the task branch, the only remaining `body.md`/`metadata.toml` reads in tests are fixture writes and source-structure checks (`test_init_scaffolds.py` ~lines 36-66, 351-398, including the presence and non-empty header checks), plus `test_skill_markers.py` fixtures and the `glob("*/metadata.toml")` enumeration in `test_status_report_invocation.py`. None assert on raw content. `test_t066` reads docs and ADRs, not skill sources.
+- AC-2 met. Every converted read calls `rendered_skill_body` or `rendered_skill_header` (new `cli/tests/skill_rendering.py`, which renders through `scripts/skill_markers.py` `render_markers` with `command_map.json`). The diff changes no assertion text or expectation. The one semantic adjustment, in `test_package_owned_skill_sources_include_body_and_required_metadata`, compares rendered body/header to the scaffold instead of raw, and is equivalent while sources hold no markers.
+- AC-3 met. `UV_CACHE_DIR=/tmp/uvcache uv run pytest` gives 915 passed. `ruff format --check` and `ruff check` are clean.
+- No unexpected files were touched. The new helper and its test are within the task's "new shared helper" scope.
+
+Stage 2 (quality): The helper is small, cached and readable. `test_skill_rendering_helper.py` covers scaffold equality for both targets, header-plus-body composition and rejection of an unsupported target. No weakened assertions were found.
+
+Non-blocking observations:
+- The `source` element of the `(source, claude, codex)` tuples is now rendered claude text, so its assertions partly duplicate the claude ones. The Developer noted this and left it for a later task.
+- The helper has no per-test target parameter on the converted readers, so codex-specific marker differences are not exercised. This is acceptable because the sources currently contain no markers.
+
+Next owner: Development Loop.
