@@ -82,3 +82,21 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-09-30
+PASS
+
+Stage 1 (acceptance): met.
+- AC-1: spec, task, bug, adr and change-request new each have success cases and an artifact-exists error case (62 new cases, 63 total).
+- AC-2: every enum value is covered. Spec status (4) and author (4), task priority (4) and assignedRole (6), bug severity (4) and adr status (3) match the CLI `Literal` definitions. Optional spec, task and supersedes references are covered both present and absent.
+- AC-3: Unicode, punctuation and a 180-character YAML-folding title are covered, as are ID gaps, archived-only (spec), completed-only and blocked-only (task) and resolved-only (bug) IDs. The task-new case with `.ai-team.lock` in the before-tree is present. The lock is correctly absent from the after-tree comparison per `lock-sentinels.json`.
+- AC-4: from `cli/`, `uv run pytest` gives 653 passed, and `ruff format --check` and `ruff check` are clean.
+
+Spot-checked fixtures (task-new defaults, role-unassigned, long-title-folding, adr unicode and supersedes, spec artifact-exists, blocked-only-ids, lock sentinel). Payloads, messages, IDs, slugs and after-tree file content are consistent with the CLI templates. The ADR `ADR-000: [Decision Title]` placeholder heading and the transliterated Unicode slug are real current behaviour, recorded faithfully and noted by the Developer for the TS port.
+
+Scope deviation (`cli/tests/test_parity_creation_fixtures.py`): accepted. It is a test-only file with 131 lines and no production code. It only reads the fixtures, and fixtures are edited by hand rather than regenerated from either implementation, so the guard is the only thing that keeps AC-1 to AC-3 from regressing silently. It uses the existing `parity_support` helpers and is independent and deterministic. Risk is low.
+
+Non-blocking observations:
+- The guard hard-codes the enum sets, so a new CLI enum value will not fail the guard until someone updates it by hand.
+- The task file `status:` frontmatter still reads `pending`. This is a lifecycle matter for the loop.
+
