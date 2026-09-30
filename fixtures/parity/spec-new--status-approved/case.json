@@ -1,0 +1,18 @@
+{
+  "command": "spec new",
+  "env": {},
+  "expected": {
+    "payload": {
+      "id": "S-001",
+      "path": "<ROOT>/project/specs/S-001-spec-approved.md"
+    },
+    "status": 0
+  },
+  "input": {
+    "status": "approved",
+    "title": "Spec approved"
+  },
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

@@ -1,0 +1,67 @@
+[
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/open",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/resolved",
+    "type": "dir"
+  },
+  {
+    "path": "project/change-requests",
+    "type": "dir"
+  },
+  {
+    "path": "project/change-requests/CR-001-plain-change-request.md",
+    "text": "---\nid: CR-001\ntitle: Plain change request\nstatus: pending\ncreated: '2026-01-15'\n---\n\n# Plain change request\n\n## Desired Changes\n\nDescribe the intended behavior, scope, and constraints.\n\n## Context\n\nCapture why this change is needed and any current limitations.\n\n## Potential Impact\n\nNote affected areas, risks, and migration considerations.\n\n## Possible Spec Amendments\n\nList candidate specification updates if this change alters framework contracts.\nUse `none` when no spec amendment is expected.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/decisions",
+    "type": "dir"
+  },
+  {
+    "path": "project/docs",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs/archive",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/completed",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending",
+    "type": "dir"
+  }
+]

@@ -1,0 +1,72 @@
+[
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress/B-004-d.md",
+    "text": "---\nid: B-004\ntitle: Existing\n---\n\n# Existing\n",
+    "type": "file"
+  },
+  {
+    "path": "project/bugs/open",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/open/B-001-a.md",
+    "text": "---\nid: B-001\ntitle: Existing\n---\n\n# Existing\n",
+    "type": "file"
+  },
+  {
+    "path": "project/bugs/resolved",
+    "type": "dir"
+  },
+  {
+    "path": "project/change-requests",
+    "type": "dir"
+  },
+  {
+    "path": "project/decisions",
+    "type": "dir"
+  },
+  {
+    "path": "project/docs",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs/archive",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/completed",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending",
+    "type": "dir"
+  }
+]

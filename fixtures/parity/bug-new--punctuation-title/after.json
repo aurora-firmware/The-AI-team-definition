@@ -1,0 +1,67 @@
+[
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/open",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/open/B-001-fix-handle-hash-single-double-brackets-braces-pipe-gt-pct-at-tick.md",
+    "text": "---\nid: B-001\ntitle: \"Fix: handle #hash, 'single' \\\"double\\\" [brackets] {braces} | pipe > gt % pct\n  @ at `tick`\"\nseverity: medium\nstatus: open\ncreated: '2026-01-15'\n---\n\n# Fix: handle #hash, 'single' \"double\" [brackets] {braces} | pipe > gt % pct @ at `tick`\n\n## Summary\n\nOne-paragraph description of the bug and its impact.\n\n## Reproduction Status\n\nStatus: confirmed | intermittent | not yet reproduced\n\nEvidence-backed status notes.\n\n## Evidence\n\n- Logs / stack traces / failing assertions:\n- Screenshots or recordings:\n- Failing command or test:\n- First diagnostic step if not yet reproduced:\n\n## Reproduction Steps\n\n1. Step one\n2. Step two\n3. Step three\n\n## Expected Behavior\n\nWhat should happen.\n\n## Actual Behavior\n\nWhat happens instead.\nInclude error messages, stack traces, or unexpected output.\n\n## Environment\n\n- OS / platform:\n- Language / runtime version:\n- Relevant dependencies:\n- Branch / commit:\n\n## Related\n\n- Task: `T-XXX` (if applicable)\n- Specification: `specification-name.md` (if applicable)\n\n## Suspected Area\n\nKnown suspected component, file, or subsystem.\nUse `unknown` if not yet isolated.\n\n## Fix Verification\n\n```bash\n# Command(s) to verify the bug is fixed\n```\n\n## Diagnosis Log\n\n<!-- Mandatory before implementation. Append one entry before changing production code. Format:\n### Diagnosis N — YYYY-MM-DD\nReproduction status:\nEvidence captured:\nIsolated fault:\nRoot cause or fault hypothesis:\nPlanned verification:\n-->\n\n## Work Log\n\n<!-- Mandatory. Append one entry per session boundary. Format:\n### Session N — YYYY-MM-DD\nFree-prose body: what was done this session, what was tried and\nrejected, decisions made, what remains for next session.\n\nStart every session by reading the entries below.\nThe final entry serves as the handoff to the reviewer. -->\n\n## Review\n\n<!-- Reviewer: append verdict here after each review cycle.\n\n### Review Verdict — YYYY-MM-DD\nPASS | FAIL | ESCALATE\n\n- For FAIL: file, location, what is wrong, what should change.\n- For PASS: brief confirmation that diagnosis, fix, verification, and code quality passed.\n- For ESCALATE: design issue and why normal Developer fixes cannot resolve it.\n-->\n",
+    "type": "file"
+  },
+  {
+    "path": "project/bugs/resolved",
+    "type": "dir"
+  },
+  {
+    "path": "project/change-requests",
+    "type": "dir"
+  },
+  {
+    "path": "project/decisions",
+    "type": "dir"
+  },
+  {
+    "path": "project/docs",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs/archive",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/completed",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending",
+    "type": "dir"
+  }
+]

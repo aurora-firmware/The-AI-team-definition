@@ -1,0 +1,18 @@
+{
+  "command": "adr new",
+  "env": {},
+  "expected": {
+    "payload": {
+      "id": "ADR-001",
+      "path": "<ROOT>/project/decisions/ADR-001-status-accepted.md"
+    },
+    "status": 0
+  },
+  "input": {
+    "status": "accepted",
+    "title": "Status accepted"
+  },
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

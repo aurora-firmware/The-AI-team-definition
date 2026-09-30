@@ -1,0 +1,18 @@
+{
+  "command": "bug new",
+  "env": {},
+  "expected": {
+    "payload": {
+      "id": "B-001",
+      "path": "<ROOT>/project/bugs/open/B-001-severity-critical.md"
+    },
+    "status": 0
+  },
+  "input": {
+    "severity": "critical",
+    "title": "Severity critical"
+  },
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}
