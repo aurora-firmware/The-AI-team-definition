@@ -1,7 +1,7 @@
 ---
 id: T-086
 title: Structured result for init with internal empty-tools mode
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
