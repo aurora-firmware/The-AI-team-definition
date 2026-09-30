@@ -1,0 +1,26 @@
+[
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/completed",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending",
+    "type": "dir"
+  }
+]

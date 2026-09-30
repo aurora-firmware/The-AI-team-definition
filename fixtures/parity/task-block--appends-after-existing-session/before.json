@@ -1,0 +1,31 @@
+[
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/completed",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/in-progress/T-001-example-task.md",
+    "text": "---\nid: T-001\ntitle: Example task\nstatus: in-progress\npriority: medium\nassigned-role: developer\ncreated: '2026-01-10'\n---\n\n# Example task\n\n## Description\n\nDo the thing.\n\n## Work Log\n\n### Session 1 — 2026-01-12\nStarted the work.\n\n## Review\n\nNone yet.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks/pending",
+    "type": "dir"
+  }
+]

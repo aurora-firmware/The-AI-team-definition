@@ -1,0 +1,31 @@
+[
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked/T-001-example-task.md",
+    "text": "---\nid: T-001\ntitle: Example task\nstatus: blocked\npriority: medium\nassigned-role: developer\ncreated: '2026-01-10'\n---\n\n# Example task\n\n## Description\n\nDo the thing.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks/completed",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending",
+    "type": "dir"
+  }
+]
