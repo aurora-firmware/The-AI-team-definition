@@ -1,7 +1,7 @@
 ---
 id: T-088
 title: Parity fixture format and Python fixture runner
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
