@@ -1,0 +1,21 @@
+{
+  "command": "check-layout",
+  "env": {},
+  "expected": {
+    "payload": {
+      "findings": [
+        {
+          "level": 2,
+          "message": "No YAML frontmatter block found in <ROOT>/project/tasks/pending/T-001-no-frontmatter.md",
+          "path": "project/tasks/pending/T-001-no-frontmatter.md",
+          "suggested_fix": "Correct the YAML frontmatter and add every required field for this artifact type."
+        }
+      ]
+    },
+    "status": 1
+  },
+  "input": {},
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}

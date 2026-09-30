@@ -1,0 +1,165 @@
+{
+  "command": "check-layout",
+  "env": {},
+  "expected": {
+    "payload": {
+      "findings": [
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.claude/agents' is missing.",
+          "path": ".claude/agents",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex' is missing.",
+          "path": ".codex",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/agents' is missing.",
+          "path": ".codex/agents",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills' is missing.",
+          "path": ".codex/skills",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/architecture-consistency-review' is missing.",
+          "path": ".codex/skills/architecture-consistency-review",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/brainstorm' is missing.",
+          "path": ".codex/skills/brainstorm",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/bug-loop' is missing.",
+          "path": ".codex/skills/bug-loop",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/change-request' is missing.",
+          "path": ".codex/skills/change-request",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/code-review' is missing.",
+          "path": ".codex/skills/code-review",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/debug' is missing.",
+          "path": ".codex/skills/debug",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/dev-loop' is missing.",
+          "path": ".codex/skills/dev-loop",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/escalation-review' is missing.",
+          "path": ".codex/skills/escalation-review",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/git-conventions' is missing.",
+          "path": ".codex/skills/git-conventions",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/integrate' is missing.",
+          "path": ".codex/skills/integrate",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/merge-conflicts' is missing.",
+          "path": ".codex/skills/merge-conflicts",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/new-adr' is missing.",
+          "path": ".codex/skills/new-adr",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/new-bug' is missing.",
+          "path": ".codex/skills/new-bug",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/new-spec' is missing.",
+          "path": ".codex/skills/new-spec",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/new-task' is missing.",
+          "path": ".codex/skills/new-task",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/spec-breakdown' is missing.",
+          "path": ".codex/skills/spec-breakdown",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/spec-breakdown-review' is missing.",
+          "path": ".codex/skills/spec-breakdown-review",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/status-report' is missing.",
+          "path": ".codex/skills/status-report",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory '.codex/skills/tdd' is missing.",
+          "path": ".codex/skills/tdd",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 3,
+          "message": "Configured tool 'codex' requires root guidance file 'AGENTS.md', but it is missing.",
+          "path": "AGENTS.md",
+          "suggested_fix": "Create 'AGENTS.md' and fill every required project-guidance section."
+        },
+        {
+          "level": 3,
+          "message": "Configured tool 'claude' requires root guidance file 'CLAUDE.md', but it is missing.",
+          "path": "CLAUDE.md",
+          "suggested_fix": "Create 'CLAUDE.md' and fill every required project-guidance section."
+        }
+      ]
+    },
+    "status": 1
+  },
+  "input": {},
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}

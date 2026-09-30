@@ -1,0 +1,44 @@
+{
+  "command": "init",
+  "env": {},
+  "expected": {
+    "payload": {
+      "dry_run": false,
+      "files": [
+        "<ROOT>/sub/project/.gitignore",
+        "<ROOT>/sub/project/AGENTS.md",
+        "<ROOT>/sub/project/CLAUDE.md",
+        "<ROOT>/sub/project/bugs/in-progress/.gitkeep",
+        "<ROOT>/sub/project/bugs/open/.gitkeep",
+        "<ROOT>/sub/project/bugs/resolved/.gitkeep",
+        "<ROOT>/sub/project/change-requests/.gitkeep",
+        "<ROOT>/sub/project/decisions/.gitkeep",
+        "<ROOT>/sub/project/docs/.gitkeep",
+        "<ROOT>/sub/project/specs/.gitkeep",
+        "<ROOT>/sub/project/tasks/blocked/.gitkeep",
+        "<ROOT>/sub/project/tasks/completed/.gitkeep",
+        "<ROOT>/sub/project/tasks/in-progress/.gitkeep",
+        "<ROOT>/sub/project/tasks/pending/.gitkeep",
+        "<ROOT>/sub/.ai-team.toml"
+      ],
+      "root_guidance": [
+        {
+          "outcome": "created",
+          "path": "<ROOT>/sub/CLAUDE.md"
+        },
+        {
+          "outcome": "created",
+          "path": "<ROOT>/sub/AGENTS.md"
+        }
+      ]
+    },
+    "status": 0
+  },
+  "input": {
+    "createRootGuidance": true,
+    "path": "sub"
+  },
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}

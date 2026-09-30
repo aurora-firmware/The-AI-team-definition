@@ -1,0 +1,7 @@
+[
+  {
+    "path": ".ai-team.toml",
+    "text": "[project]\ndir = \"project\"\n\n[init]\ntools = []\nframework_version = \"1.0.0\"\n",
+    "type": "file"
+  }
+]

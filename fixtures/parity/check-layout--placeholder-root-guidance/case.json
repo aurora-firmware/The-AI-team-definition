@@ -1,0 +1,45 @@
+{
+  "command": "check-layout",
+  "env": {},
+  "expected": {
+    "payload": {
+      "findings": [
+        {
+          "level": 3,
+          "message": "Required section 'Build and Install' in 'CLAUDE.md' contains only starter-template placeholder content.",
+          "path": "CLAUDE.md",
+          "suggested_fix": "Replace the 'Build and Install' placeholder with project-specific guidance."
+        },
+        {
+          "level": 3,
+          "message": "Required section 'Key Conventions' in 'CLAUDE.md' contains only starter-template placeholder content.",
+          "path": "CLAUDE.md",
+          "suggested_fix": "Replace the 'Key Conventions' placeholder with project-specific guidance."
+        },
+        {
+          "level": 3,
+          "message": "Required section 'Lint and Format' in 'CLAUDE.md' contains only starter-template placeholder content.",
+          "path": "CLAUDE.md",
+          "suggested_fix": "Replace the 'Lint and Format' placeholder with project-specific guidance."
+        },
+        {
+          "level": 3,
+          "message": "Required section 'Run' in 'CLAUDE.md' contains only starter-template placeholder content.",
+          "path": "CLAUDE.md",
+          "suggested_fix": "Replace the 'Run' placeholder with project-specific guidance."
+        },
+        {
+          "level": 3,
+          "message": "Required section 'Test' in 'CLAUDE.md' contains only starter-template placeholder content.",
+          "path": "CLAUDE.md",
+          "suggested_fix": "Replace the 'Test' placeholder with project-specific guidance."
+        }
+      ]
+    },
+    "status": 1
+  },
+  "input": {},
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}

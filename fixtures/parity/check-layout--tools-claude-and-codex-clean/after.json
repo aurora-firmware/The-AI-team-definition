@@ -1,0 +1,319 @@
+[
+  {
+    "path": ".ai-team.toml",
+    "text": "[project]\ndir = \"project\"\n\n[init]\ntools = [\"claude\", \"codex\"]\nframework_version = \"1.0.0\"\n",
+    "type": "file"
+  },
+  {
+    "path": ".claude",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/agents",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/architecture-consistency-review",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/brainstorm",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/bug-loop",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/change-request",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/code-review",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/debug",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/dev-loop",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/escalation-review",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/git-conventions",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/integrate",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/merge-conflicts",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/new-adr",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/new-bug",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/new-spec",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/new-task",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/spec-breakdown",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/spec-breakdown-review",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/status-report",
+    "type": "dir"
+  },
+  {
+    "path": ".claude/skills/tdd",
+    "type": "dir"
+  },
+  {
+    "path": ".codex",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/agents",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/architecture-consistency-review",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/brainstorm",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/bug-loop",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/change-request",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/code-review",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/debug",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/dev-loop",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/escalation-review",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/git-conventions",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/integrate",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/merge-conflicts",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/new-adr",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/new-bug",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/new-spec",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/new-task",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/spec-breakdown",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/spec-breakdown-review",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/status-report",
+    "type": "dir"
+  },
+  {
+    "path": ".codex/skills/tdd",
+    "type": "dir"
+  },
+  {
+    "path": "AGENTS.md",
+    "text": "## Build and Install\n\nProject specific Build and Install notes.\n\n## Test\n\nProject specific Test notes.\n\n## Run\n\nProject specific Run notes.\n\n## Lint and Format\n\nProject specific Lint and Format notes.\n\n## Key Conventions\n\nProject specific Key Conventions notes.\n\n",
+    "type": "file"
+  },
+  {
+    "path": "CLAUDE.md",
+    "text": "## Build and Install\n\nProject specific Build and Install notes.\n\n## Test\n\nProject specific Test notes.\n\n## Run\n\nProject specific Run notes.\n\n## Lint and Format\n\nProject specific Lint and Format notes.\n\n## Key Conventions\n\nProject specific Key Conventions notes.\n\n",
+    "type": "file"
+  },
+  {
+    "path": "project",
+    "type": "dir"
+  },
+  {
+    "path": "project/.gitignore",
+    "text": ".ai-team.lock\n.ai-team-ts.lock\n",
+    "type": "file"
+  },
+  {
+    "path": "project/AGENTS.md",
+    "text": "# Project Guidance for Agents\n\nThis `project/` directory is the canonical workspace for project artifacts used\nby agent workflows.\n\n## Folder Purpose\n\n- `specs/` contains approved specs that define what to build.\n- `tasks/` contains task lifecycle records for implementation work.\n- `bugs/` contains bug lifecycle records for diagnosis and fixes.\n- `decisions/` contains ADRs and design amendments.\n- `reports/` contains generated status and gate reports.\n- `docs/` contains project-local docs for commands, conventions, and policies.\n\nAgents should update these folders through the documented workflow so project\nstate remains consistent across roles.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/CLAUDE.md",
+    "text": "# Project Guidance\n\nThis `project/` directory stores project-local planning and execution artifacts.\n\n## Folder Purpose\n\n- `specs/` holds approved feature or change specifications.\n- `tasks/` tracks implementation work items as they move through workflow states.\n- `bugs/` tracks defects from report to resolution.\n- `decisions/` stores Architecture Decision Records (ADRs) and amendments.\n- `reports/` stores generated status and gate reports.\n- `docs/` stores project-local docs such as coding guidelines and runbooks.\n\nKeep these artifacts under version control so automation and reviewers can read\nthe same canonical project state.\n",
+    "type": "file"
+  },
+  {
+    "path": "project/bugs",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/in-progress/.gitkeep",
+    "text": "",
+    "type": "file"
+  },
+  {
+    "path": "project/bugs/open",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/open/.gitkeep",
+    "text": "",
+    "type": "file"
+  },
+  {
+    "path": "project/bugs/resolved",
+    "type": "dir"
+  },
+  {
+    "path": "project/bugs/resolved/.gitkeep",
+    "text": "",
+    "type": "file"
+  },
+  {
+    "path": "project/change-requests",
+    "type": "dir"
+  },
+  {
+    "path": "project/change-requests/.gitkeep",
+    "text": "",
+    "type": "file"
+  },
+  {
+    "path": "project/decisions",
+    "type": "dir"
+  },
+  {
+    "path": "project/decisions/.gitkeep",
+    "text": "",
+    "type": "file"
+  },
+  {
+    "path": "project/docs",
+    "type": "dir"
+  },
+  {
+    "path": "project/docs/.gitkeep",
+    "text": "",
+    "type": "file"
+  },
+  {
+    "path": "project/specs",
+    "type": "dir"
+  },
+  {
+    "path": "project/specs/.gitkeep",
+    "text": "",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/blocked/.gitkeep",
+    "text": "",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks/completed",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/completed/.gitkeep",
+    "text": "",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks/in-progress",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/in-progress/.gitkeep",
+    "text": "",
+    "type": "file"
+  },
+  {
+    "path": "project/tasks/pending",
+    "type": "dir"
+  },
+  {
+    "path": "project/tasks/pending/.gitkeep",
+    "text": "",
+    "type": "file"
+  }
+]

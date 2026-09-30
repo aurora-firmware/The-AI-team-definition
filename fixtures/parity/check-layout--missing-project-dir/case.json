@@ -1,0 +1,105 @@
+{
+  "command": "check-layout",
+  "env": {},
+  "expected": {
+    "payload": {
+      "findings": [
+        {
+          "level": 1,
+          "message": "Required scaffold directory 'project' is missing.",
+          "path": "project",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory 'project/bugs' is missing.",
+          "path": "project/bugs",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory 'project/bugs/in-progress' is missing.",
+          "path": "project/bugs/in-progress",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory 'project/bugs/open' is missing.",
+          "path": "project/bugs/open",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory 'project/bugs/resolved' is missing.",
+          "path": "project/bugs/resolved",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory 'project/change-requests' is missing.",
+          "path": "project/change-requests",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory 'project/decisions' is missing.",
+          "path": "project/decisions",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory 'project/docs' is missing.",
+          "path": "project/docs",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory 'project/specs' is missing.",
+          "path": "project/specs",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory 'project/tasks' is missing.",
+          "path": "project/tasks",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory 'project/tasks/blocked' is missing.",
+          "path": "project/tasks/blocked",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory 'project/tasks/completed' is missing.",
+          "path": "project/tasks/completed",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory 'project/tasks/in-progress' is missing.",
+          "path": "project/tasks/in-progress",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 1,
+          "message": "Required scaffold directory 'project/tasks/pending' is missing.",
+          "path": "project/tasks/pending",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        },
+        {
+          "level": 2,
+          "message": "Artifact checks are blocked because project directory 'project' is missing or is not a directory.",
+          "path": "project",
+          "suggested_fix": "Restore the configured project directory, then rerun the layout check."
+        }
+      ]
+    },
+    "status": 1
+  },
+  "input": {},
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}

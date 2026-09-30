@@ -1,0 +1,21 @@
+{
+  "command": "check-layout",
+  "env": {},
+  "expected": {
+    "payload": {
+      "findings": [
+        {
+          "level": 4,
+          "message": "Configured framework version '0.9.0' does not exactly match current CLI version '1.0.0'.",
+          "path": ".ai-team.toml",
+          "suggested_fix": "Reinitialize or update the scaffold and record the exact current CLI version."
+        }
+      ]
+    },
+    "status": 1
+  },
+  "input": {},
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}

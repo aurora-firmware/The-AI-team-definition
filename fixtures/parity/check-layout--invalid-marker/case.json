@@ -1,0 +1,33 @@
+{
+  "command": "check-layout",
+  "env": {},
+  "expected": {
+    "payload": {
+      "findings": [
+        {
+          "level": 1,
+          "message": "Repository marker .ai-team.toml is invalid: Expected ']' at the end of a table declaration (at line 1, column 6)",
+          "path": ".ai-team.toml",
+          "suggested_fix": "Correct the TOML syntax or regenerate the marker with 'ai-team init'."
+        },
+        {
+          "level": 3,
+          "message": "Root guidance selection is blocked by missing or invalid configured tools.",
+          "path": ".ai-team.toml",
+          "suggested_fix": "Set [init].tools to an array containing 'claude' and/or 'codex', then rerun the layout check."
+        },
+        {
+          "level": 4,
+          "message": "Configured framework version is missing (unavailable); current CLI version is '1.0.0'.",
+          "path": ".ai-team.toml",
+          "suggested_fix": "Set [init].framework_version to the exact current CLI distribution version."
+        }
+      ]
+    },
+    "status": 1
+  },
+  "input": {},
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}

@@ -1,0 +1,21 @@
+{
+  "command": "check-layout",
+  "env": {},
+  "expected": {
+    "payload": {
+      "findings": [
+        {
+          "level": 1,
+          "message": "Required scaffold directory 'project/tasks/blocked' is missing.",
+          "path": "project/tasks/blocked",
+          "suggested_fix": "Create the directory by restoring the current scaffold or rerunning 'ai-team init' with the configured tools."
+        }
+      ]
+    },
+    "status": 1
+  },
+  "input": {},
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}
