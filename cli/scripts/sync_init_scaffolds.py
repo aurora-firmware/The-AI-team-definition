@@ -3,9 +3,16 @@
 
 from __future__ import annotations
 
+import json
 import shutil
+import sys
 import tomllib
 from pathlib import Path
+from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from skill_markers import render_markers  # noqa: E402
 
 PROJECT_LEAF_DIRS = (
     "specs",
@@ -75,7 +82,15 @@ def _load_skill_metadata(path: Path) -> dict[str, str]:
     return headers
 
 
-def _replace_generated_skills(source_root: Path, destination_root: Path) -> None:
+def _load_command_map(path: Path) -> dict[str, Any]:
+    if not path.is_file():
+        raise FileNotFoundError(f"Expected command map does not exist: {path}")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _replace_generated_skills(
+    source_root: Path, destination_root: Path, command_map: dict[str, Any]
+) -> None:
     destination_root.mkdir(parents=True, exist_ok=True)
     for tool in TOOLS:
         tool_skill_root = destination_root / tool / "skills"
@@ -104,9 +119,13 @@ def _replace_generated_skills(source_root: Path, destination_root: Path) -> None
         headers = _load_skill_metadata(metadata_path)
 
         for tool in TOOLS:
+            rendered_header = render_markers(
+                headers[tool], tool, command_map, str(metadata_path)
+            )
+            rendered_body = render_markers(body, tool, command_map, str(body_path))
             skill_output_dir = destination_root / tool / "skills" / skill_dir.name
             skill_output_dir.mkdir(parents=True, exist_ok=True)
-            skill_output = headers[tool] + "\n\n" + body
+            skill_output = rendered_header + "\n\n" + rendered_body
             (skill_output_dir / "SKILL.md").write_text(skill_output, encoding="utf-8")
 
 
@@ -120,6 +139,7 @@ def sync_init_scaffolds(cli_root: Path) -> None:
     _replace_generated_skills(
         sources_root / "skills",
         scaffolds_root,
+        _load_command_map(sources_root / "command_map.json"),
     )
     _replace_tree(
         sources_root / "agents" / "claude",
@@ -133,7 +153,10 @@ def sync_init_scaffolds(cli_root: Path) -> None:
 
 def main() -> None:
     cli_root = _cli_root_from_script(Path(__file__))
-    sync_init_scaffolds(cli_root)
+    try:
+        sync_init_scaffolds(cli_root)
+    except ValueError as error:
+        sys.exit(f"sync failed: {error}")
     print(f"Synchronized init scaffolds in {cli_root / 'src/ai_team/init/scaffolds'}")
     print("Run this script before `uv build` to refresh bundled scaffold output.")
 

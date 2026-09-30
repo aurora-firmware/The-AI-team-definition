@@ -173,6 +173,14 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
     copied_script = repo / "cli" / "scripts" / "sync_init_scaffolds.py"
     copied_script.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(script, copied_script)
+    shutil.copy2(
+        script.with_name("skill_markers.py"),
+        copied_script.with_name("skill_markers.py"),
+    )
+    _write(
+        repo / "cli" / "src" / "ai_team" / "init" / "sources" / "command_map.json",
+        '{"commands": [{"command": "status", "positionals": [], "flags": []}]}\n',
+    )
 
     return repo
 
