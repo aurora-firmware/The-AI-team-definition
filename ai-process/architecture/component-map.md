@@ -72,7 +72,7 @@ This document maps the ai-process roles, procedures, processes, and gates to the
 | Guidelines | Directory | Standards and checklists (spec layer only — not exported by `ai-team init`) | `ai-process/guidelines/` |
 | Architecture Docs | Directory | System design documentation (spec layer only — not exported by `ai-team init`) | `ai-process/architecture/` |
 | Action Procedures | Directory | Automation for document creation and status reporting | `.claude/skills/` (`disable-model-invocation: true` only for human-only actions that no other skill invokes) |
-| CLI Scaffold Sources | Package assets | Authoritative source for agents, skills, and templates exported by `ai-team init` | `cli/src/ai_team/init/sources/` |
+| CLI Scaffold Sources | Package assets | Authoritative source for agents, skills, and templates exported by `ai-team init`; also the input to the `pi` sync target | `cli/src/ai_team/init/sources/` |
 
 ## CLI Command Mapping
 
@@ -86,6 +86,64 @@ Action skills that create or report on project artifacts invoke `ai-team` CLI co
 | `new-adr` | `ai-team adr new` | Create a new architecture decision record in `project/decisions/` |
 | `status-report` | `ai-team status`, `ai-team report` | Generate inline Gate 5 summary and full progress report |
 | *(change-request intake)* | `ai-team change-request new` | Create a change-request document in `project/change-requests/` |
+
+## Pi Extension Components
+
+The pi extension delivers the same artifact actions to pi sessions as a single `ai_team` tool. It is a second implementation of the CLI's artifact behaviour, co-equal with the Python CLI (ADR-004), not a wrapper around it. All paths are repo-relative.
+
+| Component | Owning path | Interface | Notes |
+|---|---|---|---|
+| Pi package | `pi/` | npm package manifest declaring the extension entry and the non-orchestrator skills; loaded by pi from a local path | Sits beside `cli/`. Pi host packages are peer dependencies. Carries the TypeScript toolchain (type check, vitest). |
+| Scaffold sync `pi` target | `cli/scripts/sync_init_scaffolds.py` | Consumes skill sources, templates, project skeleton, root guidance sources, and the command map; produces `pi/resources/` | Third target beside `claude` and `codex`. Renders `{{ai-team ...}}` markers verbatim for claude/codex and as `ai_team` tool instructions for pi. Derives pi skill headers from `[claude]` (ADR-002). Fails on unknown commands, flags, or unrenderable markers. |
+| Pi resources | `pi/resources/` | Generated skills, artifact templates, project skeleton (including its `.gitignore`), root guidance templates, claude/codex scaffold directory list for `check-layout`, the command map | Generated, never hand-edited. Regenerate with the sync. |
+| Pi version file | `pi/resources/` (git-ignored) | Carries the `ai-team` distribution version; read by the TS `init` and `check-layout` | Written by the sync. The command map holds no version. The package fails to load if it is missing. |
+| Command map | one maintained table, consumed by the sync and the TS schema | Maps each CLI leaf command, its arguments and flags, to an `ai_team` tool `command` value and field names | See "Pi Tool Command Mapping" below. Single place that changes when the CLI gains or changes a command. |
+| Pi adapter | `pi/src/` (extension entry) | Registers the `ai_team` tool; validates input, resolves the project root from the session cwd, shapes results and errors, rewrites binary-pointing hints into tool instructions | The only component that imports the pi API. |
+| TS artifact core | `pi/src/` (pure core modules) | One handler per command: resolved project root and typed input in, structured result out. Injectable clock and version | One-to-one port of the Python core. Owns models, IDs, locking, filesystem, locator, layout, validation, templates. |
+| Parity fixtures | `fixtures/parity/` | Cases declaring command, clock, version, before tree, after tree, exit status, and structured result | Repo-level contract owned by neither implementation (ADR-004). |
+| Fixture runners | pytest runner under `cli/tests/`; vitest runner under `pi/` | Each auto-discovers and executes every fixture case against one implementation | Both must pass. A behaviour change updates the fixtures, then both implementations. |
+| Python CLI (amended) | `cli/src/ai_team/` | Internal structured result per command (separate message and hint fields); injectable clock and version | stdout, stderr, exit codes, and flags unchanged. |
+| ID-allocation locks | Python: `<project_dir>/.ai-team.lock` (`flock`); TS: its own lock path inside the project artifact directory | Each implementation locks only against itself | ADR-003. Mixed concurrent allocation (a Python process and a pi session in the same working tree) is unsupported. The project skeleton `.gitignore` lists both lock paths. |
+
+### Generation Flow
+
+```
+skill sources + templates + skeleton + command map
+        -> sync_init_scaffolds.py (claude | codex | pi)
+        -> pi/resources/ (generated)
+        -> pi adapter (ai_team tool)
+        -> TS artifact core -> artifact tree
+
+fixtures/parity/ -> pytest runner -> Python CLI
+fixtures/parity/ -> vitest runner -> TS artifact core
+```
+
+`pi/resources/` is generated output and must never be hand-edited; change the sources and re-run the sync. The `claude` and `codex` exports are unchanged by the `pi` target, apart from the deliberate TS lock entry in the project skeleton `.gitignore`.
+
+## Pi Tool Command Mapping
+
+The `ai_team` tool accepts one command per call. Command names are the CLI's leaf command paths, space-separated; positional arguments become named fields and flags become camelCase fields. The tool never takes a `json` field.
+
+| CLI command | `ai_team` `command` | Fields |
+|---|---|---|
+| `ai-team spec new` | `spec new` | `title`; optional `author`, `status` |
+| `ai-team task new` | `task new` | `title`; optional `priority`, `assignedRole`, `spec` |
+| `ai-team task start` / `complete` / `unblock` | `task start` / `task complete` / `task unblock` | `id` |
+| `ai-team task block` | `task block` | `id`, `reason` |
+| `ai-team bug new` | `bug new` | `title`; optional `severity`, `task` |
+| `ai-team bug start` / `resolve` | `bug start` / `bug resolve` | `id` |
+| `ai-team adr new` | `adr new` | `title`; optional `status`, `supersedes` |
+| `ai-team change-request new` | `change-request new` | `title` |
+| `ai-team list <kind>` | `list tasks` / `list bugs` / `list specs` / `list adrs` / `list change-requests` | optional `state` (not for change-requests) |
+| `ai-team show` | `show` | `identifier` |
+| `ai-team status` | `status` | none |
+| `ai-team report` | `report` | optional `out` |
+| `ai-team validate` | `validate` | optional `all`, `tasks`, `bugs`, `specs`, `adrs`, `changeRequests` |
+| `ai-team archive` | `archive` | optional `olderThan`, `dryRun` |
+| `ai-team check-layout` | `check-layout` | none |
+| `ai-team init` | `init` | optional `path`, `force`, `dryRun`, `createRootGuidance`; omits `--tools` and `--no-interactive` |
+
+The S-005 spec holds the full tool contract; the command map is the single place that changes when the CLI does.
 
 ## Interaction Diagram
 
