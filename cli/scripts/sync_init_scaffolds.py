@@ -4,9 +4,12 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
+import subprocess
 import sys
 import tomllib
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -30,10 +33,71 @@ PROJECT_LEAF_DIRS = (
 
 TOOLS = ("claude", "codex")
 
+VERSION_OVERRIDE_ENV_VAR = "SETUPTOOLS_SCM_PRETEND_VERSION"
+PI_VERSION_FILE = Path("resources") / "version.txt"
+_HATCH_VERSION_COMMAND = (
+    "uv",
+    "run",
+    "--no-project",
+    "--with",
+    "hatchling",
+    "--with",
+    "hatch-vcs",
+    "python",
+    "-m",
+    "hatchling",
+    "version",
+)
+
+
+class VersionError(ValueError):
+    """The framework version cannot be determined from the source tree."""
+
 
 def _cli_root_from_script(script_path: Path) -> Path:
     # script lives at <repo>/cli/scripts/sync_init_scaffolds.py
     return script_path.resolve().parents[1]
+
+
+def compute_framework_version(cli_root: Path, env: Mapping[str, str]) -> str:
+    """Return the distribution version hatch-vcs derives from the source tree.
+
+    Asks hatchling, which applies cli/pyproject.toml's raw-options, instead of
+    reading installed metadata: an editable install freezes its version at
+    install time. The override variable is the one hatch-vcs itself honours.
+    """
+    override = env.get(VERSION_OVERRIDE_ENV_VAR, "").strip()
+    if override:
+        return override
+    try:
+        result = subprocess.run(
+            _HATCH_VERSION_COMMAND,
+            cwd=cli_root,
+            env=dict(env),
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as error:
+        detail = getattr(error, "stderr", None) or str(error)
+        raise VersionError(
+            f"cannot determine the framework version from {cli_root}: "
+            f"{detail.strip()}. Run the sync inside the git checkout with `uv` "
+            f"installed, or set {VERSION_OVERRIDE_ENV_VAR}."
+        ) from error
+    version = result.stdout.strip()
+    if not version:
+        raise VersionError(
+            f"cannot determine the framework version from {cli_root}: "
+            "hatchling printed nothing"
+        )
+    return version
+
+
+def _write_pi_version(pi_root: Path, version: str) -> None:
+    version_file = pi_root / PI_VERSION_FILE
+    version_file.parent.mkdir(parents=True, exist_ok=True)
+    version_file.write_text(version + "\n", encoding="utf-8")
 
 
 def _replace_tree(source: Path, destination: Path) -> None:
@@ -129,7 +193,8 @@ def _replace_generated_skills(
             (skill_output_dir / "SKILL.md").write_text(skill_output, encoding="utf-8")
 
 
-def sync_init_scaffolds(cli_root: Path) -> None:
+def sync_init_scaffolds(cli_root: Path, env: Mapping[str, str] | None = None) -> None:
+    version = compute_framework_version(cli_root, os.environ if env is None else env)
     init_root = cli_root / "src" / "ai_team" / "init"
     scaffolds_root = init_root / "scaffolds"
     sources_root = init_root / "sources"
@@ -149,6 +214,7 @@ def sync_init_scaffolds(cli_root: Path) -> None:
         sources_root / "agents" / "codex",
         scaffolds_root / "codex" / "agents",
     )
+    _write_pi_version(cli_root.parent / "pi", version)
 
 
 def main() -> None:

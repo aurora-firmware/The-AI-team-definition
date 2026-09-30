@@ -9,7 +9,15 @@ import sys
 import tomllib
 from pathlib import Path
 
+import pytest
+
 from tests.skill_rendering import rendered_skill_body, rendered_skill_header
+
+
+@pytest.fixture(autouse=True)
+def _pin_framework_version(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The sync needs a version; a fake repo has no git history to derive one."""
+    monkeypatch.setenv("SETUPTOOLS_SCM_PRETEND_VERSION", "0.0.0")
 
 
 def _write(path: Path, content: str) -> None:
