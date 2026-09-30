@@ -66,6 +66,22 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-09-30
+
+I added `cli/src/ai_team/core/result.py` with a frozen `Result(status, payload, message, hint)` dataclass. Its `text()` joins message and hint with a single space, which is what the CLI prints. I gave each of the three `new` commands a pure handler (`create_spec`, `create_adr`, `create_change_request`) that takes an explicit `ProjectRoot` and typed input and returns a `Result`. No handler touches Typer or the process cwd. Committed on `task/T-082-structured-result-type` as `1e96ab4`.
+
+Each Typer wrapper now calls `find_project_root(Path.cwd())`, calls the handler, then does one of three things: on failure it echoes `result.text()` to stderr and exits with `result.status`; with `--json` it prints `result.payload` through `print_json`; otherwise it echoes the path from the payload. `ProjectRootNotFound` in `core/locator.py` now takes `(message, hint)` and exposes both as attributes. The hint is the shared string "Run 'ai-team init' to bootstrap the project structure.", and `str()` gives the same text as before. All three raise sites were updated.
+
+Decisions and rejected options:
+- Domain errors (`ArtifactExists`, `LockTimeout`) become `Result(status=1, message=str(exc))` with no hint, because those messages had no separate hint.
+- `ProjectRootNotFound` is still not caught by the wrappers, so it propagates exactly as before.
+- I kept the result type free of Typer and left the `print_json` and echo logic in each wrapper rather than adding a shared emit helper; `render.py` is outside the task's file list.
+- I did not touch the `AI_TEAM_TODAY` invalid-value `ValueError` from T-081, which is out of scope.
+
+Verification: new tests in `cli/tests/test_structured_results_create.py` failed at import first (red), then full V-PY passed: 490 tests, ruff format and ruff check clean. Tests cover AC-1 to AC-4 and AC-6 directly; AC-5 rests on the unchanged existing CLI tests plus a `str()` equality assertion for the `--root` case. I did not diff stdout and exit codes against the pre-change CLI. No scaffold or command-doc regeneration was needed. Obstacles: `ArtifactExists` tests monkeypatch `next_adr_id` to force a collision; `ProjectRootNotFound.__init__` now takes `(message, hint)`, so pickling the exception would break (no caller pickles it).
+
+For the reviewer: the three wrappers repeat the same few emit lines, accepted to stay inside the listed files. The AC-2 tests monkeypatch the handler to return a known payload and check that the CLI `--json` output equals it. Nothing remains for this task.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
