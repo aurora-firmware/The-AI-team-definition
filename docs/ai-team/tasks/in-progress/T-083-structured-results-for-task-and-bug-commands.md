@@ -86,3 +86,14 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-09-30
+PASS
+
+Stage 1 (acceptance): all five ACs met. AC-1: pure handlers take a `ProjectRoot` and return a `Result` for task new/start/complete/block/unblock and bug new/start/resolve, and tests call them with no cwd dependence. AC-2: `--json` prints `result.payload` (tested by patching the handler). AC-3: already-in-state returns status 0 with today's text, printed on stdout. AC-4: not-found returns status 1 with today's message, printed on stderr. AC-5: CLI output is unchanged (path only, `{id, path}` JSON shape). Only the three listed files were touched.
+
+Stage 2 (quality): the handlers follow the T-082 `create_spec` pattern. Tests cover success, already-in-state and not-found paths and are independent. Checks run on the task branch from a detached worktree: pytest 504 passed, ruff format and ruff check clean. No other importers of the renamed command functions.
+
+Non-blocking observations:
+- `_emit_transition` is duplicated in `task.py` and `bug.py`. This is acceptable given the Files to Touch constraint. Consider a shared helper in a later task.
+- The handlers return an extra `changed` payload key for transitions. It is not exposed through the CLI, so SC-6 is unaffected.
