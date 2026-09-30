@@ -109,7 +109,7 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
         / "sources"
         / "project"
         / ".gitignore",
-        ".ai-team.lock\n",
+        ".ai-team.lock\n.ai-team-ts.lock\n",
     )
 
     # Seed stale generated output that should be removed.
@@ -293,7 +293,7 @@ def test_sync_script_copies_project_guidance_files_from_source(
 def test_sync_script_copies_project_gitignore_ignoring_the_lock_sentinel(
     tmp_path: Path,
 ) -> None:
-    """B-017: generator copies project/.gitignore, and it ignores .ai-team.lock."""
+    """B-017: generator copies project/.gitignore, and it ignores both lock sentinels."""
     repo = _setup_fake_repo(tmp_path)
 
     subprocess.run(
@@ -311,7 +311,7 @@ def test_sync_script_copies_project_gitignore_ignoring_the_lock_sentinel(
     assert scaffold_text == source_text, (
         "scaffolds/project/.gitignore does not match sources/project/.gitignore"
     )
-    assert scaffold_text == ".ai-team.lock\n"
+    assert scaffold_text == ".ai-team.lock\n.ai-team-ts.lock\n"
 
 
 def test_package_owned_project_gitignore_source_ignores_the_lock_sentinel() -> None:
@@ -332,7 +332,7 @@ def test_package_owned_project_gitignore_source_ignores_the_lock_sentinel() -> N
     source_text = source_gitignore.read_text(encoding="utf-8")
     scaffold_text = scaffold_gitignore.read_text(encoding="utf-8")
 
-    assert source_text == ".ai-team.lock\n"
+    assert source_text == ".ai-team.lock\n.ai-team-ts.lock\n"
     assert scaffold_text == source_text
 
 

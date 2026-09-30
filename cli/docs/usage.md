@@ -416,12 +416,15 @@ never deleted: the lock is a kernel-level `flock` on the file, released
 automatically when the holding process exits, so leaving the sentinel on disk
 is harmless and removing it would reopen the race the lock exists to prevent.
 
-`ai-team init` scaffolds a `project/.gitignore` containing a single
-`.ai-team.lock` entry, so the sentinel never shows up as untracked in `git
-status`. Projects that ran `ai-team init` before this `.gitignore` was added
-will not receive it retroactively — add a `.ai-team.lock` entry to your own
-`.gitignore` (at the repository root or inside the project directory) to get
-the same effect.
+`ai-team init` scaffolds a `project/.gitignore` containing two entries:
+`.ai-team.lock` and `.ai-team-ts.lock`. The first keeps the sentinel from
+showing up as untracked in `git status`. The second is reserved for the
+pi package's own ID-allocation lock, which is a separate path so it never
+collides with the Python sentinel; the Python CLI never creates it. The entry
+matches a file or a directory. Projects that ran `ai-team init` before this
+`.gitignore` was added will not receive it retroactively — add both entries to
+your own `.gitignore` (at the repository root or inside the project
+directory) to get the same effect.
 
 ---
 
