@@ -105,3 +105,25 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-09-30
+PASS
+
+Stage 1 (acceptance criteria), checked against the diff and the S-005 and ADR-004 rules:
+- AC-1: `fixtures/parity/README.md` defines the case fields, the manifest tree encoding, root-only normalisation, the two-path lock scoping with its reasoning (tree scoping, not normalisation), and the isolation rules. `.gitattributes` sets `-text`.
+- AC-2: `discover_cases` globs the directories for `case.json`, with no index. A test adds a case without registering it.
+- AC-3: mismatches in the after tree, the exit status and the error message each produce a unified diff. Tests cover all three.
+- AC-4: `record_case` and the seed script refuse to overwrite an existing case. A test covers it.
+- AC-5: clock and version are set only through `AI_TEAM_TODAY` and `AI_TEAM_FRAMEWORK_VERSION`. A case without them is rejected.
+- AC-6: `lock-sentinels.json` lists exactly the two literal paths, `<project_dir>/.ai-team.lock` and `<project_dir>/.ai-team-ts.lock`. The runner loads it. There are no globs, and `project/sub/.ai-team.lock` is still compared. Exclusion applies only to the after tree.
+- AC-7: `AI_TEAM_ROOT` is unset unless the case sets it. The tree is materialised in a fresh temp directory and `GIT_CEILING_DIRECTORIES` is set to its parent. The root is passed explicitly otherwise. The environment and cwd are restored afterwards.
+- The status--empty smoke case is present. No files outside the task's scope were touched, and there are no `cli/src` changes.
+
+Stage 2 (quality):
+- Logic is correct: manifests are sorted, paths are checked for escape, binary content falls back to base64, and hints are dropped so errors compare on message only.
+- Tests cover both success and failure paths and are independent.
+- Verification in a detached worktree from `cli/`: `uv run pytest` gave 567 passed. `ruff format --check` and `ruff check` are clean.
+
+Non-blocking observations:
+- The task frontmatter still says `status: pending`. The loop should handle it on completion.
+- The TS runner (T-112) must mirror the `<ROOT>` and `env` conventions, and the `.ai-team-ts.lock` path taken from the T-087 skeleton.
