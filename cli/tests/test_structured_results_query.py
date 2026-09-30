@@ -14,6 +14,7 @@ from ai_team.commands.list import (
     list_specs,
     list_tasks,
 )
+from ai_team.commands.show import show_artifact
 from ai_team.core.locator import ProjectRoot, find_project_root
 
 TASK = """\
@@ -142,3 +143,54 @@ def test_list_handlers_return_empty_payload_for_unknown_state(tmp_path, handler)
     root = _root(tmp_path)
 
     assert handler(root, "nonsense").payload == []
+
+
+# AC-1, AC-2
+def test_show_handler_payload_equals_json_output(tmp_path, monkeypatch):
+    root = _root(tmp_path)
+    _write(
+        root.tasks_pending / "T-001-a.md",
+        TASK.format(id="T-001", title="A", status="pending"),
+    )
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = show_artifact(root, "T-001")
+
+    assert result.status == 0
+    assert result.payload["frontmatter"]["id"] == "T-001"
+    assert result.payload == _cli_json(tmp_path, monkeypatch, "show", "T-001")
+
+
+# AC-4
+def test_show_handler_reports_unknown_id_with_todays_message(tmp_path, monkeypatch):
+    root = _root(tmp_path)
+    monkeypatch.chdir(tmp_path)
+
+    result = show_artifact(root, "T-999")
+    cli = CliRunner().invoke(app, ["show", "T-999"])
+
+    assert result.status == 1
+    assert result.payload is None
+    assert result.message.startswith("Artifact 'T-999' not found. Searched roots: ")
+    assert cli.exit_code == 1
+    assert result.text() in cli.output
+
+
+def test_show_handler_lists_every_path_when_identifier_is_ambiguous(tmp_path):
+    root = _root(tmp_path)
+    _write(
+        root.tasks_pending / "T-001-dup-a.md",
+        TASK.format(id="T-001", title="A", status="pending"),
+    )
+    _write(
+        root.tasks_completed / "T-002-dup-b.md",
+        TASK.format(id="T-002", title="B", status="completed"),
+    )
+
+    result = show_artifact(root, "dup")
+
+    assert result.status == 1
+    assert result.message.splitlines()[0] == "Multiple artifacts matched 'dup':"
+    assert len(result.message.splitlines()) == 3
