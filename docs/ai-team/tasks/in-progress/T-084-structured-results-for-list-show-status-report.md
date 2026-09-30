@@ -85,3 +85,14 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-09-30
+PASS
+
+Stage 1: AC-1 met (list_tasks/bugs/specs/adrs/change_requests, show_artifact, status_summary, write_report are pure handlers taking an explicit root). AC-2 met (list/status/show payloads are the exact objects passed to print_json; tests compare against --json output). AC-3 met (write_report returns resolved path and content with and without --out). AC-4 met (show_artifact returns status 1 with the unchanged not-found and ambiguous-match messages; wrapper echoes to stderr, exit 1). AC-5 met (existing 517-test suite passes unchanged). The `_latest_integration_result` not-found fallback is pinned by a test. Only the listed files were touched.
+
+Stage 2: Checked in a detached worktree from cli/: `uv run pytest` 517 passed, `ruff format --check` and `ruff check` clean. Handlers are small and readable, tests cover success and failure paths and run with cwd outside the root.
+
+Non-blocking observations:
+- `show` text mode now parses matched specs (previously only --json did), so a malformed spec would now raise in text mode. Normal inputs are unaffected; consider a follow-up if strict SC-6 parity for malformed specs matters.
+- `Result.payload` is annotated `dict | None` but list handlers return a list; widen the annotation in `core/result.py` in a follow-up.
