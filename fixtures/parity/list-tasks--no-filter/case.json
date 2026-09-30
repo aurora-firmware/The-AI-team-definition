@@ -1,0 +1,55 @@
+{
+  "command": "list tasks",
+  "env": {},
+  "expected": {
+    "payload": [
+      {
+        "assigned-role": "planner",
+        "id": "T-001",
+        "priority": "low",
+        "state": "pending",
+        "title": "Plan the release"
+      },
+      {
+        "assigned-role": "developer",
+        "id": "T-002",
+        "priority": "medium",
+        "state": "pending",
+        "title": "Write the docs"
+      },
+      {
+        "assigned-role": "developer",
+        "id": "T-003",
+        "priority": "high",
+        "state": "in-progress",
+        "title": "Build the parser"
+      },
+      {
+        "assigned-role": "integrator",
+        "id": "T-004",
+        "priority": "critical",
+        "state": "completed",
+        "title": "Set up the repo"
+      },
+      {
+        "assigned-role": "developer",
+        "id": "T-005",
+        "priority": "high",
+        "state": "blocked",
+        "title": "Wait for access"
+      },
+      {
+        "assigned-role": "reviewer",
+        "id": "T-006",
+        "priority": "medium",
+        "state": "blocked",
+        "title": "Await review"
+      }
+    ],
+    "status": 0
+  },
+  "input": {},
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

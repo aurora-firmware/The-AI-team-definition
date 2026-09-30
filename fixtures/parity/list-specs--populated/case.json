@@ -1,0 +1,37 @@
+{
+  "command": "list specs",
+  "env": {},
+  "expected": {
+    "payload": [
+      {
+        "id": "S-001",
+        "status": "draft",
+        "title": "Draft spec",
+        "version": "0.1"
+      },
+      {
+        "id": "S-002",
+        "status": "review",
+        "title": "Review spec",
+        "version": "0.2"
+      },
+      {
+        "id": "S-003",
+        "status": "approved",
+        "title": "Approved spec",
+        "version": "0.3"
+      },
+      {
+        "id": "S-004",
+        "status": "superseded",
+        "title": "Old spec",
+        "version": "0.4"
+      }
+    ],
+    "status": 0
+  },
+  "input": {},
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

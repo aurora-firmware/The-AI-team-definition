@@ -1,0 +1,29 @@
+{
+  "command": "list tasks",
+  "env": {},
+  "expected": {
+    "payload": [
+      {
+        "assigned-role": "planner",
+        "id": "T-001",
+        "priority": "low",
+        "state": "pending",
+        "title": "Plan the release"
+      },
+      {
+        "assigned-role": "developer",
+        "id": "T-002",
+        "priority": "medium",
+        "state": "pending",
+        "title": "Write the docs"
+      }
+    ],
+    "status": 0
+  },
+  "input": {
+    "state": "pending"
+  },
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

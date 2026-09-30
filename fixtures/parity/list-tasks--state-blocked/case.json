@@ -1,0 +1,29 @@
+{
+  "command": "list tasks",
+  "env": {},
+  "expected": {
+    "payload": [
+      {
+        "assigned-role": "developer",
+        "id": "T-005",
+        "priority": "high",
+        "state": "blocked",
+        "title": "Wait for access"
+      },
+      {
+        "assigned-role": "reviewer",
+        "id": "T-006",
+        "priority": "medium",
+        "state": "blocked",
+        "title": "Await review"
+      }
+    ],
+    "status": 0
+  },
+  "input": {
+    "state": "blocked"
+  },
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}

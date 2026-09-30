@@ -1,0 +1,17 @@
+{
+  "command": "report",
+  "env": {},
+  "expected": {
+    "payload": {
+      "content": "---\ntitle: \"Progress Report — 2026-01-15\"\nstatus: draft  # draft | final\ncreated: 2026-01-15\n---\n\n# Progress Report — 2026-01-15\n\n## Summary\n\nActive specs: 4. Pending tasks: 2. In progress tasks: 1. Completed tasks: 1. Blocked tasks: 2. Open bugs: 2. Bugs in progress: 1. Resolved bugs: 1. ADRs: 3. Latest integration result: not found.\n\n## Specifications\n\n| Spec | Status | Notes |\n|---|---|---|\n| S-001-draft-spec.md | draft | Review in progress |\n| S-002-review-spec.md | review | Review in progress |\n| S-003-approved-spec.md | approved | Current Gate 5 target |\n| S-004-old-spec.md | superseded | Review in progress |\n\n## Integration Evidence\n\n- Latest integration-test result: not found\n- Source: git log --all --grep=merge|integration|verification|test -n 1\n- Date: 2026-01-15\n\n## Completed\n\n| Task ID | Title | Agent Role |\n|---|---|---|\n| T-004 | Set up the repo | integrator |\n\n## In Progress\n\n| Task ID | Title | Agent Role | Notes |\n|---|---|---|---|\n| T-003 | Build the parser | developer | actively progressing |\n\n## Blocked\n\n| Task ID | Title | Blocked By | Action Needed |\n|---|---|---|---|\n| T-005 | Wait for access | Waiting on vendor access | Resolve blocker: Waiting on vendor access |\n| T-006 | Await review | Blocked on reviewer availability | Resolve blocker: Blocked on reviewer availability |\n\n## Bugs\n\n| Bug ID | Title | Severity | Status | Diagnosis Status |\n|---|---|---|---|---|\n| B-001 | Crash on empty input | critical | open | n/a |\n| B-002 | Typo in help text | low | open | n/a |\n| B-003 | Slow startup | high | in-progress | in progress |\n| B-004 | Wrong exit code | medium | resolved | complete |\n\n## Decisions\n\n| ADR | Title | Status |\n|---|---|---|\n| ADR-001 | Proposed decision | proposed |\n| ADR-002 | Accepted decision | accepted |\n| ADR-003 | Replaced decision | superseded |\n\n## Next Actions\n\n1. Unblock T-005: Waiting on vendor access\n2. Unblock T-006: Blocked on reviewer availability\n3. Triage B-001: Crash on empty input\n\n## Risks and Concerns\n\n- Blocked tasks may delay delivery.\n- Critical/high bugs may impact release quality.\n",
+      "path": "<ROOT>/out/custom-report.md"
+    },
+    "status": 0
+  },
+  "input": {
+    "out": "out/custom-report.md"
+  },
+  "project_dir": "project",
+  "today": "2026-01-15",
+  "version": "1.0.0"
+}
