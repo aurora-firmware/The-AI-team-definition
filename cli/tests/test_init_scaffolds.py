@@ -9,7 +9,15 @@ import sys
 import tomllib
 from pathlib import Path
 
+import pytest
+
 from tests.skill_rendering import rendered_skill_body, rendered_skill_header
+
+
+@pytest.fixture(autouse=True)
+def _pin_framework_version(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The sync needs a version; a fake repo has no git history to derive one."""
+    monkeypatch.setenv("SETUPTOOLS_SCM_PRETEND_VERSION", "0.0.0")
 
 
 def _write(path: Path, content: str) -> None:
@@ -112,6 +120,20 @@ def _setup_fake_repo(tmp_path: Path) -> Path:
         / "project"
         / ".gitignore",
         ".ai-team.lock\n.ai-team-ts.lock\n",
+    )
+
+    # Package-owned artifact templates and root guidance sources (pi resources).
+    _write(
+        repo / "cli" / "src" / "ai_team" / "templates" / "task.md",
+        "---\nid: {id}\n---\n",
+    )
+    _write(
+        repo / "cli" / "src" / "ai_team" / "init" / "sources" / "root" / "CLAUDE.md",
+        "# Root Claude\n\n## Commands\n",
+    )
+    _write(
+        repo / "cli" / "src" / "ai_team" / "init" / "sources" / "root" / "AGENTS.md",
+        "# Root Agents\n\n## Commands\n",
     )
 
     # Seed stale generated output that should be removed.

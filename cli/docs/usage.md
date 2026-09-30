@@ -496,6 +496,13 @@ and writes the processed output into:
 - `cli/src/ai_team/init/scaffolds/codex/` — `.codex/` snapshot (agents and skills)
 - `cli/src/ai_team/init/scaffolds/project/` — project skeleton
 
+It also generates the pi package resources in `pi/resources/` (rendered skills,
+artifact templates, project skeleton, root guidance templates, the scaffold
+directory list, the command map) and the git-ignored `pi/resources/version.txt`.
+The version is the hatch-vcs version of the source tree, obtained through `uv`
+(so `uv` must be on the PATH). The sync fails if it cannot determine it; set
+`SETUPTOOLS_SCM_PRETEND_VERSION` to supply one when there is no git history.
+
 Run `sync_init_scaffolds.py` whenever the canonical agent or skill files
 change. The script is also run automatically at the start of the local-build
 installation step (see `From a local build` above).

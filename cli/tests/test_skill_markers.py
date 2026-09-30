@@ -17,6 +17,12 @@ SOURCES_DIR = CLI_DIR / "src" / "ai_team" / "init" / "sources"
 COMMAND_MAP_PATH = SOURCES_DIR / "command_map.json"
 
 
+@pytest.fixture(autouse=True)
+def _pin_framework_version(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The sync needs a version; a fake repo has no git history to derive one."""
+    monkeypatch.setenv("SETUPTOOLS_SCM_PRETEND_VERSION", "0.0.0")
+
+
 def _load_module():
     spec = importlib.util.spec_from_file_location(
         "skill_markers_under_test", SCRIPTS_DIR / "skill_markers.py"
@@ -215,6 +221,11 @@ def _fake_repo(tmp_path: Path, body: str, metadata: str) -> Path:
     project.mkdir()
     for name in ("CLAUDE.md", "AGENTS.md", ".gitignore"):
         (project / name).write_text("x\n", encoding="utf-8")
+    (init_root.parent / "templates").mkdir()
+    (init_root.parent / "templates" / "task.md").write_text("t\n", encoding="utf-8")
+    (sources / "root").mkdir()
+    for name in ("CLAUDE.md", "AGENTS.md"):
+        (sources / "root" / name).write_text("x\n", encoding="utf-8")
     scripts = repo / "cli" / "scripts"
     scripts.mkdir(parents=True)
     for name in ("sync_init_scaffolds.py", "skill_markers.py"):
