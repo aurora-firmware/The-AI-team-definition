@@ -1,6 +1,6 @@
 ---
 title: 'Pi extension: package skeleton and artifact core'
-version: '0.4'
+version: '0.5'
 status: draft  # draft | review | approved | superseded
 created: '2026-09-30'
 author: planner
@@ -297,10 +297,18 @@ fences stay in `body.md`, outside the marker.
 - **Call-form placeholders:** in a call-form snippet, `<placeholder>` values are checked
   for field name and presence against the tool schema, not for value. Enum-typed fields
   with a placeholder value are valid.
-- **Inline context:** a pi call-form render must read correctly inside the inline
-  backticks that already surround the marker in `body.md` (for example "Run `…`").
+- **Inline context:** every pi render (call, mention, flag and noun) must read correctly
+  inside the context that surrounds the marker in `body.md`, including inline backticks.
+  A pi flag render inside existing backticks is the bare field name (for example
+  `supersedes`), never a nested code span. A Phase 2 render assertion covers the
+  new-adr `--supersedes` site.
 - **Prose mentions:** every mention of the CLI in prose uses one of the three markers, so
   pi-rendered text never refers to running a binary.
+- **Headers:** markers may appear in the `[claude]` and `[codex]` headers. The sync
+  renders them for their own target, so the claude and codex headers stay byte-identical
+  to today's. Both use the noun marker for "via the ai-team CLI" descriptions, which
+  doesn't change ADR-001's key parity. Raw-header test assertions move to rendered output
+  together with the raw-body ones.
 - **Pi headers:** derived by the sync from the `name` and `description` in each skill's
   `[claude]` header, per the Agent Skills specification that pi implements. Noun markers
   in the description render with their pi text. No `[pi]`
