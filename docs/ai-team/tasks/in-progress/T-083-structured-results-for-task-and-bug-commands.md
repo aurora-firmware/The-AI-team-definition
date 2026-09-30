@@ -61,6 +61,20 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-09-30
+Added pure handlers for all task and bug leaf commands, following the T-082 pattern: `create_task`, `start_task`, `complete_task`, `block_task`, `unblock_task`, `create_bug`, `start_bug` and `resolve_bug`. Each takes a `ProjectRoot` and returns a `Result`. The Typer commands (`new_task`, `new_bug`, and the transition wrappers renamed `*_command`) resolve the root from the cwd, call the handler, and print.
+
+Decisions:
+- A successful transition returns the payload `{id, path, changed}`, and the wrapper prints `path` as before.
+- "Already in <state>" is `status=0` with `message` set to today's text and `changed=False`. The wrapper prints `message` on stdout when it is set.
+- Not-found is `status=1` with today's message, printed on stderr by the wrapper.
+- `create_*` catch `ArtifactExists` and `LockTimeout` and return them as `status=1` results, the same way `create_spec` does.
+- Transition commands got no `--json`. They had none before, and the task says output is unchanged.
+
+Rejected: a shared transition-printing helper. `_emit_transition` is duplicated in `task.py` and `bug.py`, because the task's Files to Touch rules out a new shared module. Reviewer, please consider this.
+
+Verification: ruff format, ruff check and the full pytest (504 passed) are green. Nothing remains.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
