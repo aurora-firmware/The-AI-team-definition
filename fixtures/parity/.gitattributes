@@ -1,0 +1,2 @@
+# Fixture files are compared byte for byte; never normalise line endings.
+* -text
