@@ -92,3 +92,22 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Reviewed commit bdcd060 against feat/pi-extension. The diff touches only `fixtures/parity/check-layout--*`, `fixtures/parity/init--*` and `cli/tests/test_parity_layout_init_fixtures.py`. No implementation code changed. `uv run pytest` gives 866 passed, and `ruff format --check` and `ruff check` are clean.
+
+Stage 1:
+- AC-1: every init field (`path`, `force`, `dryRun`, `createRootGuidance`) is covered both ways, along with defaults. `check-layout` has a clean case, per-level broken cases, and claude/codex/both tool scaffolds.
+- AC-2: a broken tree (missing dirs, invalid marker, placeholder guidance, version mismatch) and init with and without guidance are covered. Root-not-found sets `AI_TEAM_ROOT=<ROOT>`.
+- AC-3: every successful non-dry-run init has a `check-layout--after-init-*` case. Its before tree equals the init after tree (rebased for `path`), and it expects zero findings.
+- AC-4: the guard asserts `.ai-team-ts.lock` is in every init after-tree `.gitignore`.
+- AC-5: the Python runner passes.
+
+Stage 2: the guard tests are independent and read-only. They cover both success and failure paths. Init fixtures contain no `.claude` or `.codex` content.
+
+Non-blocking observations, which the Developer also recorded for T-120:
+- `check-layout--invalid-marker` records Python `tomllib` wording.
+- `init--refuses-overwrite` depends on Python's sorted collision order.
+- The runner's `check-layout` dispatch ignores `AI_TEAM_ROOT`, so the root-not-found case currently behaves like an empty tree. This is outside this task's files.
