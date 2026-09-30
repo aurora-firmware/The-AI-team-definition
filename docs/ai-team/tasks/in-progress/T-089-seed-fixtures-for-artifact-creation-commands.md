@@ -62,6 +62,15 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-09-30
+I read the empty Work Log, the task and `fixtures/parity/README.md`. I wrote a coverage guard test first, `cli/tests/test_parity_creation_fixtures.py`, and watched it fail 22 of 22. The guard checks that each creation command has success and error cases, that every enum value appears, and that optional references are covered both present and absent. It also checks the Unicode, punctuation and long YAML-folding titles, and the ID-gap, archived/completed/resolved-only, frontmatter-ID and `.ai-team.lock` before-tree scenarios. I then seeded the cases with `seed_parity_fixture.py`, one command group per commit (77de7d2 spec + guard, fe1a4c5 task, 17743d5 bug, 189fe8e adr, 5eb235d change-request), and inspected the recorded payloads, messages and after-trees. In total that is 62 new cases (spec 16, task 21, bug 11, adr 9, change-request 6), bringing the suite to 63 cases including the existing `status--empty`.
+
+The artifact-exists cases are reachable only by placing a directory named like the artifact file, because ID scanning counts files only. The first `adr new supersedes` case superseded itself, so I deleted and re-seeded it with an existing ADR-001 in the before-tree. A throwaway scratchpad script built the before-trees, since the helper takes one tree at a time.
+
+Recorded quirks for the TS port to match: the ADR body keeps the `ADR-000: [Decision Title]` placeholder heading, and Unicode slugs are transliterated (e.g. `ri-ben-yu`).
+
+Scope deviation: the guard test is outside the task's Files to Touch, and the reviewer should confirm that is acceptable. Full pytest (653 passed), `ruff format --check` and `ruff check` are green. Nothing remains for this task. Case names and content are now the reviewed contract and should be edited by hand only.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
