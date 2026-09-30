@@ -59,6 +59,12 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-09-30
+
+I read the task, the S-005 spec (system diagram, responsibility table, tool contract, lock and version configuration) and ADR-003, and confirmed that neither architecture doc mentioned `pi/`. I added a "Pi Extension Components" table, a "Generation Flow" diagram and a "Pi Tool Command Mapping" table to `ai-process/architecture/component-map.md`. I also added a "Pi Extension Layer" section and a design decision 7 to `ai-process/architecture/system-overview.md`, and extended the existing decision 6 to note that the `pi` target reads the same sources. Committed on `task/T-079-component-map-system-overview` as `b97549d`.
+
+I kept the statements about generated resources, the unchanged claude/codex exports, per-implementation locks and unsupported mixed concurrency explicit. The edits are docs only, and the existing CLI Command Mapping table is unchanged. I rejected adding a new pytest doc-check file because it is outside Files to Touch. The paths `pi/src/` and the runner locations (pytest runner under `cli/tests/`, vitest runner under `pi/`) are my best reading of the spec, which leaves the layout open. The Phase 2 and 3 tasks should confirm or correct them. Verification: grep for `pi/` was 0 before and 17/6 hits after; pytest 461 passed, ruff format and check clean. Nothing else remains for this task.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
