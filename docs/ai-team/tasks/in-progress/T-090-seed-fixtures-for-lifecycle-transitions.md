@@ -63,6 +63,15 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-09-30
+Read the T-088 fixture README, the runner in `parity_support.py`, the seed helper and how T-089 guarded its creation cases. Wrote `test_parity_lifecycle_fixtures.py` first and confirmed it failed (25 failed) on the empty set. It checks that each lifecycle command keeps a valid case, every invalid source state, an already-in-destination no-op and an empty-project not-found. It also checks that `task block` appends a work-log entry on the fixed clock and numbers it after existing sessions. I then generated before-trees in a scratch script and seeded 35 cases through `seed_parity_fixture.py`, with `today` 2026-01-15 and `version` 1.0.0 (commit 7c95069). I inspected the recorded results and trees. Invalid-source cases come out as not-found errors that list all searched state folders. Already-in-destination is status 0 with `changed:false`. Valid cases move the file and rewrite `status`. Block appends `### Session N — 2026-01-15` / `Blocked: <reason>`.
+
+Pre-existing defect found, not fixed (out of scope): `_append_work_log_entry` in `cli/src/ai_team/commands/task.py`, when a task has no `## Work Log` heading, computes `start = len(lines) - 3`, which lands on the blank line before the new heading, so the entry is inserted above `## Work Log`. I tried a `task block` case for this, rejected it rather than record the defect as contract, and dropped it. The loop should file a bug; once fixed, `task-block--creates-missing-work-log` can be seeded after a reviewed change.
+
+Minor recorded quirk (`task-block--appends-after-existing-session`): the new entry is inserted after the section's trailing blank lines, so it abuts the following `## Review` heading with no blank line. The TS core must match this byte for byte. `task block` accepts every source state, so its only invalid outcomes are not-found and already-in-destination.
+
+Scope deviation: the guard test is outside Files to Touch, added because T-089 did the same. Full pytest (720), ruff format and ruff check pass. Nothing remains for this task.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
