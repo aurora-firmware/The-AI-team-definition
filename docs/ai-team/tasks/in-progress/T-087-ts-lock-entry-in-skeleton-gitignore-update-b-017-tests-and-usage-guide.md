@@ -84,3 +84,12 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-09-30
+PASS
+
+Stage 1: AC-1 met (source and generated `project/.gitignore` contain `.ai-team.lock` and `.ai-team-ts.lock`). AC-2 met (re-running the sync in a clean worktree produced no diff; source and scaffold are byte-identical). AC-3 met (test_init.py, test_init_scaffolds.py assert both entries). AC-4 met (usage.md documents the entry as reserved for the pi package lock, with a new test). AC-5 met (gen_docs.sh produced no diff). The path `.ai-team-ts.lock` satisfies ADR-003 and S-005 "TS lock location": separate from `.ai-team.lock`, inside the project artifact directory, a bare name matching a file or directory, and listed in the skeleton .gitignore. No unintended files touched.
+
+Stage 2: pytest 545 passed, ruff format and ruff check clean. Tests are independent and exact-match.
+
+Non-blocking observations: no parity fixtures or pi sources reference the .gitignore content, so no fixture change is needed here. The spec says the fixtures record the skeleton change, so T-109 or the pi init task should cover it when the TS init is implemented. T-109 should consume `.ai-team-ts.lock`.
