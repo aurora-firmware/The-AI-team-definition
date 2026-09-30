@@ -64,6 +64,21 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Added `cli/scripts/skill_markers.py`. It parses `{{ai-team <argv>}}`, `{{ai-team-flag <command> <flags>}}` and `{{ai-team-cli|a|b}}` against the T-094 command map. The command is matched on the longest one- or two-word prefix.
+
+Command markers reject flags not defined for the matched command. The check strips `[` and `]` and any `=value` first, so optional flags like `[--supersedes <ID>]` are validated too. Flag markers must name at least one flag, and every token must be a defined `--flag`. Noun markers need exactly two non-empty texts. Any other `{{...}}` prefix is an unknown kind. Errors are raised as `MarkerError` (a `ValueError`) naming the source file and the marker.
+
+`sync_init_scaffolds.py` loads `command_map.json` from the sources directory, raising `FileNotFoundError` if it is missing. It renders each skill header (from `metadata.toml`) and body for claude and codex. `main` turns `ValueError` into `sys.exit("sync failed: ...")`, so a bad marker gives a clean non-zero exit.
+
+Claude and codex render the marker content verbatim. The pi target raises an explicit error and is left for T-098. Tests use synthetic bodies and headers in a fake repo, so real sources needed no edits.
+
+Command markers do not check positional counts or names. Call versus mention form is a pi-only distinction and belongs to T-098. Mixed-fence detection is also pi-only and not implemented here.
+
+I rejected regex-level kind dispatch. Prefix checks run longest-first, because `ai-team-flag ` and `ai-team-cli|` both begin with `ai-team`.
+
+Remaining: T-098 pi rendering, and converting skill bodies to markers, which is a separate task. The regenerated claude and codex scaffolds are unchanged.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
