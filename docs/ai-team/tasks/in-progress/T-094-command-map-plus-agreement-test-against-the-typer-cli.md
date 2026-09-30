@@ -85,3 +85,23 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Reviewed commit 34ea643 (diff against feat/pi-extension: `command_map.json` and `test_command_map.py` only).
+
+Stage 1:
+- AC-1: all 23 leaf commands are mapped with their fields; `test_every_tool_contract_command_is_mapped_with_its_fields` checks them against the tool-contract table.
+- AC-2: `test_command_map_agrees_with_typer_cli` compares the map to the live Typer app. The parametrized mutation tests show that a missing or extra command, and changed defaults, required flags or choices, are reported.
+- AC-3: the map and its test contain no version string; `test_command_map_holds_no_version_string` enforces this.
+- AC-4: `--json`, `init --tools` and `init --no-interactive` are `cliOnly` with a null field.
+- Only the two files in "Files to Touch" were changed. The hand-authored-map choice is recorded in the Work Log.
+
+Stage 2: the tests cover both agreement and disagreement and are independent. There is no dead code. Checks run from cli/: `UV_CACHE_DIR=/tmp/uvcache uv run pytest` gave 875 passed, and `ruff format --check` and `ruff check` were clean.
+
+Scaffold sync: `sources/command_map.json` sits at the top level of `sources/`. The sync script only copies `project/`, `skills/`, `agents/claude` and `agents/codex`, so the file is not part of any generated output. I ran `python scripts/sync_init_scaffolds.py` on the branch and `git status` showed no changes. No sync is needed to commit this file. The later tasks that consume the JSON will need to add it to the sync.
+
+Non-blocking: the tool-contract table is duplicated in the test and is not derived from S-005. This is intentional and acceptable.
+
+Next owner: Development Loop.
