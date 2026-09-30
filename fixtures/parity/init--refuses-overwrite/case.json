@@ -1,0 +1,12 @@
+{
+  "command": "init",
+  "env": {},
+  "expected": {
+    "message": "Refusing to overwrite existing files without --force:\n<ROOT>/project/.gitignore\n<ROOT>/project/AGENTS.md\n<ROOT>/project/CLAUDE.md\n<ROOT>/project/bugs/in-progress/.gitkeep\n<ROOT>/project/bugs/open/.gitkeep\n<ROOT>/project/bugs/resolved/.gitkeep\n<ROOT>/project/change-requests/.gitkeep\n<ROOT>/project/decisions/.gitkeep\n<ROOT>/project/docs/.gitkeep\n<ROOT>/project/specs/.gitkeep\n<ROOT>/project/tasks/blocked/.gitkeep\n<ROOT>/project/tasks/completed/.gitkeep\n<ROOT>/project/tasks/in-progress/.gitkeep\n<ROOT>/project/tasks/pending/.gitkeep\n<ROOT>/.ai-team.toml",
+    "status": 1
+  },
+  "input": {},
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}

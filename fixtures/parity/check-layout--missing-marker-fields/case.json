@@ -1,0 +1,33 @@
+{
+  "command": "check-layout",
+  "env": {},
+  "expected": {
+    "payload": {
+      "findings": [
+        {
+          "level": 1,
+          "message": "Marker value [init].tools is missing or invalid; no tool directories can be selected safely.",
+          "path": ".ai-team.toml",
+          "suggested_fix": "Set [init].tools to an array containing supported tool names: 'claude' and/or 'codex'."
+        },
+        {
+          "level": 3,
+          "message": "Root guidance selection is blocked by missing or invalid configured tools.",
+          "path": ".ai-team.toml",
+          "suggested_fix": "Set [init].tools to an array containing 'claude' and/or 'codex', then rerun the layout check."
+        },
+        {
+          "level": 4,
+          "message": "Configured framework version is missing (unavailable); current CLI version is '1.0.0'.",
+          "path": ".ai-team.toml",
+          "suggested_fix": "Set [init].framework_version to the exact current CLI distribution version."
+        }
+      ]
+    },
+    "status": 1
+  },
+  "input": {},
+  "project_dir": "project",
+  "today": "2026-03-01",
+  "version": "1.0.0"
+}
