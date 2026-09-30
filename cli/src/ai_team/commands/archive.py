@@ -9,8 +9,9 @@ from pathlib import Path
 import typer
 
 from ai_team.core.fs import move_artifact
-from ai_team.core.locator import find_project_root
+from ai_team.core.locator import ProjectRoot, find_project_root
 from ai_team.core.models import parse_bug, parse_task
+from ai_team.core.result import Result
 from ai_team.core.runtime import today
 
 NAME = "archive"
@@ -51,40 +52,54 @@ def _created_date(path: Path) -> date:
     return date.fromisoformat(model.created)
 
 
+def archive_artifacts(root: ProjectRoot, older_than: str, dry_run: bool) -> Result:
+    """Archive (or, with ``dry_run``, list) completed tasks and resolved bugs."""
+    try:
+        delta = _parse_older_than(older_than)
+    except ValueError as exc:
+        return Result(status=1, message=str(exc))
+
+    archive_root = root.project_dir / "archive"
+    cutoff = today() - delta
+
+    moves: list[tuple[Path, Path]] = []
+    for folder in (root.tasks_completed, root.bugs_resolved):
+        for source in _iter_markdown_files(folder):
+            created = _created_date(source)
+            if created < cutoff:
+                bucket = created.strftime("%Y-%m")
+                moves.append((source, archive_root / bucket / source.name))
+
+    if not dry_run:
+        for source, destination in moves:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            move_artifact(source, destination)
+
+    return Result(
+        status=0,
+        payload={
+            "dry_run": dry_run,
+            "moves": [
+                {"source": str(source), "destination": str(destination)}
+                for source, destination in moves
+            ],
+        },
+    )
+
+
 @app.callback(invoke_without_command=True)
 def archive(
     older_than: str = typer.Option("90d", "--older-than"),
     dry_run: bool = typer.Option(False, "--dry-run"),
 ) -> None:
     """Archive completed tasks and resolved bugs older than --older-than."""
-    try:
-        delta = _parse_older_than(older_than)
-    except ValueError as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(code=1) from exc
+    result = archive_artifacts(find_project_root(Path.cwd()), older_than, dry_run)
+    if result.status:
+        typer.echo(result.text(), err=True)
+        raise typer.Exit(code=result.status)
 
-    root = find_project_root(Path.cwd())
-    archive_root = root.project_dir / "archive"
-    cutoff = today() - delta
-
-    moves: list[tuple[Path, Path]] = []
-    for source in _iter_markdown_files(root.tasks_completed):
-        created = _created_date(source)
-        if created < cutoff:
-            bucket = created.strftime("%Y-%m")
-            moves.append((source, archive_root / bucket / source.name))
-
-    for source in _iter_markdown_files(root.bugs_resolved):
-        created = _created_date(source)
-        if created < cutoff:
-            bucket = created.strftime("%Y-%m")
-            moves.append((source, archive_root / bucket / source.name))
-
-    for source, destination in moves:
+    for move in result.payload["moves"]:
         if dry_run:
-            typer.echo(f"WOULD MOVE: {source} -> {destination}")
-            continue
-
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        move_artifact(source, destination)
-        typer.echo(str(destination.resolve()))
+            typer.echo(f"WOULD MOVE: {move['source']} -> {move['destination']}")
+        else:
+            typer.echo(str(Path(move["destination"]).resolve()))

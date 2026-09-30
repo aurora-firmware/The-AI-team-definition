@@ -7,7 +7,8 @@ from pathlib import Path
 import typer
 from rich.table import Table
 
-from ai_team.core.locator import find_project_root
+from ai_team.core.locator import ProjectRoot, find_project_root
+from ai_team.core.result import Result
 from ai_team.core.validate import validate_project
 from ai_team.render import console, print_json
 
@@ -46,21 +47,16 @@ def _render_findings_table(findings: list[dict[str, str]]) -> None:
     console.print(table)
 
 
-@app.callback()
-def default(
-    all_scopes: bool = typer.Option(
-        False, "--all", help="Validate all artifact types."
-    ),
-    tasks: bool = typer.Option(False, "--tasks", help="Validate tasks only."),
-    bugs: bool = typer.Option(False, "--bugs", help="Validate bugs only."),
-    specs: bool = typer.Option(False, "--specs", help="Validate specs only."),
-    adrs: bool = typer.Option(False, "--adrs", help="Validate ADRs only."),
-    change_requests: bool = typer.Option(
-        False, "--change-requests", help="Validate change requests only."
-    ),
-    as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
-) -> None:
-    root = find_project_root(Path.cwd())
+def validate_artifacts(
+    root: ProjectRoot,
+    all_scopes: bool,
+    tasks: bool,
+    bugs: bool,
+    specs: bool,
+    adrs: bool,
+    change_requests: bool,
+) -> Result:
+    """Validate the selected artifact scopes; status is 1 when any finding is an error."""
     (
         selected_tasks,
         selected_bugs,
@@ -77,6 +73,34 @@ def default(
         change_requests=selected_change_requests,
     )
     payload = [finding.as_dict() for finding in findings]
+    has_error = any(finding["level"] == "error" for finding in payload)
+    return Result(status=1 if has_error else 0, payload=payload)
+
+
+@app.callback()
+def default(
+    all_scopes: bool = typer.Option(
+        False, "--all", help="Validate all artifact types."
+    ),
+    tasks: bool = typer.Option(False, "--tasks", help="Validate tasks only."),
+    bugs: bool = typer.Option(False, "--bugs", help="Validate bugs only."),
+    specs: bool = typer.Option(False, "--specs", help="Validate specs only."),
+    adrs: bool = typer.Option(False, "--adrs", help="Validate ADRs only."),
+    change_requests: bool = typer.Option(
+        False, "--change-requests", help="Validate change requests only."
+    ),
+    as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
+) -> None:
+    result = validate_artifacts(
+        find_project_root(Path.cwd()),
+        all_scopes,
+        tasks,
+        bugs,
+        specs,
+        adrs,
+        change_requests,
+    )
+    payload = result.payload
 
     if as_json:
         print_json(payload)
@@ -84,6 +108,5 @@ def default(
         _render_findings_table(payload)
         typer.echo(f"{len(payload)} findings")
 
-    has_error = any(finding["level"] == "error" for finding in payload)
-    if has_error:
-        raise typer.Exit(code=1)
+    if result.status:
+        raise typer.Exit(code=result.status)
