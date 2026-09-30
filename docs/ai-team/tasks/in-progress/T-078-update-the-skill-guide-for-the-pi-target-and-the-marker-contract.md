@@ -59,6 +59,24 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-09-30
+
+I read the S-005 marker contract and ADR-002 and ADR-004, then added one section ("Render Targets and the CLI Marker Contract") to `guides/skill_template.md`, committed on `task/T-078-pi-skill-guide-marker-contract` as `c83cd77`. The section covers:
+- the three render targets;
+- the command marker, with pi call versus mention form chosen only by required-positional presence, and `--json` dropped for pi calls;
+- the flag marker, where pi renders "set `<field>`" or the bare field name inside backticks;
+- the noun marker `{{ai-team-cli|<claude/codex>|<pi>}}`;
+- fence rules: a fence containing only markers becomes prose for pi, and a mixed fence fails the sync;
+- placeholders checked by field name and presence, not value;
+- the inline-context rule;
+- markers allowed in the `[claude]` and `[codex]` headers;
+- pi header derivation from `[claude]` with no `[pi]` section (ADR-002);
+- how `Skill(<name>)`, the self-contained `.claude/` rule and `allowed-tools` apply to pi;
+- orchestrators (`dev-loop`, `bug-loop`, `integrate`) rendered but excluded from the pi manifest until sub-project 5;
+- the command map as the single command surface (ADR-004).
+
+The spec only says these conventions are "defined by the guide", so I chose the pi applicability readings myself: `Skill()` is not rendered for pi because pi has no `allowed-tools`; in-body skill references stay valid but only to skills that ship to pi; pi tool scoping comes from the process layer. I rejected adding a guide-content test and rejected restating command syntax in the guide, since the command map owns it. Verification: grep hits for each required term (were zero before), pytest 461 passed, ruff format and ruff check clean. Nothing remains for this task. Reviewer should confirm the pi applicability readings above.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
