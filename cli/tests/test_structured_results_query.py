@@ -15,6 +15,7 @@ from ai_team.commands.list import (
     list_tasks,
 )
 from ai_team.commands.show import show_artifact
+from ai_team.commands.status import status_summary
 from ai_team.core.locator import ProjectRoot, find_project_root
 
 TASK = """\
@@ -194,3 +195,34 @@ def test_show_handler_lists_every_path_when_identifier_is_ambiguous(tmp_path):
     assert result.status == 1
     assert result.message.splitlines()[0] == "Multiple artifacts matched 'dup':"
     assert len(result.message.splitlines()) == 3
+
+
+# AC-1, AC-2
+def test_status_handler_payload_equals_json_output(tmp_path, monkeypatch):
+    root = _root(tmp_path)
+    _write(
+        root.tasks_in_progress / "T-001-a.md",
+        TASK.format(id="T-001", title="A", status="in-progress"),
+    )
+    _write(
+        root.bugs_open / "B-001-a.md",
+        BUG.format(id="B-001", title="A", status="open"),
+    )
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = status_summary(root)
+
+    assert result.status == 0
+    assert result.payload["counts"]["tasks"]["in_progress"] == 1
+    assert result.payload["critical_high_open_bugs"][0]["id"] == "B-001"
+    assert result.payload == _cli_json(tmp_path, monkeypatch, "status")
+
+
+def test_status_handler_reports_integration_result_not_found_outside_git(tmp_path):
+    root = _root(tmp_path)
+
+    result = status_summary(root)
+
+    assert result.payload["latest_integration_result"] == "not found"

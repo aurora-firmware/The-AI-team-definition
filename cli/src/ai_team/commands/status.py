@@ -12,6 +12,7 @@ from rich.markdown import Markdown
 from ai_team.core.fs import read_artifact
 from ai_team.core.locator import ProjectRoot, find_project_root
 from ai_team.core.models import parse_bug, parse_task
+from ai_team.core.result import Result
 from ai_team.render import console, print_json
 
 NAME = "status"
@@ -199,6 +200,11 @@ def _payload(root: ProjectRoot) -> dict[str, object]:
     return payload
 
 
+def status_summary(root: ProjectRoot) -> Result:
+    """Return the status summary (the ``--json`` payload) for *root*."""
+    return Result(status=0, payload=_payload(root))
+
+
 def _list_lines(items: list[str]) -> str:
     if not items:
         return "- none"
@@ -268,8 +274,7 @@ def _to_markdown(payload: dict[str, object]) -> str:
 def default(
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
-    root = find_project_root(Path.cwd())
-    payload = _payload(root)
+    payload = status_summary(find_project_root(Path.cwd())).payload
     if as_json:
         print_json(payload)
         return
