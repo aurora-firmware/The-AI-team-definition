@@ -88,3 +88,269 @@ def test_discover_cases_finds_a_new_case_directory_without_registration(
     assert [case.name for case in parity.discover_cases(tmp_path)] == [
         "status--brand-new"
     ]
+
+
+# --- running and comparing --------------------------------------------------
+
+
+def _empty_project_tree(tmp_path: Path) -> Path:
+    before = tmp_path / "before"
+    for folder in (
+        "specs",
+        "tasks/pending",
+        "tasks/in-progress",
+        "tasks/completed",
+        "tasks/blocked",
+        "bugs/open",
+        "bugs/in-progress",
+        "bugs/resolved",
+        "change-requests",
+        "decisions",
+        "docs",
+    ):
+        (before / "project" / folder).mkdir(parents=True, exist_ok=True)
+    return before
+
+
+def _record(fixtures: Path, tmp_path: Path, **overrides) -> Path:
+    settings = {
+        "command": "status",
+        "case": "empty",
+        "input": {},
+        "before_dir": _empty_project_tree(tmp_path),
+        "today": "2031-02-03",
+        "version": "9.9.9",
+    }
+    settings.update(overrides)
+    return parity.record_case(fixtures, **settings)
+
+
+def test_recorded_case_passes_when_run_again(tmp_path: Path) -> None:
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    case = _record(fixtures, tmp_path)
+
+    assert case.name == "status--empty"
+    assert parity.compare_case(case) == []
+
+
+def test_compare_fails_with_a_diff_naming_the_path_when_after_tree_differs(
+    tmp_path: Path,
+) -> None:
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    case = _record(fixtures, tmp_path)
+    after = json.loads((case / "after.json").read_text())
+    after.append({"path": "project/stray.md", "type": "file", "text": "x"})
+    (case / "after.json").write_text(json.dumps(after))
+
+    diffs = parity.compare_case(case)
+
+    assert any("project/stray.md" in diff for diff in diffs)
+
+
+def test_compare_fails_with_a_diff_when_exit_status_differs(tmp_path: Path) -> None:
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    case = _record(fixtures, tmp_path)
+    data = json.loads((case / "case.json").read_text())
+    data["expected"]["status"] = 1
+    (case / "case.json").write_text(json.dumps(data))
+
+    diffs = parity.compare_case(case)
+
+    assert any('"status"' in diff for diff in diffs)
+
+
+def test_compare_fails_with_a_diff_when_error_message_differs(tmp_path: Path) -> None:
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    case = _record(fixtures, tmp_path, before_dir=None, case="no-project")
+    data = json.loads((case / "case.json").read_text())
+    assert data["expected"]["status"] == 1
+    assert "<ROOT>" in data["expected"]["message"]
+    data["expected"]["message"] = "something else"
+    (case / "case.json").write_text(json.dumps(data))
+
+    diffs = parity.compare_case(case)
+
+    assert any("something else" in diff for diff in diffs)
+
+
+def test_compare_ignores_the_remediation_hint_on_errors(tmp_path: Path) -> None:
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    case = _record(fixtures, tmp_path, before_dir=None, case="no-project")
+
+    data = json.loads((case / "case.json").read_text())
+
+    assert "hint" not in data["expected"]
+    assert "ai-team init" not in data["expected"]["message"]
+
+
+def test_record_refuses_to_overwrite_an_existing_case(tmp_path: Path) -> None:
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    case = _record(fixtures, tmp_path)
+    original = (case / "case.json").read_text()
+
+    with pytest.raises(FileExistsError, match="status--empty"):
+        _record(fixtures, tmp_path, today="2040-01-01")
+
+    assert (case / "case.json").read_text() == original
+
+
+def test_record_rejects_case_names_that_are_not_slug_dash_dash_case(
+    tmp_path: Path,
+) -> None:
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+
+    with pytest.raises(ValueError, match="case"):
+        _record(fixtures, tmp_path, case="Not A Slug")
+
+
+def test_lock_sentinels_in_the_after_tree_are_ignored(tmp_path: Path) -> None:
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    before = _empty_project_tree(tmp_path)
+    (before / "project" / ".ai-team.lock").write_bytes(b"")
+    case = _record(
+        fixtures,
+        tmp_path,
+        command="task new",
+        input={"title": "Locked"},
+        before_dir=before,
+    )
+
+    after_paths = [e["path"] for e in json.loads((case / "after.json").read_text())]
+    before_paths = [e["path"] for e in json.loads((case / "before.json").read_text())]
+
+    assert "project/.ai-team.lock" in before_paths
+    assert "project/.ai-team.lock" not in after_paths
+    assert parity.compare_case(case) == []
+
+
+def test_clock_and_version_come_only_from_the_case_overrides(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setenv("AI_TEAM_TODAY", "1999-09-09")
+    monkeypatch.setenv("AI_TEAM_FRAMEWORK_VERSION", "0.0.1")
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    task_case = _record(
+        fixtures,
+        tmp_path,
+        command="task new",
+        input={"title": "Dated"},
+        case="dated",
+    )
+    init_case = _record(
+        fixtures,
+        tmp_path,
+        command="init",
+        input={},
+        before_dir=None,
+        case="versioned",
+    )
+
+    task_after = json.loads((task_case / "after.json").read_text())
+    task_file = next(e for e in task_after if e["path"].endswith("-dated.md"))
+    init_after = json.loads((init_case / "after.json").read_text())
+    marker = next(e for e in init_after if e["path"] == ".ai-team.toml")
+
+    assert "created: '2031-02-03'" in task_file["text"]
+    assert 'framework_version = "9.9.9"' in marker["text"]
+    assert os.environ["AI_TEAM_TODAY"] == "1999-09-09"
+
+
+def test_case_without_clock_or_version_is_rejected(tmp_path: Path) -> None:
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    case = _record(fixtures, tmp_path)
+    data = json.loads((case / "case.json").read_text())
+    del data["today"]
+    (case / "case.json").write_text(json.dumps(data))
+
+    with pytest.raises(ValueError, match="today"):
+        parity.compare_case(case)
+
+
+def test_results_carry_the_root_as_a_placeholder(tmp_path: Path) -> None:
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    case = _record(
+        fixtures, tmp_path, command="task new", input={"title": "Path check"}
+    )
+
+    expected = json.loads((case / "case.json").read_text())["expected"]
+
+    assert expected["payload"]["path"] == (
+        "<ROOT>/project/tasks/pending/T-001-path-check.md"
+    )
+
+
+# --- isolation --------------------------------------------------------------
+
+
+def test_run_unsets_ai_team_root_unless_the_case_sets_it(
+    tmp_path: Path, monkeypatch
+) -> None:
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    case = _record(fixtures, tmp_path)
+    monkeypatch.setenv("AI_TEAM_ROOT", str(tmp_path / "elsewhere"))
+
+    assert parity.compare_case(case) == []
+    assert os.environ["AI_TEAM_ROOT"] == str(tmp_path / "elsewhere")
+
+
+def test_case_can_resolve_its_root_through_ai_team_root(tmp_path: Path) -> None:
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    case = _record(
+        fixtures,
+        tmp_path,
+        before_dir=None,
+        case="env-root-missing",
+        env={"AI_TEAM_ROOT": "<ROOT>"},
+    )
+
+    expected = json.loads((case / "case.json").read_text())["expected"]
+
+    assert (
+        expected["message"] == "No 'project/' folder found under AI_TEAM_ROOT=<ROOT>."
+    )
+    assert parity.compare_case(case) == []
+
+
+def test_isolated_environment_sets_git_ceiling_and_clears_ai_team_root(
+    tmp_path: Path, monkeypatch
+) -> None:
+    import subprocess
+
+    monkeypatch.setenv("AI_TEAM_ROOT", "/nope")
+    case = {"today": "2031-02-03", "version": "1.0.0", "env": {}}
+    with parity.materialized_root() as root:
+        with parity.isolated_environment(root, case):
+            assert "AI_TEAM_ROOT" not in os.environ
+            assert os.environ["GIT_CEILING_DIRECTORIES"] == str(root.parent)
+            inside = subprocess.run(
+                ["git", "-C", str(root), "rev-parse", "--is-inside-work-tree"],
+                capture_output=True,
+            )
+            assert inside.returncode != 0
+
+
+# --- the committed fixtures -------------------------------------------------
+
+
+def test_fixture_suite_has_the_status_smoke_case() -> None:
+    assert "status--empty" in [case.name for case in CASES]
+
+
+@pytest.mark.parametrize("case", CASES, ids=lambda case: case.name)
+def test_parity_case_matches_python_implementation(case: Path) -> None:
+    diffs = parity.compare_case(case)
+
+    assert diffs == [], "\n".join(diffs)
