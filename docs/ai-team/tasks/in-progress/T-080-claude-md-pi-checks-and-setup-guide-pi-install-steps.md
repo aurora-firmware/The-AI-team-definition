@@ -60,6 +60,14 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-09-30
+
+Read the empty Work Log and the S-005 spec sections on the version file, `init` behaviour, the Level 4 mismatch and the unsupported mixed allocation. Wrote a grep-based red check for the phrases the acceptance criteria require and confirmed it failed (10 missing items). Then edited only `CLAUDE.md` and `guides/setup-guide.md`, committed on `task/T-080-claude-md-pi-checks-setup-guide` as `5606e0f`.
+
+`CLAUDE.md` gained a "Test and Check the pi Package" section and three Key Conventions rows (`pi/`, `pi/resources/` generated, `fixtures/parity/` reviewed contract per ADR-004). The generated-output note now names `pi/resources/` as well as the CLI scaffolds. The setup guide gained an optional "Using the pi coding agent" section with the sync, `pi install <path-to-pi>`, the expected Level 4 mismatch, the unsupported mixed concurrent allocation, and the empty `[init].tools` and no `.claude/`/`.codex/` behaviour of pi `init`.
+
+I deliberately left out a runner location and the `pi/src` layout, since the spec leaves them open. The check passes and the full V-PY verification is green (pytest 461 passed, ruff format and check clean). There was no scaffold or docs regeneration to do. `pi/` and `fixtures/` do not exist yet, so the pi commands are documented only. Review should confirm that "sync first" is worded accurately: `CLAUDE.md` describes the sync as `python scripts/sync_init_scaffolds.py` run from `cli/`, which matches the spec's "existing script gains a pi target". Nothing remains. The pi README (T-100) and other guides are out of scope.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
