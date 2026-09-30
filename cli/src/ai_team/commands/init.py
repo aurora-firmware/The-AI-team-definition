@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import importlib.resources as resources
 import shutil
+from collections.abc import Callable
 from pathlib import Path
 
 import tomli_w
 import typer
 
+from ai_team.core.result import Result
 from ai_team.core.runtime import framework_version
 
 NAME = "init"
@@ -97,42 +99,159 @@ def _copy_root_guidance_file(
 def _handle_root_guidance(
     target_root: Path,
     sources_root: Path,
-    no_interactive: bool,
     create_root_guidance: bool,
     force: bool,
     dry_run: bool,
-) -> bool:
-    """Prompt for or create root guidance files.  Returns True if any file was declined."""
-    declined = False
+    confirm_root_guidance: Callable[[str], bool] | None,
+) -> list[dict[str, str]]:
+    """Create root guidance files and report one outcome per file.
+
+    Outcomes: ``exists`` (kept), ``would-write`` (dry run), ``created``,
+    ``declined`` (the confirm callback said no) and ``not-requested``.
+    """
+    outcomes: list[dict[str, str]] = []
 
     for filename in _ROOT_GUIDANCE_FILES:
         destination = target_root / filename
         source = sources_root / "root" / filename
 
-        # AC-5: never replace an existing file unless force is active
         if destination.exists() and not force:
-            continue
+            outcome = "exists"
+        elif dry_run:
+            outcome = "would-write"
+        elif confirm_root_guidance is not None:
+            if confirm_root_guidance(filename):
+                _copy_root_guidance_file(source, destination, force)
+                outcome = "created"
+            else:
+                outcome = "declined"
+        elif create_root_guidance:
+            _copy_root_guidance_file(source, destination, force)
+            outcome = "created"
+        else:
+            outcome = "not-requested"
+
+        outcomes.append({"path": str(destination), "outcome": outcome})
+
+    return outcomes
+
+
+def init_repository(
+    path: Path,
+    tools: list[str],
+    force: bool,
+    dry_run: bool,
+    create_root_guidance: bool,
+    confirm_root_guidance: Callable[[str], bool] | None = None,
+) -> Result:
+    """Scaffold *path* for the explicit (possibly empty) *tools* list.
+
+    Never prompts on its own: root guidance is created when
+    *create_root_guidance* is set, or decided per file by the optional
+    *confirm_root_guidance* callback. The payload lists the written (or, for a
+    dry run, planned) files and the root-guidance outcome per file.
+    """
+    unsupported = [name for name in tools if name not in _SUPPORTED_TOOLS]
+    if unsupported:
+        return Result(
+            status=1,
+            message=(
+                f"Unsupported tool '{unsupported[0]}'. Supported values: "
+                + ", ".join(_SUPPORTED_TOOLS)
+            ),
+        )
+
+    target_root = path.resolve()
+
+    scaffolds = resources.files("ai_team.init") / "scaffolds"
+    sources = resources.files("ai_team.init") / "sources"
+    with (
+        resources.as_file(scaffolds) as scaffolds_path,
+        resources.as_file(sources) as sources_path,
+    ):
+        planned: list[tuple[Path, Path]] = []
+        planned.extend(
+            _plan_copies(scaffolds_path / "project", target_root / "project")
+        )
+
+        if "claude" in tools:
+            planned.extend(
+                _plan_copies(scaffolds_path / "claude", target_root / ".claude")
+            )
+
+        if "codex" in tools:
+            planned.extend(
+                _plan_copies(scaffolds_path / "codex", target_root / ".codex")
+            )
+
+        marker = target_root / ".ai-team.toml"
+        planned_destinations = [destination for _, destination in planned] + [marker]
+        collisions = [
+            destination for destination in planned_destinations if destination.exists()
+        ]
+        files = [str(destination) for destination in planned_destinations]
 
         if dry_run:
-            typer.echo(f"WOULD WRITE: {destination}")
-            continue
-
-        if no_interactive:
-            # AC-3: deterministic — only create when the flag is set
-            if create_root_guidance:
-                _copy_root_guidance_file(source, destination, force)
-        else:
-            # AC-1 / AC-2: interactive — ask the user
-            create = typer.confirm(
-                f"Create root {filename} from the starter template?",
-                default=True,
+            root_guidance = _handle_root_guidance(
+                target_root,
+                sources_path,
+                create_root_guidance,
+                force,
+                dry_run=True,
+                confirm_root_guidance=None,
             )
-            if create:
-                _copy_root_guidance_file(source, destination, force)
-            else:
-                declined = True
+            payload = {"files": files, "dry_run": True, "root_guidance": root_guidance}
+        else:
+            payload = None
 
-    return declined
+        if collisions and not force:
+            return Result(
+                status=1,
+                payload=payload,
+                message=(
+                    "Refusing to overwrite existing files without --force:\n"
+                    + "\n".join(str(collision) for collision in collisions)
+                ),
+            )
+
+        if payload is not None:
+            return Result(status=0, payload=payload)
+
+        for source, destination in planned:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, destination)
+
+        marker_data = {
+            "project": {"dir": "project"},
+            "init": {
+                "tools": tools,
+                "framework_version": framework_version(),
+            },
+        }
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.write_text(tomli_w.dumps(marker_data), encoding="utf-8")
+
+        # Root guidance files sit outside the collision-checked scaffold set.
+        root_guidance = _handle_root_guidance(
+            target_root,
+            sources_path,
+            create_root_guidance,
+            force,
+            dry_run=False,
+            confirm_root_guidance=confirm_root_guidance,
+        )
+
+    return Result(
+        status=0,
+        payload={"files": files, "dry_run": False, "root_guidance": root_guidance},
+    )
+
+
+def _confirm_root_guidance(filename: str) -> bool:
+    return typer.confirm(
+        f"Create root {filename} from the starter template?",
+        default=True,
+    )
 
 
 @app.callback()
@@ -151,87 +270,36 @@ def init_command(
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
 
-    target_root = path.resolve()
+    result = init_repository(
+        path,
+        selected_tools,
+        force,
+        dry_run,
+        create_root_guidance,
+        confirm_root_guidance=None if no_interactive else _confirm_root_guidance,
+    )
 
-    scaffolds = resources.files("ai_team.init") / "scaffolds"
-    sources = resources.files("ai_team.init") / "sources"
-    with (
-        resources.as_file(scaffolds) as scaffolds_path,
-        resources.as_file(sources) as sources_path,
-    ):
-        planned: list[tuple[Path, Path]] = []
-        planned.extend(
-            _plan_copies(scaffolds_path / "project", target_root / "project")
-        )
+    if dry_run and result.payload is not None:
+        for destination in result.payload["files"]:
+            typer.echo(f"WOULD WRITE: {destination}")
+        for entry in result.payload["root_guidance"]:
+            if entry["outcome"] == "would-write":
+                typer.echo(f"WOULD WRITE: {entry['path']}")
 
-        if "claude" in selected_tools:
-            planned.extend(
-                _plan_copies(scaffolds_path / "claude", target_root / ".claude")
-            )
+    if result.status != 0:
+        typer.echo(result.text(), err=True)
+        raise typer.Exit(code=result.status)
 
-        if "codex" in selected_tools:
-            planned.extend(
-                _plan_copies(scaffolds_path / "codex", target_root / ".codex")
-            )
-
-        marker = target_root / ".ai-team.toml"
-        planned_destinations = [destination for _, destination in planned] + [marker]
-        collisions = [
-            destination for destination in planned_destinations if destination.exists()
-        ]
-
-        if dry_run:
-            for destination in planned_destinations:
-                typer.echo(f"WOULD WRITE: {destination}")
-            # Also show root guidance would-write entries in dry-run
-            _handle_root_guidance(
-                target_root,
-                sources_path,
-                no_interactive,
-                create_root_guidance,
-                force,
-                dry_run=True,
-            )
-
-        if collisions and not force:
-            typer.echo(
-                "Refusing to overwrite existing files without --force:\n"
-                + "\n".join(str(path) for path in collisions),
-                err=True,
-            )
-            raise typer.Exit(code=1)
-
-        if dry_run:
-            return
-
-        for source, destination in planned:
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source, destination)
-
-        marker_data = {
-            "project": {"dir": "project"},
-            "init": {
-                "tools": selected_tools,
-                "framework_version": framework_version(),
-            },
-        }
-        marker.parent.mkdir(parents=True, exist_ok=True)
-        marker.write_text(tomli_w.dumps(marker_data), encoding="utf-8")
-
-        # Handle root guidance files (outside the collision-checked scaffold set)
-        declined = _handle_root_guidance(
-            target_root,
-            sources_path,
-            no_interactive,
-            create_root_guidance,
-            force,
-            dry_run=False,
-        )
+    if dry_run:
+        return
 
     typer.echo("Initialization complete.")
     typer.echo("Next steps:")
     for line in _next_steps():
         typer.echo(f"- {line}")
 
+    declined = any(
+        entry["outcome"] == "declined" for entry in result.payload["root_guidance"]
+    )
     if declined:
         typer.echo(f"\nNote: {_ROOT_GUIDANCE_DECLINED_MESSAGE}")
