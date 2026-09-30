@@ -1,7 +1,7 @@
 ---
 id: T-087
 title: TS lock entry in skeleton .gitignore; update B-017 tests and usage guide
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
