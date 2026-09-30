@@ -17,9 +17,21 @@ from contextlib import contextmanager
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-from ai_team.commands import adr, archive, bug, change_request, check_layout, init
+from ai_team.commands import (
+    adr,
+    archive,
+    bug,
+    change_request,
+    check_layout,
+    init,
+    report,
+    show,
+    spec,
+    status,
+    task,
+    validate,
+)
 from ai_team.commands import list as list_command
-from ai_team.commands import report, show, spec, status, task, validate
 from ai_team.core.locator import ProjectRoot, ProjectRootNotFound, find_project_root
 from ai_team.core.result import Result
 from ai_team.core.runtime import FRAMEWORK_VERSION_ENV_VAR, TODAY_ENV_VAR

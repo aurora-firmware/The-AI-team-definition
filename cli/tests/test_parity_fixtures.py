@@ -354,3 +354,51 @@ def test_parity_case_matches_python_implementation(case: Path) -> None:
     diffs = parity.compare_case(case)
 
     assert diffs == [], "\n".join(diffs)
+
+
+# --- seed helper script -----------------------------------------------------
+
+SEED_SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "seed_parity_fixture.py"
+
+
+def _run_seed(fixtures: Path, before: Path, *extra: str):
+    import subprocess
+    import sys
+
+    return subprocess.run(
+        [
+            sys.executable,
+            str(SEED_SCRIPT),
+            "--fixtures-root",
+            str(fixtures),
+            "--command",
+            "status",
+            "--case",
+            "seeded",
+            "--before-tree",
+            str(before),
+            "--today",
+            "2031-02-03",
+            "--version",
+            "9.9.9",
+            *extra,
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_seed_script_records_a_case_then_refuses_to_overwrite_it(
+    tmp_path: Path,
+) -> None:
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    before = _empty_project_tree(tmp_path)
+
+    first = _run_seed(fixtures, before)
+    second = _run_seed(fixtures, before)
+
+    assert first.returncode == 0, first.stderr
+    assert parity.compare_case(fixtures / "status--seeded") == []
+    assert second.returncode != 0
+    assert "status--seeded" in second.stderr
