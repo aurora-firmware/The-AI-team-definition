@@ -1,7 +1,7 @@
 ---
 id: T-084
 title: Structured results for list, show, status, report
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
