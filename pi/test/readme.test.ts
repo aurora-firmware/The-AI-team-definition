@@ -20,4 +20,11 @@ describe("pi package README", () => {
   it("states that mixed concurrent allocation is unsupported", () => {
     expect(readme).toMatch(/mixed concurrent[^.]*unsupported/i);
   });
+
+  it.each(["AI_TEAM_TODAY", "AI_TEAM_FRAMEWORK_VERSION"])(
+    "documents the %s override",
+    (name) => {
+      expect(readme).toContain(name);
+    },
+  );
 });

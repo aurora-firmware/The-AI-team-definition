@@ -40,6 +40,19 @@ pi install <path-to-pi>
 
 Automated tests never start pi and never use your real agent directory.
 
+## Runtime overrides
+
+The core reads the same test-only overrides as the Python CLI, in one place
+(`src/core/runtime.ts`):
+
+| Variable | Effect |
+|---|---|
+| `AI_TEAM_TODAY` | ISO date (`YYYY-MM-DD`) used instead of the current date. |
+| `AI_TEAM_FRAMEWORK_VERSION` | Version string used instead of `resources/version.txt`. |
+
+Without an override the version comes from the generated `resources/version.txt`;
+if that file is missing the core fails with a hint to run the sync.
+
 ## Architecture rule
 
 Only `src/index.ts` and the pi adapter may import the pi API. Nothing under
