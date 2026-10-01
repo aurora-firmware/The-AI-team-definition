@@ -1,1 +1,6 @@
-[]
+[
+  {
+    "command": "spec new",
+    "title": "<title>"
+  }
+]

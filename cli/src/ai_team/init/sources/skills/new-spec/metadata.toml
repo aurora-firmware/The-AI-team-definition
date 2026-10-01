@@ -1,7 +1,7 @@
 [claude]
 header = """---
 name: new-spec
-description: Create a new specification document via the ai-team CLI
+description: Create a new specification document via {{ai-team-cli|the ai-team CLI|the ai_team tool}}
 argument-hint: "[optional: specification title]"
 allowed-tools: Read, Write, Bash
 ---"""
@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Bash
 [codex]
 header = """---
 name: new-spec
-description: Create a new specification document via the ai-team CLI
+description: Create a new specification document via {{ai-team-cli|the ai-team CLI|the ai_team tool}}
 argument-hint: "[optional: specification title]"
 allowed-tools: Read, Write, Bash
 ---"""

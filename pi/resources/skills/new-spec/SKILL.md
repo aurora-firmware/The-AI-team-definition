@@ -1,17 +1,17 @@
 ---
 name: new-spec
-description: Create a new specification document via the ai-team CLI
+description: Create a new specification document via the ai_team tool
 ---
 
 # New Spec
 
-Create a new specification document using `ai-team spec new --json`, then fill its body following the section-by-section recipes below.
+Create a new specification document using the `ai_team` tool's `spec new` command, then fill its body following the section-by-section recipes below.
 
 ## Input Requirements
 
 Provide these values directly when possible:
 - `title` — required
-- `description` — required (free-form prose: problem, approach, exclusions, constraints; used to fill body sections in step 4 — NOT passed to the CLI)
+- `description` — required (free-form prose: problem, approach, exclusions, constraints; used to fill body sections in step 4 — NOT passed to the tool)
 - `author` — optional; defaults to `AI Agent`
 - `status` — optional; defaults to `draft`
 
@@ -25,11 +25,11 @@ When invoked directly by a human and required fields are missing, ask only for t
    - If invoked directly and some required fields are missing, ask only for the missing fields.
    - Use `$ARGUMENTS` as the title when it is the only provided input.
 
-2. Build the CLI command:
-   - Base: `ai-team spec new "<title>" --json`
-   - Add `--author "<author>"` only when `author` is provided; otherwise allow the CLI default.
-   - Add `--status "<status>"` only when `status` is provided; otherwise allow the CLI default.
-   - Do NOT pass `description` to the CLI — the CLI has no `--description` flag.
+2. Build the tool command:
+   - Base: the `ai_team` tool call `{"command": "spec new", "title": "<title>"}`
+   - Add `author "<author>"` only when `author` is provided; otherwise allow the tool default.
+   - Add `status "<status>"` only when `status` is provided; otherwise allow the tool default.
+   - Do NOT pass `description` to the tool — the tool has no `--description` flag.
 
 3. Execute the command and parse the JSON response to capture:
    - `id` (for example, `S-003`)
@@ -43,7 +43,7 @@ When invoked directly by a human and required fields are missing, ask only for t
    - Human-answerable `[TODO]` markers must be resolved before Architecture Consistency Review.
    - If any human-answerable `[TODO]` markers remain, explicitly report the blocker and stop instead of handing the draft to Architecture Consistency Review or Gate 1 approval.
 
-7. Confirm the created file exists and return the CLI response values (`id` and `path`).
+7. Confirm the created file exists and return the tool response values (`id` and `path`).
 
 8. Remind that the new spec requires human Gate 1 approval unless the caller explicitly says it is already being prepared for that gate.
 9. Once human-answerable `[TODO]` markers are resolved before Architecture Consistency Review, hand the draft spec to the Architect for an Architecture Consistency Review before Gate 1 (Next Owner: Architect). The Architect checks it against existing approved specs and accepted ADRs and returns findings — like a Gate 2 review, this does not amend the draft. Revise the draft on those findings until the Architect and Planner agree it is consistent; the human then approves at Gate 1 as usual.

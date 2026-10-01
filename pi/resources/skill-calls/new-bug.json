@@ -1,1 +1,7 @@
-[]
+[
+  {
+    "command": "bug new",
+    "title": "<title>",
+    "severity": "<severity>"
+  }
+]

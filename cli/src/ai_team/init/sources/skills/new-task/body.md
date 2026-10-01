@@ -24,7 +24,7 @@ When invoked directly by a human and required fields are missing, ask for the mi
    - Use the caller-provided `title`, `description`, `priority`, and `assigned-role` when they are present.
    - If invoked directly and some required fields are missing, ask only for the missing fields.
    - Use `$ARGUMENTS` as the title when it is the only provided input.
-2. Run `ai-team task new "<title>" --priority <priority> [--assigned-role <assigned-role>] --json`.
+2. Run `{{ai-team task new "<title>" --priority <priority> [--assigned-role <assigned-role>] --json}}`.
 3. Parse the JSON response and capture:
    - `id` (e.g., `T-003`)
    - `path` (absolute path to the created file)
@@ -32,7 +32,7 @@ When invoked directly by a human and required fields are missing, ask for the mi
 5. If `acceptance-criteria` were provided, replace placeholder `AC-*` lines in `## Acceptance Criteria` with the caller-provided list.
 6. Leave Dependencies, Files to Touch, and Verification as placeholders unless the caller explicitly provided values for those sections.
 7. Verify the drafted task (or placeholders that will be completed) can satisfy the Task Quality Rules below.
-8. Confirm creation using the CLI response values (`id` and `path`).
+8. Confirm creation using {{ai-team-cli|the CLI|the tool}} response values (`id` and `path`).
 
 ## Task Quality Rules
 
