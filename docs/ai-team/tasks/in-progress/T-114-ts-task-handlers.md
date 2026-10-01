@@ -89,3 +89,23 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Stage 1 (acceptance):
+- AC-1 met: `npm test -- parity -t "task-"` on `task/T-114-ts-task-handlers` ran 45 passed, 0 failed.
+- AC-2 met: the invalid-transition and not-found messages match the Python port (destination check first, idempotent "already in <state>", all four folders listed in order). The parity cases pass.
+- AC-3 met: `npm run typecheck` reports zero errors.
+- Scope: the diff touches `pi/src/core/commands/task.ts`, a new `pi/test/task-handlers.test.ts` (the "optional tests" entry), and `pi/test/parity.test.ts`. The `parity.test.ts` change is acceptable. Its stub-command examples used `task new`, which is no longer a stub, so it now uses `bug new`.
+
+Stage 2 (quality):
+- Logic mirrors `cli/src/ai_team/commands/task.py` line by line: template body and title substitution, code-point sort, `splitlines` semantics, session numbering, and `realpathSync` for `.resolve()`.
+- Input validation is present (title, priority, id, reason). Creation runs under the lock, and a test checks the lock is released.
+- Tests cover success and failure paths and share no mutable state. Full `npm test` gives 484 passed, 115 todo.
+
+Non-blocking observations:
+- The B-018 quirk (a missing Work Log heading puts the entry above the new heading) is kept on purpose for parity and documented in the code. Fixing it needs a Python fix and a fixture change together.
+- Handler tests do not directly cover the idempotent "already in" path or the completed-to-blocked path. The parity fixtures cover both.
+
+Next owner: Development Loop.
