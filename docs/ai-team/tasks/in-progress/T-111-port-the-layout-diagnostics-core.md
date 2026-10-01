@@ -63,6 +63,17 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Ported the layout core (Levels 1–4) to `pi/src/core/layout.ts` (`checkLayout`, `resolveLayout`, `checkLevel1`–`checkLevel4`), with fixture-driven tests in `pi/test/layout.test.ts`. Findings are `{level, path, problem, suggestedFix}`, so the suggested fix is a separate field. Level 1 reads the directory list from `pi/resources/scaffold-dirs.json` for the configured tools only; Level 3 reads starter sections from `pi/resources/root/{CLAUDE,AGENTS}.md`; the version comes from the T-105 `frameworkVersion` runtime or `options.currentVersion`. Level 2 reuses `validateProject` (T-110) one scope at a time.
+
+Tests: all 23 T-093 `check-layout--*` fixtures materialised from `before.json` and compared with `expected.payload.findings` (`problem`→`message`, `suggestedFix`→`suggested_fix`); extras cover per-tool scaffold dirs, the separate suggested-fix field, Python-style list formatting for invalid tools, and the version override through `env`. Typecheck clean; 17 files, 365 tests pass.
+
+Python behaviours reproduced by hand: `repr` of TOML values, `$`/`^` matching only `\n`, universal newlines, strict UTF-8 keeping the BOM, Python `splitlines` separators, code-point ordering. A `validateProject` error becomes a "blocked" finding only if it carries a Node errno `code`; anything else is rethrown.
+
+Rejected: exporting `buildProjectRoot` from `locator.ts` (outside Files to Touch; duplicated the `ProjectRoot` literal locally); passing smol-toml error text through (fails the `invalid-marker` fixture; a small translator handles the unterminated table header case).
+
+For the reviewer / later: TOML syntax-error wording matches Python only for the unterminated table header case, others carry smol-toml's reason plus line/column (no fixture; broader parity needs a new fixture and ADR-004 review). Blocked Level 2/3 I/O-error wording differs from Python's `[Errno N]` text (no fixture). T-118 must map results to the command payload (`status` 1 on findings) and resolve the repo root. `scaffold-dirs.json` is loaded on each Level 1 call.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
