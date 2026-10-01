@@ -1,7 +1,7 @@
 ---
 id: T-112
 title: TS parity runner, command registry, handler stubs
-status: pending
+status: in-progress
 priority: high
 assigned-role: developer
 created: '2026-09-30'
