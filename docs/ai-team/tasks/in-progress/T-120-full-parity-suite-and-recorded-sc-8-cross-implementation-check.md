@@ -69,6 +69,16 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+
+Two permanent guards went in. First, the parity suite no longer treats a stub-resolved case as a todo. A new `runSharedCase` wrapper in `pi/test/parity.test.ts` throws when `runCase` returns pending. A test shows a stubbed `archive` case fails, another asserts `COMMANDS` contains no stub handlers, and a third asserts every registered command has a fixture case. The shared-fixtures loop uses the wrapper, so all 215 parity tests run and none are todo or skipped.
+
+Second, `pi/test/imports.test.ts` now asserts that no file under `pi/src/core` references `process.cwd`. A small test checks the detector against several spellings. The tests passed when first written, because the handlers were already implemented. I left `registry.ts` and the runner helper unchanged, and `isStub` stays available.
+
+SC-8 evidence, all from commands run in this session on the committed tree. Before the cross runs I ran `uv sync --reinstall-package ai-team` and re-ran the scaffold sync. Python package version is `0.10.3.dev302+g1a6a5d455` and pi `resources/version.txt` is `0.10.3.dev302+g1a6a5d455`, so they match. A project created by TS `initRepository` (no tools) passed Python `ai-team check-layout` with zero findings and exit 0. A project created by Python `init --tools claude,codex --no-interactive --create-root-guidance`, with the placeholder guidance filled in, passed Python `check-layout` and TS `checkRepositoryLayout` with zero findings each. Unfilled placeholder guidance correctly yields 10 findings, which is expected. These were recorded runs, not permanent tests, because TS tests must not shell out to Python (ADR-004 Alternative C).
+
+Final checks: `uv run pytest` passed 1029 tests. Ruff format and lint were clean. `npm run typecheck` showed zero errors, and `npm test` passed 642 of 642 tests. No files outside Files to Touch were edited. Nothing remains.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
