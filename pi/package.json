@@ -1,0 +1,52 @@
+{
+  "name": "ai-team-pi",
+  "version": "0.0.0",
+  "private": true,
+  "description": "AI-team framework as a pi package: the ai_team tool and pi-rendered skills.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ],
+    "skills": [
+      "./resources/skills/architecture-consistency-review",
+      "./resources/skills/brainstorm",
+      "./resources/skills/change-request",
+      "./resources/skills/code-review",
+      "./resources/skills/debug",
+      "./resources/skills/escalation-review",
+      "./resources/skills/git-conventions",
+      "./resources/skills/merge-conflicts",
+      "./resources/skills/new-adr",
+      "./resources/skills/new-bug",
+      "./resources/skills/new-spec",
+      "./resources/skills/new-task",
+      "./resources/skills/spec-breakdown",
+      "./resources/skills/spec-breakdown-review",
+      "./resources/skills/status-report",
+      "./resources/skills/tdd"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": ">=0.87.1"
+  },
+  "dependencies": {
+    "smol-toml": "^1.6.0",
+    "transliteration": "^2.6.1",
+    "typebox": "^1.3.27",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "0.87.1",
+    "@types/node": "^22.19.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}
