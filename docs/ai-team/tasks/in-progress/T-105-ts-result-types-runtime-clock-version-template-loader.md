@@ -62,6 +62,13 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Implemented the TS core foundation in `pi/src/core`. `result.ts` has a `Result` shape of status, payload, message and hint, with `success`, `failure` and `resultText`. `resultText` joins message and hint with a space, as the Python `Result.text()` does. It also has an `AiTeamError` that carries the hint separately. `runtime.ts` exports `TODAY_ENV_VAR` and `FRAMEWORK_VERSION_ENV_VAR`, the same names as `ai_team.core.runtime`. `today()` returns a local-date `YYYY-MM-DD` string. It validates the override as a real calendar date, so `2026-02-31` is rejected. `frameworkVersion()` uses the override, else reads and trims `resources/version.txt`. A missing file raises an `AiTeamError` with a "run the sync" hint. `templates.ts` loads the six template kinds from `resources/templates` as raw `Buffer`s, so output is byte-identical to Python's. Unsupported kinds and a missing resources directory raise `AiTeamError`. The env, `now`, version-file path and templates directory are injectable parameters, so tests never touch `process.env`. The README now documents the two override variables.
+
+Tried and rejected: a tagged union for `Result`, because the flat shape matches Python and T-082 and keeps later ports simple. Also returning the date as a `Date` object, because ISO strings are what artifact frontmatter needs. Everything is committed as four cycles on the task branch.
+
+Remaining: nothing for this task. Reviewers may note that `loadTemplate` returns bytes, so later renderer tasks decode them as UTF-8 themselves. I did not use `node:fs` mocking, only a scratch temp directory. The generated `version.txt` and `resources/templates` are read from disk at call time, so the sync must have been run.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
