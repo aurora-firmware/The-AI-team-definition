@@ -62,6 +62,19 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Implemented the `spec new`, `adr new` and `change-request new` handlers in `pi/src/core/commands/{spec,adr,change-request}.ts`, ported from `cli/src/ai_team/commands/*.py`. Each validates its input (non-empty title; status from the `command-map.json` choices for spec and adr), then calls `createArtifactWithLock` with the matching allocator (`nextSpecId`, `nextAdrId`, `nextChangeRequestId([root.changeRequests])`). `LockTimeout` and `ArtifactExists` become failure results.
+
+The template body comes from `splitFrontmatter`; the title placeholder is replaced via a function replacer so `$` in a title is not interpreted. The spec handler passes the parsed template frontmatter as `sourceMap`, as Python does; ADR and change request dump fresh frontmatter. The TS lock also wraps ADR and change-request creation, which Python does not lock; ADR-003 allows this and lock-path scoping leaves the fixtures unaffected (G2 N9).
+
+Results: all 32 `spec-new--`, `adr-new--`, `change-request-new--` parity cases run as real comparisons and pass; typecheck clean; 19 files, 429 tests pass, 160 todo (fixtures of still-stubbed commands). Added `pi/test/creation-handlers.test.ts` (missing title, status validation, lock release, cwd independence via chdir, ID allocation past an existing file). `pi/test/parity.test.ts` stub examples switched from `spec new` to `task new`.
+
+TDD note: no separate red step — the parity cases were `it.todo` before the stubs were replaced, and the unit tests were written alongside the handlers.
+
+Earlier review notes: the runner's tree sort is JS code-unit vs Python code-point; moot for these fixtures (ASCII slugs), runner left alone as outside Files to Touch. A possible follow-up is switching it to code-point order. Handlers never read `process.cwd`.
+
+Rejected: a shared input-parsing helper (`handler.ts` is outside the task's files, duplication is small); making the write create missing parent folders (Python does not; my first test failures were test setup).
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
