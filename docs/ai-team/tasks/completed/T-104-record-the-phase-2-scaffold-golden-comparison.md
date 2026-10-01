@@ -1,7 +1,7 @@
 ---
 id: T-104
 title: Record the Phase 2 scaffold golden comparison
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
