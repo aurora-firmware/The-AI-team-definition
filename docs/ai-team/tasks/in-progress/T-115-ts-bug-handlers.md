@@ -63,6 +63,11 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+I implemented the three bug handlers in `pi/src/core/commands/bug.ts`. `createBug` validates the title, severity (critical, high, medium or low) and an optional string `task`. It then allocates the ID and writes the file under the lock. The body comes from the bundled bug template with the `# [Bug Title]` heading replaced. `startBug` moves a bug from open to in-progress, and `resolveBug` moves it from in-progress to resolved. If the bug is already in the destination, both return an unchanged result with the message "Bug X already in Y." If the bug is missing from its source folder, they return the not-found message listing all three bug folders. The handlers reuse the shared helpers `updateStatus`, `moveArtifact`, `createArtifactWithLock`, `nextBugId` and `loadTemplate`.
+
+I wrote `pi/test/bug-handlers.test.ts` before the implementation and watched it fail. It covers input validation, creation, both transitions, the ID-prefix collision case (`B-0011` must not match `B-001`) and the already-resolved case. I tried sharing the task transition helpers from `task.ts`. I rejected that because `findTaskFile` is private and the task says to touch only `bug.ts`. The cost is a small duplicated `compareCodePoints` and file-lookup helper, which a later refactor could pull into a shared module. The `parity.test.ts` stub assertions moved from `bug new` to `archive`, which is still a stub. Nothing remains for this task. The reviewer should look at that out-of-scope test edit and at the duplicated helpers.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
