@@ -62,6 +62,9 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Added `cli/tests/test_parity_fixture_coverage.py`, the only file touched. The task was a coverage test over fixtures that already existed. It has three pure check functions: `missing_commands`, `missing_enum_values` and `undefined_input_fields`. Each takes the command map and a list of cases, and returns a list of readable problems. Two kinds of test use them. Three run them against the real command map (`cli/src/ai_team/init/sources/command_map.json`) and the real fixtures, and assert the result is empty. Four mutation tests feed in a command map or case list with a deliberate gap and assert the failure names it, which proves the AC-1 to AC-3 failures work. Enum coverage means some case for that command has the enum value as the input for the field. Tool fields come from the non-CLI-only flags plus the positional fields in the map. Coverage was already complete, so the real-fixture tests passed on their first run and I added no fixtures. I chose pure functions over pytest parametrisation so a gap shows as one clear message and the checks can be exercised against mutated data. I did not edit any files outside Files to Touch. A redundant `command_map = _load_command_map()` line remains in the file and is harmless. Nothing else remains. The full Python suite and both ruff checks pass.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
