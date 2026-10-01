@@ -1,7 +1,7 @@
 ---
 id: T-110
 title: Port the validation core
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
