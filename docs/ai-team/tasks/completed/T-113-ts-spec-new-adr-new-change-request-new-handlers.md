@@ -1,7 +1,7 @@
 ---
 id: T-113
 title: TS spec new, adr new, change-request new handlers
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
