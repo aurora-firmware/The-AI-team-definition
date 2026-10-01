@@ -1,7 +1,7 @@
 ---
 id: T-101
 title: Convert new-task, new-spec, new-bug to markers
-status: pending
+status: in-progress
 priority: high
 assigned-role: developer
 created: '2026-09-30'
