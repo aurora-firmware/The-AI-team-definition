@@ -85,3 +85,24 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Reviewed commit a4e57c3 on `task/T-111-port-the-layout-diagnostics-core` (pi/src/core/layout.ts, pi/test/layout.test.ts) against cli/src/ai_team/core/layout.py and the T-093 check-layout fixtures. V-SYNC and V-PI were run in a temporary worktree: typecheck clean, 17 files / 365 tests pass.
+
+Stage 1 (acceptance criteria):
+- AC-1 met. All 23 `check-layout--*` fixtures are materialised and compared to `expected.payload.findings`; they pass. Levels 1-4 match the Python logic line by line (messages, suggested fixes, sort order, placeholder rule, version rules).
+- AC-2 met. Level 1 reads `pi/resources/scaffold-dirs.json` for the configured tools only; tests cover claude-only and codex-only.
+- AC-3 met. `LayoutFinding.suggestedFix` is a separate field and a test asserts it is not in the problem text.
+- AC-4 met. V-PI passes.
+- Only the two files in Files to Touch were changed. No unspecified behaviour was added.
+
+Stage 2 (quality): logic, error handling, tests, readability and security are acceptable. No blocking issues.
+
+Non-blocking observations:
+1. `pythonRepr` cannot reproduce Python's `repr` for TOML floats and dates, because smol-toml returns `1.0` as the number `1`. I confirmed that an unquoted `framework_version = 1.0` yields "Configured framework version 1 is invalid" where Python yields `1.0`. The work log says TOML `repr` was reproduced, which is not accurate for these values. No fixture covers it. If parity is wanted, add a fixture and take it through ADR-004 review. The parser limitation may need a decision.
+2. The TOML syntax-error wording and the blocked Level 2/3 I/O-error wording diverge from Python outside the fixtured cases. The Developer already disclosed this.
+3. `starterGuidanceSections` is read outside the try block, whereas Python reads it inside. This is harmless because the resource is generated.
+
+Next owner: active Development Loop.
