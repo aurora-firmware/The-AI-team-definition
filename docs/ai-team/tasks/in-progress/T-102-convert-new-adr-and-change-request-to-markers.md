@@ -25,6 +25,7 @@ Task Quality Rules (see the new-task skill for full details):
 Part of **S-005** (`docs/ai-team/specs/S-005-pi-extension-package-skeleton-and-artifact-core.md`), Implementation Order **Phase 2**. Binding ADRs: ADR-001 to ADR-004 in `docs/ai-team/decisions/`. Planned as P25 in the Gate-2-approved plan (plan IDs are mapped to task IDs below).
 
 - as T-101; plus the Phase 2 render assertion for the new-adr --supersedes site (bare `supersedes` inside backticks for pi, unchanged for claude/codex).
+- Per Architect escalation ruling 2026-10-01: noun/flag markers are allowed in fences without command markers; a fence containing any command marker must hold only command markers. A fence is a command fence iff it contains a `{{ai-team ` command marker. `skill_markers.py` `render_fence` returns non-command fences unchanged so the inline pass renders their noun/flag markers. AC-1 stays as written, including fenced text.
 
 ## Acceptance Criteria
 
@@ -44,6 +45,7 @@ AC-5: no lowercase ai-team in pi output (SC-10).
 - sources/skills/{new-adr,change-request}/{body.md,metadata.toml}
 - generated pi output
 - new cli/tests/test_render_adr_cr_skills.py [G2 N6]
+- cli/scripts/skill_markers.py and cli/tests/test_skill_markers_pi.py (added per Architect ruling 2026-10-01: command-fence detection)
 
 ## Verification
 

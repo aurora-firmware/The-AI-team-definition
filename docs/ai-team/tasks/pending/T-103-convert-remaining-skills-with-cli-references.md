@@ -31,6 +31,7 @@ Part of **S-005** (`docs/ai-team/specs/S-005-pi-extension-package-skeleton-and-a
 AC-1: no ai-team token outside a marker in any skill source.
 AC-2: V-GOLD (SC-2).
 AC-3: no lowercase ai-team under pi/resources/skills (SC-10).
+AC-4: every bare mention of the CLI, including inside non-command fences, uses a noun marker (pi output has no `\bCLI\b` token). Added per Architect escalation ruling 2026-10-01 (T-102).
 
 ## Dependencies
 
