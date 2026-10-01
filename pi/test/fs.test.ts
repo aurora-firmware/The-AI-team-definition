@@ -10,7 +10,8 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   ArtifactExists,
@@ -34,6 +35,12 @@ const TASK_TEXT = [
   "",
   "# A task\n",
 ].join("\n");
+
+const fixturesRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "fixtures", "parity");
+
+function artifactExistsFixtures(): string[] {
+  return readdirSync(fixturesRoot).filter((name) => name.endsWith("--artifact-exists"));
+}
 
 let directory: string;
 
@@ -223,5 +230,19 @@ describe("updateStatus", () => {
     updateStatus(path, "completed");
 
     expect(readdirSync(directory)).toEqual(["T-001-a-task.md"]);
+  });
+});
+
+describe("ArtifactExists against the parity fixtures", () => {
+  it.each(artifactExistsFixtures())("%s: the message equals the fixture message", (name) => {
+    const spec = JSON.parse(readFileSync(join(fixturesRoot, name, "case.json"), "utf-8"));
+    const expected: string = spec.expected.message.replaceAll("<ROOT>", directory);
+    const [, existingPath = ""] = /^Artifact already exists at (.*); pass overwrite=True/.exec(expected) ?? [];
+    mkdirSync(dirname(existingPath), { recursive: true });
+    writeFileSync(existingPath, "existing");
+
+    expect(() => writeArtifact(existingPath, parseTaskText(TASK_TEXT, "inline"), "body")).toThrowError(
+      new ArtifactExists(expected),
+    );
   });
 });
