@@ -1,7 +1,7 @@
 ---
 id: T-095
 title: Fixture coverage test for commands and enum values
-status: pending
+status: completed
 priority: medium
 assigned-role: developer
 created: '2026-09-30'
