@@ -88,3 +88,24 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+ESCALATE
+
+Stage 1 (acceptance criteria), reviewed on the triple-dot diff of `task/T-102-convert-new-adr-and-change-request-to-markers` (7aaa880) against `feat/pi-extension`:
+- AC-2 (V-GOLD): met. `git diff --exit-code $(git merge-base HEAD main) -- scaffolds/claude scaffolds/codex` is empty, and the sync re-run produces no diff (pi/resources is consistent).
+- AC-3: met. The pi render is `supersedes "<supersedes>"` inside the existing backticks, with no nested span.
+- AC-4: met. The shortened `adr new --json` and `change-request new --json` intros render in mention form.
+- AC-5: met. No lowercase `ai-team` in either pi SKILL.md.
+- AC-1 ("every reference uses a marker"): NOT met as written. `change-request/body.md` line 76, `- <CLI command result or reason not run>` inside the Output Format `text` fence, is a bare CLI mention. It renders unchanged into `pi/resources/skills/change-request/SKILL.md` line 81, so pi output still says "CLI".
+
+Why this is ESCALATE and not FAIL: S-005's marker contract (Skill marker contract section) has no exemption for fenced non-command content. It requires a noun marker for "every bare mention of the CLI", and it also says the sync fails when a fence mixes markers with other lines. Both rules apply to this line, so no source edit inside the task's file list satisfies both. Rewording the line would change the claude/codex bytes and break AC-2. The Developer's choice to leave the line literal and strip fences in the AC-1 test is a reasonable stopgap, but it quietly narrows AC-1 and the spec's "Prose mentions" rule without authority. The task's and spec's wording is the issue, not the implementation. The same fence pattern (Output Format blocks with CLI placeholders) will likely recur in later Phase 2 conversions, so the decision should be made once.
+
+Verification run in a temporary worktree (since removed): sync re-run gave no diff; `uv run pytest` gave 998 passed; `ruff format --check` and `ruff check` were clean; pi `npm run typecheck` and `npm test` passed (12 tests). Stage 2 was not scored, because Stage 1 is unresolved. Apart from the point above, the code and tests looked sound.
+
+```text
+Problem: AC-1 ("every reference uses a marker") cannot be satisfied for the `<CLI command result or reason not run>` line in change-request's Output Format text fence. The spec requires a noun marker for every bare CLI mention, but forbids markers mixed with other text in a fence, and the fence is not exempted from the former.
+Attempted: Developer put a noun marker on the line, and the sync rejected it as a mixed fence. They reverted it, left the line literal, and made the AC-1 test skip fenced blocks. Rewording the source would change the claude/codex output and break V-GOLD.
+Failed because: The two spec rules conflict for non-command text inside fences. Resolving this needs a spec or sync decision, which is outside this task's files (the sync's fence handling lives in cli/scripts/skill_markers.py).
+Question: Should S-005's marker contract (a) explicitly exempt non-command fenced text (so AC-1 and the AC-1 test exclude fences, and the literal "CLI" in this pi output is accepted), or (b) allow noun markers inside non-command fences and have the sync support it? Either way, please state the ruling so T-102 and the later conversions apply it consistently.
+```
