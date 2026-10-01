@@ -83,3 +83,27 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Reviewed the triple-dot diff of `task/T-103-convert-remaining-skills-with-cli-references` (12711ec) against `feat/pi-extension`.
+
+**Stage 1 (acceptance criteria)**
+- AC-1: met. After stripping `{{...}}` markers, the full bodies and metadata.toml of status-report, dev-loop and bug-loop contain no `ai-team`, `ai_team` or bare `\bCLI\b` token.
+- AC-2 (V-GOLD): met. `git diff --exit-code $(git merge-base HEAD main) -- scaffolds/claude scaffolds/codex` is clean.
+- AC-3: met. No `ai-team` under `pi/resources/skills`.
+- AC-4: met. Every bare CLI mention, including the inline mentions and the former bash fences, uses a command or noun marker. The pi output for the three skills has no `\bCLI\b` token.
+- Scope: only the three skill sources, their pi output, and one new test file changed. No unexpected files.
+
+**Stage 2 (quality)**
+- The sync re-run produces no diff, so pi/resources is consistent with the sources.
+- `uv run pytest`: 1022 passed. `ruff format --check` and `ruff check` are clean. `npm run typecheck` is clean and `npm test` passes (12 tests).
+- The new `cli/tests/test_render_loop_report_skills.py` covers the source-level checks, claude/codex reproduction and pi render. The tests are independent.
+
+**Non-blocking observations**
+- The pi status-report line 7 reads "the `ai_team` tool call `{"command": "status"}` and the `ai_team` tool call `{"command": "report"}` are available". It is awkward but accurate, and the instructions stay correct. Rewording would break V-GOLD, so deferring is right.
+- The pi "Run the tool status command ... Call the `ai_team` tool with ..." wording is slightly redundant but correct.
+- `skill-calls/dev-loop.json` lists `list tasks` / `pending` twice, once per call site. This is consistent with the other skills' behavior.
+
+Next owner: Development Loop.
