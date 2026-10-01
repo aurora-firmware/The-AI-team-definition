@@ -87,3 +87,24 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Both stages passed. Reviewed branch `task/T-109-port-id-allocation-and-implement-the-ts-lock` (3 commits, 6 files, all within the task's Files to Touch) against `core/ids.py`, `core/lock.py`, ADR-003 and the T-089 fixtures.
+
+Stage 1 (acceptance criteria):
+- AC-1: two Node processes allocate 50 task IDs each against one project and get 100 unique IDs (`lock-concurrency.test.ts`). Re-run 15 times with no failure. An extra ad-hoc stress with four concurrent allocators (25 each) starting from a dead-holder lock, 12 runs, gave 100 unique IDs with no stderr every time.
+- AC-2: a SIGKILLed holder is reclaimed well inside the bounded wait. A live holder in another process times out with `LockTimeout`.
+- AC-3: the message template is identical to `core/lock.py:96-99` and embeds the TS lock path. Whole-second timeouts format as `10.0`, as in Python.
+- AC-4: the lock path is `.ai-team-ts.lock`. `.ai-team.lock` is never read or written. A test confirms a Python sentinel file does not block acquisition.
+- AC-5: ids.ts mirrors ids.py (regexes, state folders, `specs/archive`, spec frontmatter ids, fence logic). Tests run the T-089 parity fixtures plus edge cases.
+- No unspecified behaviour was added. The vitest config is untouched (G2 N11).
+
+Stage 2 (quality):
+- Evidence: scaffold sync, `npm ci`, `npm run typecheck` (clean) and `npm test` (15 files, 318 tests) all pass on a temporary worktree of the task branch, since removed.
+- Tests cover success and failure paths, use per-test temp dirs, and the concurrency tests use per-test timeouts. Code is readable, and the residual limits are documented in code.
+- Non-blocking observations:
+  1. `reclaimIfHolderDead` has a narrow, acknowledged race. If two waiters both see the same dead holder, one can rename the new holder's live lock away while the new holder finishes and removes it. The link-back can then leave a lock with a live pid that is never released. This is possible only in a microsecond window and was not reproduced. Consider a follow-up bug if it shows up in practice.
+  2. The child helper runs via `node_modules/.bin/vite-node`, which is a transitive vitest dependency (the Developer noted this).
+
