@@ -61,6 +61,15 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Implemented the list (tasks, bugs, specs, adrs, change-requests), show and status handlers in `pi/src/core/commands`, with the Python CLI as the reference and the parity fixtures as the contract. I wrote the tests first and saw 12 failures against the stubs. The implementation then passed the list, show and status parity cases, typecheck, and the full suite (555 passed, 67 todo).
+
+- **Shared helper:** I added `artifact-files.ts` (sorted markdown listing that skips templates, and `compareCodePoints`). This is a new file outside the task's Files to Touch, added to avoid a fourth copy of the file-listing code. `parity.test.ts` needed no edits.
+- **Status:** `status.ts` exports `statusPayload(root)` and `latestIntegrationResult(root)` for `report`. The git lookup runs the same `git -C <repo> log --all --grep='merge\|integration\|verification\|test' -n 1 --pretty=format:%s` as Python. Any git failure or empty output returns "not found".
+- **Show:** `show` replicates Python's behaviour. It first matches the identifier as a substring of the file stem, ignoring case. Otherwise it matches the model id exactly, except for specs. Kind comes from path segments, as in Python. Frontmatter values come out as Python-style strings, or null.
+- **Payload type:** list payloads are bare arrays, so I cast them through `unknown` rather than change `result.ts`.
+- **For the reviewer:** check the array-payload cast, the new `artifact-files.ts`, and the `show` frontmatter edge case for block values, which Python stringifies and TS throws on. `report` is not part of this task and is still a stub.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
