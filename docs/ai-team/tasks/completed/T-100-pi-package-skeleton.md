@@ -1,7 +1,7 @@
 ---
 id: T-100
 title: Pi package skeleton
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
