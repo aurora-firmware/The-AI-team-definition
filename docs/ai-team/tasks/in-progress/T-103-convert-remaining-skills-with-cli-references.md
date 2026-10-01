@@ -1,7 +1,7 @@
 ---
 id: T-103
 title: Convert remaining skills with CLI references
-status: pending
+status: in-progress
 priority: high
 assigned-role: developer
 created: '2026-09-30'
