@@ -1,6 +1,6 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { AiTeamError } from "../src/core/result.js";
 import {
@@ -71,6 +71,18 @@ describe("frameworkVersion", () => {
     const error = caught as AiTeamError;
     expect(error.message).toContain(missing);
     expect(error.hint).toMatch(/sync_init_scaffolds\.py/);
+  });
+
+  it("rethrows a non-ENOENT read failure instead of hinting to run the sync", () => {
+    const directoryInPlaceOfFile = dirname(scratchVersionFile());
+    let caught: unknown;
+    try {
+      frameworkVersion({}, directoryInPlaceOfFile);
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).not.toBeInstanceOf(AiTeamError);
+    expect(caught).toMatchObject({ code: "EISDIR" });
   });
 
   it("reads the real generated version file by default", () => {

@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -51,5 +52,22 @@ describe("loadTemplate", () => {
     }
     expect(caught).toBeInstanceOf(AiTeamError);
     expect((caught as AiTeamError).hint).toMatch(/sync_init_scaffolds\.py/);
+  });
+
+  it("rethrows a non-ENOENT read failure instead of hinting to run the sync", () => {
+    const dir = mkdtempSync(join(tmpdir(), "ai-team-templates-"));
+    try {
+      mkdirSync(join(dir, "task.md"));
+      let caught: unknown;
+      try {
+        loadTemplate("task", dir);
+      } catch (error) {
+        caught = error;
+      }
+      expect(caught).not.toBeInstanceOf(AiTeamError);
+      expect(caught).toMatchObject({ code: "EISDIR" });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
