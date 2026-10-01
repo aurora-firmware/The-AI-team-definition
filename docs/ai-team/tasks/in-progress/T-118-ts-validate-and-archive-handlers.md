@@ -62,6 +62,9 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+I implemented `validate` and `archive` test-first and committed after each. The handler tests went red against the stubs, then green after the implementations. I ported the Python behaviour directly. For `validate` I delegated to `validateProject` from T-110. All scopes are enabled when `all` is set or when no scope flag is set, and the findings array is the payload. Status is 1 when any finding is an error. For `archive` I used the T-105 `today()` clock. I wrote the cutoff arithmetic in UTC so daylight saving cannot shift a day. The strict `created < cutoff` comparison is done on ISO strings, and the `YYYY-MM` bucket is the first 7 characters of `created`. `listMarkdownFiles` and `moveArtifact` are the shared helpers. All 28 relevant parity fixtures pass, and the full typecheck and test run are clean. I also edited `pi/test/parity.test.ts`, outside Files to Touch, because two of its tests depended on `archive` being the stub. They now use a locally built `notImplemented` stub. The reviewer should check that edit. The reviewer should also check how `archive` handles a bug with no `created` date: it throws an `AiTeamError`, where Python would raise `TypeError`. Nothing remains.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
