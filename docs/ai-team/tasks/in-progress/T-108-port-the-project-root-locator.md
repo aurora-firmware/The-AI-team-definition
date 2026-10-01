@@ -81,3 +81,22 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Both stages passed.
+
+Stage 1 (acceptance criteria):
+- AC-1: met. Resolution order in `pi/src/core/locator.ts` is explicit root, `AI_TEAM_ROOT`, then the walk-up marker `[project] dir`, then the default folder. This matches `cli/src/ai_team/core/locator.py`, including the empty-env and missing-marker-folder cases.
+- AC-2: met. The start directory is the first parameter, and `process.cwd` appears nowhere in `pi/src/core`. A test guards this.
+- AC-3: met. The three not-found message strings equal Python's. `message` and `hint` stay separate on `ProjectRootNotFound`, which extends `AiTeamError`. Hint rewriting is left to T-122.
+- AC-4: met. On the task branch, after `python scripts/sync_init_scaffolds.py`, `npm ci`, `npm run typecheck` and `npm test` all passed (12 files, 272 tests, including 16 in `locator.test.ts`).
+- Only `pi/src/core/locator.ts` and `pi/test/locator.test.ts` were changed.
+
+Stage 2 (code quality): the logic matches Python on edge cases. The tests cover success and failure paths with an isolated temp sandbox per test. There are no security, readability or performance concerns.
+
+Non-blocking observations:
+- A non-string `[project] dir` is treated as absent, where Python would raise a TypeError. This is documented in the work log and is defensible. Consider recording it in the parity fixtures later (T-122 or the fixture tasks).
+- `ProjectRoot` is a plain interface with camelCase fields in place of a frozen dataclass. This is appropriate for TypeScript.
+
