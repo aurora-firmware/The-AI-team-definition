@@ -80,3 +80,21 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+FAIL
+
+Stage 1 (acceptance criteria) passed; Stage 2 (code quality) failed on one issue.
+
+Stage 1 evidence:
+- AC-1: `TODAY_ENV_VAR`/`FRAMEWORK_VERSION_ENV_VAR` equal Python's `AI_TEAM_TODAY`/`AI_TEAM_FRAMEWORK_VERSION`, read only in `pi/src/core/runtime.ts`; README documents both.
+- AC-2: missing `version.txt` throws `AiTeamError` with message (path) and a separate hint naming the sync command.
+- AC-3: `templates.test.ts` compares all six kinds byte-for-byte against `cli/src/ai_team/templates` (Buffer.compare); passes.
+- AC-4: from a clean worktree, sync leaves no tracked diff; `uv run pytest` 1022 passed; ruff format/check clean; `npm ci`, `npm run typecheck`, `npm test` pass (38 tests). `test/imports.test.ts` passes (no pi imports in core). `Result` shape and `resultText` match Python `Result.text()`.
+
+Failed check:
+- **Unjustified type assertion** — `pi/src/core/runtime.ts` (`frameworkVersion` catch block, `(error as NodeJS.ErrnoException).code`) and `pi/src/core/templates.ts` (`loadTemplate` catch block, same expression). The TypeScript guideline requires a narrowing or a one-line justification for `as`; the task review brief also requires no unjustified assertions. Change: add one small shared helper (for example `isNotFoundError(error: unknown): boolean` in `pi/src/core/result.ts` or a new core file) that narrows with `error instanceof Error && "code" in error && error.code === "ENOENT"`, and use it in both places. Add a test showing that a non-ENOENT read failure (e.g. pointing the version file or templates dir at a directory, giving EISDIR) is rethrown and not turned into a "run the sync" hint.
+
+Non-blocking observations:
+- Python 3.11+ `date.fromisoformat` also accepts `20260203` and `2026-W05-1`. The TS `today()` accepts only strict `YYYY-MM-DD` (real calendar dates, so `2026-02-31` is rejected as in Python). This matches the spec/fixture contract (`YYYY-MM-DD`) and the shared error text, so no change is required.
+- Python raises `ValueError` for a bad override and TS raises `AiTeamError`; acceptable for the adapter to map.
