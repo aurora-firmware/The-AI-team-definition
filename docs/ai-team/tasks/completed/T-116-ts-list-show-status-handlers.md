@@ -1,7 +1,7 @@
 ---
 id: T-116
 title: TS list, show, status handlers
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
