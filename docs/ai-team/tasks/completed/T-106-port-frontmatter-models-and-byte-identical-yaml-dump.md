@@ -1,7 +1,7 @@
 ---
 id: T-106
 title: Port frontmatter models and byte-identical YAML dump
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
