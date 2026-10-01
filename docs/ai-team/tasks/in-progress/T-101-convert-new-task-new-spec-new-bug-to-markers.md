@@ -92,3 +92,28 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Reviewed commit b23203b (triple-dot diff against feat/pi-extension) in a temporary worktree.
+
+Stage 1 (acceptance):
+- AC-1: every CLI reference in the three skill bodies and the claude/codex headers is a marker (command, flag or noun). A grep of the sources for `ai-team`, `CLI` or `--flag` outside markers returned nothing.
+- AC-2: V-GOLD passes. The claude and codex scaffolds are byte-unchanged against the merge-base with main.
+- AC-3: the three pi SKILL.md files contain no lowercase `ai-team`.
+- AC-4: new-task renders `task new` as a call form with title and priority (`{"command": "task new", "title": ..., "priority": ..., "assignedRole": ...}`). The skill-calls JSON agrees.
+- Files touched are within scope, apart from the judged edit below.
+- The edit to cli/tests/test_skill_markers.py is justified and acceptable. The old "no markers in current sources" test would fail once sources gained markers. It now skips marker-bearing files and still guards unmarked ones. The change is minimal and the new test name is accurate.
+
+Stage 2 (quality):
+- Re-running the sync produces no diff, so pi/resources is consistent.
+- `UV_CACHE_DIR=/tmp/uvcache uv run pytest`: 981 passed. `ruff format --check` and `ruff check` are clean.
+- pi: `npm run typecheck` is clean and `npm test` passes (12 tests).
+- The new tests in test_render_create_skills.py cover the unmarked-reference scan, exact claude/codex text, no lowercase `ai-team` in pi, and the new-task call form.
+- Rendered pi text reads correctly.
+
+Non-blocking observations:
+- The pi flag sites render as `` Add `author "<author>"` `` and `` `task "<task>"` ``, which is slightly terse. This is the specified inline flag behaviour.
+- new-task's pi call form always shows `assignedRole`, although it is optional. Claude/codex show it in brackets. A later task could refine this.
+- `--description` stays literal after a noun marker, which is correct because `spec new` has no such flag.
