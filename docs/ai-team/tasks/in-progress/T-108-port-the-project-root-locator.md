@@ -1,7 +1,7 @@
 ---
 id: T-108
 title: Port the project root locator
-status: pending
+status: in-progress
 priority: high
 assigned-role: developer
 created: '2026-09-30'
@@ -59,6 +59,16 @@ rejected, decisions made, what remains for next session.
 
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
+
+### Session 1 — 2026-10-01
+Ported the project root locator to `pi/src/core/locator.ts`, with tests in `pi/test/locator.test.ts`. The resolution order is the same as Python's: explicit root, then `AI_TEAM_ROOT`, then the walk-up for `.ai-team.toml` `[project] dir`, then the default `project` folder.
+
+- **Start directory and env:** The start directory is the first parameter and `process.cwd` is never used. The environment is injectable through `options.env` and defaults to `process.env`, so tests are deterministic.
+- **Python behaviours kept:** Paths are symlink-resolved when they exist. An explicit or env root that lacks its project folder fails immediately instead of falling through. A marker file naming a missing folder keeps the walk going. An unparseable marker file is ignored. An empty `AI_TEAM_ROOT` is ignored.
+- **Not-found error:** `ProjectRootNotFound` extends `AiTeamError`, so `message` and `hint` stay separate and the messages equal Python's text. Hint rewriting is left to T-122.
+- **Deliberate difference:** A `[project] dir` that is not a string is treated as absent. Python would raise a type error on it, which seemed like an accident rather than a contract.
+- **Cycle structure:** All tests written in one batch and implemented once, so a single red→green cycle. No refactor beyond the initial layout.
+- **Remaining:** Nothing for this task. The parity-fixture harness that exercises the locator end to end belongs to later tasks.
 
 ## Review
 
