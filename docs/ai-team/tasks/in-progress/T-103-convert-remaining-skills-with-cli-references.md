@@ -61,6 +61,17 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Converted the three remaining skills with CLI references, following the T-101/T-102 patterns.
+- **Command markers.** The status-report fences (`ai-team status`, `ai-team report`) became sole `{{ai-team ...}}` lines, which pi renders as "Call the `ai_team` tool with ...". The inline `ai-team status` and `ai-team list tasks --state pending` mentions in dev-loop, bug-loop and status-report now use command markers.
+- **Noun markers.** The bare "CLI" nouns use `{{ai-team-cli|CLI|tool}}`. dev-loop line 12 uses `{{ai-team-cli|`ai-team` CLI|`ai_team` tool}}`. No fence mixes markers with other content.
+- **Tests.** New `cli/tests/test_render_loop_report_skills.py` covers:
+  - AC-1 and AC-4 on the source (no stray `ai-team` or `\bCLI\b`, command fences hold only marker lines);
+  - claude/codex exact reproduction of each converted site;
+  - pi render and the generated pi `SKILL.md` having no `ai-team` and no `CLI` token.
+- **Tried and rejected.** I considered rewording status-report line 7 to avoid the awkward pi text ("the `ai_team` tool call `{"command": "status"}` and ... are available"), but that would change claude/codex output and break V-GOLD.
+- **Remaining.** Nothing for this task. Pi resources are regenerated and committed. B-018 was not depended on.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
