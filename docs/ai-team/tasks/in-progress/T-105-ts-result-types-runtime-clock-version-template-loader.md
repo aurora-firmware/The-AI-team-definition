@@ -69,6 +69,11 @@ Tried and rejected: a tagged union for `Result`, because the flat shape matches 
 
 Remaining: nothing for this task. Reviewers may note that `loadTemplate` returns bytes, so later renderer tasks decode them as UTF-8 themselves. I did not use `node:fs` mocking, only a scratch temp directory. The generated `version.txt` and `resources/templates` are read from disk at call time, so the sync must have been run.
 
+### Session 2 — 2026-10-01
+This session addressed the single review FAIL, the unjustified `as NodeJS.ErrnoException` assertions. I added `pi/src/core/errno.ts` with `isErrnoCode(error: unknown, code: string): boolean`. It narrows with `error instanceof Error && "code" in error && error.code === code`. `frameworkVersion` and `loadTemplate` now use it for their ENOENT checks. I tested the helper directly: it is true for an Error with the matching code, and false for a different code, no code, or a non-Error value (including a plain object with `code`). I also added two tests for non-ENOENT read failures. In one, the version file path is a directory. In the other, `task.md` in the templates directory is a directory. Both get EISDIR, which must be rethrown rather than turned into an `AiTeamError` with a sync hint. Those two tests were already green before the helper, since the old code rethrew correctly. They are regression guards, and the red step was the missing helper module.
+
+Tried and rejected: putting the helper in `result.ts`, because errno narrowing is unrelated to the Result and error types, so a separate small file keeps responsibilities clean. I also made the helper take a code rather than hardcode ENOENT, so there is one place to extend if another code is ever needed. The new file `errno.ts` and its test are outside the listed Files to Touch, as the Reviewer's suggestion allowed. Nothing remains for this task.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
