@@ -1,7 +1,7 @@
 ---
 id: T-114
 title: TS task handlers
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
