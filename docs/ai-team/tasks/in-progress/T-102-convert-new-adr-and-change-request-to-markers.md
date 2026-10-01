@@ -120,3 +120,21 @@ Attempted: Developer put a noun marker on the line, and the sync rejected it as 
 Failed because: The two spec rules conflict for non-command text inside fences. Resolving this needs a spec or sync decision, which is outside this task's files (the sync's fence handling lives in cli/scripts/skill_markers.py).
 Question: Should S-005's marker contract (a) explicitly exempt non-command fenced text (so AC-1 and the AC-1 test exclude fences, and the literal "CLI" in this pi output is accepted), or (b) allow noun markers inside non-command fences and have the sync support it? Either way, please state the ruling so T-102 and the later conversions apply it consistently.
 ```
+
+### Review Verdict — 2026-10-01 (review cycle 2)
+PASS
+
+Reviewed the triple-dot diff of `task/T-102-convert-new-adr-and-change-request-to-markers` (7aaa880 plus 46ed07d) against `feat/pi-extension`, after the Architect ruling of 2026-10-01.
+
+Stage 1 (acceptance criteria):
+- AC-1: met. The test no longer strips fences. Neither pi `SKILL.md` for new-adr or change-request matches `\bCLI\b`. The Evidence line in change-request is now `<{{ai-team-cli|CLI|ai_team tool}} command result or reason not run>`, and it renders as "ai_team tool" in pi.
+- AC-2: met. The V-GOLD diff against the merge-base with main is empty. The sync re-run produced no diff, so pi/resources is consistent.
+- AC-3, AC-4, AC-5: met, and covered by `test_render_adr_cr_skills.py`.
+- Ruling conformance: `render_fence` returns a fence unchanged when it has no `{{ai-team ` command marker, so the inline pass renders its noun and flag markers. Command fences are untouched: the existing mixed command/noun and marker/shell-line failure tests still pass. Two new tests cover noun and flag markers in non-command fences.
+- Scope: files touched are the amended Files to Touch only (skill_markers.py, test_skill_markers_pi.py, the new-adr and change-request sources, the new test file, the generated pi output).
+
+Stage 2 (code quality): the change is minimal and readable, with a comment that explains the rule. The tests are independent and cover both success and failure paths. No security or performance concerns.
+
+Verification, run in a temporary worktree (removed afterwards): the sync gave no diff; `uv run pytest` gave 1002 passed; `ruff format --check` and `ruff check` were clean; pi `npm run typecheck` and `npm test` passed (12 tests).
+
+Non-blocking: later Phase 2 conversions can reuse the non-command-fence rule as is.
