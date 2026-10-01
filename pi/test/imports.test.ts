@@ -52,3 +52,18 @@ describe("pi API import boundary", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe("working-directory boundary", () => {
+  it("finds no process.cwd call under src/core", () => {
+    const offenders = listTypeScriptFiles(coreDir).filter((file) =>
+      /\bprocess\s*\.\s*cwd\b/.test(readFileSync(file, "utf8")),
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it("detects process.cwd however it is spelled", () => {
+    expect(/\bprocess\s*\.\s*cwd\b/.test("const d = process.cwd();")).toBe(true);
+    expect(/\bprocess\s*\.\s*cwd\b/.test("const d = process\n  .cwd;")).toBe(true);
+    expect(/\bprocess\s*\.\s*cwd\b/.test("const d = startDirectory;")).toBe(false);
+  });
+});

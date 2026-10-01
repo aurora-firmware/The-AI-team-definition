@@ -299,24 +299,44 @@ describe("parity runner", () => {
   });
 });
 
+/** Runs a shared case and fails it if the command is still a stub, so nothing passes unrun. */
+function runSharedCase(caseDir: string, fixturesRoot: string, registry: Record<string, CommandEntry>): string[] {
+  const outcome = runCase(caseDir, fixturesRoot, registry);
+  if (outcome.kind === "pending") {
+    throw new Error(`Parity case ${caseDir} resolves to the unimplemented '${outcome.command}' stub.`);
+  }
+  return outcome.diffs;
+}
+
+describe("parity suite completeness", () => {
+  it("fails a case whose command resolves to a stub handler", () => {
+    const fixtures = writeFixtures({ name: "archive--stubbed", command: "archive", expected: { status: 0 } });
+    const stubbed = { archive: { kind: "root", handler: notImplemented<RootHandler>("archive") } } as const;
+    expect(() => runSharedCase(join(fixtures, "archive--stubbed"), fixtures, stubbed)).toThrow(
+      /resolves to the unimplemented 'archive' stub/,
+    );
+  });
+
+  it("registers no stub handler for any command", () => {
+    const stubbed = Object.entries(COMMANDS)
+      .filter(([, entry]) => isStub(entry.handler))
+      .map(([command]) => command);
+    expect(stubbed).toEqual([]);
+  });
+
+  it("has at least one fixture case for every registered command", () => {
+    const covered = new Set(discoverCases(FIXTURES_ROOT).map((dir) => readCase(dir).command));
+    expect(Object.keys(COMMANDS).filter((command) => !covered.has(command))).toEqual([]);
+  });
+});
+
 // --- the shared fixtures (ADR-004) ---------------------------------------------------
 
 describe("parity fixtures", () => {
   for (const caseDir of discoverCases(FIXTURES_ROOT)) {
     const name = caseDir.slice(FIXTURES_ROOT.length + 1);
-    const { command } = readCase(caseDir);
-    const entry = COMMANDS[command];
-
-    // An unimplemented command is reported as todo, never as a silent pass.
-    if (entry !== undefined && isStub(entry.handler)) {
-      it.todo(`${name} [pending: '${command}' is not implemented]`);
-      continue;
-    }
-
     it(name, () => {
-      const outcome = runCase(caseDir, FIXTURES_ROOT, COMMANDS);
-      expect(outcome.kind).toBe("ran");
-      if (outcome.kind === "ran") expect(outcome.diffs.join("\n")).toBe("");
+      expect(runSharedCase(caseDir, FIXTURES_ROOT, COMMANDS).join("\n")).toBe("");
     });
   }
 });
