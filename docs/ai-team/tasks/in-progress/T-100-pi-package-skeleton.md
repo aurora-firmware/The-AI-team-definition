@@ -89,3 +89,26 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Reviewed the triple-dot diff `feat/pi-extension...task/T-100-pi-package-skeleton` (3 commits) in a temporary worktree. Verified: V-SYNC, then `npm ci`, `npm run typecheck` (zero errors) and `npm test` (12 passed in 3 files), plus cli pytest (959 passed).
+
+Stage 1 (acceptance):
+- AC-1 met. `pi.skills` lists exactly the 16 non-orchestrator skills. They match `pi/resources/skills` minus dev-loop, bug-loop and integrate, and `manifest.test.ts` asserts this against the generated directory.
+- AC-2 met. `engines.node` is `>=22.19.0` and the peer range is `>=0.87.1`.
+- AC-3 met. The V-SYNC then V-PI run passed.
+- AC-4 met. The README covers the scratch `PI_CODING_AGENT_DIR`, the sync prerequisite and the mixed-concurrency limitation.
+- AC-5 met. `imports.test.ts` covers static, dynamic and require forms, and both `@earendil-works` and `@mariozechner` scopes. It also tolerates a missing `src/core`.
+- AC-6 met. Scripts are exactly `typecheck` and `test`.
+
+Extra files: `test/manifest.test.ts` and `test/readme.test.ts` are outside Files to Touch. They are accepted. They are the only automated evidence for AC-1, AC-2, AC-4 and AC-6, they add no runtime behaviour, and the Work Log discloses them.
+
+Dependencies: `yaml`, `smol-toml`, `transliteration` and `typebox` match the Phase 3/4 set the task describes. `typebox` 1.3.27 is the same version pi-coding-agent depends on. The pi host is a peer dependency, as S-005 requires, and is pinned to 0.87.1 as a dev dependency. No ADR-004 conflict, since only the manifest and tooling are touched.
+
+Stage 2 (quality): strict tsconfig is appropriate, there is no dead code, and the tests are independent. There are no security concerns.
+
+Non-blocking observations:
+- The peer range has no upper bound. This is acceptable for now.
+- The Work Log's open question on runtime resolution of `typebox` and `src/core` under a path install belongs to a later task.
