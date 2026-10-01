@@ -81,3 +81,15 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Stage 1 (acceptance): AC-1 met; the list, show and status parity cases pass (19 cases under the `list` filter, 212 parity tests total with the deferred ones skipped). AC-2 met; `show` on an unknown id returns the fixture message with the searched roots, and `read-handlers.test.ts` covers it. AC-3 met; `npm run typecheck` reports zero errors. The G2 B6 git lookup is ported, `latestIntegrationResult` falls back to "not found", and `status-handlers.test.ts` covers the found branch in a temporary git repo. `statusPayload` is exported for `report`.
+
+Stage 2 (quality): the logic follows the Python reference. Tests cover success and failure paths and use per-test temporary directories. There are no hardcoded secrets, and git runs through `execFileSync` with an argument array, so no shell is involved. Full suite: 555 passed, 67 todo.
+
+Non-blocking observations:
+- The new `pi/src/core/commands/artifact-files.ts` is outside Files to Touch. It is justified as a shared helper that avoids duplicating the file-listing code.
+- The `rows()` cast through `unknown` in `list.ts` is a known limitation of the `result.ts` payload type. Consider widening that type in a later task.
+- `show` `frontmatterOf` and `status` `blockingReason` call `getString`, which throws `FrontmatterError` on block (list or map) values. Python stringifies them. No parity fixture exercises this. Consider a follow-up bug or task if real artifacts hit it.
