@@ -1,7 +1,7 @@
 ---
 id: T-109
 title: Port ID allocation and implement the TS lock
-status: in-progress
+status: completed
 priority: critical
 assigned-role: developer
 created: '2026-09-30'
