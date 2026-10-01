@@ -9,17 +9,15 @@ description: Generate a Gate 5 project status report by scanning specs, tasks, b
 
 - **Project state directories** — `project/specs/`, `project/tasks/`, `project/bugs/`, and `project/decisions/`.
 - **Integration evidence** — completed task Work Logs, resolved bug Work Logs, or recent integration commits when available.
-- **AI team CLI** — `ai-team status` and `ai-team report` are available.
+- **AI team tool** — the `ai_team` tool call `{"command": "status"}` and the `ai_team` tool call `{"command": "report"}` are available.
 
 ## Procedure
 
 ### Step 1: Generate Inline Summary
 
-Run the CLI status command from the repository root:
+Run the tool status command from the repository root:
 
-```bash
-ai-team status
-```
+Call the `ai_team` tool with `{"command": "status"}`.
 
 The command scans the project state directories, excludes template files and `.gitkeep`, reads primary artifact metadata, inspects integration evidence, and prints the inline Gate 5 summary.
 
@@ -50,7 +48,7 @@ Record the latest integration-test result or state that no integration evidence 
 
 ### Step 5: Produce Inline Summary
 
-Use `ai-team status` output as the inline summary. If the command cannot run, manually present the report in this format:
+Use the `ai_team` tool call `{"command": "status"}` output as the inline summary. If the command cannot run, manually present the report in this format:
 
 ```markdown
 ## Status Report — [today's date]
@@ -83,11 +81,9 @@ If there are blocked tasks or critical/high bugs, add a `Recommended Actions` se
 
 ### Step 6: Write Full Report
 
-Run the CLI report command from the repository root:
+Run the tool report command from the repository root:
 
-```bash
-ai-team report
-```
+Call the `ai_team` tool with `{"command": "report"}`.
 
 By default, it writes `project/docs/reports/progress-report-[today's date].md` and creates `project/docs/reports/` if needed.
 The full report includes completed tasks, in-progress details, blocked items with action needed, bug listing, next actions, and risks or concerns.

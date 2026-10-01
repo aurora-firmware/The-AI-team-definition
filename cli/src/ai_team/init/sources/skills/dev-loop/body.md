@@ -9,8 +9,8 @@ Optional: a single task ID or branch name as `$ARGUMENTS` (e.g., `T-012` or `tas
 - If provided, the loop processes only that task — it does not continue to the next task after completion or failure.
 - If omitted, the loop processes the full pending queue until empty, blocked, or escalated.
 
-The orchestrator reads queue state using the `ai-team` CLI:
-- `ai-team list tasks --state pending` — pending work queue
+The orchestrator reads queue state using the {{ai-team-cli|`ai-team` CLI|`ai_team` tool}}:
+- `{{ai-team list tasks --state pending}}` — pending work queue
 - `project/tasks/in-progress/` — active task slot (filesystem)
 - `project/tasks/blocked/` — escalation output (filesystem)
 
@@ -27,7 +27,7 @@ If `$ARGUMENTS` is non-empty:
 - If not found in `pending/`, stop with: "Task <task-id> not found in project/tasks/pending/. Check the task ID and its current status."
 - Use this single task as the queue. After it completes (success, blocked, or escalated), stop — do not continue to other tasks.
 
-If `$ARGUMENTS` is empty, discover pending tasks using: `ai-team list tasks --state pending`.
+If `$ARGUMENTS` is empty, discover pending tasks using: `{{ai-team list tasks --state pending}}`.
 If the queue is empty, proceed directly to **Step 8: Loop Complete** so the canonical
 Gate 5 status report is produced before the loop stops.
 
@@ -180,7 +180,7 @@ If the Architect cannot resolve the issue:
 ### Step 8: Loop Complete
 
 When the queue is fully drained (Step 1 finds no pending tasks), invoke `Skill(status-report)` to
-produce the canonical Gate 5 summary. The status-report skill runs `ai-team status`, scans project
+produce the canonical Gate 5 summary. The status-report skill runs `{{ai-team status}}`, scans project
 state directories, and writes the full progress report — that output is the authoritative end-of-run
 status.
 

@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "command": "status"
+  },
+  {
+    "command": "report"
+  },
+  {
+    "command": "status"
+  },
+  {
+    "command": "status"
+  },
+  {
+    "command": "report"
+  }
+]

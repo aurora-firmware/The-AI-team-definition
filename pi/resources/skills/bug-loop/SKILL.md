@@ -180,7 +180,7 @@ If the Architect cannot resolve it, proceed to Phase 2.
 ### Step 8: Loop Complete
 
 When the queue is fully drained (Step 1 finds no open bugs), invoke `Skill(status-report)` to
-produce the canonical Gate 5 summary. The status-report skill runs `ai-team status`, scans project
+produce the canonical Gate 5 summary. The status-report skill runs the `ai_team` tool call `{"command": "status"}`, scans project
 state directories, and writes the full progress report — that output is the authoritative end-of-run
 status.
 
