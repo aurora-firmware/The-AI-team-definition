@@ -44,11 +44,11 @@ describe("command registry", () => {
   });
 
   it("reports stub handlers as not implemented when they are called", () => {
-    const entry = COMMANDS["task new"];
+    const entry = COMMANDS["bug new"];
     expect(entry).toBeDefined();
     expect(isStub(entry!.handler)).toBe(true);
     expect(() => (entry!.handler as (a: unknown, b: unknown) => unknown)("x", {})).toThrow(
-      /task new.*not implemented/i,
+      /bug new.*not implemented/i,
     );
   });
 });
@@ -168,10 +168,10 @@ describe("parity runner", () => {
   });
 
   it("reports a case whose command is still a stub as pending without running it", () => {
-    const fixtures = writeFixtures({ name: "task-new--pending", command: "task new", expected: { status: 0 } });
-    expect(runCase(join(fixtures, "task-new--pending"), fixtures, COMMANDS)).toEqual({
+    const fixtures = writeFixtures({ name: "bug-new--pending", command: "bug new", expected: { status: 0 } });
+    expect(runCase(join(fixtures, "bug-new--pending"), fixtures, COMMANDS)).toEqual({
       kind: "pending",
-      command: "task new",
+      command: "bug new",
     });
   });
 
