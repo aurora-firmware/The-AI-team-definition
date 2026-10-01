@@ -292,13 +292,15 @@ def test_sync_fails_naming_file_and_marker_on_bad_header_marker(tmp_path) -> Non
     assert "{{nope}}" in result.stderr
 
 
-# AC-4: unchanged sources render identically (no markers in current sources).
+# AC-4: sources without markers render identically.
 
 
-def test_current_skill_sources_contain_no_markers_so_output_is_unchanged(
+def test_skill_sources_without_markers_render_unchanged(
     command_map,
 ) -> None:
     for path in sorted((SOURCES_DIR / "skills").glob("*/*")):
         text = path.read_text(encoding="utf-8")
+        if "{{" in text:
+            continue
         for target in ("claude", "codex"):
             assert _render(text, target, command_map, str(path)) == text

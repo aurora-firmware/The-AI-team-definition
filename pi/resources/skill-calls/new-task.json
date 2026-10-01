@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "command": "task new",
+    "title": "<title>",
+    "priority": "<priority>",
+    "assignedRole": "<assigned-role>"
+  }
+]

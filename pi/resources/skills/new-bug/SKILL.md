@@ -1,11 +1,11 @@
 ---
 name: new-bug
-description: Create a new bug report via the ai-team CLI
+description: Create a new bug report via the ai_team tool
 ---
 
 # New Bug
 
-Create a new bug report using `ai-team bug new --json`.
+Create a new bug report using the `ai_team` tool's `bug new` command.
 
 ## Input Requirements
 
@@ -32,9 +32,9 @@ When invoked directly by a human and required fields are missing, ask only for t
 ## Procedure
 
 1. Resolve inputs from the caller. Use `$ARGUMENTS` as `title` when it is the only provided input.
-2. Build the CLI command:
-   - Base: `ai-team bug new "<title>" --severity "<severity>" --json`
-   - Add `--task "<task>"` only when `task` is provided.
+2. Build the tool command:
+   - Base: the `ai_team` tool call `{"command": "bug new", "title": "<title>", "severity": "<severity>"}`
+   - Add `task "<task>"` only when `task` is provided.
 3. Execute the command and parse the JSON response to capture the created bug file path and ID.
 4. Open the created bug file and fill the body from the supplied `description`.
 5. If `details` content is provided, replace only the matching details placeholders/sections supplied by the caller. Leave unspecified sections unchanged.
