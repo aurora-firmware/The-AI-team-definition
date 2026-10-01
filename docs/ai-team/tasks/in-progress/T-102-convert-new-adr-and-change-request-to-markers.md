@@ -1,7 +1,7 @@
 ---
 id: T-102
 title: Convert new-adr and change-request to markers
-status: pending
+status: in-progress
 priority: high
 assigned-role: developer
 created: '2026-09-30'
