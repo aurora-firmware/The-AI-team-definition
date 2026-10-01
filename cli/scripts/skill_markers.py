@@ -33,6 +33,7 @@ _FENCE_PATTERN = re.compile(
     r"^(?P<indent>[ \t]*)```[^\n]*\n(?P<body>.*?)^[ \t]*```[ \t]*$",
     re.DOTALL | re.MULTILINE,
 )
+_COMMAND_MARKER_OPENING = "{{" + _COMMAND_PREFIX
 _FENCE_COMMAND_LINE = re.compile(r"\s*\{\{(ai-team [^}]*)\}\}\s*")
 
 
@@ -153,7 +154,9 @@ def _render_pi(text: str, command_map: dict[str, Any], source: str) -> str:
 
     def render_fence(match: re.Match[str]) -> str:
         body = match.group("body")
-        if "{{" not in body:
+        # Only a fence holding a command marker is rewritten to prose; any other
+        # fence stays for the inline pass to render its noun and flag markers.
+        if _COMMAND_MARKER_OPENING not in body:
             return match.group(0)
         lines = [line for line in body.splitlines() if line.strip()]
         argvs = [_FENCE_COMMAND_LINE.fullmatch(line) for line in lines]

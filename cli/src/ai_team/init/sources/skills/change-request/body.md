@@ -1,6 +1,6 @@
 # Change Request
 
-Create a new change-request artifact using `ai-team change-request new --json`, then fill the body with the proposed scope change.
+Create a new change-request artifact using `{{ai-team change-request new --json}}`, then fill the body with the proposed scope change.
 
 ## Input Requirements
 
@@ -18,15 +18,15 @@ When invoked directly and required fields are missing, ask only for the missing 
    - If the title or description is still missing, ask for the missing value.
 
 2. Create the artifact:
-   - Run `ai-team change-request new "<title>" --json`.
+   - Run `{{ai-team change-request new "<title>" --json}}`.
    - Parse the JSON response to capture `id` and `path`.
 
 3. Open the created file and replace template placeholders with the supplied description.
-   - Keep the frontmatter produced by the CLI.
+   - Keep the frontmatter produced by {{ai-team-cli|the CLI|the tool}}.
    - Preserve the template structure unless the human explicitly requested a different format.
    - Mark unknown details as `[TODO]` instead of inventing them.
 
-4. Confirm the created file exists and return the CLI response values.
+4. Confirm the created file exists and return {{ai-team-cli|the CLI|the tool}} response values.
 
 5. For a newly created CR or an updated CR body, inspect the document for human-answerable `[TODO]` markers.
    - Resolve each human-answerable `[TODO]` marker one at a time with the human.
@@ -44,7 +44,7 @@ When invoked directly and required fields are missing, ask only for the missing 
 
 ## Quality Criteria
 
-- The artifact id and path come from the CLI response.
+- The artifact id and path come from {{ai-team-cli|the CLI|the tool}} response.
 - The title is reflected in the file heading.
 - The body states the requested change, reason, affected artifacts, and unresolved questions.
 - Unknown or unconfirmed details remain marked `[TODO]`.
@@ -73,7 +73,7 @@ Artifacts:
 - <change-request file created>
 
 Evidence:
-- <CLI command result or reason not run>
+- <{{ai-team-cli|CLI|ai_team tool}} command result or reason not run>
 
 Obstacles Encountered:
 - <missing input, unresolved scope issue, or "none">

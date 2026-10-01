@@ -132,6 +132,18 @@ def test_fence_without_markers_is_left_alone(command_map) -> None:
     assert _pi(text, command_map) == text
 
 
+def test_non_command_fence_keeps_fence_and_renders_noun_marker(command_map) -> None:
+    text = "```text\n- <{{ai-team-cli|CLI|ai_team tool}} command result>\n```\n"
+
+    assert _pi(text, command_map) == ("```text\n- <ai_team tool command result>\n```\n")
+
+
+def test_non_command_fence_renders_flag_marker(command_map) -> None:
+    text = "```text\nPass {{ai-team-flag adr new --supersedes}} to link.\n```\n"
+
+    assert _pi(text, command_map) == "```text\nPass set `supersedes` to link.\n```\n"
+
+
 def test_mixed_fence_is_fine_for_claude(command_map) -> None:
     text = "```bash\ncd repo\n{{ai-team status}}\n```\n"
 

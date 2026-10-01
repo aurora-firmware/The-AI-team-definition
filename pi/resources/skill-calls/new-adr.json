@@ -1,1 +1,7 @@
-[]
+[
+  {
+    "command": "adr new",
+    "title": "<title>",
+    "status": "<status>"
+  }
+]

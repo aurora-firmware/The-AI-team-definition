@@ -1,7 +1,7 @@
 [claude]
 header = """---
 name: change-request
-description: Create a new change-request artifact via the ai-team CLI
+description: Create a new change-request artifact via {{ai-team-cli|the ai-team CLI|the ai_team tool}}
 argument-hint: "[change request title]"
 allowed-tools: Read, Write, Bash
 ---"""
@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Bash
 [codex]
 header = """---
 name: change-request
-description: Create a new change-request artifact via the ai-team CLI
+description: Create a new change-request artifact via {{ai-team-cli|the ai-team CLI|the ai_team tool}}
 argument-hint: "[change request title]"
 allowed-tools: Read, Write, Bash
 ---"""
