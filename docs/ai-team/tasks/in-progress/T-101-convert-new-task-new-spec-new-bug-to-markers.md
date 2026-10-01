@@ -63,6 +63,24 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Done: I read the S-005 marker contract and the existing marker implementation, then wrote `cli/tests/test_render_create_skills.py` first. It checks that no CLI reference is left outside a marker, that claude/codex text matches the old wording exactly, that the pi SKILL.md files have no lowercase `ai-team`, and that new-task renders `task new` as a call form with title and priority. After that I converted the three skills.
+
+- Command invocations became command markers: the `task new`, `spec new` and `bug new` command lines. The `spec new --json` and `bug new --json` mentions in the intros render for pi as "the `ai_team` tool's `<command>` command".
+- Flag markers cover `--author`, `--status` and `--task`, placed inside the existing backticks so the claude/codex text is unchanged.
+- Bare "the CLI" and "CLI" mentions became noun markers: `{{ai-team-cli|the CLI|the tool}}` and `{{ai-team-cli|CLI|tool}}`.
+- The header description uses `{{ai-team-cli|the ai-team CLI|the ai_team tool}}`, in both `[claude]` and `[codex]`.
+
+I then ran the sync and committed the regenerated pi resources. V-GOLD shows the claude and codex scaffolds are byte-unchanged.
+
+Tried and rejected: I did not put a flag marker on `--description` in new-spec ("the CLI has no `--description` flag"). That flag does not exist for `spec new`, so the sync would reject it. It stays as literal text after a noun marker, and it is not a binary reference.
+
+Decision for the reviewer: I edited `test_skill_markers.py` (outside Files to Touch). Its "no markers in current sources" test became wrong once sources gained markers, so it now skips marker-bearing sources.
+
+Known rough edge: pi renders the flag-marker sites as `author "<author>"`, `status "<status>"` and `task "<task>"` inside backticks. This is the specified inline behaviour, and it reads acceptably.
+
+Remaining: nothing for this task. The other skills still contain raw CLI references, and later Phase 2 tasks cover them.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
