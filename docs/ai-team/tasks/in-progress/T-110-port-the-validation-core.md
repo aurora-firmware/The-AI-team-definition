@@ -60,6 +60,15 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Ported the validation core to `pi/src/core/validate.ts` as `validateProject(root, scopes)` plus `Finding` and `toRelativePath`, following the Python structure. Cross-reference indexes for spec slugs, task ids and ADR ids are built regardless of the selected scopes, and the specs index includes `specs/archive`. Findings keep Python's order: tasks by state folder, then bugs, specs, ADRs and change requests.
+
+Python behaviour kept: id patterns print the Python source text (e.g. `^T-\d{3}$`) in messages; the matcher uses `\p{Nd}` because Python's `\d` matches all Unicode digits; directory listings sort by code point, not UTF-16 unit; frontmatter errors from the T-089 models become `frontmatter-invalid` findings carrying the parser's message; other errors propagate; the spec id check reads raw frontmatter through the source map so a missing id gives `id-missing`.
+
+`pi/test/validate.test.ts` auto-discovers every `validate--*` case in `fixtures/parity` (15 T-092 fixtures), materialises each before-tree in a temp dir, runs the core, normalises the root to `<ROOT>` and compares to `expected.payload`. Two extra tests cover malformed frontmatter and the empty-scope case. Typecheck clean; 16 files, 336 tests pass.
+
+Not done (belongs to T-118): `--all` / no-flags defaulting; the test helper does the mapping itself. Unhandled edge: a falsy non-string spec id such as YAML `0`/`false`, which Python treats as no id for the filename check while the pi parser stringifies it. No fixture exercises it.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
