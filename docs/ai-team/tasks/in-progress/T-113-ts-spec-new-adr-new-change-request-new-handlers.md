@@ -86,3 +86,25 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Reviewed commit d22c741 against cli/src/ai_team/commands/{spec,adr,change_request}.py, ADR-003/ADR-004 and fixtures/parity. Test evidence from a temporary worktree: sync_init_scaffolds OK, `npm ci` OK, `npm run typecheck` clean, `npm test` 19 files, 429 passed, 160 todo (fixtures of still-stubbed commands).
+
+Stage 1 (acceptance):
+- AC-1: all 32 `spec-new--`, `adr-new--`, `change-request-new--` parity cases run as real comparisons (none todo/skipped) and pass.
+- AC-2: each handler allocates the ID inside the `allocateId` callback of `createArtifactWithLock`, so allocation and write occur under the TS lock. A lock-release test is included.
+- AC-3: `tsc --noEmit` reports zero errors.
+- Only the files in scope were touched, plus `pi/test/parity.test.ts`, whose stub examples moved from `spec new` to `task new` because `spec new` is no longer a stub. This is necessary and correct.
+
+Stage 2 (quality):
+- Behaviour matches Python: status defaults and choices, spec `sourceMap` from template frontmatter, title placeholder replaced once through a function replacer (safe for `$` in titles), ADR keeps the template body unchanged as Python does, and CR status is `pending`. `ArtifactExists` and `LockTimeout` map to failure results. Handlers never read `process.cwd`.
+- The extra TS lock on ADR and change-request is allowed by ADR-003 (G2 N9).
+- Tests cover missing title, status validation, lock release, cwd independence and allocation past an existing file, and the tests are independent (each uses its own temp repo).
+
+TDD note: the missing separate red step does not matter here. The parity cases were `it.todo` placeholders that act as the pre-existing specification, and the unit tests are small and exercise real failure paths.
+
+Non-blocking observations:
+- The runner's tree sort uses JS code-unit order while Python uses code-point order. The developer noted it is moot for the current ASCII fixtures. Consider a follow-up task.
+- The unit tests do not assert the missing-title message text or the supersedes type check. This is minor.
