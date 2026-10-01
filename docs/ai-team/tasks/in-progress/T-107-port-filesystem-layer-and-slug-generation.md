@@ -88,3 +88,32 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Both stages passed on branch `task/T-107-port-filesystem-layer-and-slug-generation` (four commits, triple-dot diff against `feat/pi-extension`, touching only `pi/src/core/{fs,slug}.ts` and their two test files).
+
+Stage 1 (acceptance criteria)
+- AC-1: `slug.test.ts` derives every `*-new--*` fixture title and checks the slug against the created filename (more than 30 cases). All pass.
+- AC-2: `writeAtomically` writes to a `<path>.tmp~` sibling and renames it. This is the same temp name as Python's `with_suffix(suffix + ".tmp~")`. It removes the temp file on failure. Tests cover no leftover temp file on success and a failed rename keeping the destination intact. `updateStatus` also writes atomically.
+- AC-3: `ArtifactExists` and `ArtifactNotFound` messages are character-identical to `core/fs.py`. A test checks `ArtifactExists` against every `*--artifact-exists` fixture message.
+- AC-4: V-PI is green in a clean worktree: `npm ci`, `typecheck` and `npm test` (11 files, 256 tests). V-SYNC left no tracked diff. cli `pytest` (1022 passed), `ruff format --check` and `ruff check` are clean.
+- No unrequested files or behaviour were added.
+
+Stage 2 (quality)
+- No `any`, non-null `!`, ts directives or `as` assertions in `src/`. The only `as const` is in test code. Narrowing uses `isErrnoCode` and `instanceof RangeError`.
+- Independent slug cross-check against python-slugify on 32 varied titles: unicode, quotes and apostrophes, HTML named, decimal and hex entities including out-of-range references, thousands commas, long titles, symbols, CJK, Cyrillic, empty and symbol-only. 29 were identical. The 3 diffs are all transliteration-table differences between `transliteration` and text-unidecode:
+  - euro sign: `eu` vs `eur`
+  - Greek and Arabic letters: `ellinika` vs `ellenika`
+  - capital sharp s `ẞ`: one `ss` vs two
+- Judgement on the disclosed divergences:
+  - Transliteration tables: not a contract gap. S-005 and ADR-001 to ADR-004 do not mandate text-unidecode, SC-5 is fixture-bound, and every fixture title matches. The divergence is documented in the `slug.ts` header. Non-blocking.
+  - ENOENT catch instead of an `exists()` pre-check: same message, and it avoids a TOCTOU race. Acceptable.
+  - `readArtifact` accepting `change-request`: a superset of Python that is needed for the TS model set, and the fields are the same as an ADR. Acceptable.
+  - `moveArtifact` symlink resolution: matches `Path.resolve()` and is tested.
+- TDD: the slug implementation came in one pass after a failing test file rather than in minimal steps. This is acceptable. The test file was written first and the behaviour was verified against Python (the apostrophe correction in the Work Log shows the tests were checked against Python). The tests cover the branches: entities, references, quotes, commas, empty result.
+
+Non-blocking observations and follow-ups
+1. Non-Latin transliteration (Greek and Arabic) differs from Python. If non-English titles become supported, add a table of overrides or choose a text-unidecode-compatible table. This does not affect the parity fixtures.
+2. The three T-106 frontmatter follow-ups listed in the Work Log remain open, outside this task's files.
