@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "command": "list tasks",
+    "state": "pending"
+  },
+  {
+    "command": "list tasks",
+    "state": "pending"
+  },
+  {
+    "command": "status"
+  }
+]
