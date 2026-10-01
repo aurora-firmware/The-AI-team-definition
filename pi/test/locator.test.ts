@@ -131,7 +131,10 @@ describe("findProjectRoot start directory", () => {
 
   it("does not reference process.cwd in the locator source", () => {
     const sourcePath = join(dirname(fileURLToPath(import.meta.url)), "..", "src", "core");
-    for (const name of readdirSync(sourcePath)) {
+    const sourceFiles = readdirSync(sourcePath, { recursive: true, encoding: "utf-8" }).filter((name) =>
+      name.endsWith(".ts"),
+    );
+    for (const name of sourceFiles) {
       expect(readFileSync(join(sourcePath, name), "utf-8"), name).not.toContain("process.cwd");
     }
   });
