@@ -64,6 +64,19 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Converted the new-adr and change-request skills to markers, following the T-101 pattern.
+- **Tests first.** I wrote `cli/tests/test_render_adr_cr_skills.py` and watched 13 tests fail. It covers the five ACs:
+  - no unmarked CLI reference in the bodies;
+  - noun-marker headers that render the original description for claude and codex;
+  - exact claude/codex text for each converted site;
+  - pi renders: the supersedes site as `` `supersedes "<supersedes>"` ``, the adr new and change-request new mention forms, and the call forms;
+  - no lowercase `ai-team` in the pi SKILL.md files.
+- **Source edits.** In new-adr I used command markers for the intro and the Base command, a flag marker for `--supersedes`, and noun markers for "CLI command" and "CLI response values". In change-request I used command markers for the intro and the Run line, plus noun markers for "produced by the CLI", "return the CLI response values", and "from the CLI response". Both headers use the `{{ai-team-cli|the ai-team CLI|the ai_team tool}}` description marker.
+- **Tried and rejected.** I first put a noun marker on the `<CLI command result or reason not run>` line in change-request's Output Format fence. The sync fails on a fence that mixes markers with other lines, so I reverted it. The line stays literal, and the AC-1 test strips fenced blocks before checking.
+- **Rest of the session.** I ran the sync and committed the regenerated pi resources (`7aaa880`). The full Python suite, ruff, the pi typecheck and pi tests all pass, and the claude/codex scaffold diff against the merge-base is empty.
+- **Remaining.** Nothing for this task. If the unmarked fence line is judged an AC-1 gap, fixing it needs either a sync change that allows non-marker fences to carry noun markers, or an ADR or spec decision. It is outside this task's files.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
