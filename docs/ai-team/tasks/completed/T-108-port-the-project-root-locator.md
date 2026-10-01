@@ -1,7 +1,7 @@
 ---
 id: T-108
 title: Port the project root locator
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
