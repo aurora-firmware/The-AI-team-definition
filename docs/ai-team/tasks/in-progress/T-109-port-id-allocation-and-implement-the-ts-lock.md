@@ -65,6 +65,17 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Ported `core/ids.py` to `pi/src/core/ids.ts`: the five next-ID functions, filename maximum across state folders, `specs/archive` included, and `id: S-NNN` read from spec frontmatter with the same regex and fence logic as Python. Added `pi/src/core/lock.ts` with `allocationLock(projectDir, callback, {timeoutSeconds})`, `createArtifactWithLock` and `LockTimeout`. The lock file is `.ai-team-ts.lock` (the path T-087 reserved); `.ai-team.lock` is never touched.
+
+The API is synchronous, sleeping with `Atomics.wait`, because the core's file operations are synchronous. Acquisition writes the holder pid to a private temp file and hard-links it to the lock path (atomic, fails if present, never half-written). Waiters poll every 50 ms, read the pid and check `process.kill(pid, 0)`; `ESRCH` means dead, `EPERM` counts as alive. A dead holder's lock is reclaimed by renaming to a private name and re-verifying the pid; if the rename grabbed another holder's lock it is linked back. Non-pid content is never reclaimed and is waited on until timeout. Default timeout 10 s; the message template matches Python's with `10.0`-style float formatting.
+
+Rejected: exclusive-open-then-write (a holder killed between steps leaves an empty lock indistinguishable from one being written), and reusing `.ai-team.lock` (ADR-003).
+
+Residual limits (documented in code): PID reuse could make a dead holder look alive until timeout; a very narrow window remains where the lock is freed and retaken between a reclaimer's pid read and its rename (link-back handles it unless a third process takes the path at that instant); a holder killed between temp-file creation and unlink leaves a harmless `*.tmp`.
+
+Tests: AC-1 two Node processes each allocate 50 task IDs against one project, 100 unique IDs (passes with the lock, fails with it disabled); AC-2 SIGKILLed holder reclaimed within the bounded wait, live holder times out; AC-3 message template; AC-4 `.ai-team.lock` untouched; AC-5 14 T-089 fixtures checked. Children run through `node_modules/.bin/vite-node` (transitive vitest dependency; could break if vitest drops it). Cross-process tests live in `lock-concurrency.test.ts`. vitest config untouched (G2 N11). Typecheck clean, 318 tests pass. Nothing remains for this task.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
