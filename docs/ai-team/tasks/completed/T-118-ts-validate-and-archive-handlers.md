@@ -1,7 +1,7 @@
 ---
 id: T-118
 title: TS validate and archive handlers
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
