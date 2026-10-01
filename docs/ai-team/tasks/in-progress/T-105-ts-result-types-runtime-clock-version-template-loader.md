@@ -1,7 +1,7 @@
 ---
 id: T-105
 title: TS result types, runtime clock/version, template loader
-status: pending
+status: in-progress
 priority: high
 assigned-role: developer
 created: '2026-09-30'
