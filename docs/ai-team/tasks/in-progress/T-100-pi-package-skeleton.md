@@ -71,6 +71,13 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Built the pi package skeleton in three commits. First came the toolchain: `package.json`, strict `tsconfig.json` (NodeNext, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`), `vitest.config.ts`, a stub `src/index.ts` and an extended `.gitignore`. It also has the `test/imports.test.ts` guard, which scans `src/core` for static, dynamic or `require` imports of the pi packages. I confirmed it fails when a violation is planted. Second came the manifest: `pi.skills` lists the 16 non-orchestrator generated skills, and `test/manifest.test.ts` checks the skills list, extension entry, engine, peer range and script names. Third came the README, covering the one-time sync, `npm ci`/typecheck/test, a scratch `PI_CODING_AGENT_DIR`, the import rule and the mixed-concurrency limitation, with `test/readme.test.ts` checking those mentions.
+
+I settled the runtime dependencies: `yaml`, `smol-toml`, `transliteration` and `typebox`. I verified the pi host package name and version with `npm view`. The peer range is `>=0.87.1` and the dev dependency is pinned to exactly 0.87.1. The full V-SYNC then V-PI run from a clean `node_modules`, cli pytest (959 passed) and ruff all pass.
+
+Rejected: using `@mariozechner/pi-coding-agent`, which has no 0.87.1 release. Also rejected: comparing versions with array `>=`, which compares as strings. I added two test files beyond the Files to Touch list so that AC-1, AC-2, AC-4 and AC-6 each have a test. The `pi-agent-dev` skills could not be loaded because the Skill tool was disabled. Nothing remains for this task. Later tasks must decide how `typebox` and `src/core` should be resolved at runtime when pi loads the package from a path.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
