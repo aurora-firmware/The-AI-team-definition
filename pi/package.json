@@ -15,7 +15,24 @@
     "extensions": [
       "./src/index.ts"
     ],
-    "skills": []
+    "skills": [
+      "./resources/skills/architecture-consistency-review",
+      "./resources/skills/brainstorm",
+      "./resources/skills/change-request",
+      "./resources/skills/code-review",
+      "./resources/skills/debug",
+      "./resources/skills/escalation-review",
+      "./resources/skills/git-conventions",
+      "./resources/skills/merge-conflicts",
+      "./resources/skills/new-adr",
+      "./resources/skills/new-bug",
+      "./resources/skills/new-spec",
+      "./resources/skills/new-task",
+      "./resources/skills/spec-breakdown",
+      "./resources/skills/spec-breakdown-review",
+      "./resources/skills/status-report",
+      "./resources/skills/tdd"
+    ]
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": ">=0.87.1"
