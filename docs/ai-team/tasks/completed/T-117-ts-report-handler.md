@@ -1,7 +1,7 @@
 ---
 id: T-117
 title: TS report handler
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
