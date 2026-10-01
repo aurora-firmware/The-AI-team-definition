@@ -1,7 +1,7 @@
 ---
 id: T-120
 title: Full parity suite and recorded SC-8 cross-implementation check
-status: pending
+status: completed
 priority: critical
 assigned-role: developer
 created: '2026-09-30'
