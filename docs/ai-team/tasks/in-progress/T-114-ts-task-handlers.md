@@ -63,6 +63,21 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Implemented all five task handlers in `pi/src/core/commands/task.ts` as ports of `cli/src/ai_team/commands/task.py`.
+
+- `task new`: validates the title, priority and role, then allocates the ID and writes the file under the lock. The task template body is used with the title placeholder replaced. The model carries no source map, matching Python.
+- Transitions: all four share one `transitionTask`. It checks the destination folder first, which gives the idempotent "already in <state>" result. It then searches the allowed source folders and returns the exact not-found message listing all four folders in order. It then runs the optional before-hook, updates the status, and moves the file. Payload paths use `realpathSync`, matching Python's `.resolve()`.
+- `task block`: appends a session entry after the highest existing session number. A local `splitLines` copies Python's `splitlines` semantics so line handling is the same.
+
+The B-018 quirk is deliberately kept to match the fixtures. When a Work Log heading is missing, the entry lands above the new heading. `task-block--unicode-reason` records this, so fixing it needs a Python fix and a fixture change together. I added no fixture for it.
+
+Tried and rejected: a plain `sort()` for file lookup, which uses UTF-16 order. I wrote a code-point comparison to match Python's `sorted`.
+
+Also changed `pi/test/parity.test.ts` so its stub-command examples use `bug new`. This file is outside the listed Files to Touch, so the reviewer should confirm it is acceptable.
+
+Nothing remains for this task. Other commands (`bug`, `list`, `show`, and others) are still stubs and belong to their own tasks.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
