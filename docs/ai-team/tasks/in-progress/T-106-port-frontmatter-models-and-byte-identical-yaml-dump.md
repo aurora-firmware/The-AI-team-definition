@@ -96,3 +96,40 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Both stages passed. Reviewed `feat/pi-extension...task/T-106-...` (250ba8e, 81ad715): 5 files, `pi/src/core/{frontmatter,models,scalar-emitter}.ts` plus two test files.
+
+Stage 1 (acceptance criteria):
+- AC-1 met. `models.test.ts` dumps every CLI-written artifact in all T-089 after-trees (all five kinds, asserted) and compares bytes.
+- AC-2 met. The three `frontmatter-invalid` messages in the `validate--*` fixtures (no frontmatter, no fence, missing `title`) are asserted equal to the parser output. `FrontmatterError` messages for unclosed fence and missing/null key match `_require` and `_parse_yaml_frontmatter` text.
+- AC-3 met. Width 80 and code-point column arithmetic are ported from ruamel; folding is pinned by goldens and by my independent check below.
+- AC-4 met. In a temporary worktree: `sync_init_scaffolds.py` left no tracked diff; `uv run pytest` 1022 passed; `ruff format --check` and `ruff check` clean; pi `npm ci`, `npm run typecheck` clean, `npm test` 164 passed.
+- Scope: `scalar-emitter.ts` is outside Files to Touch but is the implementation the task needs (see below). No other unexpected files.
+
+Stage 2 (quality):
+- TypeScript checklist: no `any`, no non-null `!`, no `@ts-*` directives, no `eslint-disable`, no `as` assertions in `src/` (the only `as const` are in tests). External YAML input is narrowed with `isScalar`/`isMap`/`typeof` guards; the models use a `kind` discriminant with an exhaustive `switch`. Errors are typed `FrontmatterError`.
+- Independent byte-identity check against ruamel (Python `dump_frontmatter` vs TS `dumpFrontmatter`), run by me with a throwaway harness that is not committed:
+  - 389 scalars used as title and assigned-role: indicator and quote cases, YAML 1.1/1.2 booleans, null, number, date and timestamp lookalikes, leading/trailing spaces, tabs, newlines, control characters, NBSP, U+2028, combining marks, CJK, emoji, 79/80/81-character runs, multi-space runs, long plain, single-quoted and double-quoted scalars, plus 300 random strings. 0 diffs.
+  - Parse, update (`status` and `title` changed to tricky values) and dump over 116 artifacts taken from before/after trees of all parity cases, plus hand-written documents with trailing comments, unknown keys and quoted forms. 0 diffs on all 116 fixture-derived documents.
+- Tests cover success and error paths, are independent, and are pinned with inline goldens.
+
+Judgements requested:
+- `scalar-emitter.ts` (432 lines, over the 300-line guideline): accept. It is a cohesive port of ruamel's scalar analysis, style choice and three writers; splitting it would separate tightly coupled state and hurt traceability to the Python source. Not a blocker; no task-scope amendment needed since it is the core of the "byte-identical" outcome.
+- Port-then-verify instead of red-green: accept, with the process note that it was disclosed. The committed tests pin the contract, and my independent differential run found no diffs. The throwaway differential harness is not committed, so the 1,536-scalar run cannot be repeated by others; non-blocking.
+- Known divergences: none is a contract gap for S-005 or the fixtures. The `validate--*` fixtures contain only the three messages above and all match. Everything else is unfixtured and not produced by CLI-written artifacts:
+  - YAML parse-error text after the prefix: ruamel's multi-line message cannot reasonably be reproduced from a different parser. Not fixtured.
+  - Collection values on known fields: raises `FrontmatterError` rather than Python's `str()` of the collection.
+  - Unusual keys throw `RangeError` (Python writes an explicit `? ` key).
+  - Flow-style top-level mappings.
+
+Non-blocking observations for follow-up (suggest a bug or a note on the later `validate`/`fs` port task):
+1. My probe found that a standalone comment line placed after a collection value under an unknown key is dropped on rewrite (Python keeps it). This is the disclosed "loses inner comments" behaviour, but it is data loss on a hand-edited file once `update_status` is ported. Worth fixing or documenting before the `fs.py` port.
+2. A hand-written block-scalar (`>-`) value on a known field, e.g. `title`, raises `FrontmatterError` where Python parses and rewrites it. Same follow-up.
+3. `RangeError` for unusual keys should become a `FrontmatterError` or be handled when the `validate` port lands, so one malformed file cannot abort a whole scan.
+4. When `validate` is ported, decide how the unfixtured "YAML parse error" message is to be compared across the runners.
+
+Next owner: Development Loop.
+
