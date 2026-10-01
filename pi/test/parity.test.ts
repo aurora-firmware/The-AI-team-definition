@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { notImplemented, type RootHandler } from "../src/core/commands/handler.js";
 import { COMMANDS, isStub, type CommandEntry } from "../src/core/commands/registry.js";
 import { failure, success } from "../src/core/result.js";
 import {
@@ -44,10 +45,9 @@ describe("command registry", () => {
   });
 
   it("reports stub handlers as not implemented when they are called", () => {
-    const entry = COMMANDS["archive"];
-    expect(entry).toBeDefined();
-    expect(isStub(entry!.handler)).toBe(true);
-    expect(() => (entry!.handler as (a: unknown, b: unknown) => unknown)("x", {})).toThrow(
+    const handler = notImplemented<RootHandler>("archive");
+    expect(isStub(handler)).toBe(true);
+    expect(() => (handler as (a: unknown, b: unknown) => unknown)("x", {})).toThrow(
       /archive.*not implemented/i,
     );
   });
@@ -169,7 +169,9 @@ describe("parity runner", () => {
 
   it("reports a case whose command is still a stub as pending without running it", () => {
     const fixtures = writeFixtures({ name: "archive--pending", command: "archive", expected: { status: 0 } });
-    expect(runCase(join(fixtures, "archive--pending"), fixtures, COMMANDS)).toEqual({
+    expect(runCase(join(fixtures, "archive--pending"), fixtures, {
+      archive: { kind: "root", handler: notImplemented<RootHandler>("archive") },
+    })).toEqual({
       kind: "pending",
       command: "archive",
     });
