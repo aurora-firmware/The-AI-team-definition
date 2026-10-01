@@ -60,6 +60,31 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Done: ported the five frontmatter models and parsers, `FrontmatterError`, `splitFrontmatter` and `dumpFrontmatter`. The dump is byte-identical to the Python ruamel round-trip. The key piece is `pi/src/core/scalar-emitter.ts`, a port of ruamel 0.19's block-mapping scalar emitter (`analyze_scalar`, style choice, plain, single-quoted and double-quoted writers, width 80, and comment-column handling). I chose that over the `yaml` package because its quoting and folding rules differ from ruamel's. `yaml` is used only to parse and to re-render collections under unknown keys.
+
+A parsed model keeps a source map holding key order, comments, blank lines and unknown keys, like Python's `_source_map`. In-place updates and optional-key removal and append follow Python. A hand-built model dumps in canonical order.
+
+Verification:
+- I built a throwaway differential harness against ruamel (1,536 scalars including random strings, plus 11 documents) and it found zero diffs.
+- A curated subset is pinned as inline goldens.
+- AC-1 is covered by a test that dumps every CLI-written artifact in all T-089 after-trees and compares bytes. All five artifact kinds appear.
+- AC-2 is covered by checking `validate--*` fixture messages against the parser output.
+
+Tried and rejected: `yaml`'s own `stringify` for the dump, because it folds and quotes differently from ruamel.
+
+Not strict red-green: the emitter was written as a port first and then verified differentially. The committed tests came afterwards.
+
+Known divergences, none exercised by fixtures:
+- YAML parse-error text after the "YAML parse error in frontmatter of <path>:" prefix differs, because the parser is different.
+- A known field whose value is a collection raises FrontmatterError, where Python would run `str()` on it.
+- Unusual keys (multiline, empty, or 128 characters or more) throw RangeError, where Python writes an explicit `? ` key.
+- Flow-style top-level mappings are not given special handling.
+- Collections and block scalars under unknown keys are re-rendered through `yaml`, which loses the original style and inner comments.
+- The scalar emitter file is 432 lines, over the 300-line guideline.
+
+Remaining: nothing for T-106. The later port of `fs.py` (`read_artifact`, `update_status`, `write_artifact`) can use `parseXText`, `extractBody` and `dumpFrontmatter` directly.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
