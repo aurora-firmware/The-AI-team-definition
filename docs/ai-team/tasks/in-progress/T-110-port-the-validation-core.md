@@ -80,3 +80,20 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Both stages passed on commit e8cb5d7 (only `pi/src/core/validate.ts` and `pi/test/validate.test.ts` touched; no out-of-scope behaviour such as `--all` defaulting).
+
+Stage 1:
+- AC-1: met. `validateProject` mirrors `core/validate.py` check-for-check (codes, messages, `id-pattern` printing Python source text, relative paths, per-state folder order, spec index including `specs/archive`). The test auto-discovers all 15 `validate--*` fixtures and compares to `expected.payload`; all pass.
+- AC-2: met. Frontmatter errors from the models become `frontmatter-invalid` with the parser message; fixture coverage plus an explicit test.
+- AC-3: met. After `sync_init_scaffolds.py`, in a temporary worktree: `npm ci`, `npm run typecheck` clean, `npm test` 16 files / 336 tests pass.
+
+Stage 2: logic, tests (success and failure paths, temp-dir isolation with cleanup), readability and security are acceptable.
+
+Non-blocking observations:
+- Known gap (declared in the Work Log): a falsy non-string spec id (YAML `0`/`false`) differs from Python in the filename check. No fixture covers it; consider a follow-up if the parity corpus grows.
+- Python `re.match` with `$` also accepts a trailing newline in ids; the JS regex does not. Practically unreachable from single-line frontmatter values.
+
