@@ -93,3 +93,22 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Stage 1 (acceptance): all five ACs met.
+- AC-1: `discoverCases` finds any directory holding `case.json`; no registration. A unit test adds a new case dir and sees it discovered.
+- AC-2: `COMMANDS` keys equal `resources/command-map.json` (23 commands), each with its own distinct handler module; all 23 commands used by the shared fixtures are registered.
+- AC-3: mismatches in payload, status/message and after-tree fail with an LCS diff naming expected and actual (covered by tests).
+- AC-4: `npm ci && npm run typecheck && npm test` on the task branch (after the scaffold sync, in a temporary worktree): typecheck clean, 18 files, 385 passed, 192 todo. `npm test -- parity -t "<prefix>"` filters by case-name prefix. Stub-backed cases report as todo and are never run.
+- AC-5: `InitHandler` and `CheckLayoutHandler` take the start directory; `RootHandler` takes a located `ProjectRoot`; kinds are asserted per command.
+- Files outside the list (`handler.ts`, `test/helpers/parity-runner.ts`, `test/locator.test.ts`) are justified in the work log and acceptable. `handler.ts` avoids a circular import, the helper keeps the test file short, and the locator scan change only recurses into `commands/` with no loosening of the check. No unspecified behaviour was added.
+
+Stage 2 (quality): the runner matches `cli/tests/parity_support.py` and ADR-004 and the fixtures README. It loads the lock-sentinel list, excludes only those literal paths from the after-tree, unsets `AI_TEAM_ROOT` unless the case sets it, sets the today/version/git-ceiling overrides, substitutes `<ROOT>`, drops hints, normalises only the root path, rejects unsafe tree paths and symlinks, and restores the environment and temp dir. Tests cover success and failure paths and use independent sandboxes.
+
+Non-blocking observations:
+- `normalise` is applied to every string in after-tree entries (including `path` and `base64`), whereas Python rewrites only `text`. Root paths will not appear in those fields, so there is no practical difference.
+- The runner does not `chdir` into the root as Python does. Handlers take explicit directories, so this is fine, but a handler that reads the cwd would diverge. T-113 to T-119 should avoid that.
+- Tree sort uses JS code-unit order rather than Python code-point order, as the Developer noted. This only matters for non-BMP paths.
+- The runner has not yet run a real handler against a shared fixture. The first implementer should check edge cases.
