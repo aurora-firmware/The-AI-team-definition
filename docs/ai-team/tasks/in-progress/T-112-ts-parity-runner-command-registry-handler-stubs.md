@@ -67,6 +67,21 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+Built the registry, 13 stub modules and the parity runner in two TDD cycles.
+
+Cycle 1: `pi/src/core/commands/registry.ts` has a `COMMANDS` table mapping each of the 23 tool-contract commands to `{kind, handler}`; kind is `init`, `check-layout` or `root` (the init / check-layout / located-root split). Each command's handler lives in its own stub module so T-113 to T-119 edit only their own module. `handler.ts` holds the shared types plus `notImplemented` / `isStub`, which avoids a circular import with the registry.
+
+Cycle 2: `pi/test/helpers/parity-runner.ts` implements the T-088 format, mirroring `cli/tests/parity_support.py`: discovers cases by `case.json`; loads `lock-sentinels.json` and excludes only those literal paths from the after-tree; unsets `AI_TEAM_ROOT` unless the case sets it, sets `AI_TEAM_TODAY` / `AI_TEAM_FRAMEWORK_VERSION` / `GIT_CEILING_DIRECTORIES`; materialises the before-tree in a temp dir; normalises only the root path (results and file text); drops hints; compares status/payload/message and the after-tree; emits an LCS line diff on mismatch. `parity.test.ts` covers AC-1 and AC-3 with throwaway fixture roots and fake registries, then generates one test per shared fixture. Cases whose command is still a stub become `it.todo` and are never run (192 todo, matching `ls -d fixtures/parity/*--* | wc -l`). Names start with the case directory name so `-t` filters by prefix.
+
+Result: typecheck clean; 18 files, 385 tests pass, 192 todo. Handlers are synchronous like the core; the runner uses `process.env` and no `chdir`.
+
+Rejected: helpers in `registry.ts` (circular import); detecting stubs by calling and catching (runs the code; a `WeakSet` marker is used instead).
+
+Touched outside the listed files, necessarily: `handler.ts`, `test/helpers/parity-runner.ts` (keeps `parity.test.ts` short), and `test/locator.test.ts` (its `process.cwd` source scan now recurses into `commands/` and filters to `.ts`; the check itself is unchanged).
+
+For later tasks: each implementer replaces its `notImplemented(...)` stub, after which its cases become real comparisons. The runner has not yet been exercised against a real handler on a shared fixture, so the first implementer may find edge cases (tree ordering, normalisation). Tree entries sort by JS code-unit order vs Python code point; paths are almost certainly ASCII, but T-113 to T-119 should confirm.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
