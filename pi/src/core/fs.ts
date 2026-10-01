@@ -1,4 +1,12 @@
-import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  realpathSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { basename, dirname, join, resolve } from "node:path";
 import { isErrnoCode } from "./errno.js";
 import {
   dumpFrontmatter,
@@ -79,6 +87,31 @@ function writeAtomically(path: string, content: string): void {
 }
 
 /**
+ * Absolute path with symlinks resolved as far as the path exists, like Python's `Path.resolve()`.
+ * The part that does not exist yet is appended unchanged.
+ */
+function resolveExistingPrefix(path: string): string {
+  const absolute = resolve(path);
+  try {
+    return realpathSync(absolute);
+  } catch (error) {
+    if (!isErrnoCode(error, "ENOENT")) throw error;
+    const parent = dirname(absolute);
+    return parent === absolute ? absolute : join(resolveExistingPrefix(parent), basename(absolute));
+  }
+}
+
+/** Mirrors the Python field-name heuristic; a change request has the same fields as an ADR. */
+function inferKind(text: string): ArtifactKind {
+  const parts = text.split("---");
+  const frontmatter = parts.length >= 3 ? (parts[1] ?? "") : "";
+  if (frontmatter.includes("severity:")) return "bug";
+  if (frontmatter.includes("assigned-role:")) return "task";
+  if (frontmatter.includes("author:")) return "spec";
+  return "adr";
+}
+
+/**
  * Parses an artifact file.
  * @throws ArtifactNotFound when `path` does not exist.
  * @throws FrontmatterError when the frontmatter is absent or malformed.
@@ -103,5 +136,38 @@ export function writeArtifact(
       `Artifact already exists at ${path}; pass overwrite=True to replace it.`,
     );
   }
+  writeAtomically(path, dumpFrontmatter(model, body));
+}
+
+/**
+ * Renames `source` to `destination`; a no-op when both resolve to the same path.
+ * @throws ArtifactNotFound when `source` does not exist.
+ * @throws ArtifactExists when `destination` already exists.
+ */
+export function moveArtifact(source: string, destination: string): void {
+  const resolvedSource = resolveExistingPrefix(source);
+  const resolvedDestination = resolveExistingPrefix(destination);
+  if (resolvedSource === resolvedDestination) return;
+  if (!existsSync(resolvedSource)) {
+    throw new ArtifactNotFound(`Source artifact not found: ${resolvedSource}`);
+  }
+  if (existsSync(resolvedDestination)) {
+    throw new ArtifactExists(
+      `Destination already exists: ${resolvedDestination}; cannot move artifact there.`,
+    );
+  }
+  renameSync(resolvedSource, resolvedDestination);
+}
+
+/**
+ * Rewrites the `status` frontmatter field, keeping comments, key order and the body.
+ * The artifact kind is inferred from the frontmatter field names.
+ * @throws ArtifactNotFound when `path` does not exist.
+ * @throws FrontmatterError when the frontmatter is absent or malformed.
+ */
+export function updateStatus(path: string, newStatus: string): void {
+  const text = readText(path, `Artifact file not found: ${path}`);
+  const { model, body } = readArtifact(path, inferKind(text));
+  model.status = newStatus;
   writeAtomically(path, dumpFrontmatter(model, body));
 }
