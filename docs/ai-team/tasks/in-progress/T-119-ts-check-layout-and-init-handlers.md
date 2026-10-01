@@ -64,6 +64,9 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+I ran the scaffold sync first and read the Python `check_layout.py` and `init.py` as the reference. `check-layout.ts` ports `_repository_root` and adapts `layout.ts`'s `checkLayout` into the payload shape the fixtures expect. Its `resolvePath` duplicates a private helper in `layout.ts`. I did that to stay inside Files to Touch, instead of exporting the helper. `init.ts` ports `init_repository` with `tools=[]`, no confirm callback and no `.claude`/`.codex` copying. It sorts planned files by path components to match Python's `sorted(Path)` order, and writes the marker with `smol-toml`'s `stringify`, whose output matches the fixtures byte for byte. Reviewers should check that dry-run refusal returns the payload together with the message, and that `exists` takes precedence over `would-write` and `created` unless `force` is set. Both handlers were committed separately. Nothing remains, and I rejected no alternative approaches.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
