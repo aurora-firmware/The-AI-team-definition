@@ -103,3 +103,15 @@ Failed check:
 Non-blocking observations:
 - Python 3.11+ `date.fromisoformat` also accepts `20260203` and `2026-W05-1`. The TS `today()` accepts only strict `YYYY-MM-DD` (real calendar dates, so `2026-02-31` is rejected as in Python). This matches the spec/fixture contract (`YYYY-MM-DD`) and the shared error text, so no change is required.
 - Python raises `ValueError` for a bad override and TS raises `AiTeamError`; acceptable for the adapter to map.
+
+### Review Verdict — 2026-10-01 (review cycle 2)
+PASS
+
+Both stages passed. The cycle-1 finding is resolved.
+
+- Fix: `pi/src/core/errno.ts` adds `isErrnoCode(error: unknown, code: string)`, narrowing with `instanceof Error && "code" in error && error.code === code`. `runtime.ts` and `templates.ts` use it for the ENOENT check. No `as` assertions, non-null assertions, or `@ts-` directives remain in `pi/src/core` (grep-verified).
+- Tests: `errno.test.ts` covers matching code, different code, no code, and non-Error values. `runtime.test.ts` and `templates.test.ts` each have a directory-as-file case (EISDIR) showing non-ENOENT failures are rethrown and not turned into a sync hint.
+- Scope: `errno.ts` and its test are outside Files to Touch. Accepted: it is a small, justified helper that the cycle-1 finding asked for, and it keeps `result.ts` focused.
+- Regressions and checks (clean worktree of the task branch): sync leaves no tracked diff; `uv run pytest` 1022 passed; ruff format and check clean; `npm ci`, `npm run typecheck` pass; `npm test` 44 passed (7 files). Cycle-1 AC-1 to AC-4 evidence is unchanged by the diff.
+
+Non-blocking: the two EISDIR tests were green before the helper existed (regression guards), as the Developer stated.
