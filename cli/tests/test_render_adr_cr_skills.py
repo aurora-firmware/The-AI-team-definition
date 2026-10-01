@@ -19,7 +19,6 @@ from tests.skill_rendering import (
 ADR_CR_SKILLS = ("new-adr", "change-request")
 PI_SKILLS = CLI_ROOT.parent / "pi" / "resources" / "skills"
 _MARKER = re.compile(r"\{\{.*?\}\}")
-_FENCE = re.compile(r"```.*?```", re.DOTALL)
 
 _CLAUDE_DESCRIPTIONS = {
     "new-adr": "Create a new Architecture Decision Record via the ai-team CLI",
@@ -43,10 +42,7 @@ def _rendered_for_pi(skill: str) -> str:
 
 @pytest.mark.parametrize("skill", ADR_CR_SKILLS)
 def test_body_has_no_cli_reference_outside_a_marker(skill) -> None:
-    # A pi fence may hold only command markers, so the Output Format placeholder
-    # inside a plain text fence cannot carry a marker and is excluded here.
-    unfenced = _FENCE.sub("", _source_text(skill, "body.md"))
-    unmarked = _MARKER.sub("", unfenced)
+    unmarked = _MARKER.sub("", _source_text(skill, "body.md"))
 
     assert "ai-team" not in unmarked
     assert not re.search(r"\bCLI\b", unmarked)
@@ -144,3 +140,10 @@ def test_pi_header_names_the_tool() -> None:
         skill_md = (PI_SKILLS / skill / "SKILL.md").read_text(encoding="utf-8")
 
         assert "via the ai_team tool" in skill_md.split("---")[1]
+
+
+@pytest.mark.parametrize("skill", ADR_CR_SKILLS)
+def test_pi_skill_file_has_no_cli_token(skill) -> None:
+    pi_skill = (PI_SKILLS / skill / "SKILL.md").read_text(encoding="utf-8")
+
+    assert not re.search(r"\bCLI\b", pi_skill)

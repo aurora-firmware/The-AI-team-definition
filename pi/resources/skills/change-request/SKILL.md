@@ -78,7 +78,7 @@ Artifacts:
 - <change-request file created>
 
 Evidence:
-- <CLI command result or reason not run>
+- <ai_team tool command result or reason not run>
 
 Obstacles Encountered:
 - <missing input, unresolved scope issue, or "none">
