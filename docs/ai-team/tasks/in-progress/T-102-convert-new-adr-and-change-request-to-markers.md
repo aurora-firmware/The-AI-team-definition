@@ -79,6 +79,15 @@ Converted the new-adr and change-request skills to markers, following the T-101 
 - **Rest of the session.** I ran the sync and committed the regenerated pi resources (`7aaa880`). The full Python suite, ruff, the pi typecheck and pi tests all pass, and the claude/codex scaffold diff against the merge-base is empty.
 - **Remaining.** Nothing for this task. If the unmarked fence line is judged an AC-1 gap, fixing it needs either a sync change that allows non-marker fences to carry noun markers, or an ADR or spec decision. It is outside this task's files.
 
+### Session 2 — 2026-10-01
+Resolved the Reviewer's AC-1 escalation by applying the Architect's ruling of 2026-10-01: noun and flag markers are allowed in fences that contain no command marker. A fence is a command fence if and only if it contains a `{{ai-team ` command marker. `{{ai-team-cli|` and `{{ai-team-flag ` do not match that test.
+- **Sync change.** In `cli/scripts/skill_markers.py`, `render_fence` now returns the fence unchanged when its body has no `{{ai-team ` command marker. The inline pass then renders any noun or flag markers inside it. Command fences behave as before: only command-marker lines are allowed, they are rendered as prose, and anything else fails.
+- **Tests.** I added two tests in `test_skill_markers_pi.py`: a `text` fence with a noun marker keeps its fence and renders "ai_team tool", and a flag marker in a non-command fence renders. Both failed before the change. The existing mixed-fence failure tests (command plus noun marker, markers plus shell lines) still pass.
+- **Source.** The change-request Evidence line is now `- <{{ai-team-cli|CLI|ai_team tool}} command result or reason not run>`, using pi text without backticks.
+- **AC-1 test.** I removed the fence stripping from the AC-1 test and added a check that the pi `SKILL.md` files for new-adr and change-request contain no `\bCLI\b` token. The frontmatter descriptions are already governed by the header noun marker, so they pass.
+- **Verification.** Sync succeeded and the regenerated pi resources are committed (46ed07d). V-GOLD is empty, so claude and codex bytes are unchanged. The Python suite (1002 passed), ruff, the pi typecheck and the pi tests all pass.
+- **Remaining.** Nothing. Later Phase 2 conversions can use the same non-command-fence rule.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
