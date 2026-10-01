@@ -1,7 +1,7 @@
 [claude]
 header = """---
 name: new-adr
-description: Create a new Architecture Decision Record via the ai-team CLI
+description: Create a new Architecture Decision Record via {{ai-team-cli|the ai-team CLI|the ai_team tool}}
 argument-hint: "[optional: decision title]"
 allowed-tools: Read, Write, Bash
 ---"""
@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Bash
 [codex]
 header = """---
 name: new-adr
-description: Create a new Architecture Decision Record via the ai-team CLI
+description: Create a new Architecture Decision Record via {{ai-team-cli|the ai-team CLI|the ai_team tool}}
 argument-hint: "[optional: decision title]"
 allowed-tools: Read, Write, Bash
 ---"""

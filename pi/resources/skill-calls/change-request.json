@@ -1,1 +1,6 @@
-[]
+[
+  {
+    "command": "change-request new",
+    "title": "<title>"
+  }
+]
