@@ -61,6 +61,9 @@ rejected, decisions made, what remains for next session.
 Start every session by reading the entries below.
 The final entry serves as the handoff to the reviewer. -->
 
+### Session 1 — 2026-10-01
+I ported `commands/report.py` to `pi/src/core/commands/report.ts`, test-first with a new `pi/test/report-handler.test.ts`. The handler reuses `statusPayload` from `status.ts` and `listMarkdownFiles` from `artifact-files.ts`, loads the bundled report template, and applies the same ordered placeholder substitutions as the Python reference. It writes UTF-8 and returns `{path, content}`. The default destination is `docs/reports/progress-report-<today>.md`, with the date from the `runtime.ts` clock. A relative `out` is resolved against `root.repo`, not `process.cwd()` (G2 N12). `RootHandler` receives only the located root, so `root.repo` stands in for the start directory. Reviewers should check this choice. The `report--default`, `report--empty-project` and `report--with-out` parity cases pass byte-identical, and typecheck and the full suite are green. I did not edit `status.ts` or any file outside `report.ts` and the new test file. I tried no alternatives that were rejected.
+
 ## Review
 
 <!-- Reviewer: append verdict here after each review cycle.
