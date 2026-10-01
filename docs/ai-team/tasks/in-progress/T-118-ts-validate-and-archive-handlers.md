@@ -76,3 +76,20 @@ PASS | FAIL | ESCALATE
 - For PASS: brief confirmation that both stages passed.
 - For ESCALATE: design issue and why normal Developer fixes cannot resolve it.
 -->
+
+### Review Verdict — 2026-10-01
+PASS
+
+Stage 1 (acceptance criteria):
+- AC-1: met. `npm test -- parity -t "archive--"` (13 pass) and `-t "validate--"` (15 pass) are green.
+- AC-2: met. The cutoff is computed in UTC calendar days and compared with strict `created < cutoff`. This matches `cli/src/ai_team/commands/archive.py`, and the handler test covers the boundary.
+- AC-3: met. A dry run skips `mkdirSync` and `moveArtifact`. The test asserts the archive directory is not created and the source files remain.
+- AC-4: met. `npm run typecheck` reports zero errors. The full `npm test` run gave 601 passed, 36 todo.
+- Only the two handler files were changed, plus tests. The `pi/test/parity.test.ts` edit is justified: two tests relied on `archive` being a stub. They now use a locally built `notImplemented` stub, and the assertions are unchanged in intent.
+
+Stage 2 (quality): the handlers delegate to the shared helpers (`validateProject`, `listMarkdownFiles`, `moveArtifact`, `today`). Success and failure paths are covered by tests, and the tests use per-test temp directories and restore the env var.
+
+Non-blocking observations:
+- A bug or task with no `created` date throws `AiTeamError` with a remediation hint. This is a reasonable replacement for Python's `TypeError`.
+- A malformed but present `created` string is compared lexically. Python's `date.fromisoformat` would raise an error instead. This is an edge case outside the fixtures.
+- `findings as unknown as Record<string, unknown>` is a type cast needed to carry the list payload. It is acceptable, but a payload type that allows arrays would be cleaner later.
