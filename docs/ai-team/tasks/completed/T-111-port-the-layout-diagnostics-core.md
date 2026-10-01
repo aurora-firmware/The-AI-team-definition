@@ -1,7 +1,7 @@
 ---
 id: T-111
 title: Port the layout-diagnostics core
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
