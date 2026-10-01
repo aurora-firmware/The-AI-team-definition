@@ -1,7 +1,7 @@
 ---
 id: T-107
 title: Port filesystem layer and slug generation
-status: in-progress
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
