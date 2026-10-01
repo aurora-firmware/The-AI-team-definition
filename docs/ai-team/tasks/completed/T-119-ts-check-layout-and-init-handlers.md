@@ -1,7 +1,7 @@
 ---
 id: T-119
 title: TS check-layout and init handlers
-status: pending
+status: completed
 priority: high
 assigned-role: developer
 created: '2026-09-30'
