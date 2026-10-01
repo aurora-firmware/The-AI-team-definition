@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isErrnoCode } from "./errno.js";
 import { AiTeamError } from "./result.js";
 
 /** Override names shared with the Python CLI (`ai_team.core.runtime`). */
@@ -61,7 +62,7 @@ export function frameworkVersion(
   try {
     return readFileSync(versionFile, "utf8").trim();
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+    if (isErrnoCode(error, "ENOENT")) {
       throw new AiTeamError(
         `Framework version file not found at ${versionFile}.`,
         `Run the sync (cd cli && python scripts/sync_init_scaffolds.py) to generate it, or set ${FRAMEWORK_VERSION_ENV_VAR}.`,

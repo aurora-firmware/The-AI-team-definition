@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isErrnoCode } from "./errno.js";
 import { AiTeamError } from "./result.js";
 
 export type TemplateKind = "task" | "bug" | "spec" | "adr" | "report" | "change-request";
@@ -40,7 +41,7 @@ export function loadTemplate(
   try {
     return readFileSync(path);
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+    if (isErrnoCode(error, "ENOENT")) {
       throw new AiTeamError(
         `Template file not found at ${path}.`,
         "Run the sync (cd cli && python scripts/sync_init_scaffolds.py) to generate pi/resources.",
