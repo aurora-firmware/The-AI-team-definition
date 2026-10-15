@@ -1,7 +1,7 @@
 ---
 name: spec-breakdown
 description: Decompose an approved specification into atomic, independent tasks. Use when a spec needs to be broken into executable work units.
-allowed-tools: Read, Grep, Glob, Write, Agent, Skill(new-task)
+allowed-tools: Read, Grep, Glob, Write, Bash, Agent, Skill(new-task), Skill(git-conventions)
 effort: high
 ---
 
@@ -18,6 +18,11 @@ Gate 2 technical readiness is owned by the `spec-breakdown-review` skill.
 - **Existing tasks** — current tasks in `project/tasks/` to avoid conflicts or duplication.
 
 ## Procedure
+
+### Step 0: Check Out the Planning Branch
+The breakdown runs on the planning branch of the spec or change-request it decomposes (`plan/<id>-…`), never on `dev-agent`.
+If that branch exists, run the before-point Workspace Hygiene check from the `git-conventions` skill and check it out.
+If it does not exist — the approved spec is already on `dev-agent` — open one as described in **Opening a Planning Branch** in the `git-conventions` skill.
 
 ### Step 1: Identify Components
 Read the specification and list every distinct unit of work.
@@ -56,7 +61,7 @@ Verify isolation: do any two tasks modify the same file? If yes, add a dependenc
 Verify atomicity: can each task be completed in a single agent pass? If a task feels too large, split it.
 
 ### Step 5: Place Tasks
-Save all task files to `project/tasks/pending/`.
+Save all task files to `project/tasks/pending/` and commit them on the planning branch: `docs(tasks): add task plan for <spec-or-cr-id>`.
 
 ### Step 6: Architect Preflight
 **Spawn the Architect subagent** with this prompt:
@@ -69,12 +74,22 @@ Save all task files to `project/tasks/pending/`.
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 Wait for the Architect to complete.
-If the Architect requests Planner revisions, address them and re-trigger the preflight.
+If the Architect requests Planner revisions, address them, commit them on the planning branch, and re-trigger the preflight.
 If the Architect escalates because the approved specification must change, stop and return the escalation to the human using the Phase 2 human report template defined in the `escalation-review` skill.
+
+### Step 7: Merge the Planning Branch
+Only after the Architect returns `PASS`:
+1. Run the before-point Workspace Hygiene check, then `git checkout dev-agent`.
+2. Run `git merge --no-ff plan/<id>-<slug> -m "chore(plan): merge <id> <short-description>"`.
+   If the merge conflicts, abort it with `git merge --abort` and stop: report the conflicting planning files to the human. Do not resolve planning conflicts automatically.
+3. Run the after-point Workspace Hygiene check.
+4. Delete the planning branch with `git branch -d plan/<id>-<slug>`. If `-d` refuses, stop and report — never force deletion.
+
+Until this merge, the tasks are invisible to `/dev-loop`, and `dev-agent` carries none of the spec or change-request changes.
 
 ## Output Format
 
-- A set of validated task files in `project/tasks/pending/`, approved by the Architect preflight.
+- A set of validated task files in `project/tasks/pending/` on `dev-agent`, approved by the Architect preflight and merged from the planning branch together with the spec or change-request they implement.
 - The plan is ready for the human to invoke `/dev-loop` — no further human review of the task plan is required.
 
 ## Quality Criteria

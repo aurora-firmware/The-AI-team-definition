@@ -178,7 +178,8 @@ Integration happens per-task inside the development loop: after each Reviewer PA
 If integration fails because the task branch introduces a regression, the integration procedure reverts the merge, files a bug report that records the preserved task branch as `source_branch`, and leaves `dev-agent` clean.
 The development loop stops until the regression bug is fixed on a branch based from that preserved task branch.
 
-Once the queue is empty and all tasks are in `completed/`, the development loop produces a status summary for Gate 5 by invoking the `status-report` skill.
+Once the queue is empty and all tasks are in `completed/`, the development loop ends with a short run summary in the chat and does not write a report.
+Reporting is on demand: for Gate 5 the human runs `/status-report`, which produces the status summary.
 The status summary lists the approved specification, completed tasks, unresolved bugs by severity, and latest integration-test result.
 The human reviews that status summary and approves the merge to `main` (Gate 5).
 This is a sign-off — the human confirms the outcome matches the spec intent, not individual code diffs.
@@ -292,7 +293,8 @@ Full rules and commit format: `ai-process/guidelines/git-conventions.md`.
 
 **Branches:**
 - `main` — human-only, production releases.
-- `dev-agent` — integration target and canonical lifecycle state branch. The integration procedure merges task branches here during the development loop; the Integrator handles manual merges and conflict resolution. Planners, Reviewers, Architects, and active loops commit docs/specs/task/bug state here.
+- `dev-agent` — integration target and canonical lifecycle state branch. The integration procedure merges task branches here during the development loop; the Integrator handles manual merges and conflict resolution. The Planner merges planning branches here after Gate 2. Reviewers, Architects, and active loops commit lifecycle state here.
+- `plan/S-NNN-short-description` or `plan/CR-NNN-short-description` — planning branch for one spec or change-request. It carries the spec or change-request, spec amendments, ADRs raised by its consistency review, and its task plan, and is merged into `dev-agent` only after Gate 2 passes.
 - `task/T-NNN-short-description` — implementation branch for a single task, deleted after successful integration.
 - `bug/B-NNN-short-description` — implementation branch for a single bug, created by the bug-fix loop from `dev-agent` or the bug report's `source_branch`, deleted after successful integration.
 
@@ -303,6 +305,8 @@ Full rules and commit format: `ai-process/guidelines/git-conventions.md`.
 - The integration procedure is also the standard path for merging bug branches into their target branch.
 - Task and bug lifecycle files are canonical on `dev-agent`; implementation branches are not the source of truth for lifecycle state.
 - Branches blocked at review stay open on their task branch until the blocker is resolved.
+- Spec and change-request work never lands on `dev-agent` before its task plan passes Gate 2.
+- Every orchestrating procedure applies the Workspace Hygiene check from the git conventions before it starts, before every branch switch, after every merge, and before it ends. No procedure leaves untracked files or uncommitted changes behind.
 
 ## Escalation
 

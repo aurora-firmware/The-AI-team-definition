@@ -1,7 +1,7 @@
 ---
 name: planner
 description: Creates approved specifications with the human, then decomposes approved specs into atomic tasks. Use for feature planning or task breakdown; caller must provide the feature request or approved spec path and expected output.
-tools: Read, Write, Edit, Glob, Grep
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: opus
 skills: brainstorm spec-breakdown new-spec new-task change-request git-conventions
 ---
@@ -22,7 +22,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 - `new-spec` — to create specification documents through the CLI-backed spec creation flow.
 - `new-task` — to create task files during plan decomposition through the CLI-backed task creation flow.
 - `change-request` — to create change-request artifacts when approved scope needs to be revised.
-- `git-conventions` — used whenever finalizing specification or task files on `dev-agent`.
+- `git-conventions` — used whenever opening a planning branch, finalizing specification, change-request, or task files on it, and merging it into `dev-agent` after Gate 2.
 
 ## Decision Authority
 

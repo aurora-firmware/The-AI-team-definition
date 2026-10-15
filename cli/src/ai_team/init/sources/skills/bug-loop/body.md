@@ -19,7 +19,18 @@ Bug files are canonical lifecycle state on `dev-agent`.
 Bug branches are for implementation artifacts only; task-regression bug branches may not contain the bug file because they are based on preserved task branches.
 The bug-fix loop passes canonical bug content to Developer and Reviewer, then records Diagnosis Log, Work Log, and Review Verdict state back on `dev-agent`.
 
-## Procedure
+## Workspace Hygiene
+
+The loop applies the **Workspace Hygiene** check from the `git-conventions` skill at these points:
+
+- **Startup** — before claiming a bug, on the branch the loop starts from.
+- **Before every branch switch** — a checkout refused because of a dirty tree is not a hard stop; run the check, then retry the checkout once.
+- **After every `integrate` invocation** — whether it succeeded or stopped.
+- **Before the loop ends** — in Step 8 and before reporting any hard stop.
+
+Changes parked by this run are restored when the loop ends, on the branch where they were parked.
+A run never ends with untracked files or uncommitted changes that the run itself created.
+
 
 ### Step 1: Check the Queue
 
@@ -31,8 +42,8 @@ If `$ARGUMENTS` is non-empty:
 
 If `$ARGUMENTS` is empty, list all files in `project/bugs/open/` (ignore `.gitkeep`) as the queue.
 
-If the queue is empty, proceed directly to **Step 8: Loop Complete** so the canonical
-Gate 5 status report is produced before the loop stops.
+If the queue is empty, proceed directly to **Step 8: Loop Complete** so the workspace is checked
+and the run summary is returned before the loop stops.
 
 ### Step 2: Pick the Next Bug
 
@@ -72,9 +83,9 @@ If the Developer returns `ESCALATE`, go directly to **On ESCALATE**.
 If the Developer does not return a Diagnosis Log handoff entry, stop with `BLOCKED` and report the missing handoff.
 
 Record the Diagnosis Log handoff:
-1. Switch to `dev-agent`.
+1. Switch to `dev-agent`. Bug files the Developer filed through `new-bug` are untracked, so they carry over the switch.
 2. Append the Developer's Diagnosis Log handoff under `## Diagnosis Log` in `project/bugs/in-progress/<bug-file>`.
-3. Commit the lifecycle update: `chore(bugs): record B-NNN diagnosis`.
+3. Commit the lifecycle update, together with any bug files the Developer listed under `Artifacts`: `chore(bugs): record B-NNN diagnosis`.
 
 ### Step 5: Implementation Cycle
 
@@ -95,9 +106,9 @@ Wait for the Developer to complete before continuing.
 If the Developer does not return a Work Log handoff entry, stop with `BLOCKED` and report the missing handoff.
 
 Record the Work Log handoff:
-1. Switch to `dev-agent`.
+1. Switch to `dev-agent`. Bug files the Developer filed through `new-bug` are untracked, so they carry over the switch.
 2. Append the Developer's Work Log handoff under `## Work Log` in `project/bugs/in-progress/<bug-file>`.
-3. Commit the lifecycle update: `chore(bugs): record B-NNN work log`.
+3. Commit the lifecycle update, together with any bug files the Developer listed under `Artifacts`: `chore(bugs): record B-NNN work log`.
 
 ### Step 6: Review Cycle
 
@@ -174,15 +185,16 @@ If the Architect cannot resolve it, proceed to Phase 2.
 
 ### Step 8: Loop Complete
 
-When the queue is fully drained (Step 1 finds no open bugs), invoke `Skill(status-report)` to
-produce the canonical Gate 5 summary. The status-report skill runs `ai-team status`, scans project
-state directories, and writes the full progress report — that output is the authoritative end-of-run
-status.
+Reporting is on demand. Do not invoke the `status-report` skill and do not write a report file.
+The human runs `/status-report` when they want the full Gate 5 summary.
 
-After the status-report output, append the following loop-specific run details as supplemental context:
-- Bugs resolved and merged this run (list with bug IDs and merge commits)
-- Any escalated bugs still in `in-progress/`
-- Any integration failures that stopped the loop mid-run
+1. Run the after-point Workspace Hygiene check and restore any changes this run parked.
+2. Return a short run summary in the chat — a few lines, not a report:
+   - Bugs resolved and merged this run, with bug IDs and merge commits
+   - Bugs escalated and still in `in-progress/`, with the reason
+   - Regression bugs filed this run, and any integration failure that stopped the loop
+   - Changes parked or restored, and `.gitignore` patterns added, by the hygiene check
+   - The next suggested action — for example `/bug-loop` for filed regressions, or `/status-report` for Gate 5 sign-off context when the queue is empty
 
 ## Cycle Counter Reset
 

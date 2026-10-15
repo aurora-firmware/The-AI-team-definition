@@ -21,7 +21,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 - `architecture-consistency-review` — checks a created or changed spec, ADR, or change-request against every approved spec and accepted ADR, and routes amendments for any drift. Run whenever such an artifact changes. This is separate from Gate 2, where `spec-breakdown-review` independently reviews task-plan consistency.
 - `escalation-review` — analyses blocked work after role self-recovery and either issues guidance or escalates to human.
 - `new-adr` — records architecture-affecting decisions in `project/decisions/` through the CLI-backed ADR creation flow.
-- `git-conventions` — used whenever recording or amending ADRs on `dev-agent`.
+- `git-conventions` — used whenever recording or amending ADRs: on the active planning branch during planning reviews, otherwise on `dev-agent`.
 
 ## Decision Authority
 

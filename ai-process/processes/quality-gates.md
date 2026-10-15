@@ -97,6 +97,7 @@ Before the development loop claims its first task it discovers the documented ba
 
 **When:** After the task queue is empty and all tasks are in `completed/`.
 **Evaluator:** Human.
+**Input:** The status summary the human requests on demand with `/status-report`. The loops do not produce it automatically.
 **Pass criteria:**
 - Integration tests are green.
 - No open bugs with severity `critical` or `high`.

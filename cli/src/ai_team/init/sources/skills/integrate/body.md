@@ -19,6 +19,7 @@ Provided as `$ARGUMENTS`:
    If the input is already a branch name, set it as `source-branch`.
 3. Confirm the source branch exists: `git branch | grep <source-branch>`. If not found, stop with the same message.
 4. Confirm the destination branch exists: `git branch | grep <destination>`. If not found, stop with: "Destination branch '<destination>' not found."
+5. Run the before-point **Workspace Hygiene** check from the `git-conventions` skill on the current branch. Integration switches branches several times, so it must start from a clean tree.
 
 ### Step 2: Find the Canonical Work Item and Verification Command
 
@@ -153,8 +154,9 @@ Evaluate the result:
    git revert -m 1 HEAD --no-edit
    ```
    Commit message: `chore(<kind>): revert merge of <source-branch> — regression in <test-names>`
-5. Switch back to the source branch: `git checkout <source-branch>`.
-6. Stop and report:
+5. Run the after-point Workspace Hygiene check on the destination branch — the test runs in Steps 4 and 6 commonly leave generated artifacts behind.
+6. Switch back to the source branch: `git checkout <source-branch>`.
+7. Stop and report:
    - Which regressions were found.
    - Which bug IDs were created.
    - That the merge was reverted and the source branch was not deleted.
@@ -195,7 +197,11 @@ Reached only when both Step 4 and Step 6 tests pass.
    - Forced deletion is forbidden — do not escalate to the `-D` flag.
    - Instruct the human to inspect the branch and delete it manually once satisfied it is safe.
 
-4. **Report success**:
+4. **Run the after-point Workspace Hygiene check** on the destination branch.
+   The test runs in Steps 4 and 6 commonly leave generated artifacts behind; ignore or park them as the check directs.
+   Then restore any changes parked in Step 1.
+
+5. **Report success**:
    - Verify the lifecycle move actually landed — working-tree cleanliness alone is not
      enough, because a still-tracked old path can be clean:
      - Old path no longer tracked: `git ls-files project/tasks/in-progress/<task-file>`
@@ -209,7 +215,8 @@ Reached only when both Step 4 and Step 6 tests pass.
    - Source branch merged and deleted.
    - Work item ID and title when available.
    - Test counts: N passed before merge, N passed after merge.
-   - Destination branch is clean.
+   - Destination branch is clean: `git status --porcelain --untracked-files=all` is empty.
+   - Any `.gitignore` patterns added and any changes parked or restored by the hygiene check.
 
 ## Hard Stops (Do Not Continue)
 
@@ -222,6 +229,8 @@ Reached only when both Step 4 and Step 6 tests pass.
 | Pre-merge tests fail (Step 4) | Stop — work item stays `in-progress/`, branch stays open, return to Developer |
 | Merge conflict that merge-conflicts cannot solve | Stop — escalate to architect |
 | Regressions found post-merge (Step 6) | File bugs, revert merge, stop |
+
+Before reporting any stop above, run the after-point Workspace Hygiene check and restore any changes parked in Step 1.
 
 ## Commit Conventions
 

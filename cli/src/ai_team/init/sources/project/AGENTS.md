@@ -9,7 +9,7 @@ by agent workflows.
 - `tasks/` contains task lifecycle records for implementation work.
 - `bugs/` contains bug lifecycle records for diagnosis and fixes.
 - `decisions/` contains ADRs and design amendments.
-- `reports/` contains generated status and gate reports.
+- `docs/reports/` contains status reports generated on demand; it is git-ignored by default.
 - `docs/` contains project-local docs for commands, conventions, and policies.
 
 Agents should update these folders through the documented workflow so project

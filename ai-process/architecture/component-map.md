@@ -37,7 +37,7 @@ This document maps the ai-process roles, procedures, processes, and gates to the
 | New Task | Create a task file in `project/tasks/pending/` from the standard template | Planner | `.claude/skills/new-task/SKILL.md` |
 | New Bug | Create an evidence-rich bug report in `project/bugs/open/` from the standard template | Human, Developer, Reviewer, Integrate | `.claude/skills/new-bug/SKILL.md` |
 | New ADR | Create an architecture decision record in `project/decisions/` from the standard template | Architect | `.claude/skills/new-adr/SKILL.md` |
-| Status Report | Summarize specifications, tasks, bugs, decisions, and integration state for Gate 5 | Development Loop, Bug-Fix Loop, Human | `.claude/skills/status-report/SKILL.md` |
+| Status Report | Summarize specifications, tasks, bugs, decisions, and integration state for Gate 5, on demand | Human | `.claude/skills/status-report/SKILL.md` |
 
 ## Processes
 

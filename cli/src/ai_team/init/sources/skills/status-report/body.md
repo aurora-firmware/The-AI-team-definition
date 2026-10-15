@@ -1,5 +1,8 @@
 # Status Report
 
+Reporting is for humans and runs only on demand: the human invokes `/status-report`.
+The development and bug-fix loops never invoke this skill — they end with a short run summary instead.
+
 ## Input Requirements
 
 - **Project state directories** — `project/specs/`, `project/tasks/`, `project/bugs/`, and `project/decisions/`.
@@ -76,9 +79,11 @@ Use `ai-team status` output as the inline summary. If the command cannot run, ma
 
 If there are blocked tasks or critical/high bugs, add a `Recommended Actions` section suggesting next steps.
 
-### Step 6: Write Full Report
+### Step 6: Write Full Report (Only When Asked)
 
-Run the CLI report command from the repository root:
+Skip this step unless the human explicitly asked for a report file. The inline summary is the default output.
+
+When a file is requested, run the CLI report command from the repository root:
 
 ```bash
 ai-team report
@@ -86,11 +91,13 @@ ai-team report
 
 By default, it writes `project/docs/reports/progress-report-[today's date].md` and creates `project/docs/reports/` if needed.
 The full report includes completed tasks, in-progress details, blocked items with action needed, bug listing, next actions, and risks or concerns.
+`project/docs/reports/` is ignored by the scaffolded `project/.gitignore`, so the file does not dirty the working tree.
+Tell the human the file path. Commit it only if the human asks and the project tracks reports.
 
 ## Output Format
 
 - **Inline summary:** Gate 5 status summary using the markdown structure above.
-- **Report file:** `project/docs/reports/progress-report-[today's date].md`.
+- **Report file:** `project/docs/reports/progress-report-[today's date].md`, only when the human asked for one.
 - **Evidence:** latest integration result or a clear statement that no integration evidence was found.
 
 ## Quality Criteria
@@ -106,4 +113,4 @@ The full report includes completed tasks, in-progress details, blocked items wit
 - Treating Gate 5 as a code review instead of a status sign-off.
 - Omitting critical or high severity open bugs.
 - Reporting green status without integration evidence.
-- Writing only the inline summary and forgetting the full report file.
+- Writing a report file nobody asked for — the inline summary is the default output.

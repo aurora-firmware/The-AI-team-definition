@@ -36,33 +36,38 @@ def test_skill_invocation_targets_allow_model_invocation() -> None:
                 )
 
 
-def test_status_report_is_model_invocable_in_generated_scaffolds() -> None:
-    """Generated Claude and Codex status-report skills must remain callable."""
+def test_status_report_is_human_invoked_only_in_generated_scaffolds() -> None:
+    """Reporting is on demand: generated status-report skills disable model invocation."""
     for tool in TOOLS:
         scaffold = SCAFFOLDS / tool / "skills" / "status-report" / "SKILL.md"
         content = scaffold.read_text(encoding="utf-8")
-        assert not MODEL_INVOCATION_DISABLED.search(content), (
-            f"{tool} status-report scaffold disables model invocation"
+        assert MODEL_INVOCATION_DISABLED.search(content), (
+            f"{tool} status-report scaffold must disable model invocation"
         )
 
 
-def test_loops_invoke_status_report_when_the_queue_drains() -> None:
-    """Both autonomous loops retain the canonical Gate 5 reporting handoff."""
+def test_loops_end_with_run_summary_instead_of_status_report() -> None:
+    """Both loops route an empty queue to Step 8, which returns a chat summary only."""
     for loop_name in ("dev-loop", "bug-loop"):
         body = (SKILL_SOURCES / loop_name / "body.md").read_text(encoding="utf-8")
         queue_step = body.split("### Step 1: Check the Queue", 1)[1].split(
             "### Step 2:", 1
         )[0]
+        loop_complete = body.split("### Step 8: Loop Complete", 1)[1].split("\n## ", 1)[
+            0
+        ]
         for tool, header in _headers(loop_name).items():
-            assert "Skill(status-report)" in header, (
-                f"{loop_name} does not allow status-report invocation for {tool}"
+            assert "Skill(status-report)" not in header, (
+                f"{loop_name} must not be allowed to invoke status-report for {tool}"
             )
         assert "proceed directly to **Step 8: Loop Complete**" in queue_step, (
-            f"{loop_name} does not route an empty full queue to Gate 5 reporting"
+            f"{loop_name} does not route an empty full queue to Step 8"
         )
-        assert "If the queue is empty, stop" not in queue_step, (
-            f"{loop_name} stops before its Gate 5 reporting step"
+        assert "invoke `Skill(status-report)`" not in body, (
+            f"{loop_name} still invokes status-report automatically"
         )
-        assert "invoke `Skill(status-report)`" in body, (
-            f"{loop_name} does not invoke status-report when its queue drains"
+        assert "Do not invoke the `status-report` skill" in loop_complete
+        assert "run summary" in loop_complete
+        assert "Workspace Hygiene" in loop_complete, (
+            f"{loop_name} must check the workspace before it ends"
         )

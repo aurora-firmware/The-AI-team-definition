@@ -114,7 +114,7 @@ Each skill implements a workflow or action defined in the ai-process:
 | **/new-task** | Creates a pending task by invoking `ai-team task new` |
 | **/new-bug** | Creates an evidence-backed bug report by invoking `ai-team bug new`, then fills bug content |
 | **/new-adr** | Creates an Architecture Decision Record by invoking `ai-team adr new`, then fills ADR content |
-| **/status-report** | Summarizes project state by invoking `ai-team status` and writes a report with `ai-team report` |
+| **/status-report** | On demand only: summarizes project state with `ai-team status`, and writes a report file with `ai-team report` only when asked |
 
 ## Agent Platform Compatibility
 

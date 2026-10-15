@@ -488,7 +488,9 @@ def test_init_scaffolds_project_gitignore_ignoring_the_lock_sentinel(tmp_path):
     assert result.exit_code == 0
     gitignore = target / "project" / ".gitignore"
     assert gitignore.is_file()
-    assert gitignore.read_text(encoding="utf-8") == ".ai-team.lock\n"
+    ignored = gitignore.read_text(encoding="utf-8").splitlines()
+    assert ".ai-team.lock" in ignored
+    assert "docs/reports/" in ignored
 
 
 def test_ai_team_lock_sentinel_is_not_untracked_after_task_creation(

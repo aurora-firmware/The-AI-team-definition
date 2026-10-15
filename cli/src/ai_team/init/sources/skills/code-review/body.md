@@ -64,6 +64,7 @@ Switch to `dev-agent`.
 Append to the canonical task or bug file under a `### Review Verdict — [date]` heading.
 The first line of the section must be one of: `PASS`, `FAIL`, or `ESCALATE`.
 Commit the verdict on `dev-agent` using the `git-conventions` skill (commit type `docs` with scope `tasks` or `bugs`, e.g. `docs(tasks): record T-NNN review verdict`).
+Include in the same commit any bug files filed through `new-bug` during this review, so the review leaves no untracked files behind.
 
 **On PASS:** Record the verdict with a brief confirmation that both stages passed. Note any minor observations (non-blocking).
 

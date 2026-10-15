@@ -332,7 +332,8 @@ def test_package_owned_project_gitignore_source_ignores_the_lock_sentinel() -> N
     source_text = source_gitignore.read_text(encoding="utf-8")
     scaffold_text = scaffold_gitignore.read_text(encoding="utf-8")
 
-    assert source_text == ".ai-team.lock\n"
+    assert ".ai-team.lock" in source_text.splitlines()
+    assert "docs/reports/" in source_text.splitlines()
     assert scaffold_text == source_text
 
 

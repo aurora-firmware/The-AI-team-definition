@@ -17,16 +17,17 @@ When invoked directly and required fields are missing, ask only for the missing 
    - Use `$ARGUMENTS` as the title when it is the only provided input.
    - If the title or description is still missing, ask for the missing value.
 
-2. Create the artifact:
-   - Run `ai-team change-request new "<title>" --json`.
+2. Open the planning branch and create the artifact:
+   - Follow **Opening a Planning Branch** in the `git-conventions` skill, running `ai-team change-request new "<title>" --json` at its step 3.
    - Parse the JSON response to capture `id` and `path`.
+   - The change-request, the spec amendments it drives, any ADRs raised by its consistency review, and its task plan are all committed on this planning branch. Nothing reaches `dev-agent` until Gate 2 passes and `spec-breakdown` merges the branch.
 
 3. Open the created file and replace template placeholders with the supplied description.
    - Keep the frontmatter produced by the CLI.
    - Preserve the template structure unless the human explicitly requested a different format.
    - Mark unknown details as `[TODO]` instead of inventing them.
 
-4. Confirm the created file exists and return the CLI response values.
+4. Confirm the created file exists, commit it on the planning branch (`docs(change-requests): add <id>`), and return the CLI response values and the planning branch name.
 
 5. For a newly created CR or an updated CR body, inspect the document for human-answerable `[TODO]` markers.
    - Resolve each human-answerable `[TODO]` marker one at a time with the human.

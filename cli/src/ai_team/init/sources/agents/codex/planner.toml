@@ -21,7 +21,7 @@ Primary skills:
 - Use `new-spec` to create specification documents through the CLI-backed spec creation flow.
 - Use `new-task` to create task files during plan decomposition through the CLI-backed task creation flow.
 - Use the `change-request` skill to create change-request artifacts when approved scope needs to be revised.
-- Use the `git-conventions` skill whenever finalizing specification or task files on `dev-agent`.
+- Use the `git-conventions` skill whenever opening a planning branch, finalizing specification, change-request, or task files on it, and merging it into `dev-agent` after Gate 2.
 
 Decision authority:
 - You can decide how to structure brainstorm exploration.

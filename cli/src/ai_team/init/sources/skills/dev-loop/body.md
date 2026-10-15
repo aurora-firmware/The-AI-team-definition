@@ -17,6 +17,18 @@ The orchestrator reads queue state using the `ai-team` CLI:
 Task files are canonical lifecycle state on `dev-agent`.
 Developer branches are for implementation artifacts only; the active loop records Developer Work Log handoffs in the canonical task file.
 
+## Workspace Hygiene
+
+The loop applies the **Workspace Hygiene** check from the `git-conventions` skill at these points:
+
+- **Startup** — before the baseline guard, on the branch the loop starts from.
+- **Before every branch switch** — a checkout refused because of a dirty tree is not a hard stop; run the check, then retry the checkout once.
+- **After every `integrate` invocation** — whether it succeeded or stopped.
+- **Before the loop ends** — in Step 8 and before reporting any hard stop.
+
+Changes parked by this run are restored when the loop ends, on the branch where they were parked.
+A run never ends with untracked files or uncommitted changes that the run itself created.
+
 ## Procedure
 
 ### Step 1: Check the Queue
@@ -28,8 +40,8 @@ If `$ARGUMENTS` is non-empty:
 - Use this single task as the queue. After it completes (success, blocked, or escalated), stop — do not continue to other tasks.
 
 If `$ARGUMENTS` is empty, discover pending tasks using: `ai-team list tasks --state pending`.
-If the queue is empty, proceed directly to **Step 8: Loop Complete** so the canonical
-Gate 5 status report is produced before the loop stops.
+If the queue is empty, proceed directly to **Step 8: Loop Complete** so the workspace is checked
+and the run summary is returned before the loop stops.
 
 ### Step 2: Baseline Test Guard
 
@@ -106,9 +118,9 @@ If the Developer returns `ESCALATE`, go directly to **On ESCALATE**.
 If the Developer does not return a Work Log handoff entry, stop with `BLOCKED` and report the missing handoff.
 
 Record the Work Log handoff:
-1. Switch to `dev-agent`.
+1. Switch to `dev-agent`. Bug files the Developer filed through `new-bug` are untracked, so they carry over the switch.
 2. Append the Developer's Work Log handoff under `## Work Log` in `project/tasks/in-progress/<task-file>`.
-3. Commit the lifecycle update: `chore(tasks): record T-NNN work log`.
+3. Commit the lifecycle update, together with any bug files the Developer listed under `Artifacts`: `chore(tasks): record T-NNN work log`.
 
 ### Step 6: Review Cycle
 
@@ -179,16 +191,16 @@ If the Architect cannot resolve the issue:
 
 ### Step 8: Loop Complete
 
-When the queue is fully drained (Step 1 finds no pending tasks), invoke `Skill(status-report)` to
-produce the canonical Gate 5 summary. The status-report skill runs `ai-team status`, scans project
-state directories, and writes the full progress report — that output is the authoritative end-of-run
-status.
+Reporting is on demand. Do not invoke the `status-report` skill and do not write a report file.
+The human runs `/status-report` when they want the full Gate 5 summary.
 
-After the status-report output, append the following loop-specific run details as supplemental context:
-- Tasks completed and merged this run (list with task IDs and merge commits)
-- Tasks that were already completed before this run (skip)
-- Any blocked tasks
-- Any integration failures that stopped the loop mid-run
+1. Run the after-point Workspace Hygiene check and restore any changes this run parked.
+2. Return a short run summary in the chat — a few lines, not a report:
+   - Tasks completed and merged this run, with task IDs and merge commits
+   - Tasks blocked or escalated, with the reason
+   - Bugs filed this run, and any integration failure that stopped the loop
+   - Changes parked or restored, and `.gitignore` patterns added, by the hygiene check
+   - The next suggested action — for example `/bug-loop` for filed regressions, or `/status-report` for Gate 5 sign-off context when the queue is empty
 
 ## Cycle Counter Reset
 

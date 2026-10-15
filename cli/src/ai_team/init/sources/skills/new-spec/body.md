@@ -26,7 +26,10 @@ When invoked directly by a human and required fields are missing, ask only for t
    - Add `--status "<status>"` only when `status` is provided; otherwise allow the CLI default.
    - Do NOT pass `description` to the CLI — the CLI has no `--description` flag.
 
-3. Execute the command and parse the JSON response to capture:
+3. Open the planning branch and execute the command.
+   Follow **Opening a Planning Branch** in the `git-conventions` skill, running this command at its step 3.
+   Skip opening a branch only when the caller says the spec is being written on an existing planning branch.
+   Parse the JSON response to capture:
    - `id` (for example, `S-003`)
    - `path` (absolute path to the created file, named `S-NNN-<slug>.md`)
 
@@ -38,7 +41,8 @@ When invoked directly by a human and required fields are missing, ask only for t
    - Human-answerable `[TODO]` markers must be resolved before Architecture Consistency Review.
    - If any human-answerable `[TODO]` markers remain, explicitly report the blocker and stop instead of handing the draft to Architecture Consistency Review or Gate 1 approval.
 
-7. Confirm the created file exists and return the CLI response values (`id` and `path`).
+7. Confirm the created file exists, commit it on the planning branch (`docs(specs): add <id> draft`), and return the CLI response values (`id` and `path`) and the planning branch name.
+   Commit every later revision — Architect findings, `[TODO]` resolutions, Gate 1 approval — on the same planning branch, never on `dev-agent`.
 
 8. Remind that the new spec requires human Gate 1 approval unless the caller explicitly says it is already being prepared for that gate.
 9. Once human-answerable `[TODO]` markers are resolved before Architecture Consistency Review, hand the draft spec to the Architect for an Architecture Consistency Review before Gate 1 (Next Owner: Architect). The Architect checks it against existing approved specs and accepted ADRs and returns findings — like a Gate 2 review, this does not amend the draft. Revise the draft on those findings until the Architect and Planner agree it is consistent; the human then approves at Gate 1 as usual.
