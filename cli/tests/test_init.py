@@ -23,7 +23,9 @@ def test_init_defaults_to_cwd_and_scaffolds_project_claude_and_marker(
     marker = target / ".ai-team.toml"
 
     assert result.exit_code == 0
-    assert (target / "project" / "tasks" / "pending" / ".gitkeep").is_file()
+    assert (target / "project" / "specs" / ".gitkeep").is_file()
+    assert not (target / "project" / "tasks").exists()
+    assert (target / ".ai-team" / "tracker").is_dir()
     assert (target / ".claude" / "agents" / "planner.md").is_file()
     assert not (target / "ai-process").exists()
     assert marker.is_file()
@@ -48,7 +50,8 @@ def test_init_scaffolds_explicit_target_path_with_claude_and_marker(tmp_path):
 
     marker = target / ".ai-team.toml"
     assert result.exit_code == 0
-    assert (target / "project" / "bugs" / "open" / ".gitkeep").is_file()
+    assert (target / "project" / "decisions" / ".gitkeep").is_file()
+    assert not (target / "project" / "bugs").exists()
     assert (target / ".claude" / "skills" / "brainstorm" / "SKILL.md").is_file()
     assert marker.is_file()
     assert not (target / "ai-process").exists()
@@ -93,7 +96,8 @@ def test_init_dry_run_lists_files_and_writes_nothing(tmp_path):
 
     assert result.exit_code == 0
     assert "WOULD WRITE:" in result.output
-    assert str(target / "project" / "tasks" / "pending" / ".gitkeep") in result.output
+    assert str(target / "project" / "specs" / ".gitkeep") in result.output
+    assert f"WOULD CREATE: {target / '.ai-team' / 'tracker'}" in result.output
     assert str(target / ".claude" / "agents" / "planner.md") in result.output
     assert str(target / ".ai-team.toml") in result.output
     assert not target.exists()
@@ -159,7 +163,7 @@ def test_init_tools_codex_scaffolds_codex_agents_and_skills(tmp_path):
     assert (target / ".codex" / "agents" / "planner.toml").is_file()
     assert (target / ".codex" / "skills" / "tdd" / "SKILL.md").is_file()
     assert (target / ".codex" / "skills" / "change-request" / "SKILL.md").is_file()
-    assert (target / "project" / "change-requests" / ".gitkeep").is_file()
+    assert not (target / "project" / "change-requests").exists()
     assert not (target / ".claude").exists()
     assert not (target / "ai-process").exists()
 
@@ -518,7 +522,7 @@ def test_ai_team_lock_sentinel_is_not_untracked_after_task_creation(
     task_result = CliRunner().invoke(app, ["task", "new", "Anything", "--json"])
     assert task_result.exit_code == 0
 
-    lock_file = target / "project" / ".ai-team.lock"
+    lock_file = target / ".ai-team" / "tracker" / ".ai-team.lock"
     assert lock_file.is_file()
 
     status = subprocess.run(
@@ -529,6 +533,32 @@ def test_ai_team_lock_sentinel_is_not_untracked_after_task_creation(
         text=True,
     )
 
-    assert "ai-team.lock" not in status.stdout, (
-        f"unexplained untracked .ai-team.lock in git status:\n{status.stdout}"
+    assert status.stdout == "", (
+        f"task creation left the working tree dirty:\n{status.stdout}"
     )
+
+
+def test_init_configures_tracker_and_ignores_it_idempotently(tmp_path):
+    """S-006: init writes [tracker] dir, creates the folder, and ignores it once."""
+    import tomllib
+
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    target.mkdir()
+    (target / ".gitignore").write_text("node_modules/", encoding="utf-8")
+
+    for extra in ([], ["--force"]):
+        result = CliRunner().invoke(
+            app,
+            ["init", str(target), "--tools", "claude", "--no-interactive", *extra],
+        )
+        assert result.exit_code == 0, result.output
+
+    marker = tomllib.loads((target / ".ai-team.toml").read_text(encoding="utf-8"))
+    assert marker["tracker"]["dir"] == ".ai-team/tracker"
+    assert (target / ".ai-team" / "tracker").is_dir()
+
+    lines = (target / ".gitignore").read_text(encoding="utf-8").splitlines()
+    assert lines[0] == "node_modules/"
+    assert lines.count("/.ai-team/") == 1

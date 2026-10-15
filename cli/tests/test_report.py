@@ -3,7 +3,15 @@
 from datetime import date
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
+
+
+@pytest.fixture(autouse=True)
+def _project_dir(tmp_path):
+    """The locator needs the project directory; work items live in the tracker."""
+    (tmp_path / "project").mkdir(exist_ok=True)
+
 
 TASK_TEMPLATE = """\
 ---
@@ -55,7 +63,7 @@ def test_report_writes_default_dated_file_and_creates_reports_dir(
     """`ai-team report` writes to project/docs/reports/progress-report-YYYY-MM-DD.md."""
     from ai_team.cli import app
 
-    (tmp_path / "project").mkdir()
+    (tmp_path / "project").mkdir(exist_ok=True)
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["report"])
@@ -83,7 +91,7 @@ def test_report_out_writes_populated_report_with_status_summary_fields(
         SPEC_TEMPLATE.format(title="Spec 1", status="approved"),
     )
     _write(
-        tmp_path / "project" / "tasks" / "pending" / "T-001.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001.md",
         TASK_TEMPLATE.format(
             id="T-001",
             title="Pending task",
@@ -93,7 +101,7 @@ def test_report_out_writes_populated_report_with_status_summary_fields(
         ),
     )
     _write(
-        tmp_path / "project" / "tasks" / "in-progress" / "T-002.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-002.md",
         TASK_TEMPLATE.format(
             id="T-002",
             title="Build report",
@@ -103,7 +111,7 @@ def test_report_out_writes_populated_report_with_status_summary_fields(
         ),
     )
     _write(
-        tmp_path / "project" / "tasks" / "blocked" / "T-003.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-003.md",
         TASK_TEMPLATE.format(
             id="T-003",
             title="Blocked task",
@@ -113,7 +121,7 @@ def test_report_out_writes_populated_report_with_status_summary_fields(
         ),
     )
     _write(
-        tmp_path / "project" / "bugs" / "open" / "B-001.md",
+        tmp_path / ".ai-team" / "tracker" / "bugs" / "B-001.md",
         BUG_TEMPLATE.format(
             id="B-001",
             title="Critical issue",
@@ -169,7 +177,7 @@ status: resolved
 
 Body.
 """
-    _write(tmp_path / "project" / "bugs" / "resolved" / "B-001.md", legacy_bug)
+    _write(tmp_path / ".ai-team" / "tracker" / "bugs" / "B-001.md", legacy_bug)
 
     out_path = tmp_path / "report.md"
     monkeypatch.chdir(tmp_path)

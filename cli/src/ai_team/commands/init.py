@@ -10,6 +10,8 @@ from pathlib import Path
 import tomli_w
 import typer
 
+from ai_team.core.tracker import DEFAULT_TRACKER_DIR
+
 NAME = "init"
 app = typer.Typer(
     help="Scaffold an AI-team repository.",
@@ -79,6 +81,43 @@ def _next_steps() -> list[str]:
         "Run /write-plan to break the spec into tasks.",
         "Run /dev-loop to execute tasks through review and integration.",
     ]
+
+
+def _ensure_tracker(target_root: Path, dry_run: bool) -> None:
+    """Create the default tracker folder and make git ignore it (spec S-006).
+
+    The ignore rule is appended to the repository's root ``.gitignore`` only when
+    no identical line exists, so re-running ``init`` never duplicates or removes
+    rules.
+    """
+    tracker = target_root / DEFAULT_TRACKER_DIR
+    ignore_rule = f"/{Path(DEFAULT_TRACKER_DIR).parts[0]}/"
+    gitignore = target_root / ".gitignore"
+    existing = (
+        gitignore.read_text(encoding="utf-8").splitlines()
+        if gitignore.is_file()
+        else []
+    )
+    needs_rule = ignore_rule not in (line.strip() for line in existing)
+
+    if dry_run:
+        typer.echo(f"WOULD CREATE: {tracker}")
+        if needs_rule:
+            typer.echo(f"WOULD UPDATE: {gitignore}")
+        return
+
+    tracker.mkdir(parents=True, exist_ok=True)
+    if needs_rule:
+        prefix = ""
+        if existing:
+            text = gitignore.read_text(encoding="utf-8")
+            prefix = "" if text.endswith("\n") else "\n"
+            prefix += "\n"
+        with gitignore.open("a", encoding="utf-8") as stream:
+            stream.write(
+                f"{prefix}# ai-team local work-item tracker (tasks, bugs, change-requests)\n"
+                f"{ignore_rule}\n"
+            )
 
 
 def _copy_root_guidance_file(
@@ -191,6 +230,7 @@ def init_command(
                 force,
                 dry_run=True,
             )
+            _ensure_tracker(target_root, dry_run=True)
 
         if collisions and not force:
             typer.echo(
@@ -209,6 +249,7 @@ def init_command(
 
         marker_data = {
             "project": {"dir": "project"},
+            "tracker": {"dir": DEFAULT_TRACKER_DIR},
             "init": {
                 "tools": selected_tools,
                 "framework_version": importlib.metadata.version("ai-team"),
@@ -216,6 +257,7 @@ def init_command(
         }
         marker.parent.mkdir(parents=True, exist_ok=True)
         marker.write_text(tomli_w.dumps(marker_data), encoding="utf-8")
+        _ensure_tracker(target_root, dry_run=False)
 
         # Handle root guidance files (outside the collision-checked scaffold set)
         declined = _handle_root_guidance(

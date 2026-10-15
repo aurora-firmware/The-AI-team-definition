@@ -5,7 +5,15 @@ from __future__ import annotations
 from datetime import date, timedelta
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
+
+
+@pytest.fixture(autouse=True)
+def _project_dir(tmp_path):
+    """The locator needs the project directory; work items live in the tracker."""
+    (tmp_path / "project").mkdir(exist_ok=True)
+
 
 TASK_TEMPLATE = """\
 ---
@@ -66,11 +74,9 @@ def test_archive_moves_old_completed_tasks_and_resolved_bugs_to_created_month(
     """Default archive run moves artifacts older than 90 days into archive/YYYY-MM."""
     from ai_team.cli import app
 
-    old_task_src = tmp_path / "project" / "tasks" / "completed" / "T-100-old-task.md"
-    old_bug_src = tmp_path / "project" / "bugs" / "resolved" / "B-100-old-bug.md"
-    fresh_task_src = (
-        tmp_path / "project" / "tasks" / "completed" / "T-101-fresh-task.md"
-    )
+    old_task_src = tmp_path / ".ai-team" / "tracker" / "tasks" / "T-100-old-task.md"
+    old_bug_src = tmp_path / ".ai-team" / "tracker" / "bugs" / "B-100-old-bug.md"
+    fresh_task_src = tmp_path / ".ai-team" / "tracker" / "tasks" / "T-101-fresh-task.md"
 
     _write_completed_task(old_task_src, "T-100", "2025-01-15")
     _write_resolved_bug(old_bug_src, "B-100", "2024-12-09")
@@ -83,8 +89,12 @@ def test_archive_moves_old_completed_tasks_and_resolved_bugs_to_created_month(
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["archive"])
 
-    old_task_dest = tmp_path / "project" / "archive" / "2025-01" / old_task_src.name
-    old_bug_dest = tmp_path / "project" / "archive" / "2024-12" / old_bug_src.name
+    old_task_dest = (
+        tmp_path / ".ai-team" / "tracker" / "archive" / "2025-01" / old_task_src.name
+    )
+    old_bug_dest = (
+        tmp_path / ".ai-team" / "tracker" / "archive" / "2024-12" / old_bug_src.name
+    )
 
     assert result.exit_code == 0
     assert not old_task_src.exists()
@@ -100,7 +110,7 @@ def test_archive_dry_run_lists_would_move_without_mutating_filesystem(
     """`archive --dry-run` reports planned moves and leaves source files untouched."""
     from ai_team.cli import app
 
-    old_task_src = tmp_path / "project" / "tasks" / "completed" / "T-110-old-task.md"
+    old_task_src = tmp_path / ".ai-team" / "tracker" / "tasks" / "T-110-old-task.md"
     _write_completed_task(
         old_task_src,
         "T-110",
@@ -108,7 +118,12 @@ def test_archive_dry_run_lists_would_move_without_mutating_filesystem(
     )
     expected_bucket = (date.today() - timedelta(days=120)).strftime("%Y-%m")
     expected_dest = (
-        tmp_path / "project" / "archive" / expected_bucket / old_task_src.name
+        tmp_path
+        / ".ai-team"
+        / "tracker"
+        / "archive"
+        / expected_bucket
+        / old_task_src.name
     )
 
     monkeypatch.chdir(tmp_path)
@@ -129,11 +144,9 @@ def test_archive_uses_older_than_cutoff_to_select_artifacts(
     from ai_team.cli import app
 
     should_move = (
-        tmp_path / "project" / "tasks" / "completed" / "T-120-older-than-cutoff.md"
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-120-older-than-cutoff.md"
     )
-    should_stay = (
-        tmp_path / "project" / "tasks" / "completed" / "T-121-within-cutoff.md"
-    )
+    should_stay = tmp_path / ".ai-team" / "tracker" / "tasks" / "T-121-within-cutoff.md"
 
     move_created = (date.today() - timedelta(days=85)).isoformat()
     stay_created = (date.today() - timedelta(days=80)).isoformat()
@@ -145,7 +158,8 @@ def test_archive_uses_older_than_cutoff_to_select_artifacts(
 
     moved_dest = (
         tmp_path
-        / "project"
+        / ".ai-team"
+        / "tracker"
         / "archive"
         / date.fromisoformat(move_created).strftime("%Y-%m")
         / should_move.name

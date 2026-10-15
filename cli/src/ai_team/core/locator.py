@@ -21,6 +21,8 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
+from ai_team.core.tracker import resolve_tracker_dir
+
 
 class ProjectRootNotFound(RuntimeError):
     """Raised when no project root can be resolved from the given cwd."""
@@ -28,7 +30,11 @@ class ProjectRootNotFound(RuntimeError):
 
 @dataclass(frozen=True)
 class ProjectRoot:
-    """Absolute paths to every AI-team artifact directory in a project."""
+    """Absolute paths to every AI-team artifact directory in a project.
+
+    Specs, ADRs, and docs live in the project directory under version control.
+    Tasks, bugs, and change-requests live in the local tracker (spec S-006).
+    """
 
     repo: Path
     """The repository root (the directory that contains the project folder)."""
@@ -39,29 +45,20 @@ class ProjectRoot:
     specs: Path
     """``project_dir/specs``."""
 
-    tasks_pending: Path
-    """``project_dir/tasks/pending``."""
+    tracker: Path
+    """The local work-item tracker folder (``[tracker] dir``; outside version control)."""
 
-    tasks_in_progress: Path
-    """``project_dir/tasks/in-progress``."""
+    tasks: Path
+    """``tracker/tasks`` — task files; state is the ``status`` field."""
 
-    tasks_completed: Path
-    """``project_dir/tasks/completed``."""
-
-    tasks_blocked: Path
-    """``project_dir/tasks/blocked``."""
-
-    bugs_open: Path
-    """``project_dir/bugs/open``."""
-
-    bugs_in_progress: Path
-    """``project_dir/bugs/in-progress``."""
-
-    bugs_resolved: Path
-    """``project_dir/bugs/resolved``."""
+    bugs: Path
+    """``tracker/bugs`` — bug files; state is the ``status`` field."""
 
     change_requests: Path
-    """``project_dir/change-requests``."""
+    """``tracker/change-requests`` — change-request files."""
+
+    archive: Path
+    """``tracker/archive`` — archived work items in ``YYYY-MM`` buckets."""
 
     decisions: Path
     """``project_dir/decisions``."""
@@ -75,20 +72,18 @@ class ProjectRoot:
     ) -> "ProjectRoot":
         """Build a ProjectRoot from a repo root and the artifact folder name."""
         pd = repo / project_dir_name
+        tracker = resolve_tracker_dir(repo)
         return cls(
             repo=repo,
             project_dir=pd,
             specs=pd / "specs",
-            tasks_pending=pd / "tasks" / "pending",
-            tasks_in_progress=pd / "tasks" / "in-progress",
-            tasks_completed=pd / "tasks" / "completed",
-            tasks_blocked=pd / "tasks" / "blocked",
-            bugs_open=pd / "bugs" / "open",
-            bugs_in_progress=pd / "bugs" / "in-progress",
-            bugs_resolved=pd / "bugs" / "resolved",
-            change_requests=pd / "change-requests",
             decisions=pd / "decisions",
             docs=pd / "docs",
+            tracker=tracker,
+            tasks=tracker / "tasks",
+            bugs=tracker / "bugs",
+            change_requests=tracker / "change-requests",
+            archive=tracker / "archive",
         )
 
 

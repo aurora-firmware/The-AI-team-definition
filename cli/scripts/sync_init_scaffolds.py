@@ -8,15 +8,9 @@ import tomllib
 from pathlib import Path
 
 PROJECT_LEAF_DIRS = (
+    # Tasks, bugs, and change-requests live in the local tracker (spec S-006),
+    # outside the project directory, so they are not scaffolded here.
     "specs",
-    "tasks/pending",
-    "tasks/in-progress",
-    "tasks/completed",
-    "tasks/blocked",
-    "bugs/open",
-    "bugs/in-progress",
-    "bugs/resolved",
-    "change-requests",
     "decisions",
     "docs",
 )

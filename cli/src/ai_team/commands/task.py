@@ -1,158 +1,74 @@
-"""`ai-team task` command group for task artifact operations."""
+"""`ai-team task` command group for task artifact operations.
+
+Tasks live in the local tracker; their lifecycle state is the frontmatter
+``status`` field (spec S-006).
+"""
 
 from __future__ import annotations
 
-import re
 from datetime import date
 from pathlib import Path
-from typing import Callable, Literal
+from typing import Literal
 
 import typer
 from slugify import slugify
 
-from ai_team.core.fs import (
-    ArtifactExists,
-    move_artifact,
-    read_artifact,
-    update_status,
-    write_artifact,
-)
+from ai_team.commands._shared import append_work_log_entry, project_root, template_body
+from ai_team.core.fs import ArtifactExists, read_artifact, update_status
 from ai_team.core.ids import next_task_id
-from ai_team.core.locator import ProjectRoot, find_project_root
 from ai_team.core.lock import LockTimeout, create_artifact_with_lock
 from ai_team.core.models import Task
 from ai_team.core.templates import load_template
+from ai_team.core.tracker import TASK_STATUSES, find_item
 from ai_team.render import print_json
 
 NAME = "task"
 app = typer.Typer(help="Create and manage task artifacts.")
 
 Priority = Literal["critical", "high", "medium", "low"]
-TaskState = Literal["pending", "in-progress", "completed", "blocked"]
+TaskStatus = Literal[
+    "planned", "pending", "in-progress", "blocked", "completed", "cancelled"
+]
+NewTaskStatus = Literal["planned", "pending"]
 
 
-def _task_matches_id(path: Path, task_id: str) -> bool:
-    stem = path.stem
-    return stem == task_id or stem.startswith(f"{task_id}-")
-
-
-def _find_task_file(task_id: str, folders: list[Path]) -> Path | None:
-    for folder in folders:
-        if not folder.exists():
-            continue
-        for path in sorted(folder.glob("*.md")):
-            if path.name == ".gitkeep" or path.match("TEMPLATE-*.md"):
-                continue
-            if _task_matches_id(path, task_id):
-                return path
-    return None
-
-
-def _task_state_folders(root: ProjectRoot) -> dict[TaskState, Path]:
-    return {
-        "pending": root.tasks_pending,
-        "in-progress": root.tasks_in_progress,
-        "completed": root.tasks_completed,
-        "blocked": root.tasks_blocked,
-    }
-
-
-def _exit_not_found(task_id: str, folders: list[Path]) -> None:
-    searched = ", ".join(str(path) for path in folders)
-    typer.echo(
-        f"Task '{task_id}' not found. Searched folders: {searched}",
-        err=True,
-    )
-    raise typer.Exit(code=1)
-
-
-def _append_work_log_entry(path: Path, reason: str) -> None:
-    model, body = read_artifact(path, "task")
-    lines = body.splitlines()
-    heading = "## Work Log"
-
-    try:
-        start = lines.index(heading)
-    except ValueError:
-        lines.extend(["", heading, ""])
-        start = len(lines) - 3
-
-    end = len(lines)
-    for idx in range(start + 1, len(lines)):
-        if lines[idx].startswith("## "):
-            end = idx
-            break
-
-    session_numbers: list[int] = []
-    for line in lines[start:end]:
-        match = re.match(r"^### Session (\d+)\b", line)
-        if match is not None:
-            session_numbers.append(int(match.group(1)))
-    next_session = max(session_numbers, default=0) + 1
-
-    entry = [
-        "",
-        f"### Session {next_session} — {date.today().isoformat()}",
-        f"Blocked: {reason}",
-    ]
-    lines = lines[:end] + entry + lines[end:]
-    new_body = "\n".join(lines).rstrip() + "\n"
-    write_artifact(path, model, new_body, overwrite=True)
+def _find_task_or_exit(task_id: str) -> Path:
+    root = project_root()
+    path = find_item(root.tasks, task_id)
+    if path is None:
+        typer.echo(f"Task '{task_id}' not found in {root.tasks}", err=True)
+        raise typer.Exit(code=1)
+    return path
 
 
 def _transition_task(
     task_id: str,
     *,
-    source_states: list[TaskState],
-    destination_state: TaskState,
-    new_status: TaskState,
-    before_transition: Callable[[Path], None] | None = None,
+    command: str,
+    allowed_from: tuple[str, ...] | None,
+    new_status: str,
+    work_log_text: str | None = None,
 ) -> None:
-    root = find_project_root(Path.cwd())
-    folders = _task_state_folders(root)
+    """Set *task_id* to *new_status* in place, enforcing *allowed_from* when given."""
+    path = _find_task_or_exit(task_id)
+    task, _ = read_artifact(path, "task")
 
-    destination_folder = folders[destination_state]
-    in_destination = _find_task_file(task_id, [destination_folder])
-    if in_destination is not None:
-        typer.echo(f"Task {task_id} already in {destination_state}.")
+    if task.status == new_status:
+        typer.echo(f"Task {task_id} already in {new_status}.")
         return
 
-    source = _find_task_file(task_id, [folders[state] for state in source_states])
-    if source is None:
-        _exit_not_found(
-            task_id,
-            [
-                folders["pending"],
-                folders["in-progress"],
-                folders["completed"],
-                folders["blocked"],
-            ],
+    if allowed_from is not None and task.status not in allowed_from:
+        typer.echo(
+            f"Task {task_id} is '{task.status}'; '{command}' expects one of: "
+            + ", ".join(allowed_from),
+            err=True,
         )
+        raise typer.Exit(code=1)
 
-    if before_transition is not None:
-        before_transition(source)
-
-    destination = destination_folder / source.name
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    update_status(source, new_status)
-    move_artifact(source, destination)
-    typer.echo(str(destination.resolve()))
-
-
-def _template_body(template: str) -> str:
-    """Return markdown body text after the YAML frontmatter block."""
-    if not template.startswith("---"):
-        raise ValueError("Task template is missing opening frontmatter fence.")
-
-    rest = template[3:]
-    close_idx = rest.find("\n---")
-    if close_idx == -1:
-        raise ValueError("Task template is missing closing frontmatter fence.")
-
-    body = rest[close_idx + 5 :]
-    if body.startswith("\n"):
-        body = body[1:]
-    return body
+    if work_log_text is not None:
+        append_work_log_entry(path, "task", work_log_text)
+    update_status(path, new_status, kind="task")
+    typer.echo(str(path.resolve()))
 
 
 @app.command("new")
@@ -160,23 +76,30 @@ def new_task(
     title: str,
     priority: Priority = typer.Option("medium", "--priority"),
     assigned_role: str = typer.Option("unassigned", "--assigned-role"),
-    spec: str | None = typer.Option(None, "--spec"),
+    spec: str | None = typer.Option(
+        None, "--spec", help="Source spec or change-request ID."
+    ),
+    status: NewTaskStatus = typer.Option(
+        "pending",
+        "--status",
+        help="'planned' keeps the task out of /dev-loop until its plan merges.",
+    ),
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
-    """Create a new pending task artifact from the bundled template."""
-    root = find_project_root(Path.cwd())
+    """Create a new task in the tracker from the bundled template."""
+    root = project_root()
 
     def build(task_id: str) -> tuple[Path, Task, str]:
         slug = slugify(title)
-        dest = root.tasks_pending / f"{task_id}-{slug}.md"
+        dest = root.tasks / f"{task_id}-{slug}.md"
+        dest.parent.mkdir(parents=True, exist_ok=True)
 
-        template = load_template("task")
-        body = _template_body(template)
+        body = template_body(load_template("task"), "Task")
         body = body.replace("# [Task Title]", f"# {title}", 1)
         model = Task(
             id=task_id,
             title=title,
-            status="pending",
+            status=status,
             priority=priority,
             assigned_role=assigned_role,
             created=date.today().isoformat(),
@@ -186,14 +109,11 @@ def new_task(
 
     try:
         task_id, dest = create_artifact_with_lock(
-            root.project_dir,
+            root.tracker,
             allocate_id=lambda: next_task_id(root),
             build=build,
         )
-    except ArtifactExists as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(code=1) from exc
-    except LockTimeout as exc:
+    except (ArtifactExists, LockTimeout) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
 
@@ -207,33 +127,30 @@ def new_task(
 
 @app.command("start")
 def start_task(task_id: str) -> None:
-    """Move a pending task to in-progress and update status."""
+    """Set a pending task to in-progress."""
     _transition_task(
-        task_id,
-        source_states=["pending"],
-        destination_state="in-progress",
-        new_status="in-progress",
+        task_id, command="start", allowed_from=("pending",), new_status="in-progress"
     )
 
 
 @app.command("complete")
 def complete_task(task_id: str) -> None:
-    """Move an in-progress task to completed and update status."""
+    """Set an in-progress task to completed."""
     _transition_task(
         task_id,
-        source_states=["in-progress"],
-        destination_state="completed",
+        command="complete",
+        allowed_from=("in-progress",),
         new_status="completed",
     )
 
 
 @app.command("unblock")
 def unblock_task(task_id: str) -> None:
-    """Move a blocked task to in-progress and update status."""
+    """Set a blocked task back to in-progress."""
     _transition_task(
         task_id,
-        source_states=["blocked"],
-        destination_state="in-progress",
+        command="unblock",
+        allowed_from=("blocked",),
         new_status="in-progress",
     )
 
@@ -243,11 +160,31 @@ def block_task(
     task_id: str,
     reason: str = typer.Option(..., "--reason"),
 ) -> None:
-    """Move a task to blocked, update status, and append blocking reason."""
+    """Set a task to blocked and record the blocking reason in its Work Log."""
     _transition_task(
         task_id,
-        source_states=["pending", "in-progress", "completed", "blocked"],
-        destination_state="blocked",
+        command="block",
+        allowed_from=None,
         new_status="blocked",
-        before_transition=lambda source: _append_work_log_entry(source, reason),
+        work_log_text=f"Blocked: {reason}",
+    )
+
+
+@app.command("set-status")
+def set_task_status(
+    task_id: str,
+    status: TaskStatus = typer.Argument(
+        ..., help="One of: " + ", ".join(TASK_STATUSES)
+    ),
+    reason: str | None = typer.Option(
+        None, "--reason", help="Recorded as a Work Log entry."
+    ),
+) -> None:
+    """Set a task to any allowed status."""
+    _transition_task(
+        task_id,
+        command="set-status",
+        allowed_from=None,
+        new_status=status,
+        work_log_text=None if reason is None else f"Status set to {status}: {reason}",
     )

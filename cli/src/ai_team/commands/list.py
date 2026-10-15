@@ -7,7 +7,7 @@ from pathlib import Path
 import typer
 from rich.table import Table
 
-from ai_team.core.locator import find_project_root
+from ai_team.commands._shared import project_root
 from ai_team.core.models import (
     parse_adr,
     parse_bug,
@@ -15,6 +15,7 @@ from ai_team.core.models import (
     parse_spec,
     parse_task,
 )
+from ai_team.core.tracker import iter_items
 from ai_team.render import console, print_json
 
 NAME = "list"
@@ -35,27 +36,19 @@ def _iter_markdown_files(folder: Path) -> list[Path]:
     )
 
 
-def _collect_from_state_folders(
-    folders: list[tuple[str, Path]],
+def _collect_by_status(
+    folder: Path,
     state: str | None,
     parser,
     row_builder,
 ) -> list[dict[str, str]]:
-    """Collect rows by parsing markdown files in state folders."""
-    by_state = dict(folders)
-    if state is not None:
-        folder = by_state.get(state)
-        if folder is None:
-            return []
-        selected = [(state, folder)]
-    else:
-        selected = folders
-
+    """Parse every work item in *folder*, keeping those whose status is *state*."""
     rows: list[dict[str, str]] = []
-    for folder_state, folder in selected:
-        for path in _iter_markdown_files(folder):
-            model = parser(path)
-            rows.append(row_builder(model, folder_state, path))
+    for path in iter_items(folder):
+        model = parser(path)
+        if state is not None and model.status != state:
+            continue
+        rows.append(row_builder(model))
     return rows
 
 
@@ -70,30 +63,33 @@ def _render_table(title: str, columns: list[str], rows: list[dict[str, str]]) ->
 
 @app.command()
 def tasks(
-    state: str | None = typer.Option(
-        None, "--state", help="Filter by task state folder."
+    state: str | None = typer.Option(None, "--state", help="Filter by task status."),
+    spec: str | None = typer.Option(
+        None, "--spec", help="Filter by source spec or change-request ID."
     ),
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
-    """List tasks from the project task folders."""
-    root = find_project_root(Path.cwd())
-    rows = _collect_from_state_folders(
-        [
-            ("pending", root.tasks_pending),
-            ("in-progress", root.tasks_in_progress),
-            ("completed", root.tasks_completed),
-            ("blocked", root.tasks_blocked),
-        ],
-        state,
-        parse_task,
-        lambda task, folder_state, _: {
-            "id": task.id,
-            "title": task.title,
-            "state": folder_state,
-            "priority": task.priority,
-            "assigned-role": task.assigned_role,
-        },
-    )
+    """List tasks from the tracker."""
+    root = project_root()
+    rows = [
+        row
+        for row in _collect_by_status(
+            root.tasks,
+            state,
+            parse_task,
+            lambda task: {
+                "id": task.id,
+                "title": task.title,
+                "state": task.status,
+                "priority": task.priority,
+                "assigned-role": task.assigned_role,
+                "spec": task.spec or "",
+            },
+        )
+        if spec is None or row["spec"] == spec
+    ]
+    for row in rows:
+        del row["spec"]
     if as_json:
         print_json(rows)
         return
@@ -102,25 +98,19 @@ def tasks(
 
 @app.command()
 def bugs(
-    state: str | None = typer.Option(
-        None, "--state", help="Filter by bug state folder."
-    ),
+    state: str | None = typer.Option(None, "--state", help="Filter by bug status."),
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
-    """List bugs from the project bug folders."""
-    root = find_project_root(Path.cwd())
-    rows = _collect_from_state_folders(
-        [
-            ("open", root.bugs_open),
-            ("in-progress", root.bugs_in_progress),
-            ("resolved", root.bugs_resolved),
-        ],
+    """List bugs from the tracker."""
+    root = project_root()
+    rows = _collect_by_status(
+        root.bugs,
         state,
         parse_bug,
-        lambda bug, folder_state, _: {
+        lambda bug: {
             "id": bug.id,
             "title": bug.title,
-            "state": folder_state,
+            "state": bug.status,
             "severity": bug.severity,
         },
     )
@@ -139,7 +129,7 @@ def specs(
 ) -> None:
     """List specs from the project specs folder."""
     _ = state
-    root = find_project_root(Path.cwd())
+    root = project_root()
     rows: list[dict[str, str]] = []
     for path in _iter_markdown_files(root.specs):
         spec = parse_spec(path)
@@ -167,7 +157,7 @@ def adrs(
 ) -> None:
     """List ADRs from the project decisions folder."""
     _ = state
-    root = find_project_root(Path.cwd())
+    root = project_root()
     rows: list[dict[str, str]] = []
     for path in _iter_markdown_files(root.decisions):
         adr = parse_adr(path)
@@ -186,20 +176,19 @@ def adrs(
 
 @app.command("change-requests")
 def change_requests(
+    state: str | None = typer.Option(
+        None, "--state", help="Filter by change-request status."
+    ),
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
-    """List change requests from the project change-requests folder."""
-    root = find_project_root(Path.cwd())
-    rows: list[dict[str, str]] = []
-    for path in _iter_markdown_files(root.change_requests):
-        cr = parse_change_request(path)
-        rows.append(
-            {
-                "id": cr.id,
-                "title": cr.title,
-                "state": cr.status,
-            }
-        )
+    """List change requests from the tracker."""
+    root = project_root()
+    rows = _collect_by_status(
+        root.change_requests,
+        state,
+        parse_change_request,
+        lambda cr: {"id": cr.id, "title": cr.title, "state": cr.status},
+    )
     if as_json:
         print_json(rows)
         return

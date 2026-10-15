@@ -15,6 +15,12 @@ from ai_team.core.models import (
     parse_spec,
     parse_task,
 )
+from ai_team.core.tracker import (
+    BUG_STATUSES,
+    CHANGE_REQUEST_STATUSES,
+    TASK_STATUSES,
+    iter_items,
+)
 
 
 @dataclass(frozen=True)
@@ -109,6 +115,30 @@ def _check_stateful_filename(
             (
                 f"Filename '{path.name}' does not match expected "
                 f"'{artifact_id}-<slug>.md'."
+            ),
+        )
+    )
+
+
+def _check_status(
+    findings: list[Finding],
+    root: ProjectRoot,
+    path: Path,
+    artifact_label: str,
+    status: str,
+    allowed: tuple[str, ...],
+) -> None:
+    if status in allowed:
+        return
+    findings.append(
+        _finding(
+            path,
+            root,
+            "status-invalid",
+            (
+                f"{artifact_label} status '{status}' is not one of: "
+                + ", ".join(allowed)
+                + "."
             ),
         )
     )
@@ -224,105 +254,66 @@ def validate_project(
     adr_ids = _existing_adr_ids(root)
 
     if tasks:
-        state_folders = [
-            ("pending", root.tasks_pending),
-            ("in-progress", root.tasks_in_progress),
-            ("completed", root.tasks_completed),
-            ("blocked", root.tasks_blocked),
-        ]
-        for expected_state, folder in state_folders:
-            for path in _iter_markdown_files(folder):
-                try:
-                    task = parse_task(path)
-                except FrontmatterError as exc:
-                    findings.append(
-                        _finding(path, root, "frontmatter-invalid", str(exc))
-                    )
-                    continue
+        for path in iter_items(root.tasks):
+            try:
+                task = parse_task(path)
+            except FrontmatterError as exc:
+                findings.append(_finding(path, root, "frontmatter-invalid", str(exc)))
+                continue
 
-                _check_id_pattern(
-                    findings,
-                    root,
-                    path,
-                    artifact_label="Task",
-                    artifact_id=task.id,
-                    pattern=TASK_ID_RE,
+            _check_id_pattern(
+                findings,
+                root,
+                path,
+                artifact_label="Task",
+                artifact_id=task.id,
+                pattern=TASK_ID_RE,
+            )
+            _check_stateful_filename(findings, root, path, task.id)
+            _check_status(findings, root, path, "Task", task.status, TASK_STATUSES)
+            if task.spec and not _spec_reference_exists(task.spec, spec_slugs):
+                findings.append(
+                    _finding(
+                        path,
+                        root,
+                        "task-spec-missing",
+                        (
+                            f"Task spec reference '{task.spec}' does not "
+                            "resolve to an existing spec file."
+                        ),
+                    )
                 )
-                _check_stateful_filename(findings, root, path, task.id)
-                if task.status != expected_state:
-                    findings.append(
-                        _finding(
-                            path,
-                            root,
-                            "status-mismatch",
-                            (
-                                f"Task status '{task.status}' does not match "
-                                f"folder state '{expected_state}'."
-                            ),
-                        )
-                    )
-                if task.spec and not _spec_reference_exists(task.spec, spec_slugs):
-                    findings.append(
-                        _finding(
-                            path,
-                            root,
-                            "task-spec-missing",
-                            (
-                                f"Task spec reference '{task.spec}' does not "
-                                "resolve to an existing spec file."
-                            ),
-                        )
-                    )
 
     if bugs:
-        state_folders = [
-            ("open", root.bugs_open),
-            ("in-progress", root.bugs_in_progress),
-            ("resolved", root.bugs_resolved),
-        ]
-        for expected_state, folder in state_folders:
-            for path in _iter_markdown_files(folder):
-                try:
-                    bug = parse_bug(path)
-                except FrontmatterError as exc:
-                    findings.append(
-                        _finding(path, root, "frontmatter-invalid", str(exc))
-                    )
-                    continue
+        for path in iter_items(root.bugs):
+            try:
+                bug = parse_bug(path)
+            except FrontmatterError as exc:
+                findings.append(_finding(path, root, "frontmatter-invalid", str(exc)))
+                continue
 
-                _check_id_pattern(
-                    findings,
-                    root,
-                    path,
-                    artifact_label="Bug",
-                    artifact_id=bug.id,
-                    pattern=BUG_ID_RE,
+            _check_id_pattern(
+                findings,
+                root,
+                path,
+                artifact_label="Bug",
+                artifact_id=bug.id,
+                pattern=BUG_ID_RE,
+            )
+            _check_stateful_filename(findings, root, path, bug.id)
+            _check_status(findings, root, path, "Bug", bug.status, BUG_STATUSES)
+            if bug.task and bug.task not in task_ids:
+                findings.append(
+                    _finding(
+                        path,
+                        root,
+                        "bug-task-missing",
+                        (
+                            f"Bug task reference '{bug.task}' does not "
+                            "resolve to an existing task."
+                        ),
+                    )
                 )
-                _check_stateful_filename(findings, root, path, bug.id)
-                if bug.status != expected_state:
-                    findings.append(
-                        _finding(
-                            path,
-                            root,
-                            "status-mismatch",
-                            (
-                                f"Bug status '{bug.status}' does not match "
-                                f"folder state '{expected_state}'."
-                            ),
-                        )
-                    )
-                if bug.task and bug.task not in task_ids:
-                    findings.append(
-                        _finding(
-                            path,
-                            root,
-                            "bug-task-missing",
-                            (
-                                f"Bug task reference '{bug.task}' does not "
-                                "resolve to an existing task."
-                            ),
-                        )
-                    )
 
     if specs:
         for path in _iter_markdown_files(root.specs):
@@ -388,7 +379,7 @@ def validate_project(
                 )
 
     if change_requests:
-        for path in _iter_markdown_files(root.change_requests):
+        for path in iter_items(root.change_requests):
             try:
                 cr = parse_change_request(path)
             except FrontmatterError as exc:
@@ -404,19 +395,29 @@ def validate_project(
                 pattern=CHANGE_REQUEST_ID_RE,
             )
             _check_stateful_filename(findings, root, path, cr.id)
+            _check_status(
+                findings,
+                root,
+                path,
+                "Change request",
+                cr.status,
+                CHANGE_REQUEST_STATUSES,
+            )
 
     return findings
 
 
 def _existing_task_ids(root: ProjectRoot) -> set[str]:
     task_ids: set[str] = set()
-    for folder in (
-        root.tasks_pending,
-        root.tasks_in_progress,
-        root.tasks_completed,
-        root.tasks_blocked,
-    ):
-        for path in _iter_markdown_files(folder):
+    archive_buckets = (
+        sorted(path for path in root.archive.iterdir() if path.is_dir())
+        if root.archive.is_dir()
+        else []
+    )
+    for folder in (root.tasks, *archive_buckets):
+        for path in iter_items(folder):
+            if not path.name.startswith("T-"):
+                continue
             try:
                 task_ids.add(parse_task(path).id)
             except FrontmatterError:

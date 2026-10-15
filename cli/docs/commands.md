@@ -30,6 +30,7 @@ $ ai-team [OPTIONS] COMMAND [ARGS]...
 * `spec`: Create and manage specification artifacts.
 * `status`: Show a Gate 5 status summary.
 * `task`: Create and manage task artifacts.
+* `tracker`: Inspect the local work-item tracker.
 * `validate`: Validate artifact metadata and...
 
 ## `ai-team adr`
@@ -73,7 +74,7 @@ $ ai-team adr new [OPTIONS] TITLE
 
 ## `ai-team archive`
 
-Archive old completed tasks and resolved bugs into project/archive/YYYY-MM/.
+Archive old completed tasks and resolved bugs into the tracker&#x27;s archive/YYYY-MM/.
 
 **Usage**:
 
@@ -103,13 +104,14 @@ $ ai-team bug [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `new`: Create a new open bug artifact from the...
-* `start`: Move an open bug to in-progress and update...
-* `resolve`: Move an in-progress bug to resolved and...
+* `new`: Create a new open bug in the tracker from...
+* `start`: Set an open bug to in-progress.
+* `resolve`: Set an in-progress bug to resolved.
+* `set-status`: Set a bug to any allowed status.
 
 ### `ai-team bug new`
 
-Create a new open bug artifact from the bundled template.
+Create a new open bug in the tracker from the bundled template.
 
 **Usage**:
 
@@ -130,7 +132,7 @@ $ ai-team bug new [OPTIONS] TITLE
 
 ### `ai-team bug start`
 
-Move an open bug to in-progress and update status.
+Set an open bug to in-progress.
 
 **Usage**:
 
@@ -148,7 +150,7 @@ $ ai-team bug start [OPTIONS] BUG_ID
 
 ### `ai-team bug resolve`
 
-Move an in-progress bug to resolved and update status.
+Set an in-progress bug to resolved.
 
 **Usage**:
 
@@ -162,6 +164,26 @@ $ ai-team bug resolve [OPTIONS] BUG_ID
 
 **Options**:
 
+* `--help`: Show this message and exit.
+
+### `ai-team bug set-status`
+
+Set a bug to any allowed status.
+
+**Usage**:
+
+```console
+$ ai-team bug set-status [OPTIONS] BUG_ID STATUS:{open|in-progress|resolved}
+```
+
+**Arguments**:
+
+* `BUG_ID`: [required]
+* `STATUS:{open|in-progress|resolved}`: One of: open, in-progress, resolved  [required]
+
+**Options**:
+
+* `--reason TEXT`: Recorded as a Work Log entry.
 * `--help`: Show this message and exit.
 
 ## `ai-team change-request`
@@ -180,11 +202,12 @@ $ ai-team change-request [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `new`: Create a new change-request artifact from...
+* `new`: Create a new change-request in the tracker...
+* `set-status`: Set a change-request to pending, approved,...
 
 ### `ai-team change-request new`
 
-Create a new change-request artifact from the bundled template.
+Create a new change-request in the tracker from the bundled template.
 
 **Usage**:
 
@@ -199,6 +222,25 @@ $ ai-team change-request new [OPTIONS] TITLE
 **Options**:
 
 * `--json`: Emit JSON output.
+* `--help`: Show this message and exit.
+
+### `ai-team change-request set-status`
+
+Set a change-request to pending, approved, or rejected.
+
+**Usage**:
+
+```console
+$ ai-team change-request set-status [OPTIONS] CR_ID STATUS:{pending|approved|rejected}
+```
+
+**Arguments**:
+
+* `CR_ID`: [required]
+* `STATUS:{pending|approved|rejected}`: One of: pending, approved, rejected  [required]
+
+**Options**:
+
 * `--help`: Show this message and exit.
 
 ## `ai-team check-layout`
@@ -254,15 +296,15 @@ $ ai-team list [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `tasks`: List tasks from the project task folders.
-* `bugs`: List bugs from the project bug folders.
+* `tasks`: List tasks from the tracker.
+* `bugs`: List bugs from the tracker.
 * `specs`: List specs from the project specs folder.
 * `adrs`: List ADRs from the project decisions folder.
-* `change-requests`: List change requests from the project...
+* `change-requests`: List change requests from the tracker.
 
 ### `ai-team list tasks`
 
-List tasks from the project task folders.
+List tasks from the tracker.
 
 **Usage**:
 
@@ -272,13 +314,14 @@ $ ai-team list tasks [OPTIONS]
 
 **Options**:
 
-* `--state TEXT`: Filter by task state folder.
+* `--state TEXT`: Filter by task status.
+* `--spec TEXT`: Filter by source spec or change-request ID.
 * `--json`: Emit JSON output.
 * `--help`: Show this message and exit.
 
 ### `ai-team list bugs`
 
-List bugs from the project bug folders.
+List bugs from the tracker.
 
 **Usage**:
 
@@ -288,7 +331,7 @@ $ ai-team list bugs [OPTIONS]
 
 **Options**:
 
-* `--state TEXT`: Filter by bug state folder.
+* `--state TEXT`: Filter by bug status.
 * `--json`: Emit JSON output.
 * `--help`: Show this message and exit.
 
@@ -326,7 +369,7 @@ $ ai-team list adrs [OPTIONS]
 
 ### `ai-team list change-requests`
 
-List change requests from the project change-requests folder.
+List change requests from the tracker.
 
 **Usage**:
 
@@ -336,6 +379,7 @@ $ ai-team list change-requests [OPTIONS]
 
 **Options**:
 
+* `--state TEXT`: Filter by change-request status.
 * `--json`: Emit JSON output.
 * `--help`: Show this message and exit.
 
@@ -443,15 +487,16 @@ $ ai-team task [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `new`: Create a new pending task artifact from...
-* `start`: Move a pending task to in-progress and...
-* `complete`: Move an in-progress task to completed and...
-* `unblock`: Move a blocked task to in-progress and...
-* `block`: Move a task to blocked, update status, and...
+* `new`: Create a new task in the tracker from the...
+* `start`: Set a pending task to in-progress.
+* `complete`: Set an in-progress task to completed.
+* `unblock`: Set a blocked task back to in-progress.
+* `block`: Set a task to blocked and record the...
+* `set-status`: Set a task to any allowed status.
 
 ### `ai-team task new`
 
-Create a new pending task artifact from the bundled template.
+Create a new task in the tracker from the bundled template.
 
 **Usage**:
 
@@ -467,13 +512,14 @@ $ ai-team task new [OPTIONS] TITLE
 
 * `--priority [critical|high|medium|low]`: [default: medium]
 * `--assigned-role TEXT`: [default: unassigned]
-* `--spec TEXT`
+* `--spec TEXT`: Source spec or change-request ID.
+* `--status [planned|pending]`: &#x27;planned&#x27; keeps the task out of /dev-loop until its plan merges.  [default: pending]
 * `--json`: Emit JSON output.
 * `--help`: Show this message and exit.
 
 ### `ai-team task start`
 
-Move a pending task to in-progress and update status.
+Set a pending task to in-progress.
 
 **Usage**:
 
@@ -491,7 +537,7 @@ $ ai-team task start [OPTIONS] TASK_ID
 
 ### `ai-team task complete`
 
-Move an in-progress task to completed and update status.
+Set an in-progress task to completed.
 
 **Usage**:
 
@@ -509,7 +555,7 @@ $ ai-team task complete [OPTIONS] TASK_ID
 
 ### `ai-team task unblock`
 
-Move a blocked task to in-progress and update status.
+Set a blocked task back to in-progress.
 
 **Usage**:
 
@@ -527,7 +573,7 @@ $ ai-team task unblock [OPTIONS] TASK_ID
 
 ### `ai-team task block`
 
-Move a task to blocked, update status, and append blocking reason.
+Set a task to blocked and record the blocking reason in its Work Log.
 
 **Usage**:
 
@@ -542,6 +588,59 @@ $ ai-team task block [OPTIONS] TASK_ID
 **Options**:
 
 * `--reason TEXT`: [required]
+* `--help`: Show this message and exit.
+
+### `ai-team task set-status`
+
+Set a task to any allowed status.
+
+**Usage**:
+
+```console
+$ ai-team task set-status [OPTIONS] TASK_ID STATUS:{planned|pending|in-progress|blocked|completed|cancelled}
+```
+
+**Arguments**:
+
+* `TASK_ID`: [required]
+* `STATUS:{planned|pending|in-progress|blocked|completed|cancelled}`: One of: planned, pending, in-progress, blocked, completed, cancelled  [required]
+
+**Options**:
+
+* `--reason TEXT`: Recorded as a Work Log entry.
+* `--help`: Show this message and exit.
+
+## `ai-team tracker`
+
+Inspect the local work-item tracker.
+
+**Usage**:
+
+```console
+$ ai-team tracker [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `path`: Print the absolute tracker folder shared...
+
+### `ai-team tracker path`
+
+Print the absolute tracker folder shared by every worktree of this repository.
+
+**Usage**:
+
+```console
+$ ai-team tracker path [OPTIONS]
+```
+
+**Options**:
+
+* `--json`: Emit JSON output.
 * `--help`: Show this message and exit.
 
 ## `ai-team validate`

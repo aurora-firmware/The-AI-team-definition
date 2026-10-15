@@ -28,26 +28,11 @@ def make_project_layout(base: Path, project_dir_name: str = "project") -> Path:
         base/
           <project_dir_name>/
             specs/
-            tasks/
-              pending/
-              in-progress/
-              completed/
-              blocked/
-            bugs/
-              open/
-              in-progress/
-              resolved/
-            change-requests/
             decisions/
             docs/
     """
     proj = base / project_dir_name
     (proj / "specs").mkdir(parents=True)
-    for state in ("pending", "in-progress", "completed", "blocked"):
-        (proj / "tasks" / state).mkdir(parents=True)
-    for state in ("open", "in-progress", "resolved"):
-        (proj / "bugs" / state).mkdir(parents=True)
-    (proj / "change-requests").mkdir()
     (proj / "decisions").mkdir()
     (proj / "docs").mkdir()
     return base
@@ -95,23 +80,16 @@ def test_project_root_exposes_specs_path(tmp_path):
     assert result.specs == tmp_path / "project" / "specs"
 
 
-def test_project_root_exposes_task_state_folders(tmp_path):
-    """ProjectRoot exposes all four task state folder paths."""
+def test_project_root_exposes_tracker_folders_with_default_location(tmp_path):
+    """Work items live in the default tracker at the repository root (S-006)."""
     make_project_layout(tmp_path)
     result = find_project_root(tmp_path)
-    assert result.tasks_pending == tmp_path / "project" / "tasks" / "pending"
-    assert result.tasks_in_progress == tmp_path / "project" / "tasks" / "in-progress"
-    assert result.tasks_completed == tmp_path / "project" / "tasks" / "completed"
-    assert result.tasks_blocked == tmp_path / "project" / "tasks" / "blocked"
-
-
-def test_project_root_exposes_bug_state_folders(tmp_path):
-    """ProjectRoot exposes all three bug state folder paths."""
-    make_project_layout(tmp_path)
-    result = find_project_root(tmp_path)
-    assert result.bugs_open == tmp_path / "project" / "bugs" / "open"
-    assert result.bugs_in_progress == tmp_path / "project" / "bugs" / "in-progress"
-    assert result.bugs_resolved == tmp_path / "project" / "bugs" / "resolved"
+    tracker = tmp_path / ".ai-team" / "tracker"
+    assert result.tracker == tracker
+    assert result.tasks == tracker / "tasks"
+    assert result.bugs == tracker / "bugs"
+    assert result.change_requests == tracker / "change-requests"
+    assert result.archive == tracker / "archive"
 
 
 def test_project_root_exposes_decisions_and_docs(tmp_path):
@@ -120,13 +98,6 @@ def test_project_root_exposes_decisions_and_docs(tmp_path):
     result = find_project_root(tmp_path)
     assert result.decisions == tmp_path / "project" / "decisions"
     assert result.docs == tmp_path / "project" / "docs"
-
-
-def test_project_root_exposes_change_requests_path(tmp_path):
-    """ProjectRoot exposes the path to change-request artifacts."""
-    make_project_layout(tmp_path)
-    result = find_project_root(tmp_path)
-    assert result.change_requests == tmp_path / "project" / "change-requests"
 
 
 def test_repo_path_is_absolute_even_when_cwd_is_relative(tmp_path):

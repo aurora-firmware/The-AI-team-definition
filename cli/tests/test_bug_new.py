@@ -5,9 +5,16 @@ import threading
 from datetime import date
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from ai_team.core.models import parse_bug
+
+
+@pytest.fixture(autouse=True)
+def _project_dir(tmp_path):
+    """The locator needs the project directory; work items live in the tracker."""
+    (tmp_path / "project").mkdir(exist_ok=True)
 
 
 def _mkdir(path: Path) -> None:
@@ -20,17 +27,17 @@ def test_bug_new_creates_open_bug_with_defaults_and_prints_absolute_path(
     """`ai-team bug new` creates one open bug file and echoes its absolute path."""
     from ai_team.cli import app
 
-    _mkdir(tmp_path / "project" / "bugs" / "open")
+    _mkdir(tmp_path / ".ai-team" / "tracker" / "bugs")
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["bug", "new", "Crash on launch"])
 
-    expected = tmp_path / "project" / "bugs" / "open" / "B-001-crash-on-launch.md"
+    expected = tmp_path / ".ai-team" / "tracker" / "bugs" / "B-001-crash-on-launch.md"
 
     assert result.exit_code == 0
     assert result.stdout.strip() == str(expected)
 
-    files = list((tmp_path / "project" / "bugs" / "open").glob("*.md"))
+    files = list((tmp_path / ".ai-team" / "tracker" / "bugs").glob("*.md"))
     assert files == [expected]
 
     bug = parse_bug(expected)
@@ -46,7 +53,7 @@ def test_bug_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
     """`bug new --json` emits id/path and writes frontmatter from supplied flags."""
     from ai_team.cli import app
 
-    _mkdir(tmp_path / "project" / "bugs" / "open")
+    _mkdir(tmp_path / ".ai-team" / "tracker" / "bugs")
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(
@@ -63,7 +70,7 @@ def test_bug_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
         ],
     )
 
-    expected = tmp_path / "project" / "bugs" / "open" / "B-001-fix-auth-race.md"
+    expected = tmp_path / ".ai-team" / "tracker" / "bugs" / "B-001-fix-auth-race.md"
     payload = json.loads(result.stdout)
 
     assert result.exit_code == 0
@@ -83,7 +90,7 @@ def test_bug_new_refuses_to_overwrite_when_allocated_path_exists(monkeypatch, tm
     """Existing output path causes non-zero exit and preserves file bytes."""
     from ai_team.cli import app
 
-    open_folder = tmp_path / "project" / "bugs" / "open"
+    open_folder = tmp_path / ".ai-team" / "tracker" / "bugs"
     _mkdir(open_folder)
 
     existing = open_folder / "B-001-crash-on-launch.md"
@@ -102,14 +109,14 @@ def test_bug_new_substitutes_body_h1_with_provided_title(monkeypatch, tmp_path):
     """`bug new` replaces the `# [Bug Title]` body placeholder with the given title."""
     from ai_team.cli import app
 
-    _mkdir(tmp_path / "project" / "bugs" / "open")
+    _mkdir(tmp_path / ".ai-team" / "tracker" / "bugs")
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["bug", "new", "Crash on startup"])
 
     assert result.exit_code == 0
 
-    expected = tmp_path / "project" / "bugs" / "open" / "B-001-crash-on-startup.md"
+    expected = tmp_path / ".ai-team" / "tracker" / "bugs" / "B-001-crash-on-startup.md"
     content = expected.read_text(encoding="utf-8")
 
     assert "# Crash on startup" in content
@@ -131,7 +138,7 @@ def test_bug_new_allocates_distinct_ids_for_two_concurrent_callers(
     """
     import ai_team.commands.bug as bug_cmd
 
-    open_folder = tmp_path / "project" / "bugs" / "open"
+    open_folder = tmp_path / ".ai-team" / "tracker" / "bugs"
     _mkdir(open_folder)
     for state in ("in-progress", "resolved"):
         _mkdir(tmp_path / "project" / "bugs" / state)

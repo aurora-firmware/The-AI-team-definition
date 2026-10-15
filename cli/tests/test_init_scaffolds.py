@@ -243,14 +243,6 @@ def test_sync_script_replaces_project_with_empty_lifecycle_skeleton(
     project_root = repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "project"
     expected_files = {
         Path("specs/.gitkeep"),
-        Path("tasks/pending/.gitkeep"),
-        Path("tasks/in-progress/.gitkeep"),
-        Path("tasks/completed/.gitkeep"),
-        Path("tasks/blocked/.gitkeep"),
-        Path("bugs/open/.gitkeep"),
-        Path("bugs/in-progress/.gitkeep"),
-        Path("bugs/resolved/.gitkeep"),
-        Path("change-requests/.gitkeep"),
         Path("decisions/.gitkeep"),
         Path("docs/.gitkeep"),
         Path("CLAUDE.md"),
@@ -388,7 +380,8 @@ def test_init_scaffolds_export_change_request_skill_and_project_directory() -> N
 
     assert (source_skill / "body.md").is_file()
     assert (source_skill / "metadata.toml").is_file()
-    assert (scaffold_project / "change-requests" / ".gitkeep").is_file()
+    # Change-requests live in the local tracker (S-006), not the project scaffold.
+    assert not (scaffold_project / "change-requests").exists()
 
     for tool in ("claude", "codex"):
         scaffold_skill = (

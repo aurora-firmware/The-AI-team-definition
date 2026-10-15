@@ -3,7 +3,15 @@
 import json
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
+
+
+@pytest.fixture(autouse=True)
+def _project_dir(tmp_path):
+    """The locator needs the project directory; work items live in the tracker."""
+    (tmp_path / "project").mkdir(exist_ok=True)
+
 
 TASK_TEMPLATE = """\
 ---
@@ -114,19 +122,19 @@ def test_status_rich_summary_includes_counts_and_key_lists(monkeypatch, tmp_path
         tmp_path / "project" / "specs" / "S-001.md", _spec("Spec 1", "0.1", "approved")
     )
     _write(
-        tmp_path / "project" / "tasks" / "pending" / "T-001.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001.md",
         _task("T-001", "Pending task", "pending"),
     )
     _write(
-        tmp_path / "project" / "tasks" / "in-progress" / "T-002.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-002.md",
         _task("T-002", "In progress task", "in-progress", assigned_role="reviewer"),
     )
     _write(
-        tmp_path / "project" / "tasks" / "completed" / "T-003.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-003.md",
         _task("T-003", "Completed task", "completed"),
     )
     _write(
-        tmp_path / "project" / "tasks" / "blocked" / "T-004.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-004.md",
         _task(
             "T-004",
             "Blocked task",
@@ -140,23 +148,23 @@ def test_status_rich_summary_includes_counts_and_key_lists(monkeypatch, tmp_path
     )
 
     _write(
-        tmp_path / "project" / "bugs" / "open" / "B-001.md",
+        tmp_path / ".ai-team" / "tracker" / "bugs" / "B-001.md",
         _bug("B-001", "Critical bug", "critical", "open"),
     )
     _write(
-        tmp_path / "project" / "bugs" / "open" / "B-002.md",
+        tmp_path / ".ai-team" / "tracker" / "bugs" / "B-002.md",
         _bug("B-002", "High bug", "high", "open"),
     )
     _write(
-        tmp_path / "project" / "bugs" / "open" / "B-003.md",
+        tmp_path / ".ai-team" / "tracker" / "bugs" / "B-003.md",
         _bug("B-003", "Low bug", "low", "open"),
     )
     _write(
-        tmp_path / "project" / "bugs" / "in-progress" / "B-004.md",
+        tmp_path / ".ai-team" / "tracker" / "bugs" / "B-004.md",
         _bug("B-004", "In-progress bug", "medium", "in-progress"),
     )
     _write(
-        tmp_path / "project" / "bugs" / "resolved" / "B-005.md",
+        tmp_path / ".ai-team" / "tracker" / "bugs" / "B-005.md",
         _bug("B-005", "Resolved bug", "medium", "resolved"),
     )
 
@@ -193,7 +201,7 @@ def test_status_json_emits_structured_payload_without_rich_table(monkeypatch, tm
         tmp_path / "project" / "specs" / "S-001.md", _spec("Spec 1", "0.1", "approved")
     )
     _write(
-        tmp_path / "project" / "tasks" / "in-progress" / "T-100.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-100.md",
         _task("T-100", "Do work", "in-progress", assigned_role="developer"),
     )
 
@@ -247,7 +255,7 @@ waiting on API contract clarification
 stuck on reviewer approval
 """
     _write(
-        tmp_path / "project" / "tasks" / "blocked" / "T-200.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-200.md",
         _task(
             "T-200",
             "Needs review",
@@ -277,7 +285,7 @@ def test_status_uses_latest_integration_commit_subject_when_available(
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "tasks" / "pending" / "T-001.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001.md",
         _task("T-001", "Pending task", "pending"),
     )
 

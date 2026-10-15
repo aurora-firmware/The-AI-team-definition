@@ -3,7 +3,15 @@
 import json
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
+
+
+@pytest.fixture(autouse=True)
+def _project_dir(tmp_path):
+    """The locator needs the project directory; work items live in the tracker."""
+    (tmp_path / "project").mkdir(exist_ok=True)
+
 
 TASK_TEMPLATE = """\
 ---
@@ -99,7 +107,7 @@ def _seed_valid_project(root: Path) -> None:
         _spec("S-001", "Roadmap Spec"),
     )
     _write(
-        root / "project" / "tasks" / "pending" / "T-001-roadmap-task.md",
+        root / ".ai-team" / "tracker" / "tasks" / "T-001-roadmap-task.md",
         _task(
             "T-001",
             "Roadmap Task",
@@ -108,7 +116,7 @@ def _seed_valid_project(root: Path) -> None:
         ),
     )
     _write(
-        root / "project" / "bugs" / "open" / "B-001-roadmap-bug.md",
+        root / ".ai-team" / "tracker" / "bugs" / "B-001-roadmap-bug.md",
         _bug(
             "B-001",
             "Roadmap Bug",
@@ -137,16 +145,16 @@ def test_validate_exits_zero_and_reports_zero_findings_for_clean_project(
     assert "0 finding" in result.stdout
 
 
-def test_validate_emits_error_when_status_disagrees_with_state_folder(
+def test_validate_emits_error_when_status_is_not_an_allowed_value(
     monkeypatch, tmp_path
 ):
-    """Task and bug status fields must match the state folder they live in."""
+    """Task status must be one of the allowed tracker statuses (S-006)."""
     from ai_team.cli import app
 
     _seed_valid_project(tmp_path)
     _write(
-        tmp_path / "project" / "tasks" / "pending" / "T-002-status-mismatch.md",
-        _task("T-002", "Mismatch Task", "completed"),
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-002-status-mismatch.md",
+        _task("T-002", "Mismatch Task", "done"),
     )
 
     monkeypatch.chdir(tmp_path)
@@ -155,8 +163,8 @@ def test_validate_emits_error_when_status_disagrees_with_state_folder(
     assert result.exit_code != 0
     findings = json.loads(result.stdout)
     assert any(
-        finding["code"] == "status-mismatch"
-        and finding["path"].endswith("project/tasks/pending/T-002-status-mismatch.md")
+        finding["code"] == "status-invalid"
+        and finding["path"].endswith(".ai-team/tracker/tasks/T-002-status-mismatch.md")
         for finding in findings
     )
 
@@ -169,7 +177,7 @@ def test_validate_emits_error_when_cross_references_do_not_resolve(
 
     _seed_valid_project(tmp_path)
     _write(
-        tmp_path / "project" / "tasks" / "pending" / "T-003-missing-spec.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-003-missing-spec.md",
         _task(
             "T-003",
             "Task Missing Spec",
@@ -178,7 +186,7 @@ def test_validate_emits_error_when_cross_references_do_not_resolve(
         ),
     )
     _write(
-        tmp_path / "project" / "bugs" / "open" / "B-002-missing-task.md",
+        tmp_path / ".ai-team" / "tracker" / "bugs" / "B-002-missing-task.md",
         _bug(
             "B-002",
             "Bug Missing Task",
@@ -220,8 +228,8 @@ def test_validate_json_outputs_plain_list_without_rich_table(monkeypatch, tmp_pa
 
     _seed_valid_project(tmp_path)
     _write(
-        tmp_path / "project" / "tasks" / "pending" / "T-010-bad-status.md",
-        _task("T-010", "Bad status", "completed"),
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-010-bad-status.md",
+        _task("T-010", "Bad status", "done"),
     )
 
     monkeypatch.chdir(tmp_path)
@@ -240,15 +248,15 @@ def test_validate_exits_non_zero_when_any_error_finding_exists(monkeypatch, tmp_
 
     _seed_valid_project(tmp_path)
     _write(
-        tmp_path / "project" / "bugs" / "open" / "B-010-status-mismatch.md",
-        _bug("B-010", "Bad bug status", "resolved"),
+        tmp_path / ".ai-team" / "tracker" / "bugs" / "B-010-status-mismatch.md",
+        _bug("B-010", "Bad bug status", "closed"),
     )
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["validate"])
 
     assert result.exit_code != 0
-    assert "status-mismatch" in result.stdout
+    assert "status-invalid" in result.stdout
 
 
 def test_validate_detects_frontmatter_id_and_filename_violations(monkeypatch, tmp_path):
@@ -257,7 +265,7 @@ def test_validate_detects_frontmatter_id_and_filename_violations(monkeypatch, tm
 
     _seed_valid_project(tmp_path)
     _write(
-        tmp_path / "project" / "tasks" / "pending" / "not-task.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "not-task.md",
         _task("TASK-001", "Bad Task ID", "pending"),
     )
     _write(
@@ -295,8 +303,8 @@ def test_validate_scope_flags_limit_checked_artifact_kinds(monkeypatch, tmp_path
 
     _seed_valid_project(tmp_path)
     _write(
-        tmp_path / "project" / "bugs" / "open" / "B-010-status-mismatch.md",
-        _bug("B-010", "Bad bug status", "resolved"),
+        tmp_path / ".ai-team" / "tracker" / "bugs" / "B-010-status-mismatch.md",
+        _bug("B-010", "Bad bug status", "closed"),
     )
 
     monkeypatch.chdir(tmp_path)
@@ -333,7 +341,7 @@ def test_validate_change_requests_reports_valid_cr_with_no_findings(
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "change-requests" / "CR-001-add-step.md",
+        tmp_path / ".ai-team" / "tracker" / "change-requests" / "CR-001-add-step.md",
         _change_request("CR-001", "Add step", "pending"),
     )
 
@@ -351,7 +359,7 @@ def test_validate_change_requests_reports_frontmatter_error_for_missing_required
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "change-requests" / "CR-002-bad.md",
+        tmp_path / ".ai-team" / "tracker" / "change-requests" / "CR-002-bad.md",
         """\
 ---
 title: "Bad CR missing id"
@@ -376,7 +384,7 @@ def test_validate_change_requests_reports_id_pattern_error(monkeypatch, tmp_path
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "change-requests" / "CR-003-bad-id.md",
+        tmp_path / ".ai-team" / "tracker" / "change-requests" / "CR-003-bad-id.md",
         _change_request("CHANGE-003", "Bad ID format", "pending"),
     )
 
@@ -393,7 +401,7 @@ def test_validate_change_requests_reports_filename_pattern_error(monkeypatch, tm
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "change-requests" / "not-a-cr.md",
+        tmp_path / ".ai-team" / "tracker" / "change-requests" / "not-a-cr.md",
         _change_request("CR-004", "Good ID bad filename", "pending"),
     )
 
@@ -414,12 +422,12 @@ def test_validate_scope_change_requests_flag_excludes_other_artifact_kinds(
     _seed_valid_project(tmp_path)
     # A bug with a bad status — should not appear when only --change-requests is set
     _write(
-        tmp_path / "project" / "bugs" / "open" / "B-010-status-mismatch.md",
-        _bug("B-010", "Bad bug status", "resolved"),
+        tmp_path / ".ai-team" / "tracker" / "bugs" / "B-010-status-mismatch.md",
+        _bug("B-010", "Bad bug status", "closed"),
     )
     # A valid change request
     _write(
-        tmp_path / "project" / "change-requests" / "CR-001-valid.md",
+        tmp_path / ".ai-team" / "tracker" / "change-requests" / "CR-001-valid.md",
         _change_request("CR-001", "Valid CR", "pending"),
     )
 
@@ -436,7 +444,7 @@ def test_validate_default_scope_includes_change_requests(monkeypatch, tmp_path):
 
     _seed_valid_project(tmp_path)
     _write(
-        tmp_path / "project" / "change-requests" / "CR-999-bad.md",
+        tmp_path / ".ai-team" / "tracker" / "change-requests" / "CR-999-bad.md",
         """\
 ---
 title: "Missing id field"
@@ -526,7 +534,7 @@ def test_validate_resolves_task_spec_reference_by_frontmatter_id(monkeypatch, tm
         _spec("S-001", "Launch Plan"),
     )
     _write(
-        tmp_path / "project" / "tasks" / "pending" / "T-001-do-thing.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001-do-thing.md",
         _task(
             "T-001",
             "Do Thing",
@@ -553,7 +561,7 @@ def test_validate_resolves_task_spec_reference_by_bare_slug_of_new_style_filenam
         _spec("S-001", "Launch Plan"),
     )
     _write(
-        tmp_path / "project" / "tasks" / "pending" / "T-001-do-thing.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001-do-thing.md",
         _task(
             "T-001",
             "Do Thing",
@@ -578,7 +586,7 @@ def test_validate_resolves_task_spec_reference_to_archived_spec(monkeypatch, tmp
         _spec("S-001", "Launch Plan"),
     )
     _write(
-        tmp_path / "project" / "tasks" / "pending" / "T-001-do-thing.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001-do-thing.md",
         _task(
             "T-001",
             "Do Thing",
@@ -609,7 +617,7 @@ def test_validate_still_reports_task_spec_missing_for_genuinely_missing_spec(
         _spec("S-001", "Launch Plan"),
     )
     _write(
-        tmp_path / "project" / "tasks" / "pending" / "T-001-do-thing.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001-do-thing.md",
         _task(
             "T-001",
             "Do Thing",

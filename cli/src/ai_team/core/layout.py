@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.metadata
 import importlib.resources as resources
 import re
+import subprocess
 import tomllib
 from dataclasses import dataclass, field
 from importlib.resources.abc import Traversable
@@ -12,6 +13,12 @@ from pathlib import Path
 from typing import Literal
 
 from ai_team.core.locator import ProjectRoot
+from ai_team.core.tracker import (
+    MIGRATION_GUIDE,
+    is_inside,
+    legacy_work_item_dirs,
+    resolve_tracker_dir,
+)
 from ai_team.core.validate import Finding as ArtifactFinding
 from ai_team.core.validate import validate_project
 
@@ -249,10 +256,48 @@ def _expected_directories(contract: LayoutContract) -> list[Path]:
     return expected
 
 
-def check_level_1(contract: LayoutContract) -> list[LayoutFinding]:
-    """Report missing directories from current project and selected-tool scaffolds."""
+def _tracker_findings(contract: LayoutContract) -> list[LayoutFinding]:
+    """Report an unignored in-repository tracker and unmigrated legacy folders."""
 
-    findings = []
+    findings: list[LayoutFinding] = []
+    tracker = resolve_tracker_dir(contract.repo)
+    if is_inside(tracker, contract.repo):
+        display_path = tracker.relative_to(contract.repo).as_posix()
+        try:
+            completed = subprocess.run(
+                ["git", "-C", str(contract.repo), "check-ignore", "-q", display_path],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except OSError:
+            completed = None
+        if completed is not None and completed.returncode == 1:
+            findings.append(
+                _finding(
+                    1,
+                    display_path,
+                    f"Tracker folder '{display_path}' is inside the repository but not ignored by git.",
+                    f"Add '/{display_path.split('/')[0]}/' to the repository's root .gitignore.",
+                )
+            )
+
+    for folder in legacy_work_item_dirs(contract.project_dir):
+        display_path = folder.relative_to(contract.repo).as_posix()
+        findings.append(
+            _finding(
+                1,
+                display_path,
+                f"Legacy work-item folder '{display_path}' still holds files; tasks, bugs, and change-requests now live in the local tracker.",
+                f"Follow {MIGRATION_GUIDE} to move the files into the tracker and remove the folder.",
+            )
+        )
+    return findings
+
+
+def check_level_1(contract: LayoutContract) -> list[LayoutFinding]:
+    """Report missing directories, tracker ignore problems, and legacy folders."""
+
+    findings = _tracker_findings(contract)
     for path in _expected_directories(contract):
         if not path.is_dir():
             display_path = path.relative_to(contract.repo).as_posix()
@@ -272,18 +317,15 @@ _LEVEL_2_CODES = {
     "frontmatter-invalid",
     "id-missing",
     "id-pattern",
-    "status-mismatch",
+    "status-invalid",
 }
 
 
 def _artifact_suggested_fix(finding: ArtifactFinding) -> str:
     if finding.code == "filename-pattern":
         return "Rename the artifact to the filename convention stated in the problem."
-    if finding.code == "status-mismatch":
-        return (
-            "Update the frontmatter status to match the lifecycle directory, or move "
-            "the artifact to the directory matching its current status."
-        )
+    if finding.code == "status-invalid":
+        return "Set the frontmatter status to one of the allowed values named in the problem."
     if finding.code == "id-pattern":
         return "Correct the frontmatter id to the required artifact ID pattern."
     if finding.code == "id-missing":
