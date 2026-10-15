@@ -1,0 +1,29 @@
+{
+  "name": "ai-team / pi extension",
+  "image": "localhost:5000/nodejs-dev:1.2.0",
+  "remoteUser": "ubuntu",
+  "updateRemoteUserUID": false,
+  "containerEnv": {
+    "UV_LINK_MODE": "copy",
+    "CLAUDE_CONFIG_DIR": "${localEnv:HOME}/.claude",
+    "PI_CODING_AGENT_DIR": "${localEnv:HOME}/.pi/agent"
+  },
+  "postCreateCommand": "cd cli && python scripts/sync_init_scaffolds.py && cd ../pi && npm ci",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "dbaeumer.vscode-eslint"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python3"
+      }
+    }
+  },
+  "mounts": [
+    "type=bind,source=${localEnv:HOME}/.claude,target=${localEnv:HOME}/.claude",
+    "type=bind,source=${localEnv:HOME}/.claude.json,target=${localEnv:HOME}/.claude/.claude.json",
+    "type=bind,source=${localEnv:HOME}/.pi/agent,target=${localEnv:HOME}/.pi/agent"
+  ]
+}
