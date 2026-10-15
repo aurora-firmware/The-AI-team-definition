@@ -62,8 +62,6 @@ In your new project root, create these directories:
 
 ```bash
 mkdir -p project/specs/archive
-mkdir -p project/tasks/pending project/tasks/in-progress project/tasks/completed project/tasks/blocked
-mkdir -p project/bugs/open project/bugs/in-progress project/bugs/resolved
 mkdir -p project/decisions
 mkdir -p project/docs
 mkdir -p .claude/agents
@@ -75,10 +73,18 @@ mkdir -p .codex
 Add `.gitkeep` files to keep empty directories in git:
 
 ```bash
-for dir in project/specs/archive project/tasks/pending project/tasks/in-progress project/tasks/completed project/tasks/blocked project/bugs/open project/bugs/in-progress project/bugs/resolved; do
+for dir in project/specs/archive project/decisions; do
   touch "$dir/.gitkeep"
 done
 touch project/docs/coding_guidelines.md
+```
+
+Tasks, bugs, and change-requests do not live in the project directory. They live in the local tracker, outside version control. `ai-team init` configures it; for a manual setup, add it yourself:
+
+```bash
+printf '\n[tracker]\ndir = ".ai-team/tracker"\n' >> .ai-team.toml
+mkdir -p .ai-team/tracker
+printf '\n/.ai-team/\n' >> .gitignore
 ```
 
 ### Step 3: Export the Framework Files
@@ -197,7 +203,7 @@ Run these checks to confirm everything is in place:
 
 2. **Slash commands work**: Run `/status-report` — it should produce an empty report with zero counts.
 
-3. **Create a test task**: Run `/new-task` and verify a file appears in `project/tasks/pending/`.
+3. **Create a test task**: Run `/new-task` and verify a file appears in the `tasks/` folder of the tracker (`ai-team tracker path`) and that `git status` stays clean.
 
 4. **Delete the test task**: Remove the test file you just created.
 
@@ -231,3 +237,26 @@ Your project is ready. The typical workflow is:
 8. **Final approval** — human approves the merge from `dev-agent` to `main` (Gate 5).
 
 For the full workflow details, see `ai-process/processes/workflow-overview.md`.
+
+## Migrating to the Local Tracker
+
+Projects created before spec S-006 keep tasks, bugs, and change-requests in the project directory: `tasks/<state>/`, `bugs/<state>/`, `change-requests/`, and archived items in `archive/YYYY-MM/`.
+Every tracker command prints a warning, and `ai-team check-layout` reports a finding, while those folders still hold files.
+There is no migration command: an agent migrates by hand with this procedure. Lifecycle state was the folder; after migration it is only the frontmatter `status` field.
+
+1. **Start clean.** Check out `dev-agent` and run the Workspace Hygiene check from the `git-conventions` skill. No loop may be running.
+2. **Locate the tracker.** Make sure `.ai-team.toml` has a `[tracker]` section (add `dir = ".ai-team/tracker"` if it is missing), then run `ai-team tracker path`. If the tracker lies inside the repository, add an ignore rule for it to the root `.gitignore` (for the default, `/.ai-team/`).
+3. **Record the starting counts** of markdown files, excluding `.gitkeep` and `TEMPLATE-*` files, in each legacy folder.
+4. **Copy the files** into the tracker, keeping their filenames:
+   - `tasks/<state>/*.md` → `<tracker>/tasks/`
+   - `bugs/<state>/*.md` → `<tracker>/bugs/`
+   - `change-requests/*.md` → `<tracker>/change-requests/`
+   - `archive/YYYY-MM/*.md` → `<tracker>/archive/YYYY-MM/`
+
+   If two files would land on the same name, stop and ask the human.
+5. **Reconcile status with the old folder.** The folder was authoritative. For every task or bug whose `status` differs from the state folder it came from, set the folder's state with `ai-team task set-status` or `ai-team bug set-status`, adding `--reason "migrated from <folder>"`. Change-requests keep their `status`.
+6. **Verify before deleting anything.** `ai-team list tasks --json`, `ai-team list bugs --json`, and `ai-team list change-requests --json` must return the starting counts from step 3, and `ai-team validate` must report no task, bug, or change-request findings.
+7. **Remove the legacy folders from the repository** with `git rm -r` (including their `.gitkeep` files), then confirm `ai-team check-layout` no longer reports legacy folders and no command prints the legacy warning.
+8. **Commit** on `dev-agent`: `chore(tracker): migrate work items to the local tracker`.
+9. **Check other branches.** Branches created before the migration still contain the legacy folders. They should not modify work-item files (those were canonical on `dev-agent` only), but if one does, move the change into the tracker by hand before merging that branch, and let the merge delete the folders.
+
