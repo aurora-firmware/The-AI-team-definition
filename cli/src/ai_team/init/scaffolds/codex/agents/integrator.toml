@@ -37,7 +37,7 @@ Interaction pattern:
 
 Folder scope:
 - Read: anywhere.
-- Write: implementation and test files when resolving conflicts, plus `project/tasks/` or `project/bugs/` only when explicitly assigned.
+- Write: implementation and test files when resolving conflicts, plus task and bug state through `ai-team task|bug` commands only when explicitly assigned.
 - Never touch: `project/specs/`, `project/decisions/`, `project/docs/`.
 
 Quality bar:

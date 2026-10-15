@@ -5,7 +5,7 @@ The development and bug-fix loops never invoke this skill — they end with a sh
 
 ## Input Requirements
 
-- **Project state directories** — `project/specs/`, `project/tasks/`, `project/bugs/`, and `project/decisions/`.
+- **Project state** — `project/specs/` and `project/decisions/` in the repository; tasks, bugs, and change-requests in the local tracker, read through `ai-team list`.
 - **Integration evidence** — completed task Work Logs, resolved bug Work Logs, or recent integration commits when available.
 - **AI team CLI** — `ai-team status` and `ai-team report` are available.
 
@@ -23,22 +23,16 @@ The command scans the project state directories, excludes template files and `.g
 
 ### Step 2: Count Current State
 
-Scan these directories and count files, excluding template files and `.gitkeep`:
-- `project/specs/`
-- `project/tasks/pending/`
-- `project/tasks/in-progress/`
-- `project/tasks/completed/`
-- `project/tasks/blocked/`
-- `project/bugs/open/`
-- `project/bugs/in-progress/`
-- `project/bugs/resolved/`
-- `project/decisions/`
+Count specs and ADRs in `project/specs/` and `project/decisions/`, excluding template files and `.gitkeep`.
+Count tasks and bugs by status with `ai-team list tasks --json` and `ai-team list bugs --json` (the `state` field is the frontmatter `status`):
+- tasks: `planned`, `pending`, `in-progress`, `completed`, `blocked`, `cancelled`
+- bugs: `open`, `in-progress`, `resolved`
 
 ### Step 3: Read Primary Artifacts
 
 Read active specifications and list title, status, and latest amendment or version if present.
-For each task in `project/tasks/in-progress/`, read the frontmatter and list ID, title, and assigned role.
-For each task in `project/tasks/blocked/`, read the frontmatter and Work Log section to identify the blocking reason.
+For each task with status `in-progress`, read the frontmatter and list ID, title, and assigned role.
+For each task with status `blocked`, read the frontmatter and Work Log section to identify the blocking reason.
 For each open bug with severity `critical` or `high`, list ID, title, and severity.
 
 ### Step 4: Inspect Integration Evidence

@@ -264,15 +264,23 @@ ai-team adr new "Use PostgreSQL for ledger storage" --status proposed
 ### File a change request
 
 Change requests capture proposed changes before they are planned as tasks.
-They land in `project/change-requests/` with a `CR-NNN-<slug>.md` filename.
+They land in the local tracker's `change-requests/` folder (outside version control) with a `CR-NNN-<slug>.md` filename.
 
 ```bash
-# Create a new pending change request (lands in project/change-requests/)
+# Create a new pending change request (lands in the tracker)
 ai-team change-request new "Revamp onboarding flow"
 
 # Emit machine-readable output for agent use
 ai-team change-request new "Revamp onboarding flow" --json
+
+# Record the human decision
+ai-team change-request set-status CR-001 approved
 ```
+
+Tasks, bugs, and change-requests all live in the local tracker; `ai-team tracker path`
+prints its location. Their state is the frontmatter `status` field, changed with
+`ai-team task|bug|change-request set-status` or the `start`/`complete`/`block`/`resolve`
+shortcuts — never by moving files.
 
 List change requests, specs, and ADRs:
 

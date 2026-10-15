@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: Two-stage code review for completed tasks and bug fixes. Use when a Developer submits work and the Reviewer must check task acceptance or bug diagnosis criteria before reviewing code quality.
-allowed-tools: Read, Edit, Grep, Glob, Bash(git diff *), Bash(git status *), Bash(git checkout *), Bash(git add *), Bash(git commit *), Skill(git-conventions)
+allowed-tools: Read, Edit, Grep, Glob, Bash(git diff *), Bash(git status *), Bash(git checkout *)
 effort: high
 ---
 
@@ -13,14 +13,14 @@ effort: high
 - **Code changes** — the diff or set of modified files.
 - **Test results** — confirmation that all tests pass.
 
-The task or bug file is canonical lifecycle state on `dev-agent`.
-Review verdicts are written and committed there, not on the implementation branch.
+The task or bug file lives in the local tracker, outside version control; `ai-team show <id> --json` reports its path.
+Review verdicts are written there, never committed, and never placed on the implementation branch.
 The two-stage checklist below is the canonical quality bar for all code reviews.
 
 ## Procedure
 
 ### Step 1: Read the Work Item
-Switch to `dev-agent` and read the canonical task or bug file completely.
+Read the task or bug file completely.
 For tasks, understand what was asked, what the acceptance criteria are, and which files should have been modified.
 For bugs, understand the symptom, reproduction status, diagnostic evidence, isolated fault, root cause or fault hypothesis, and Fix Verification steps.
 
@@ -67,19 +67,17 @@ The Reviewer's self-recovery threshold is **one review cycle** for ESCALATE-wort
 - If the code has a fundamental design issue that no amount of Developer fixes can address within the approved specification → **ESCALATE** immediately. Do not issue FAIL first and wait. ESCALATE-worthy examples: the spec is internally contradictory, the acceptance criteria cannot be met without a spec change, the diagnosis points at a root cause outside the bug's stated scope.
 
 ### Step 5: Record the Verdict
-Switch to `dev-agent`.
-Append to the canonical task or bug file under a `### Review Verdict — [date]` heading.
+Append to the task or bug file under a `### Review Verdict — [date]` heading, from whatever branch is checked out.
 The first line of the section must be one of: `PASS`, `FAIL`, or `ESCALATE`.
-Commit the verdict on `dev-agent` using the `git-conventions` skill (commit type `docs` with scope `tasks` or `bugs`, e.g. `docs(tasks): record T-NNN review verdict`).
-Include in the same commit any bug files filed through `new-bug` during this review, so the review leaves no untracked files behind.
+Do not commit anything: the verdict, and any bug filed through `new-bug` during this review, live in the tracker outside version control.
 
 **On PASS:** Record the verdict with a brief confirmation that both stages passed. Note any minor observations (non-blocking).
 
-**On FAIL:** Record the verdict and list each failed check with the location, what is wrong, and what should change. The work item stays in `in-progress/`. The Developer fixes the issues and re-submits. The active loop tracks the review cycle count. On a third consecutive FAIL, the active loop escalates to the Architect — the Reviewer does not need to change the verdict type.
+**On FAIL:** Record the verdict and list each failed check with the location, what is wrong, and what should change. The work item stays `in-progress`. The Developer fixes the issues and re-submits. The active loop tracks the review cycle count. On a third consecutive FAIL, the active loop escalates to the Architect — the Reviewer does not need to change the verdict type.
 
 ## Output Format
 
-PASS, FAIL, and ESCALATE append a `### Review Verdict — [date]` section to the canonical task or bug file on `dev-agent`.
+PASS, FAIL, and ESCALATE append a `### Review Verdict — [date]` section to the task or bug file in the tracker.
 The first line of the section is always one of: `PASS`, `FAIL`, or `ESCALATE`.
 
 ### On PASS

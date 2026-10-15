@@ -49,7 +49,7 @@ While spawned, the Integrator uses the `integrate` skill to run the merge, and t
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | implementation and test files when resolving conflicts, `project/tasks/` (task state updates when explicitly assigned), `project/bugs/` (bug state updates when explicitly assigned) |
+| Write / Edit | implementation and test files when resolving conflicts, task and bug state through `ai-team task|bug` commands when explicitly assigned |
 | Never touch | `project/specs/`, `project/decisions/`, `project/docs/` |
 
 ## Quality Bar

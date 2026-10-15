@@ -82,7 +82,7 @@ When the verdict is `HUMAN_ESCALATION`, also produce a Phase 2 Human Escalation 
 ```text
 ## Human Escalation Report
 
-Work item: <task or bug ID and path to canonical file>
+Work item: <task or bug ID and path to its tracker file>
 Source skill / loop: <dev-loop | bug-loop | spec-breakdown | other>
 Date: <YYYY-MM-DD>
 

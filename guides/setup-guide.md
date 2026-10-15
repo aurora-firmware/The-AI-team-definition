@@ -127,8 +127,7 @@ Start your `CLAUDE.md` with this structure and customize the first section:
 | Folder | Purpose |
 |---|---|
 | `project/specs/` | Technical specifications for features and systems |
-| `project/tasks/` | Task tracking: `pending/`, `in-progress/`, `completed/`, `blocked/` |
-| `project/bugs/` | Bug reports: `open/`, `in-progress/`, `resolved/` |
+| `.ai-team/tracker/` | Local work-item tracker (git-ignored): tasks, bugs, and change-requests; state is the `status` field |
 | `project/decisions/` | Architecture Decision Records (ADRs) |
 | `project/docs/` | Project-specific guidance for commands, coding conventions, and operations |
 | `.claude/agents/` | Agent role definitions |

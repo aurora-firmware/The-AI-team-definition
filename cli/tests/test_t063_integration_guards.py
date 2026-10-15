@@ -120,16 +120,14 @@ def _bug_loop_skill_texts() -> tuple[str, str, str]:
 # AC-1: integrate verifies latest committed canonical PASS verdict on dev-agent before merging
 
 
-def test_integrate_verifies_committed_pass_verdict_on_dev_agent_before_merge() -> None:
-    """AC-1: integrate must verify the latest committed canonical Review Verdict on
-    dev-agent is PASS before proceeding to merge."""
+def test_integrate_verifies_recorded_pass_verdict_before_merge() -> None:
+    """AC-1 (S-006): integrate must verify the latest Review Verdict recorded in the
+    tracker work item file is PASS before proceeding to merge."""
     source, claude, codex = _integrate_skill_texts()
     required_phrases = (
-        "committed",
-        "PASS",
-        "verdict",
+        "Verify the Latest Recorded Review Verdict is PASS",
+        "ai-team show <work-item-id> --json",
     )
-
     for phrase in required_phrases:
         assert phrase in source, f"integrate body.md must include: {phrase!r}"
         assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
@@ -206,58 +204,46 @@ def test_integrate_stops_and_reports_when_safe_delete_is_refused() -> None:
 # AC-3b: integrate task completion uses a deletion-aware move and old-path check
 
 
-def test_integrate_requires_deletion_aware_task_completion_move() -> None:
-    """B-012: task completion instructions must describe a git-aware move that stages
-    both the old-path deletion and new-path addition."""
+def test_integrate_completes_task_through_the_cli_without_a_lifecycle_commit() -> None:
+    """S-006 (supersedes B-012): task completion is a status change in the tracker,
+    made with `ai-team task complete`, never a git file move or lifecycle commit."""
     source, claude, codex = _integrate_skill_texts()
+    required_phrases = ("ai-team task complete <task-id>", "nothing to commit")
+    for phrase in required_phrases:
+        assert phrase in source, f"integrate body.md must include: {phrase!r}"
+        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
+        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+    for forbidden in ("git mv", "chore(tasks): move"):
+        assert forbidden not in source, f"integrate must not include: {forbidden!r}"
 
+
+def test_integrate_confirms_completed_status_before_reporting_success() -> None:
+    """S-006 (supersedes B-012): integrate confirms the task status is `completed`
+    through the CLI before reporting success."""
+    source, claude, codex = _integrate_skill_texts()
     required_phrases = (
-        "git mv",
-        "git rm",
-        "git add",
+        "The task status is `completed`",
+        "stop and report that the lifecycle update did not land",
     )
-
     for phrase in required_phrases:
         assert phrase in source, f"integrate body.md must include: {phrase!r}"
         assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
 
 
-def test_integrate_checks_old_task_path_is_clean_before_reporting_success() -> None:
-    """B-012: integrate must verify the old in-progress task path is neither tracked
-    nor dirty before reporting success. Working-tree cleanliness alone is not enough,
-    so the procedure must also check the tracked tree (git ls-files / git ls-tree)."""
-    source, claude, codex = _integrate_skill_texts()
-
-    required_phrases = (
-        "git ls-files project/tasks/in-progress/",
-        "git status --porcelain project/tasks/in-progress/",
-        "empty",
-    )
-
-    for phrase in required_phrases:
-        assert phrase in source, f"integrate body.md must include: {phrase!r}"
-        assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
-        assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
-
-
-# AC-4: dev-loop records committed Developer handoffs and Review Verdicts before integration
-
-
-def test_dev_loop_records_committed_work_log_on_dev_agent_before_integration() -> None:
-    """AC-4: dev-loop must commit the Developer Work Log handoff on dev-agent before
-    invoking integration."""
+def test_dev_loop_records_work_log_in_tracker_without_commit_or_switch() -> None:
+    """AC-4 (S-006): dev-loop appends the Developer Work Log handoff to the task file
+    in the tracker before integration, with no lifecycle commit or branch switch."""
     source, claude, codex = _dev_loop_skill_texts()
-
     required_phrases = (
-        "Commit the lifecycle update",
-        "chore(tasks): record T-NNN work log",
+        "append the Developer's entry under `## Work Log` in the task file",
+        "no switch and no commit",
     )
-
     for phrase in required_phrases:
         assert phrase in source, f"dev-loop body.md must include: {phrase!r}"
         assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+    assert "chore(tasks): record T-NNN work log" not in source
 
 
 def test_dev_loop_records_committed_review_verdict_on_dev_agent_before_integration() -> (
@@ -278,38 +264,33 @@ def test_dev_loop_records_committed_review_verdict_on_dev_agent_before_integrati
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
 
 
-def test_bug_loop_records_committed_diagnosis_log_on_dev_agent_before_integration() -> (
-    None
-):
-    """AC-4: bug-loop must commit the Developer Diagnosis Log handoff on dev-agent before
-    invoking integration."""
+def test_bug_loop_records_diagnosis_log_in_tracker_without_commit_or_switch() -> None:
+    """AC-4 (S-006): bug-loop appends the Diagnosis Log handoff to the bug file in the
+    tracker before implementation, with no lifecycle commit or branch switch."""
     source, claude, codex = _bug_loop_skill_texts()
-
     required_phrases = (
-        "Commit the lifecycle update",
-        "chore(bugs): record B-NNN diagnosis",
+        "append the Developer's entry under `## Diagnosis Log` in the bug file",
+        "no switch and no commit",
     )
-
     for phrase in required_phrases:
         assert phrase in source, f"bug-loop body.md must include: {phrase!r}"
         assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+    assert "chore(bugs): record B-NNN diagnosis" not in source
 
 
-def test_bug_loop_records_committed_work_log_on_dev_agent_before_integration() -> None:
-    """AC-4: bug-loop must commit the Developer Work Log handoff on dev-agent before
-    invoking integration."""
+def test_bug_loop_records_work_log_in_tracker_without_commit() -> None:
+    """AC-4 (S-006): bug-loop appends the Work Log handoff to the bug file in the
+    tracker before review, with no lifecycle commit."""
     source, claude, codex = _bug_loop_skill_texts()
-
     required_phrases = (
-        "Commit the lifecycle update",
-        "chore(bugs): record B-NNN work log",
+        "append the Developer's entry under `## Work Log` in the bug file. No switch and no commit.",
     )
-
     for phrase in required_phrases:
         assert phrase in source, f"bug-loop body.md must include: {phrase!r}"
         assert phrase in claude, f"Claude scaffold must include: {phrase!r}"
         assert phrase in codex, f"Codex scaffold must include: {phrase!r}"
+    assert "chore(bugs): record B-NNN work log" not in source
 
 
 def test_bug_loop_records_committed_review_verdict_on_dev_agent_before_integration() -> (

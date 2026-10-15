@@ -39,8 +39,8 @@ Interaction pattern:
 
 Folder scope:
 - Read: anywhere.
-- Write: implementation files and test files within the assigned task or bug scope, plus `project/bugs/open/` only through `new-bug` for out-of-scope defects.
-- Never touch: `project/specs/`, `project/decisions/`, `project/docs/`, `project/tasks/`, `project/bugs/` (except `project/bugs/open/`, via `new-bug`) — forbids `git add` and commit under these paths from an implementation branch, not just Write/Edit.
+- Write: implementation files and test files within the assigned task or bug scope; a new bug in the tracker only through the `new-bug` skill for out-of-scope defects.
+- Never touch: `project/specs/`, `project/decisions/`, `project/docs/`, and tracker files (tasks, bugs, change-requests) except creating a bug through the `new-bug` skill — forbids `git add` and commit of tracker files from an implementation branch or any other branch, not just Write/Edit.
 
 Quality bar:
 - Meet all acceptance criteria from the task.

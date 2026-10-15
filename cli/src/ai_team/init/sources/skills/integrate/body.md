@@ -21,20 +21,16 @@ Provided as `$ARGUMENTS`:
 4. Confirm the destination branch exists: `git branch | grep <destination>`. If not found, stop with: "Destination branch '<destination>' not found."
 5. Run the before-point **Workspace Hygiene** check from the `git-conventions` skill on the current branch. Integration switches branches several times, so it must start from a clean tree.
 
-### Step 2: Find the Canonical Work Item and Verification Command
+### Step 2: Find the Work Item and Verification Command
 
-Task and bug files are canonical lifecycle state on `dev-agent`.
-Do not rely on task or bug file copies from the source branch or destination branch.
+Task and bug files live in the local tracker, outside version control, so the same file is visible from every branch.
+Read them through the paths the `ai-team` CLI reports — never from a copy inside a branch.
 
-1. Switch to `dev-agent`.
-2. Extract the work item ID from the branch name:
+1. Extract the work item ID from the branch name:
    - `task/T-012-settings-api` → `T-012`
    - `bug/B-003-login-crash` → `B-003`
-3. Search for the matching canonical task or bug file:
-   ```
-   find project/tasks/ -name "<task-id>-*.md"
-   find project/bugs/ -name "<bug-id>-*.md"
-   ```
+2. Run `ai-team show <work-item-id> --json` to get the work item file's `path`.
+3. Determine the work item kind from the ID prefix (`T-` task, `B-` bug).
 4. If no work item file is found, continue without work-item verification but note the absence in the final report.
 5. If a task file is found, read it completely — focus on the **Description**, **Acceptance Criteria**, **Verification**, **Work Log**, and **Review** sections.
 6. If a bug file is found, read it completely — focus on the **Summary**, **Diagnosis Log**, **Fix Verification**, **Work Log**, and **Review** sections.
@@ -49,28 +45,28 @@ Do not rely on task or bug file copies from the source branch or destination bra
    c. If the discovered baseline command differs from the source-branch command from item 7, Step 6 must run both.
    d. If no project baseline command is discoverable at all, Step 6 falls back to running only the source-branch command, but record that fallback here as an explicit coverage-gap flag to carry into Step 6's report. A missing baseline must never be silently treated as sufficient coverage — and must never by itself block integration; only a genuinely failing test blocks Step 6.
 
-### Step 2b: Verify the Latest Committed Review Verdict on dev-agent is PASS
+### Step 2b: Verify the Latest Recorded Review Verdict is PASS
 
-Before leaving `dev-agent`, confirm that the latest committed canonical Review Verdict for
-this work item is PASS.
+Confirm that the latest Review Verdict recorded in the work item file is PASS.
+The Reviewer recorded it in the tracker file; no branch switch is needed to read it.
 
-1. While still on `dev-agent`, read the `## Review` section of the work item file.
+1. Read the `## Review` section of the work item file.
 2. Find the most recent `### Review Verdict` entry.
 3. Extract the verdict: PASS, FAIL, or ESCALATE.
-4. If the committed verdict is not PASS (or no verdict entry exists), stop and report:
-   - Work item ID and the verdict found (or "no verdict committed").
+4. If the recorded verdict is not PASS (or no verdict entry exists), stop and report:
+   - Work item ID and the verdict found (or "no verdict recorded").
    - Do not merge — the branch must pass review before integration.
-   - Instruct the active loop to ensure a committed PASS verdict exists on `dev-agent`
+   - Instruct the active loop to ensure a PASS verdict is recorded in the work item file
      before re-invoking integrate.
 
-Proceed to Step 3 only when the committed verdict is PASS.
+Proceed to Step 3 only when the recorded verdict is PASS.
 
 ### Step 3: Verify Branch Contains Expected Changes
 
 1. Check out the source branch: `git checkout <source-branch>`.
 2. Get the diff against the destination: `git diff <destination>...<source-branch> --stat`
 3. Get the full diff for inspection: `git diff <destination>...<source-branch>`
-4. Confirm the source diff does not modify the canonical task or bug lifecycle file. If it does, stop and ask the active loop to move lifecycle log or verdict content to `dev-agent` before integration.
+4. Confirm the source diff adds or modifies no lifecycle files — no tracker files and no legacy `tasks/`, `bugs/`, or `change-requests/` files in the project directory. If it does, stop and report: lifecycle state belongs in the tracker, never in a branch.
 5. For task branches, compare the changed files and logic against the task's acceptance criteria:
    - Each acceptance criterion must be traceable to at least one changed file.
    - No acceptance criterion should be entirely absent from the diff.
@@ -133,8 +129,7 @@ Evaluate the result:
      - **True regression** — the test passed in Step 4's source-branch run and fails now.
      - **Previously-uncovered failure** — the test was never executed in Step 4 because it is covered only by the newly-discovered baseline command from item 8, and it fails now.
    - Determine which file(s) and logic are responsible.
-   - Switch to `dev-agent`.
-   - Invoke the `new-bug` skill to file a canonical bug report for each failing test. Provide the full required input set in the invocation text:
+   - Invoke the `new-bug` skill to file a bug report in the tracker for each failing test. Provide the full required input set in the invocation text:
      - `title`: concise regression title
      - `severity`: based on user impact, data risk, security risk, and how much of the system is blocked
      - `summary`: include the merge commit that introduced the regression, the destination branch, the source branch that was being integrated, and the classification (true regression or previously-uncovered failure)
@@ -147,8 +142,7 @@ Evaluate the result:
      - `source-branch`: the source branch being integrated, so the bug-fix loop fixes the regression on that preserved branch before integration is retried
      - `suspected-area`: changed files implicated by the regression, or `unknown`
      - `fix-verification`: the destination-branch command that must pass after the fix
-   - Commit the filed regression bug report(s) on `dev-agent`: `chore(bugs): file integration regression for <work-item-id>`.
-3. Switch back to the destination branch.
+3. Stay on the destination branch — bug reports live in the tracker, so filing them needs no switch and no commit.
 4. After filing all regression bugs, **revert the merge commit**:
    ```bash
    git revert -m 1 HEAD --no-edit
@@ -166,25 +160,10 @@ Evaluate the result:
 
 Reached only when both Step 4 and Step 6 tests pass.
 
-1. **Update the canonical task file** (if a task file was found in Step 2):
-   - Move the task file from `project/tasks/in-progress/` to `project/tasks/completed/`
-     with a deletion-aware git operation so the old-path deletion and new-path addition
-     are staged atomically:
-     ```bash
-     git mv project/tasks/in-progress/<task-file> project/tasks/completed/<task-file>
-     ```
-     If the file was already moved in the working tree, repair the index before
-     continuing:
-     ```bash
-     git rm project/tasks/in-progress/<task-file>
-     git add project/tasks/completed/<task-file>
-     ```
-   - Update `status` in the frontmatter to `completed`.
-   - Stage and commit this change as a separate commit on the destination branch:
-     `chore(tasks): move <task-id> to completed`
-   - This is always a distinct commit after the merge commit — the merge commit covers source changes only.
+1. **Complete the task** (if a task file was found in Step 2): run `ai-team task complete <task-id>`.
+   This sets the task's `status` to `completed` in the tracker. There is no file move and nothing to commit — the merge commit is the only commit integration adds.
 
-2. **Do not move bug files here.**
+2. **Do not change bug status here.**
    Bug state changes are owned by the bug-fix loop after integrate reports success.
 
 3. **Delete the source branch** (safe delete only):
@@ -202,16 +181,7 @@ Reached only when both Step 4 and Step 6 tests pass.
    Then restore any changes parked in Step 1.
 
 5. **Report success**:
-   - Verify the lifecycle move actually landed — working-tree cleanliness alone is not
-     enough, because a still-tracked old path can be clean:
-     - Old path no longer tracked: `git ls-files project/tasks/in-progress/<task-file>`
-       returns nothing (confirm against HEAD with
-       `git ls-tree -r HEAD --name-only project/tasks/in-progress/`).
-     - New path tracked: `git ls-files project/tasks/completed/<task-file>` returns the file.
-     - No uncommitted move left behind: `git status --porcelain project/tasks/in-progress/`
-       is empty.
-     If any check fails, stop and report that the task lifecycle move is incomplete — the
-     old path is still tracked, the new path is missing, or uncommitted changes remain.
+   - The task status is `completed`: `ai-team show <task-id> --json` reports it. If it does not, stop and report that the lifecycle update did not land.
    - Source branch merged and deleted.
    - Work item ID and title when available.
    - Test counts: N passed before merge, N passed after merge.
@@ -240,7 +210,6 @@ All integrator commits follow the `git-conventions` skill. Canonical patterns fo
 |---|---|---|
 | Merge task branch | `<destination>` | `chore(tasks): merge T-NNN short-description` |
 | Merge bug branch | `<destination>` | `chore(bugs): merge B-NNN short-description` |
-| Move task to completed | `<destination>` | `chore(tasks): move T-NNN to completed` |
 | Revert on regression | `<destination>` | `chore(<kind>): revert merge of <branch> — regression in <tests>` |
 
 ## Escalation
@@ -263,15 +232,15 @@ The active loop routes the request to the Architect via the `escalation-review` 
 - **Result:** `PASS`, `FAIL`, `BLOCKED`, or `ESCALATE`.
 - **Merge evidence:** source branch, destination branch, merge commit, and revert commit if one was produced.
 - **Verification:** pre-merge and post-merge command results, including the coverage-gap flag when no project baseline command was discoverable, or why verification could not run.
-- **State changes:** lifecycle file moves, regression bugs filed, and source branch deletion status.
+- **State changes:** task status set to `completed`, regression bugs filed, and source branch deletion status.
 - **Next action:** whether the active loop can continue or which owner must act next.
 
 ## Quality Criteria
 
-- The canonical task or bug file on `dev-agent` was used for acceptance or fix-verification context.
+- The work item file in the tracker was used for acceptance or fix-verification context.
 - The source branch was verified before merge and the destination branch was verified after merge.
 - Regression bugs include enough evidence for the bug-fix loop to reproduce and fix from the preserved source branch.
-- Lifecycle-file edits from implementation branches were not merged.
+- No lifecycle files were merged from implementation branches.
 - All commits follow the `git-conventions` skill.
 
 ## Common Pitfalls
@@ -279,7 +248,7 @@ The active loop routes the request to the Architect via the `escalation-review` 
 - Merging a branch whose tests already fail on the source branch.
 - Defaulting the destination-branch check to the same narrow command as the source-branch check instead of discovering the project baseline (Step 2 item 8), or silently skipping the coverage-gap flag when no baseline is discoverable.
 - Filing regression bugs without setting `source-branch` to the preserved branch.
-- Moving bug lifecycle state inside `integrate`; bug state is owned by `bug-loop`.
+- Changing bug status inside `integrate`; bug state is owned by `bug-loop`.
 - Treating conflict resolution as a textual choice instead of preserving both work items' intent.
 
 ## What This Skill Does NOT Do
@@ -289,4 +258,4 @@ The active loop routes the request to the Architect via the `escalation-review` 
 - Does not modify specifications or ADRs.
 - Does not skip tests or bypass hooks (`--no-verify` is forbidden).
 - Does not merge multiple branches in one invocation — call the skill once per branch.
-- Does not merge task or bug lifecycle-file edits from implementation branches. Lifecycle state is owned by `dev-agent`.
+- Does not merge lifecycle files from implementation branches. Lifecycle state lives in the tracker, outside version control.

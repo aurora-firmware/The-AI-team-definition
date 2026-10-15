@@ -191,7 +191,7 @@ The action skills use those commands internally. For example, `/new-task` delega
 The most common loop is:
 
 1. Create or approve a spec.
-2. Create tasks in `project/tasks/pending/`.
+2. Break it into tasks; they live in the local tracker (`ai-team tracker path`), outside version control.
 3. Run `/dev-loop` to implement, review, integrate, and complete tasks.
 4. Run `/bug-loop` for open bugs.
 5. Run `ai-team status` and `ai-team report` for Gate 5 sign-off context.
@@ -205,7 +205,7 @@ The normal workflow is:
 2. Planner decomposes the approved spec into tasks.
 3. Architect validates the task plan at Gate 2.
 4. Human starts `/dev-loop`; Gate 3 code review and Gate 4 integration run inside the loop.
-5. Bugs are filed in `project/bugs/open/` and handled through `/bug-loop`.
+5. Bugs are filed in the local tracker and handled through `/bug-loop`.
 6. Human approves the final `dev-agent` → `main` merge at Gate 5.
 
 See `guides/setup-guide.md` for the complete file list, CLAUDE.md starter template, and verification steps.

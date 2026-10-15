@@ -14,14 +14,14 @@ Project-specific commit scopes and any overrides belong in the project's own `CL
 | Branch | Purpose | Who touches it |
 |---|---|---|
 | `main` | Production-ready releases | Human only — never automated roles |
-| `dev-agent` | Integration target and canonical lifecycle state | The integration procedure merges task branches here; the Integrator handles manual merges and conflicts; the Planner merges planning branches here after Gate 2; Reviewers, Architects, and active loops commit docs and lifecycle state here |
-| `plan/S-NNN-short-description` or `plan/CR-NNN-short-description` | Planning branch for one spec or change-request: the spec or change-request, spec amendments, ADRs raised by its consistency review, and its task files | Planner and Architect only — no source code |
+| `dev-agent` | Integration target | The integration procedure merges task branches here; the Integrator handles manual merges and conflicts; the Planner merges planning branches here after Gate 2; Architects commit ADRs raised outside planning here |
+| `plan/S-NNN-short-description` or `plan/CR-NNN-short-description` | Planning branch for one spec or change-request: the spec, spec amendments, and ADRs raised by its consistency review | Planner and Architect only — no source code |
 | `task/T-NNN-short-description` | Single task implementation branch | Developer only for source, tests, and project artifacts |
 | `bug/B-NNN-short-description` | Single bug diagnosis and fix branch | Developer only for source, tests, and project artifacts |
 
 **Rules:**
 - No automated role ever commits to `main`.
-- `dev-agent` receives merge commits from the integration procedure or the Integrator role (code), and direct commits from non-Developer roles and active loops (docs/specs/task files/bug files — no direct source code).
+- `dev-agent` receives merge commits from the integration procedure, the Integrator role, and planning-branch merges, and direct ADR commits from the Architect (no direct source code).
 - Developer always works on a task branch, never on `dev-agent`.
 - Task branches are created when the Developer picks up a task and deleted after successful integration into `dev-agent`.
 - Bug branches are created when the bug-fix loop picks up a bug.
@@ -29,8 +29,8 @@ Project-specific commit scopes and any overrides belong in the project's own `CL
 - Planning branches are created from `dev-agent` when a spec or change-request is created. Every planning artifact for that work is committed there, never directly on `dev-agent`.
   The Planner merges the planning branch into `dev-agent` with `--no-ff` only after Gate 2 passes, then deletes it with `git branch -d`.
   `dev-agent` therefore never carries a spec amendment without the task plan that implements it. Abandoning a spec or change-request means the human deletes its planning branch.
-- Task and bug files are canonical on `dev-agent`. Implementation branches may contain copies for context, but lifecycle state is read from and committed to `dev-agent`.
-- Task-regression bug branches may not contain the bug report file because they are based on preserved task branches. The bug-fix loop must pass canonical bug content from `dev-agent` to the Developer and Reviewer, and record their log and verdict entries back on `dev-agent`.
+- Tasks, bugs, and change-requests live in the local tracker (`ai-team tracker path`), outside version control and outside every branch.
+  Their lifecycle state is the frontmatter `status` field. Recording state, Work Logs, Diagnosis Logs, or Review Verdicts never creates a commit and never requires a branch switch.
 
 ### Opening a Planning Branch
 
@@ -39,8 +39,8 @@ The skill that creates a spec or change-request opens its planning branch:
 1. Run the before-point Workspace Hygiene check, then `git checkout dev-agent`.
 2. Run `git branch --list 'plan/*'`. IDs are allocated from the files on the current branch, so two open planning branches can allocate the same spec, change-request, or task ID.
    If another planning branch is open, stop and ask the human whether to merge or abandon it first, or to continue and renumber at merge time.
-3. Run the CLI command that allocates the artifact ID. The new file is untracked.
-4. Run `git checkout -b plan/<id>-<slug>`. The untracked file carries over; commit it there.
+3. Run the CLI command that allocates the artifact ID.
+4. Run `git checkout -b plan/<id>-<slug>`. A new spec file is untracked and carries over; commit it there. A change-request is created in the tracker and is never committed.
 
 When an approved spec already on `dev-agent` needs a breakdown and has no planning branch, open one the same way and skip step 3.
 
@@ -62,18 +62,16 @@ feat(db): add conversations table migration
 fix(ui): correct sidebar active state color
 test(api): cover SSE disconnection edge case
 docs(specs): add phase2 boardroom role selection
-chore(tasks): move T-004 to completed
+chore(plan): merge S-004 billing export
 ```
 
 ## When Each Role Commits
 
 | Role | Commits when | Branch |
 |---|---|---|
-| **Planner** | Each spec, change-request, amendment, or task file is finalized | `plan/…` |
+| **Planner** | Each spec or spec amendment is finalized | `plan/…` |
 | **Planner** | One merge commit per planning branch after Gate 2 passes | `dev-agent` |
 | **Developer** | After each implementation cycle for source, tests, and project artifacts | `task/T-NNN-…` or `bug/B-NNN-…` |
-| **Development Loop / Bug-Fix Loop** | After lifecycle moves and after recording Developer Diagnosis Log or Work Log handoffs | `dev-agent` |
-| **Reviewer** | After writing Review Verdict entries to canonical task or bug files | `dev-agent` |
 | **Architect** | After producing an ADR or amendment | `plan/…` when raised during planning; otherwise `dev-agent` |
 | **Integrator** | One merge commit per task or bug branch merged into its target branch | target branch |
 
@@ -92,8 +90,8 @@ Every orchestrating procedure (`dev-loop`, `bug-loop`, `integrate`, `spec-breakd
 
 | Entry | Action |
 |---|---|
-| Generated artifact — test or tool caches, coverage output, build output, logs, generated reports, merge leftovers such as `*.orig` | Add the narrowest matching pattern to the repository `.gitignore` and commit it on the current branch: `chore(gitignore): ignore <pattern>`. Never ignore source, test, spec, task, bug, or decision files. |
-| Produced by the current step and inside its scope — for example a bug file filed by this step | Commit it on the branch the owning rule names. |
+| Generated artifact — test or tool caches, coverage output, build output, logs, generated reports, merge leftovers such as `*.orig` | Add the narrowest matching pattern to the repository `.gitignore` and commit it on the current branch: `chore(gitignore): ignore <pattern>`. Never ignore source, test, spec, or decision files. |
+| Produced by the current step and inside its scope — for example a spec amendment written by this step | Commit it on the branch the owning rule names. |
 | Anything else — unknown untracked files, or tracked changes this step did not make | Park it: `git stash push --include-untracked -m "ai-team: <work-item or procedure> parked at <step>"`. |
 
 3. Re-run step 1. The tree must be clean before continuing.
@@ -119,7 +117,7 @@ When the procedure that parked changes ends — on success or on a stop — retu
 - No amending commits that have already been pushed.
 - Never commit secrets, `.env` files, or credentials.
 - Never discard or delete work the current step did not create — park it as described in Workspace Hygiene.
-- Never commit or merge lifecycle-file edits (task or bug files) from an implementation branch — task and bug files are canonical on `dev-agent` only.
+- Never commit or merge lifecycle files — tasks, bugs, and change-requests — from an implementation branch or any other branch: they live in the local tracker, outside version control.
 
 ## Common Pitfalls
 

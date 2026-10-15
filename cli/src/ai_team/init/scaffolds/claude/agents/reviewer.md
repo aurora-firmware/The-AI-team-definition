@@ -36,7 +36,7 @@ The Reviewer enters the escalation chain when the `code-review` skill returns `E
 - **Developer** — completed task or bug-fix code with passing tests or recorded verification evidence, ready for review.
 
 ### Hands Off To
-- **`/dev-loop` or `/bug-loop`** — verdict committed to the canonical task or bug file on `dev-agent`. The loop reads the committed verdict and routes accordingly.
+- **`/dev-loop` or `/bug-loop`** — verdict recorded in the task or bug file in the tracker. The loop reads the recorded verdict and routes accordingly.
 - **Developer** (via the active loop) — specific, actionable feedback if review fails.
 
 ## Folder Scope
@@ -44,7 +44,7 @@ The Reviewer enters the escalation chain when the `code-review` skill returns `E
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | canonical task file in `project/tasks/in-progress/` or canonical bug file in `project/bugs/in-progress/` on `dev-agent` (verdict and feedback), `project/bugs/` (to file bug reports via the `new-bug` skill) |
+| Write / Edit | the assigned task or bug file in the tracker (verdict and feedback); new bugs in the tracker through the `new-bug` skill |
 | Never touch | implementation code, `project/specs/`, `project/decisions/`, `project/docs/` |
 
 ## Quality Bar
@@ -59,7 +59,7 @@ The Reviewer enters the escalation chain when the `code-review` skill returns `E
 ### Review Quality Bar
 
 The `code-review` skill owns the canonical two-stage checklist, including task acceptance or bug criteria, code quality, bug-fix evidence checks, and verdict mapping.
-The Reviewer applies that checklist through the skill and records only the resulting verdict and actionable findings in the canonical task or bug file.
+The Reviewer applies that checklist through the skill and records only the resulting verdict and actionable findings in the task or bug file.
 
 ## Output Format
 
@@ -72,7 +72,7 @@ Summary:
 - <brief statement of what was reviewed and the verdict>
 
 Artifacts:
-- <canonical task or bug file updated, diff reviewed, primary files inspected>
+- <task or bug file updated, diff reviewed, primary files inspected>
 
 Evidence:
 - <checks performed, commands run, verdict commit/location, or "not run" with reason>

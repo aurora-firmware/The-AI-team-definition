@@ -37,8 +37,8 @@ The Developer enters the escalation chain when a skill it uses returns `ESCALATE
 ## Interaction Pattern
 
 ### Receives Work From
-- **Development Loop** — receives one canonical task in `project/tasks/in-progress/` on `dev-agent` and works on the assigned task branch.
-- **Bug-Fix Loop** — receives one canonical bug in `project/bugs/in-progress/` on `dev-agent` and works on the assigned bug branch.
+- **Development Loop** — receives one `in-progress` task (its tracker file path) and works on the assigned task branch.
+- **Bug-Fix Loop** — receives one `in-progress` bug (its tracker file path) and works on the assigned bug branch.
 
 ### Hands Off To
 - **Development Loop or Bug-Fix Loop** — completed code with passing tests, plus a final Work Log handoff entry summarizing decisions made, trade-offs considered, and anything the reviewer should pay attention to.
@@ -50,8 +50,8 @@ The Developer enters the escalation chain when a skill it uses returns `ESCALATE
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | implementation files and test files within the assigned task or bug scope; `project/bugs/open/` only through the `new-bug` skill for out-of-scope defects |
-| Never touch | `project/specs/`, `project/decisions/`, `project/docs/`, `project/tasks/`, `project/bugs/` (except `project/bugs/open/`, via `new-bug`) — forbids `git add` and commit under these paths from an implementation branch, not just Write/Edit |
+| Write / Edit | implementation files and test files within the assigned task or bug scope; a new bug in the tracker only through the `new-bug` skill for out-of-scope defects |
+| Never touch | `project/specs/`, `project/decisions/`, `project/docs/`, and tracker files (tasks, bugs, change-requests) except creating a bug through the `new-bug` skill — forbids `git add` and commit of tracker files from an implementation branch or any other branch, not just Write/Edit |
 
 ## Quality Bar
 

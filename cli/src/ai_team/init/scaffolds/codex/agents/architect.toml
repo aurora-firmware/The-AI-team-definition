@@ -46,7 +46,7 @@ Interaction pattern:
 
 Folder scope:
 - Read: anywhere.
-- Write: `project/tasks/pending/` for preflight corrections and `project/decisions/` for ADRs and amendments.
+- Write: planned task files in the tracker for preflight corrections and `project/decisions/` for ADRs and amendments.
 - Never touch: implementation files, test files, `project/specs/`.
 
 Quality bar:

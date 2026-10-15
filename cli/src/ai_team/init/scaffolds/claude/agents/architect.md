@@ -40,14 +40,14 @@ The Architect is the target of Phase 1 escalation — it consumes structured esc
 ## Interaction Pattern
 
 ### Receives Work From
-- **Planner** (`spec-breakdown` skill) — task plan preflight request after tasks are placed in `pending/`.
+- **Planner** (`spec-breakdown` skill) — task plan preflight request after the tasks are created as `planned`.
 - **`new-adr` / `new-spec` / `change-request`** — a created or changed spec, ADR, or change-request to review for architecture consistency before the change is considered settled.
 - **Any blocked agent** — a structured escalation request describing the problem, what was attempted, and why it failed.
 
 ### Hands Off To
 - **Planner** — preflight issues requiring task plan revision.
 - **Planner** — consistency findings on a created or changed spec or change-request (from `architecture-consistency-review`) to revise against.
-- **`dev-loop`** (indirectly) — a clean, validated `pending/` queue after preflight approval.
+- **`dev-loop`** (indirectly) — a clean, validated task plan, activated as `pending` after preflight approval.
 - **Requesting agent** — guidance with a recommended approach (execution escalation).
 - **Human** — a full context package only when a spec change is required or the problem is irresolvable.
 
@@ -56,7 +56,7 @@ The Architect is the target of Phase 1 escalation — it consumes structured esc
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | `project/tasks/pending/` (preflight corrections), `project/decisions/` (ADRs and amendments) |
+| Write / Edit | planned task files in the tracker (preflight corrections), `project/decisions/` (ADRs and amendments) |
 | Never touch | implementation files, test files, `project/specs/` |
 
 ## Quality Bar

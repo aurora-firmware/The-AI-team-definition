@@ -11,7 +11,7 @@ Developer or tdd skill applies the fix; debug does not change production code.
 - **Actual behavior** — what is happening instead.
 - **Available evidence** — reproduction steps, logs, stack traces, environment details, branch context, and prior Work Log or Diagnosis Log entries.
 
-Task and bug files are canonical lifecycle state on `dev-agent`.
+Task and bug files live in the local tracker, outside version control; the active loop passes their path.
 Read their existing Work Log and Diagnosis Log entries, but return new diagnosis content as a handoff to the active loop instead of editing lifecycle files directly.
 
 ## Procedure
@@ -91,16 +91,15 @@ that omit any field are incomplete and must not be treated as a green light to i
 - **Planned fix** — the minimal code change required to address the isolated fault.
 - **Planned verification** — the test command or manual step that will confirm the fix.
 
-Return this fix contract to the active loop. The loop appends and commits it to the
-canonical bug file on `dev-agent`. The tdd skill then consumes the fix contract as the
-implementation target.
+Return this fix contract to the active loop. The loop appends it to the bug file in
+the tracker. The tdd skill then consumes the fix contract as the implementation target.
 
 **Stop here.** Do not change production code in this skill. The tdd skill owns the
 red→green→refactor cycle that follows.
 
 ## Output Format
 
-- **Diagnosis Log handoff (fix contract)** — a dated entry for the active loop to record on `dev-agent` before implementation begins.
+- **Diagnosis Log handoff (fix contract)** — a dated entry for the active loop to record in the bug file before implementation begins.
 - **Root cause** — brief explanation of what was wrong and why.
 - **Reproduction status** — confirmed, intermittent, or unconfirmed.
 

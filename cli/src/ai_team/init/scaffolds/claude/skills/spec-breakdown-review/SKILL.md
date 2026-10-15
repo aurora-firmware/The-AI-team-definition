@@ -14,7 +14,7 @@ The result of this skill is a Findings block; the architect role envelope wraps 
 ## Input Requirements
 
 - **Approved specification** — the spec that passed Gate 1.
-- **Pending task files** — task plan in `project/tasks/pending/`.
+- **Planned task files** — the task plan listed by `ai-team list tasks --state planned --spec <spec-or-cr-id>`; `ai-team show <task-id> --json` reports each file's path.
 - **Decision records** — existing ADRs in `project/decisions/`.
 - **Project structure** — current files needed to verify paths and conflict risk.
 
@@ -30,7 +30,7 @@ Identify each task's dependencies, files to touch, acceptance criteria, and veri
 
 ### Step 2: Check Spec Coverage
 
-Verify spec coverage: confirm that the full set of pending tasks covers the entire approved specification with no features, sections, or behaviors left unaddressed.
+Verify spec coverage: confirm that the full set of planned tasks covers the entire approved specification with no features, sections, or behaviors left unaddressed.
 If any part of the spec is not covered by at least one task, flag the gap.
 Do not pass Gate 2 if the plan leaves spec sections unimplemented without explicit justification.
 
@@ -70,7 +70,7 @@ Flag tasks that exceed the one-shottable threshold:
 
 ### Step 7: Produce Verdict
 
-If the plan passes, state that Gate 2 passes and the pending queue is ready for `/dev-loop`.
+If the plan passes, state that Gate 2 passes and the plan is ready to merge and activate for `/dev-loop`.
 
 If the plan fails:
 
@@ -117,7 +117,7 @@ Then produce a Phase 2 Human Escalation Report using the template defined in the
 
 ## Quality Criteria
 
-- Every pending task in the plan was checked.
+- Every planned task in the plan was checked.
 - Dependencies are complete and refer to real tasks.
 - File conflict risks are resolved by dependency order or Planner correction.
 - Existing ADRs were consulted before approval.

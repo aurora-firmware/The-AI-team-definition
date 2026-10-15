@@ -146,6 +146,6 @@ If you have an existing codebase:
 2. Your existing source code stays where it is — the framework directories are additive.
 3. Write or update `CLAUDE.md` so agents can find project commands, coding guidance, and repository layout.
 4. Create `project/docs/coding_guidelines.md` for stack-specific conventions if those rules are not already documented elsewhere.
-5. Migrate existing issues/tasks by creating task files in `project/tasks/pending/` for each open item.
+5. Migrate existing issues/tasks by creating a task for each open item with `ai-team task new` (they land in the local tracker).
 6. Write a specification for the current system state in `project/specs/` — this becomes the baseline.
 7. Create an ADR in `project/decisions/` documenting the decision to adopt this framework.

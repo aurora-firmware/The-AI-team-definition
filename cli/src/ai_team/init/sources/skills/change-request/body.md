@@ -20,14 +20,15 @@ When invoked directly and required fields are missing, ask only for the missing 
 2. Open the planning branch and create the artifact:
    - Follow **Opening a Planning Branch** in the `git-conventions` skill, running `ai-team change-request new "<title>" --json` at its step 3.
    - Parse the JSON response to capture `id` and `path`.
-   - The change-request, the spec amendments it drives, any ADRs raised by its consistency review, and its task plan are all committed on this planning branch. Nothing reaches `dev-agent` until Gate 2 passes and `spec-breakdown` merges the branch.
+   - The change-request file is created in the local tracker, outside version control: never commit it.
+   - The planning branch carries only the spec amendments the change-request drives and any ADRs raised by its consistency review. Nothing reaches `dev-agent` until Gate 2 passes and `spec-breakdown` merges the branch.
 
 3. Open the created file and replace template placeholders with the supplied description.
    - Keep the frontmatter produced by the CLI.
    - Preserve the template structure unless the human explicitly requested a different format.
    - Mark unknown details as `[TODO]` instead of inventing them.
 
-4. Confirm the created file exists, commit it on the planning branch (`docs(change-requests): add <id>`), and return the CLI response values and the planning branch name.
+4. Confirm the created file exists and return the CLI response values and the planning branch name.
 
 5. For a newly created CR or an updated CR body, inspect the document for human-answerable `[TODO]` markers.
    - Resolve each human-answerable `[TODO]` marker one at a time with the human.
@@ -36,6 +37,8 @@ When invoked directly and required fields are missing, ask only for the missing 
    - Complete this loop before asking for approval; do not ask for approval while any human-answerable `[TODO]` marker remains.
 
 6. When the CR is TODO-free, ask the human to approve the full change-request as written.
+   - On approval, run `ai-team change-request set-status <id> approved`.
+   - On rejection, run `ai-team change-request set-status <id> rejected`, set any of its `planned` tasks to `cancelled`, and ask the human whether to delete its planning branch. Stop.
 
 7. After the human approves the TODO-free CR, continue directly into Architecture Consistency Review rather than stopping with only a passive handoff.
    - Pass the approved change-request path and delta as the changed artifact under review.

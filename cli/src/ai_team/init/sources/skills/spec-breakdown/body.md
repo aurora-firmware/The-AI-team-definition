@@ -8,7 +8,7 @@ Gate 2 technical readiness is owned by the `spec-breakdown-review` skill.
 
 - **Approved specification** — the spec that passed Gate 1 (Spec Approval).
 - **Project structure** — the existing codebase layout to determine file paths.
-- **Existing tasks** — current tasks in `project/tasks/` to avoid conflicts or duplication.
+- **Existing tasks** — current tasks from `ai-team list tasks --json`, to avoid conflicts or duplication.
 
 ## Procedure
 
@@ -32,6 +32,8 @@ For each unit, invoke the `new-task` skill to create the task file. Provide the 
 - `description`: the task description
 - `priority`: the task priority
 - `assigned-role`: the intended owner, or `unassigned`
+- `spec`: the ID of the spec or change-request being decomposed
+- `status`: `planned`
 
 The `new-task` skill handles template loading, ID assignment, filename, and frontmatter scaffolding. Because all required fields are provided here, it should not ask follow-up questions.
 
@@ -54,12 +56,14 @@ Verify isolation: do any two tasks modify the same file? If yes, add a dependenc
 Verify atomicity: can each task be completed in a single agent pass? If a task feels too large, split it.
 
 ### Step 5: Place Tasks
-Save all task files to `project/tasks/pending/` and commit them on the planning branch: `docs(tasks): add task plan for <spec-or-cr-id>`.
+The tasks are already in the tracker with status `planned`, listed by `ai-team list tasks --state planned --spec <spec-or-cr-id>`.
+They are outside version control: there is nothing to commit, and `/dev-loop` ignores them until Step 7 activates them.
 
 ### Step 6: Architect Preflight
 **Spawn the Architect subagent** with this prompt:
 
-> "Review the task plan just placed in `project/tasks/pending/` for the spec at `project/specs/<spec-file>`.
+> "Review the planned task plan listed by `ai-team list tasks --state planned --spec <spec-or-cr-id>` for the spec or change-request `<spec-or-cr-id>`.
+> Read each task file at the path `ai-team show <task-id> --json` reports.
 > Use the spec-breakdown-review skill.
 > Validate dependency correctness, file conflict risk, architectural consistency with `project/decisions/`, atomicity, and implementation readiness.
 > If all is sound, return `Result: PASS` and state that the plan is ready for /dev-loop.
@@ -67,22 +71,24 @@ Save all task files to `project/tasks/pending/` and commit them on the planning 
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 Wait for the Architect to complete.
-If the Architect requests Planner revisions, address them, commit them on the planning branch, and re-trigger the preflight.
+If the Architect requests Planner revisions, address them in the task files and re-trigger the preflight.
 If the Architect escalates because the approved specification must change, stop and return the escalation to the human using the Phase 2 human report template defined in the `escalation-review` skill.
 
-### Step 7: Merge the Planning Branch
+### Step 7: Merge the Planning Branch and Activate the Tasks
 Only after the Architect returns `PASS`:
 1. Run the before-point Workspace Hygiene check, then `git checkout dev-agent`.
-2. Run `git merge --no-ff plan/<id>-<slug> -m "chore(plan): merge <id> <short-description>"`.
+2. If the planning branch has commits (`git rev-list --count dev-agent..plan/<id>-<slug>` is not 0), run `git merge --no-ff plan/<id>-<slug> -m "chore(plan): merge <id> <short-description>"`.
    If the merge conflicts, abort it with `git merge --abort` and stop: report the conflicting planning files to the human. Do not resolve planning conflicts automatically.
+   A planning branch with no commits — a change-request that amends no spec and raises no ADR — is not merged.
 3. Run the after-point Workspace Hygiene check.
 4. Delete the planning branch with `git branch -d plan/<id>-<slug>`. If `-d` refuses, stop and report — never force deletion.
+5. Activate the plan: for every task in `ai-team list tasks --state planned --spec <id>`, run `ai-team task set-status <task-id> pending`.
 
-Until this merge, the tasks are invisible to `/dev-loop`, and `dev-agent` carries none of the spec or change-request changes.
+Until this step, the tasks stay `planned` and invisible to `/dev-loop`, and `dev-agent` carries none of the spec or change-request changes.
 
 ## Output Format
 
-- A set of validated task files in `project/tasks/pending/` on `dev-agent`, approved by the Architect preflight and merged from the planning branch together with the spec or change-request they implement.
+- A set of validated tasks in the tracker with status `pending`, approved by the Architect preflight and activated after the planning branch merged the spec or change-request changes they implement.
 - The plan is ready for the human to invoke `/dev-loop` — no further human review of the task plan is required.
 
 ## Quality Criteria
