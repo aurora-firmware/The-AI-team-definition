@@ -8,15 +8,15 @@ no folder or filename encodes it.
 Provides:
   - ``resolve_tracker_dir(repo)`` — the tracker folder configured by
     ``[tracker] dir`` in ``.ai-team.toml`` (default ``.ai-team/tracker``).
-    Relative paths resolve against the repository's main working tree so that
-    every git worktree shares one tracker.
+    Relative paths resolve against the project's folder in the repository's
+    main working tree so that every git worktree shares one tracker.
   - ``TASK_STATUSES``, ``BUG_STATUSES``, ``CHANGE_REQUEST_STATUSES`` — the
     allowed ``status`` values per work-item kind.
   - ``iter_items(folder)`` / ``find_item(folder, item_id)`` — enumerate and
     look up work-item files.
   - ``legacy_work_item_dirs(project_dir)`` / ``legacy_warning(dirs)`` — detect
-    pre-tracker ``tasks/``, ``bugs/``, and ``change-requests/`` folders that
-    still hold files, and describe how to migrate them.
+    pre-tracker ``tasks/``, ``bugs/``, ``change-requests/``, and ``archive/``
+    folders that still hold files, and describe how to migrate them.
 
 This module has no Typer dependency and does not import the locator.
 """
@@ -40,7 +40,7 @@ TASK_STATUSES = (
 BUG_STATUSES = ("open", "in-progress", "resolved")
 CHANGE_REQUEST_STATUSES = ("pending", "approved", "rejected")
 
-LEGACY_WORK_ITEM_DIRS = ("tasks", "bugs", "change-requests")
+LEGACY_WORK_ITEM_DIRS = ("tasks", "bugs", "change-requests", "archive")
 
 MIGRATION_GUIDE = "'Migrating to the local tracker' in the ai-team setup guide"
 
@@ -61,48 +61,61 @@ def _toml_tracker_dir(repo: Path) -> str | None:
     return None
 
 
-def main_worktree(repo: Path) -> Path:
-    """Return the main working tree of the git repository containing *repo*.
-
-    Every linked worktree shares the main worktree's ``.git`` directory, so its
-    parent is the same for all of them. Falls back to *repo* when *repo* is not
-    inside a git repository, git is unavailable, or the repository is bare.
-    """
+def _git(repo: Path, *args: str) -> str | None:
+    """Return the stdout of ``git -C repo <args>``, or None when git fails."""
     try:
         completed = subprocess.run(
-            [
-                "git",
-                "-C",
-                str(repo),
-                "rev-parse",
-                "--path-format=absolute",
-                "--git-common-dir",
-            ],
+            ["git", "-C", str(repo), *args],
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
             text=True,
         )
     except OSError, subprocess.CalledProcessError:
-        return repo
+        return None
+    return completed.stdout
 
-    common_dir = Path(completed.stdout.strip())
-    if common_dir.name != ".git":
+
+def main_worktree(repo: Path) -> Path:
+    """Return the main working tree of the git repository containing *repo*.
+
+    This is the first entry of ``git worktree list``, which every linked
+    worktree reports identically. When the repository is bare (a "bare repo
+    plus worktrees" layout), there is no main working tree; the folder that
+    holds the bare repository is used instead, so the worktrees still share one
+    anchor. Falls back to *repo* when *repo* is not inside a git repository or
+    git is unavailable.
+    """
+    listing = _git(repo, "worktree", "list", "--porcelain")
+    if not listing:
         return repo
-    return common_dir.parent
+    first = listing.split("\n\n", 1)[0].splitlines()
+    path = Path(first[0].removeprefix("worktree "))
+    if "bare" in first[1:]:
+        return path.parent
+    return path
+
+
+def _project_offset(repo: Path) -> Path:
+    """Return the path of *repo* relative to the top of its working tree."""
+    prefix = _git(repo, "rev-parse", "--show-prefix")
+    return Path(prefix.strip()) if prefix else Path()
 
 
 def resolve_tracker_dir(repo: Path) -> Path:
-    """Return the absolute tracker folder for the repository at *repo*.
+    """Return the absolute tracker folder for the project rooted at *repo*.
 
-    Absolute and ``~`` paths are used as given. Relative paths resolve against
-    the main working tree, so a Developer in a linked worktree and a loop in the
-    main checkout read and write the same tracker.
+    *repo* is the folder holding ``.ai-team.toml``. Absolute and ``~`` paths
+    are used as given. Relative paths resolve against the same folder in the
+    repository's main working tree, so a Developer in a linked worktree and a
+    loop in the main checkout read and write the same tracker, and a project
+    that lives in a subfolder of its git repository keeps its tracker beside
+    its ``.ai-team.toml``.
     """
     configured = Path(_toml_tracker_dir(repo) or DEFAULT_TRACKER_DIR).expanduser()
     if configured.is_absolute():
         return configured
-    return main_worktree(repo) / configured
+    return main_worktree(repo) / _project_offset(repo) / configured
 
 
 def is_inside(path: Path, directory: Path) -> bool:

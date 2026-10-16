@@ -173,3 +173,84 @@ def test_commands_warn_while_legacy_folders_hold_files(initialized_repo):
     legacy.unlink()
     result = _invoke("list", "tasks", "--json")
     assert "legacy" not in result.stderr
+
+
+def test_project_in_a_repository_subfolder_keeps_its_tracker_beside_it(
+    monkeypatch, tmp_path
+):
+    repo = _git_repo(tmp_path / "repo")
+    project = repo / "sub"
+    project.mkdir()
+    result = _invoke("init", str(project), "--tools", "claude", "--no-interactive")
+    assert result.exit_code == 0, result.output
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "init")
+    monkeypatch.chdir(project)
+
+    assert _invoke("tracker", "path").stdout.strip() == str(
+        project / ".ai-team" / "tracker"
+    )
+    assert _invoke("task", "new", "Nested").exit_code == 0
+    assert (project / ".ai-team" / "tracker" / "tasks").is_dir()
+    assert _git(repo, "status", "--porcelain") == ""
+
+
+def test_bare_repository_worktrees_share_one_tracker(tmp_path):
+    seed = _git_repo(tmp_path / "seed")
+    (seed / ".ai-team.toml").write_text('[project]\ndir = "project"\n', "utf-8")
+    _git(seed, "add", "-A")
+    _git(seed, "commit", "-q", "-m", "seed")
+    bare = tmp_path / "layout" / ".bare"
+    _git(tmp_path, "clone", "-q", "--bare", str(seed), str(bare))
+    first = tmp_path / "layout" / "main"
+    second = tmp_path / "layout" / "feature"
+    _git(bare, "worktree", "add", "-q", str(first), "main")
+    _git(bare, "worktree", "add", "-q", "-b", "feature", str(second))
+
+    expected = tmp_path / "layout" / ".ai-team" / "tracker"
+    assert resolve_tracker_dir(first) == expected
+    assert resolve_tracker_dir(second) == expected
+
+
+def test_legacy_archive_folder_triggers_the_warning(initialized_repo):
+    legacy = initialized_repo / "project" / "archive" / "2026-01" / "T-001-old.md"
+    legacy.parent.mkdir(parents=True)
+    legacy.write_text("legacy", encoding="utf-8")
+
+    result = _invoke("validate", "--json")
+
+    assert str(initialized_repo / "project" / "archive") in result.stderr
+
+
+def test_tasks_may_cite_a_change_request_as_their_spec(initialized_repo):
+    _invoke("change-request", "new", "Tweak")
+    _invoke("task", "new", "From CR", "--status", "planned", "--spec", "CR-001")
+
+    result = _invoke("validate", "--tasks", "--json")
+
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.stdout) == []
+
+    _invoke("task", "new", "Dangling", "--spec", "CR-009")
+    codes = [f["code"] for f in json.loads(_invoke("validate", "--json").stdout)]
+    assert codes == ["task-spec-missing"]
+
+
+def test_list_spec_filter_matches_every_form_of_a_spec_reference(initialized_repo):
+    specs = initialized_repo / "project" / "specs"
+    specs.mkdir(parents=True, exist_ok=True)
+    (specs / "S-001-login.md").write_text(
+        "---\ntitle: Login\nversion: '0.1'\nstatus: approved\n"
+        "created: '2026-10-16'\nauthor: planner\nid: S-001\n---\n\n# Login\n",
+        encoding="utf-8",
+    )
+    for reference in ("S-001", "S-001-login", "login.md"):
+        _invoke("task", "new", reference, "--status", "planned", "--spec", reference)
+
+    for query in ("S-001", "S-001-login.md", "login"):
+        rows = json.loads(
+            _invoke(
+                "list", "tasks", "--state", "planned", "--spec", query, "--json"
+            ).stdout
+        )
+        assert [row["id"] for row in rows] == ["T-001", "T-002", "T-003"], query

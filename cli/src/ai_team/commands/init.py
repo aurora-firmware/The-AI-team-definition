@@ -10,7 +10,7 @@ from pathlib import Path
 import tomli_w
 import typer
 
-from ai_team.core.tracker import DEFAULT_TRACKER_DIR
+from ai_team.core.tracker import DEFAULT_TRACKER_DIR, resolve_tracker_dir
 
 NAME = "init"
 app = typer.Typer(
@@ -86,11 +86,14 @@ def _next_steps() -> list[str]:
 def _ensure_tracker(target_root: Path, dry_run: bool) -> None:
     """Create the default tracker folder and make git ignore it (spec S-006).
 
+    The folder is the one every tracker command resolves, so in a linked
+    worktree it is created in the main working tree.
+
     The ignore rule is appended to the repository's root ``.gitignore`` only when
     no identical line exists, so re-running ``init`` never duplicates or removes
     rules.
     """
-    tracker = target_root / DEFAULT_TRACKER_DIR
+    tracker = resolve_tracker_dir(target_root)
     ignore_rule = f"/{Path(DEFAULT_TRACKER_DIR).parts[0]}/"
     gitignore = target_root / ".gitignore"
     existing = (

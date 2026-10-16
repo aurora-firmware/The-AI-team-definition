@@ -16,6 +16,7 @@ from ai_team.core.models import (
     parse_task,
 )
 from ai_team.core.tracker import iter_items
+from ai_team.core.validate import spec_reference_aliases
 from ai_team.render import console, print_json
 
 NAME = "list"
@@ -71,6 +72,7 @@ def tasks(
 ) -> None:
     """List tasks from the tracker."""
     root = project_root()
+    aliases = None if spec is None else spec_reference_aliases(root, spec)
     rows = [
         row
         for row in _collect_by_status(
@@ -86,7 +88,7 @@ def tasks(
                 "spec": task.spec or "",
             },
         )
-        if spec is None or row["spec"] == spec
+        if aliases is None or row["spec"] in aliases
     ]
     for row in rows:
         del row["spec"]

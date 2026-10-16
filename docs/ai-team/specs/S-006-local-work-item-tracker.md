@@ -116,7 +116,7 @@ This is phase 1 of moving task tracking out of the repository. Phase 2 (an exter
 **Tracker folder**
 - **What must exist:** a `dir` setting in a `[tracker]` section of `.ai-team.toml`.
 - **Where it lives:** the repository's `.ai-team.toml`, beside the existing `[project]` section.
-- **Constraints:** a relative path resolves against the main working tree of the repository, not the current worktree; an absolute path or a `~` path is used as given. Default value: `.ai-team/tracker`.
+- **Constraints:** a relative path resolves against the folder that holds `.ai-team.toml`, taken in the main working tree of the repository rather than the current worktree; in a bare repository with worktrees, the folder holding the bare repository stands in for the main working tree. An absolute path or a `~` path is used as given. Default value: `.ai-team/tracker`.
 - **Missing-value behaviour:** when the section or key is absent, commands use the default folder. When the folder does not exist, creating a work item creates it; reading commands treat it as empty.
 
 **Git ignore**
@@ -132,7 +132,7 @@ This is phase 1 of moving task tracking out of the repository. Phase 2 (an exter
 - `ai-team list tasks --state <s>` returns exactly the tasks whose `status` field is `<s>`, and its JSON shape is unchanged.
 - Run from two worktrees of the same repository, `ai-team tracker path` prints the same absolute path.
 - `ai-team validate` reports a finding for any task, bug, or change-request whose `status` is not one of the allowed values, and no longer reports folder/status mismatches.
-- While a legacy `tasks/`, `bugs/`, or `change-requests/` folder in the project directory still holds a markdown file, every tracker command prints a warning to stderr naming the folder and the migration procedure; once the folders are empty or gone, no warning is printed.
+- While a legacy `tasks/`, `bugs/`, `change-requests/`, or `archive/` folder in the project directory still holds a markdown file, every tracker command prints a warning to stderr naming the folder and the migration procedure; once the folders are empty or gone, no warning is printed.
 - Following the migration procedure on this repository moves every task, bug, and change-request out of `docs/ai-team/` into the tracker with contents unchanged except `status` corrected from the folder where the two disagreed, and `ai-team validate` reports no findings afterwards.
 - In the generated skills, no step commits a task, bug, or change-request file, and no step switches branches to record lifecycle state.
 - The full CLI test suite passes, including tests updated from folder-based to field-based state.
@@ -145,4 +145,6 @@ This is phase 1 of moving task tracking out of the repository. Phase 2 (an exter
 4. **Process skills and docs** — skills, agents, git conventions, workflow docs, regenerated scaffolds. Depends on phase 2. Observable: the generated-skill criterion passes.
 
 ## Amendment Log
+
+- **2026-10-16 (PR #32 review):** relative tracker paths resolve against the `.ai-team.toml` folder within the main working tree, not the git top level, so projects in a repository subfolder keep their tracker beside their configuration; bare repositories with worktrees share one tracker; the legacy `archive/` folder triggers the migration warning; a task's `spec` may name a change-request ID.
 

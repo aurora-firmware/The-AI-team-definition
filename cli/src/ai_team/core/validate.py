@@ -202,6 +202,23 @@ def _spec_reference_exists(reference: str, spec_slugs: set[str]) -> bool:
     return False
 
 
+def spec_reference_aliases(root: ProjectRoot, reference: str) -> set[str]:
+    """Return every task ``spec:`` value that refers to the same plan as *reference*.
+
+    A spec can be cited by filename stem, bare slug, or frontmatter id, each
+    optionally with ``.md``; all of them resolve to one alias set. A reference
+    that names no spec (a change-request ID, or an unknown value) is its own
+    only alias.
+    """
+    wanted = reference[:-3] if reference.endswith(".md") else reference
+    for folder in (root.specs, root.specs / "archive"):
+        for path in _iter_markdown_files(folder):
+            entries = _spec_index_entries(path)
+            if wanted in entries:
+                return entries | {f"{entry}.md" for entry in entries}
+    return {reference, wanted}
+
+
 def _spec_index_entries(path: Path) -> set[str]:
     """Return every reference string that should resolve to the spec at *path*.
 
@@ -250,6 +267,7 @@ def validate_project(
     # Cross-reference indexes are built independently from selected scopes so
     # `--tasks`, `--bugs`, and `--adrs` can still validate references.
     spec_slugs = _build_spec_slugs(root)
+    change_request_ids = _existing_change_request_ids(root)
     task_ids = _existing_task_ids(root)
     adr_ids = _existing_adr_ids(root)
 
@@ -271,7 +289,10 @@ def validate_project(
             )
             _check_stateful_filename(findings, root, path, task.id)
             _check_status(findings, root, path, "Task", task.status, TASK_STATUSES)
-            if task.spec and not _spec_reference_exists(task.spec, spec_slugs):
+            if task.spec and not (
+                _spec_reference_exists(task.spec, spec_slugs)
+                or task.spec in change_request_ids
+            ):
                 findings.append(
                     _finding(
                         path,
@@ -279,7 +300,7 @@ def validate_project(
                         "task-spec-missing",
                         (
                             f"Task spec reference '{task.spec}' does not "
-                            "resolve to an existing spec file."
+                            "resolve to an existing spec or change-request."
                         ),
                     )
                 )
@@ -407,14 +428,28 @@ def validate_project(
     return findings
 
 
+def _archive_buckets(root: ProjectRoot) -> list[Path]:
+    if not root.archive.is_dir():
+        return []
+    return sorted(path for path in root.archive.iterdir() if path.is_dir())
+
+
+def _existing_change_request_ids(root: ProjectRoot) -> set[str]:
+    change_request_ids: set[str] = set()
+    for folder in (root.change_requests, *_archive_buckets(root)):
+        for path in iter_items(folder):
+            if not path.name.startswith("CR-"):
+                continue
+            try:
+                change_request_ids.add(parse_change_request(path).id)
+            except FrontmatterError:
+                continue
+    return change_request_ids
+
+
 def _existing_task_ids(root: ProjectRoot) -> set[str]:
     task_ids: set[str] = set()
-    archive_buckets = (
-        sorted(path for path in root.archive.iterdir() if path.is_dir())
-        if root.archive.is_dir()
-        else []
-    )
-    for folder in (root.tasks, *archive_buckets):
+    for folder in (root.tasks, *_archive_buckets(root)):
         for path in iter_items(folder):
             if not path.name.startswith("T-"):
                 continue
