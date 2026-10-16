@@ -116,7 +116,7 @@ This is phase 1 of moving task tracking out of the repository. Phase 2 (an exter
 **Tracker folder**
 - **What must exist:** a `dir` setting in a `[tracker]` section of `.ai-team.toml`.
 - **Where it lives:** the repository's `.ai-team.toml`, beside the existing `[project]` section.
-- **Constraints:** a relative path resolves against the folder that holds `.ai-team.toml`, taken in the main working tree of the repository rather than the current worktree; in a bare repository with worktrees, the folder holding the bare repository stands in for the main working tree. An absolute path or a `~` path is used as given. Default value: `.ai-team/tracker`.
+- **Constraints:** a relative path resolves against the folder that holds `.ai-team.toml`, taken in the main working tree of the repository rather than the current worktree; in a bare repository with worktrees, the bare repository folder itself stands in for the main working tree. An absolute path or a `~` path is used as given. Default value: `.ai-team/tracker`.
 - **Missing-value behaviour:** when the section or key is absent, commands use the default folder. When the folder does not exist, creating a work item creates it; reading commands treat it as empty.
 
 **Git ignore**
@@ -146,5 +146,5 @@ This is phase 1 of moving task tracking out of the repository. Phase 2 (an exter
 
 ## Amendment Log
 
-- **2026-10-16 (PR #32 review):** relative tracker paths resolve against the `.ai-team.toml` folder within the main working tree, not the git top level, so projects in a repository subfolder keep their tracker beside their configuration; bare repositories with worktrees share one tracker; the legacy `archive/` folder triggers the migration warning; a task's `spec` may name a change-request ID.
+- **2026-10-16 (PR #32 review):** relative tracker paths resolve against the `.ai-team.toml` folder within the main working tree, not the git top level, so projects in a repository subfolder keep their tracker beside their configuration; the worktrees of a bare repository share one tracker kept inside that bare repository; the legacy `archive/` folder triggers the migration warning; a task's `spec` may name a change-request ID.
 

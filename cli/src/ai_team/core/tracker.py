@@ -81,19 +81,16 @@ def main_worktree(repo: Path) -> Path:
 
     This is the first entry of ``git worktree list``, which every linked
     worktree reports identically. When the repository is bare (a "bare repo
-    plus worktrees" layout), there is no main working tree; the folder that
-    holds the bare repository is used instead, so the worktrees still share one
-    anchor. Falls back to *repo* when *repo* is not inside a git repository or
-    git is unavailable.
+    plus worktrees" layout), there is no main working tree; the bare repository
+    folder itself is used instead, so its worktrees share one anchor and
+    sibling bare repositories never share a tracker. Falls back to *repo* when
+    *repo* is not inside a git repository or git is unavailable.
     """
     listing = _git(repo, "worktree", "list", "--porcelain")
     if not listing:
         return repo
-    first = listing.split("\n\n", 1)[0].splitlines()
-    path = Path(first[0].removeprefix("worktree "))
-    if "bare" in first[1:]:
-        return path.parent
-    return path
+    first_line = listing.splitlines()[0]
+    return Path(first_line.removeprefix("worktree "))
 
 
 def _project_offset(repo: Path) -> Path:

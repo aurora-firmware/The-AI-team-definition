@@ -195,21 +195,33 @@ def test_project_in_a_repository_subfolder_keeps_its_tracker_beside_it(
     assert _git(repo, "status", "--porcelain") == ""
 
 
-def test_bare_repository_worktrees_share_one_tracker(tmp_path):
-    seed = _git_repo(tmp_path / "seed")
+def _bare_clone_with_worktrees(tmp_path: Path, name: str) -> tuple[Path, Path, Path]:
+    seed = _git_repo(tmp_path / f"seed-{name}")
     (seed / ".ai-team.toml").write_text('[project]\ndir = "project"\n', "utf-8")
     _git(seed, "add", "-A")
     _git(seed, "commit", "-q", "-m", "seed")
-    bare = tmp_path / "layout" / ".bare"
+    bare = tmp_path / "src" / f"{name}.git"
     _git(tmp_path, "clone", "-q", "--bare", str(seed), str(bare))
-    first = tmp_path / "layout" / "main"
-    second = tmp_path / "layout" / "feature"
+    first = tmp_path / "wt" / name / "main"
+    second = tmp_path / "wt" / name / "feature"
     _git(bare, "worktree", "add", "-q", str(first), "main")
     _git(bare, "worktree", "add", "-q", "-b", "feature", str(second))
+    return bare, first, second
 
-    expected = tmp_path / "layout" / ".ai-team" / "tracker"
+
+def test_bare_repository_worktrees_share_one_tracker(tmp_path):
+    bare, first, second = _bare_clone_with_worktrees(tmp_path, "a")
+
+    expected = bare / ".ai-team" / "tracker"
     assert resolve_tracker_dir(first) == expected
     assert resolve_tracker_dir(second) == expected
+
+
+def test_sibling_bare_repositories_keep_separate_trackers(tmp_path):
+    _, first_a, _ = _bare_clone_with_worktrees(tmp_path, "a")
+    _, first_b, _ = _bare_clone_with_worktrees(tmp_path, "b")
+
+    assert resolve_tracker_dir(first_a) != resolve_tracker_dir(first_b)
 
 
 def test_legacy_archive_folder_triggers_the_warning(initialized_repo):
