@@ -28,7 +28,7 @@ Bug body.
 
 
 def _write_bug(tmp_path: Path, bug_id: str, status: str) -> Path:
-    (tmp_path / "project").mkdir(exist_ok=True)
+    (tmp_path / "ai-team").mkdir(exist_ok=True)
     path = tmp_path / ".ai-team" / "tracker" / "bugs" / f"{bug_id}-demo-bug.md"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -123,7 +123,7 @@ def test_bug_lifecycle_command_reports_not_found_and_names_tracker_folder(
     """A missing bug ID returns non-zero and names the tracker bugs folder."""
     from ai_team.cli import app
 
-    (tmp_path / "project").mkdir()
+    (tmp_path / "ai-team").mkdir()
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["bug", command, "B-999"])

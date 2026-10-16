@@ -40,7 +40,7 @@ Interaction pattern:
 
 Folder scope:
 - Read: anywhere.
-- Write: `project/specs/`; tasks and change-requests in the tracker through the `new-task` and `change-request` skills.
+- Write: `ai-team/specs/`; tasks and change-requests in the tracker through the `new-task` and `change-request` skills.
 - Never touch: implementation files, test files.
 
 Quality bar:

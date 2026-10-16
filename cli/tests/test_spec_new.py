@@ -20,17 +20,17 @@ def test_spec_new_creates_spec_with_defaults_and_prints_absolute_path(
     """`ai-team spec new` creates one spec file at S-NNN-<slug>.md with default values."""
     from ai_team.cli import app
 
-    _mkdir(tmp_path / "project" / "specs")
+    _mkdir(tmp_path / "ai-team" / "specs")
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["spec", "new", "Launch Plan"])
 
-    expected = tmp_path / "project" / "specs" / "S-001-launch-plan.md"
+    expected = tmp_path / "ai-team" / "specs" / "S-001-launch-plan.md"
 
     assert result.exit_code == 0
     assert result.stdout.strip() == str(expected)
 
-    files = list((tmp_path / "project" / "specs").glob("*.md"))
+    files = list((tmp_path / "ai-team" / "specs").glob("*.md"))
     assert files == [expected]
 
     spec = parse_spec(expected)
@@ -48,7 +48,7 @@ def test_spec_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
     """`spec new --json` emits id/path at S-NNN-<slug>.md from supplied flags."""
     from ai_team.cli import app
 
-    _mkdir(tmp_path / "project" / "specs")
+    _mkdir(tmp_path / "ai-team" / "specs")
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(
@@ -65,7 +65,7 @@ def test_spec_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
         ],
     )
 
-    expected = tmp_path / "project" / "specs" / "S-001-auth-spec.md"
+    expected = tmp_path / "ai-team" / "specs" / "S-001-auth-spec.md"
     payload = json.loads(result.stdout)
 
     assert result.exit_code == 0
@@ -90,7 +90,7 @@ def test_spec_new_refuses_to_overwrite_when_allocated_path_exists(
     import ai_team.commands.spec as spec_mod
     from ai_team.cli import app
 
-    specs = tmp_path / "project" / "specs"
+    specs = tmp_path / "ai-team" / "specs"
     _mkdir(specs)
 
     # Force the allocator to always return S-001 so we can pre-create the target.
@@ -111,14 +111,14 @@ def test_spec_new_substitutes_body_h1_with_provided_title(monkeypatch, tmp_path)
     """`spec new` replaces the body H1 placeholder with the provided title."""
     from ai_team.cli import app
 
-    _mkdir(tmp_path / "project" / "specs")
+    _mkdir(tmp_path / "ai-team" / "specs")
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["spec", "new", "My New Spec"])
 
     assert result.exit_code == 0
 
-    expected = tmp_path / "project" / "specs" / "S-001-my-new-spec.md"
+    expected = tmp_path / "ai-team" / "specs" / "S-001-my-new-spec.md"
     content = expected.read_text(encoding="utf-8")
 
     assert "# My New Spec" in content
@@ -131,7 +131,7 @@ def test_spec_new_allocates_next_id_from_existing_spec_frontmatter(
     """Allocator should use existing spec frontmatter IDs, not filename patterns."""
     from ai_team.cli import app
 
-    specs_dir = tmp_path / "project" / "specs"
+    specs_dir = tmp_path / "ai-team" / "specs"
     _mkdir(specs_dir)
     (specs_dir / "the-intern-agent-service-architecture.md").write_text(
         """---
@@ -188,7 +188,7 @@ def test_spec_new_allocates_distinct_ids_for_two_concurrent_callers(
     """
     import ai_team.commands.spec as spec_cmd
 
-    specs_dir = tmp_path / "project" / "specs"
+    specs_dir = tmp_path / "ai-team" / "specs"
     _mkdir(specs_dir / "archive")
 
     monkeypatch.chdir(tmp_path)

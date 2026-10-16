@@ -1,6 +1,6 @@
 # Project Guidance
 
-This `project/` directory stores project-local planning and execution artifacts.
+This `ai-team/` directory stores project-local planning and execution artifacts.
 
 ## Folder Purpose
 

@@ -9,7 +9,7 @@ from typer.testing import CliRunner
 @pytest.fixture(autouse=True)
 def _project_dir(tmp_path):
     """The locator needs the project directory; work items live in the tracker."""
-    (tmp_path / "project").mkdir(exist_ok=True)
+    (tmp_path / "ai-team").mkdir(exist_ok=True)
 
 
 TASK_TEMPLATE = """\
@@ -178,10 +178,10 @@ def test_show_resolves_ids_across_artifact_types_and_states(
         path = tmp_path / ".ai-team" / "tracker" / "bugs" / artifact_path[2]
         content = _bug(identifier, expected_text, artifact_path[1], "Bug content.")
     elif artifact_path[0] == "specs":
-        path = tmp_path / "project" / artifact_path[0] / artifact_path[1]
+        path = tmp_path / "ai-team" / artifact_path[0] / artifact_path[1]
         content = _spec(expected_text, "Spec content.")
     else:
-        path = tmp_path / "project" / artifact_path[0] / artifact_path[1]
+        path = tmp_path / "ai-team" / artifact_path[0] / artifact_path[1]
         content = _adr(identifier, expected_text, "ADR content.")
 
     _write(path, content)
@@ -221,8 +221,8 @@ def test_show_no_match_prints_not_found_with_searched_roots_and_exits_non_zero(
 
     (tmp_path / ".ai-team" / "tracker" / "tasks").mkdir(parents=True)
     (tmp_path / ".ai-team" / "tracker" / "bugs").mkdir(parents=True)
-    (tmp_path / "project" / "specs").mkdir(parents=True)
-    (tmp_path / "project" / "decisions").mkdir(parents=True)
+    (tmp_path / "ai-team" / "specs").mkdir(parents=True)
+    (tmp_path / "ai-team" / "decisions").mkdir(parents=True)
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["show", "T-999"])
@@ -234,5 +234,5 @@ def test_show_no_match_prints_not_found_with_searched_roots_and_exits_non_zero(
     assert str(tmp_path / ".ai-team" / "tracker" / "tasks") in stderr
     assert str(tmp_path / ".ai-team" / "tracker" / "bugs") in stderr
     assert str(tmp_path / ".ai-team" / "tracker" / "change-requests") in stderr
-    assert str(tmp_path / "project" / "specs") in stderr
-    assert str(tmp_path / "project" / "decisions") in stderr
+    assert str(tmp_path / "ai-team" / "specs") in stderr
+    assert str(tmp_path / "ai-team" / "decisions") in stderr

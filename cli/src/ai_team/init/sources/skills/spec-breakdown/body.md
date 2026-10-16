@@ -68,7 +68,7 @@ The tracker is outside the repository and the Architect does not run commands, s
 > "Review the planned task plan for the spec or change-request `<spec-or-cr-id>`.
 > The planned task files are: <task-id>: <absolute path>, one per task.
 > Use the spec-breakdown-review skill.
-> Validate dependency correctness, file conflict risk, architectural consistency with `project/decisions/`, atomicity, and implementation readiness.
+> Validate dependency correctness, file conflict risk, architectural consistency with `ai-team/decisions/`, atomicity, and implementation readiness.
 > If all is sound, return `Result: PASS` and state that the plan is ready for /dev-loop.
 > If issues are found, return `Result: FAIL` with exact Planner corrections, or `Result: ESCALATE` only when a problem requires changing the approved specification.
 > Populate every field of the Output Format block, including `Obstacles Encountered`."

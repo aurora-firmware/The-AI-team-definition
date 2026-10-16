@@ -11,7 +11,7 @@ Those rules are then **implemented** by four things, all packaged inside the `ai
 
 - the **agents** — the roles that carry out the process (authored under `cli/src/ai_team/init/sources/agents/`);
 - the **skills** — the procedures the agents follow (authored under `cli/src/ai_team/init/sources/skills/`);
-- the **project skeleton** — the managed `project/` directory layout scaffolded into target repositories (authored under `cli/src/ai_team/init/sources/project/`);
+- the **project skeleton** — the managed `ai-team/` directory layout scaffolded into target repositories (authored under `cli/src/ai_team/init/sources/project/`);
 - the **root guidance templates** — starter `CLAUDE.md` and `AGENTS.md` files for project-specific commands and conventions (authored under `cli/src/ai_team/init/sources/root/`);
 - the **`ai-team` CLI** (`cli/`) — the tooling that supports the skills by managing project artifacts and bootstrapping the framework into new repositories.
 
@@ -158,7 +158,7 @@ From the target repository root:
 ai-team init . --tools all --no-interactive --create-root-guidance
 ```
 
-This creates the managed `project/` folders, copies the bundled agents and skills into the target project's `.claude/` and/or `.codex/` directories, writes `.ai-team.toml`, and optionally creates starter root `CLAUDE.md` and `AGENTS.md` files.
+This creates the managed `ai-team/` folders, copies the bundled agents and skills into the target project's `.claude/` and/or `.codex/` directories, writes `.ai-team.toml`, and optionally creates starter root `CLAUDE.md` and `AGENTS.md` files.
 The `ai-process/` specification documents are not exported; they live in this meta-repository only and serve as the authoritative spec for the rules the agents and skills implement.
 
 Use `--dry-run` to preview files before writing. Use `--force` only when you intentionally want existing files overwritten. In non-interactive setup, omit `--create-root-guidance` if you do not want starter root guidance files.
@@ -196,7 +196,7 @@ The most common loop is:
 4. Run `/bug-loop` for open bugs.
 5. Run `ai-team status` and `ai-team report` for Gate 5 sign-off context.
 
-After initialization, still add your project's `CLAUDE.md`, stack-specific commands, and coding guidance in `project/docs/`.
+After initialization, still add your project's `CLAUDE.md`, stack-specific commands, and coding guidance in `ai-team/docs/`.
 Keep the framework files generic unless you intentionally fork the process.
 
 The normal workflow is:

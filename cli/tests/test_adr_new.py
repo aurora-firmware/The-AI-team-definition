@@ -19,17 +19,17 @@ def test_adr_new_creates_decision_with_defaults_and_prints_absolute_path(
     """`ai-team adr new` creates one decision file and echoes its absolute path."""
     from ai_team.cli import app
 
-    _mkdir(tmp_path / "project" / "decisions")
+    _mkdir(tmp_path / "ai-team" / "decisions")
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["adr", "new", "Use event bus"])
 
-    expected = tmp_path / "project" / "decisions" / "ADR-001-use-event-bus.md"
+    expected = tmp_path / "ai-team" / "decisions" / "ADR-001-use-event-bus.md"
 
     assert result.exit_code == 0
     assert result.stdout.strip() == str(expected)
 
-    files = list((tmp_path / "project" / "decisions").glob("*.md"))
+    files = list((tmp_path / "ai-team" / "decisions").glob("*.md"))
     assert files == [expected]
 
     adr = parse_adr(expected)
@@ -44,7 +44,7 @@ def test_adr_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
     """`adr new --json` emits id/path and writes frontmatter from supplied flags."""
     from ai_team.cli import app
 
-    _mkdir(tmp_path / "project" / "decisions")
+    _mkdir(tmp_path / "ai-team" / "decisions")
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(
@@ -61,7 +61,7 @@ def test_adr_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
         ],
     )
 
-    expected = tmp_path / "project" / "decisions" / "ADR-001-use-event-bus.md"
+    expected = tmp_path / "ai-team" / "decisions" / "ADR-001-use-event-bus.md"
     payload = json.loads(result.stdout)
 
     assert result.exit_code == 0
@@ -80,7 +80,7 @@ def test_adr_new_refuses_to_overwrite_when_allocated_path_exists(monkeypatch, tm
     """Existing output path causes non-zero exit and preserves file bytes."""
     from ai_team.cli import app
 
-    decisions = tmp_path / "project" / "decisions"
+    decisions = tmp_path / "ai-team" / "decisions"
     _mkdir(decisions)
 
     existing = decisions / "ADR-001-use-event-bus.md"

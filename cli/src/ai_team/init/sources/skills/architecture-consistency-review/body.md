@@ -17,8 +17,8 @@ Whenever an architecture artifact changes:
 ## Input Requirements
 
 - **Changed artifact** — the ADR, spec, or change-request just created or amended, and which kind it is. If it was not provided, return `BLOCKED`.
-- **Decision records** — all ADRs in `project/decisions/`; treat `accepted` ones as binding.
-- **Specifications** — all specs in `project/specs/`; treat `approved` ones as binding.
+- **Decision records** — all ADRs in `ai-team/decisions/`; treat `accepted` ones as binding.
+- **Specifications** — all specs in `ai-team/specs/`; treat `approved` ones as binding.
 - **Change scope** — for an amendment or change-request, the specific decision, section, or requirement that changed.
 
 ## Procedure
@@ -31,7 +31,7 @@ For an approved change-request, treat the approved change-request itself as the 
 
 ### Step 2: Read the Binding Set
 
-Read every accepted ADR in `project/decisions/` and every approved spec in `project/specs/`. These are the artifacts the change must not contradict.
+Read every accepted ADR in `ai-team/decisions/` and every approved spec in `ai-team/specs/`. These are the artifacts the change must not contradict.
 
 ### Step 3: Check for Contradiction
 

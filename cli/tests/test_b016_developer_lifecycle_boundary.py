@@ -76,7 +76,7 @@ def _never_touch_line(body: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# AC-1: Claude Developer Folder Scope names project/tasks/ and project/bugs/
+# AC-1: Claude Developer Folder Scope names ai-team/tasks/ and ai-team/bugs/
 # ---------------------------------------------------------------------------
 
 

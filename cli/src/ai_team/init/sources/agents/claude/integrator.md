@@ -50,7 +50,7 @@ While spawned, the Integrator uses the `integrate` skill to run the merge, and t
 |---|---|
 | Read | anywhere |
 | Write / Edit | implementation and test files when resolving conflicts, task and bug state through `ai-team task|bug` commands when explicitly assigned |
-| Never touch | `project/specs/`, `project/decisions/`, `project/docs/` |
+| Never touch | `ai-team/specs/`, `ai-team/decisions/`, `ai-team/docs/` |
 
 ## Quality Bar
 

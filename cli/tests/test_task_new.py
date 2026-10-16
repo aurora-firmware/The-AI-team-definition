@@ -14,7 +14,7 @@ from ai_team.core.models import parse_task
 @pytest.fixture(autouse=True)
 def _project_dir(tmp_path):
     """The locator needs the project directory; work items live in the tracker."""
-    (tmp_path / "project").mkdir(exist_ok=True)
+    (tmp_path / "ai-team").mkdir(exist_ok=True)
 
 
 def _mkdir(path: Path) -> None:
@@ -149,7 +149,7 @@ def test_task_new_allocates_distinct_ids_for_two_concurrent_callers(
     pending = tmp_path / ".ai-team" / "tracker" / "tasks"
     _mkdir(pending)
     for state in ("in-progress", "completed", "blocked"):
-        _mkdir(tmp_path / "project" / "tasks" / state)
+        _mkdir(tmp_path / "ai-team" / "tasks" / state)
 
     monkeypatch.chdir(tmp_path)
 

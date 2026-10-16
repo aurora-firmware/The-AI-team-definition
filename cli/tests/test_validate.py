@@ -10,7 +10,7 @@ from typer.testing import CliRunner
 @pytest.fixture(autouse=True)
 def _project_dir(tmp_path):
     """The locator needs the project directory; work items live in the tracker."""
-    (tmp_path / "project").mkdir(exist_ok=True)
+    (tmp_path / "ai-team").mkdir(exist_ok=True)
 
 
 TASK_TEMPLATE = """\
@@ -103,7 +103,7 @@ def _adr(adr_id: str, title: str, *, extra_frontmatter: str = "") -> str:
 
 def _seed_valid_project(root: Path) -> None:
     _write(
-        root / "project" / "specs" / "roadmap-spec.md",
+        root / "ai-team" / "specs" / "roadmap-spec.md",
         _spec("S-001", "Roadmap Spec"),
     )
     _write(
@@ -125,7 +125,7 @@ def _seed_valid_project(root: Path) -> None:
         ),
     )
     _write(
-        root / "project" / "decisions" / "ADR-001-roadmap-decision.md",
+        root / "ai-team" / "decisions" / "ADR-001-roadmap-decision.md",
         _adr("ADR-001", "Roadmap Decision"),
     )
 
@@ -195,7 +195,7 @@ def test_validate_emits_error_when_cross_references_do_not_resolve(
         ),
     )
     _write(
-        tmp_path / "project" / "decisions" / "ADR-002-missing-supersedes.md",
+        tmp_path / "ai-team" / "decisions" / "ADR-002-missing-supersedes.md",
         _adr(
             "ADR-002",
             "Missing Supersedes",
@@ -269,7 +269,7 @@ def test_validate_detects_frontmatter_id_and_filename_violations(monkeypatch, tm
         _task("TASK-001", "Bad Task ID", "pending"),
     )
     _write(
-        tmp_path / "project" / "specs" / "Bad Spec Name.md",
+        tmp_path / "ai-team" / "specs" / "Bad Spec Name.md",
         """\
 ---
 title: "Bad Spec"
@@ -282,7 +282,7 @@ Body.
 """,
     )
     _write(
-        tmp_path / "project" / "decisions" / "ADR-010.md",
+        tmp_path / "ai-team" / "decisions" / "ADR-010.md",
         _adr("ADR-010", "Missing Slug"),
     )
 
@@ -471,7 +471,7 @@ def test_validate_specs_accepts_new_s_nnn_slug_filename_with_matching_id(
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "specs" / "S-001-launch-plan.md",
+        tmp_path / "ai-team" / "specs" / "S-001-launch-plan.md",
         _spec("S-001", "Launch Plan"),
     )
 
@@ -490,7 +490,7 @@ def test_validate_specs_reports_filename_id_mismatch_when_prefix_does_not_match_
 
     # File named S-002-launch-plan.md but frontmatter id is S-001
     _write(
-        tmp_path / "project" / "specs" / "S-002-launch-plan.md",
+        tmp_path / "ai-team" / "specs" / "S-002-launch-plan.md",
         _spec("S-001", "Launch Plan"),
     )
 
@@ -509,7 +509,7 @@ def test_validate_specs_accepts_legacy_slug_only_filename_without_id_prefix(
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "specs" / "roadmap-spec.md",
+        tmp_path / "ai-team" / "specs" / "roadmap-spec.md",
         _spec("S-001", "Roadmap Spec"),
     )
 
@@ -530,7 +530,7 @@ def test_validate_resolves_task_spec_reference_by_frontmatter_id(monkeypatch, tm
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "specs" / "S-001-launch-plan.md",
+        tmp_path / "ai-team" / "specs" / "S-001-launch-plan.md",
         _spec("S-001", "Launch Plan"),
     )
     _write(
@@ -557,7 +557,7 @@ def test_validate_resolves_task_spec_reference_by_bare_slug_of_new_style_filenam
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "specs" / "S-001-launch-plan.md",
+        tmp_path / "ai-team" / "specs" / "S-001-launch-plan.md",
         _spec("S-001", "Launch Plan"),
     )
     _write(
@@ -582,7 +582,7 @@ def test_validate_resolves_task_spec_reference_to_archived_spec(monkeypatch, tmp
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "specs" / "archive" / "S-001-launch-plan.md",
+        tmp_path / "ai-team" / "specs" / "archive" / "S-001-launch-plan.md",
         _spec("S-001", "Launch Plan"),
     )
     _write(
@@ -613,7 +613,7 @@ def test_validate_still_reports_task_spec_missing_for_genuinely_missing_spec(
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "specs" / "S-001-launch-plan.md",
+        tmp_path / "ai-team" / "specs" / "S-001-launch-plan.md",
         _spec("S-001", "Launch Plan"),
     )
     _write(

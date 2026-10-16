@@ -10,7 +10,7 @@ from typer.testing import CliRunner
 @pytest.fixture(autouse=True)
 def _project_dir(tmp_path):
     """The locator needs the project directory; work items live in the tracker."""
-    (tmp_path / "project").mkdir(exist_ok=True)
+    (tmp_path / "ai-team").mkdir(exist_ok=True)
 
 
 TASK_TEMPLATE = """\
@@ -119,7 +119,7 @@ def test_status_rich_summary_includes_counts_and_key_lists(monkeypatch, tmp_path
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "specs" / "S-001.md", _spec("Spec 1", "0.1", "approved")
+        tmp_path / "ai-team" / "specs" / "S-001.md", _spec("Spec 1", "0.1", "approved")
     )
     _write(
         tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001.md",
@@ -143,7 +143,7 @@ def test_status_rich_summary_includes_counts_and_key_lists(monkeypatch, tmp_path
         ),
     )
     _write(
-        tmp_path / "project" / "decisions" / "ADR-001.md",
+        tmp_path / "ai-team" / "decisions" / "ADR-001.md",
         _adr("ADR-001", "Decision 1", "accepted"),
     )
 
@@ -198,7 +198,7 @@ def test_status_json_emits_structured_payload_without_rich_table(monkeypatch, tm
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "specs" / "S-001.md", _spec("Spec 1", "0.1", "approved")
+        tmp_path / "ai-team" / "specs" / "S-001.md", _spec("Spec 1", "0.1", "approved")
     )
     _write(
         tmp_path / ".ai-team" / "tracker" / "tasks" / "T-100.md",

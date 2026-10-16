@@ -10,7 +10,7 @@ allowed-tools: Read, Grep, Glob, Write, Edit, Bash, Skill(git-conventions)
 
 - **Task or bug file** — with acceptance criteria or fix-verification steps.
 - **Project test setup** — test framework, directory structure, how to run tests.
-- **Target-project coding guidance** — the project `CLAUDE.md`, `project/docs/coding_guidelines.md`, README, build configuration, and any human-provided instructions (the framework-level coding standards are carried by the invoking role's definition).
+- **Target-project coding guidance** — the project `CLAUDE.md`, `ai-team/docs/coding_guidelines.md`, README, build configuration, and any human-provided instructions (the framework-level coding standards are carried by the invoking role's definition).
 
 Task and bug files live in the local tracker, outside version control; the active loop passes their path.
 Read their existing Work Log and Diagnosis Log entries, but return new log content as a handoff to the active loop instead of editing lifecycle files directly.

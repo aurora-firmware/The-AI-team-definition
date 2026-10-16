@@ -59,7 +59,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 ### Stage 2: Code Quality
 **Pass criteria:**
-- Code follows the coding standards: `ai-process/guidelines/coding-standards.md` (general) and `project/docs/coding_guidelines.md` (project-specific tech-stack rules, if present).
+- Code follows the coding standards: `ai-process/guidelines/coding-standards.md` (general) and `ai-team/docs/coding_guidelines.md` (project-specific tech-stack rules, if present).
 - Relevant tests exist for the changed behavior.
 - The Developer's Work Log records local test evidence or explains why a local test run was not possible.
 - No security vulnerabilities introduced.

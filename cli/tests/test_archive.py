@@ -12,7 +12,7 @@ from typer.testing import CliRunner
 @pytest.fixture(autouse=True)
 def _project_dir(tmp_path):
     """The locator needs the project directory; work items live in the tracker."""
-    (tmp_path / "project").mkdir(exist_ok=True)
+    (tmp_path / "ai-team").mkdir(exist_ok=True)
 
 
 TASK_TEMPLATE = """\
@@ -175,7 +175,7 @@ def test_archive_rejects_invalid_older_than_value(monkeypatch, tmp_path: Path) -
     """Invalid --older-than syntax exits non-zero with a clear error message."""
     from ai_team.cli import app
 
-    (tmp_path / "project").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "ai-team").mkdir(parents=True, exist_ok=True)
     monkeypatch.chdir(tmp_path)
 
     result = CliRunner().invoke(app, ["archive", "--older-than", "abc"])

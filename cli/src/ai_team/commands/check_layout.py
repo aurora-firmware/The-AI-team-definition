@@ -9,6 +9,7 @@ import typer
 
 from ai_team.core.layout import LayoutFinding
 from ai_team.core.layout import check_layout as run_layout_checks
+from ai_team.core.locator import DEFAULT_PROJECT_DIR
 
 NAME = "check-layout"
 app = typer.Typer(
@@ -24,7 +25,9 @@ def _repository_root(cwd: Path) -> Path:
 
     cwd = cwd.resolve()
     for candidate in (cwd, *cwd.parents):
-        if (candidate / ".ai-team.toml").exists() or (candidate / "project").is_dir():
+        if (candidate / ".ai-team.toml").exists() or (
+            candidate / DEFAULT_PROJECT_DIR
+        ).is_dir():
             return candidate
     return cwd
 

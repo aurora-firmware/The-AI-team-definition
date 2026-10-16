@@ -19,11 +19,11 @@ from ai_team.core.locator import ProjectRoot
 
 def make_project_root(tmp_path: Path) -> ProjectRoot:
     """Create the minimal artifact tree and return a matching ProjectRoot."""
-    project_dir = tmp_path / "project"
+    project_dir = tmp_path / "ai-team"
     (project_dir / "specs" / "archive").mkdir(parents=True)
     (project_dir / "decisions").mkdir(parents=True)
     (project_dir / "docs").mkdir(parents=True)
-    root = ProjectRoot._from_repo_and_project_dir_name(tmp_path, "project")
+    root = ProjectRoot._from_repo_and_project_dir_name(tmp_path, "ai-team")
     root.tasks.mkdir(parents=True)
     root.bugs.mkdir(parents=True)
     return root

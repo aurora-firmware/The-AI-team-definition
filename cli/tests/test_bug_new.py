@@ -14,7 +14,7 @@ from ai_team.core.models import parse_bug
 @pytest.fixture(autouse=True)
 def _project_dir(tmp_path):
     """The locator needs the project directory; work items live in the tracker."""
-    (tmp_path / "project").mkdir(exist_ok=True)
+    (tmp_path / "ai-team").mkdir(exist_ok=True)
 
 
 def _mkdir(path: Path) -> None:
@@ -141,7 +141,7 @@ def test_bug_new_allocates_distinct_ids_for_two_concurrent_callers(
     open_folder = tmp_path / ".ai-team" / "tracker" / "bugs"
     _mkdir(open_folder)
     for state in ("in-progress", "resolved"):
-        _mkdir(tmp_path / "project" / "bugs" / state)
+        _mkdir(tmp_path / "ai-team" / "bugs" / state)
 
     monkeypatch.chdir(tmp_path)
 

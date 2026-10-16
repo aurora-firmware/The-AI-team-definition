@@ -12,7 +12,7 @@ from importlib.resources.abc import Traversable
 from pathlib import Path
 from typing import Literal
 
-from ai_team.core.locator import ProjectRoot
+from ai_team.core.locator import DEFAULT_PROJECT_DIR, ProjectRoot
 from ai_team.core.tracker import (
     MIGRATION_GUIDE,
     is_inside,
@@ -23,7 +23,6 @@ from ai_team.core.validate import Finding as ArtifactFinding
 from ai_team.core.validate import validate_project
 
 _SUPPORTED_TOOLS = ("claude", "codex")
-_DEFAULT_PROJECT_DIR = "project"
 _GUIDANCE_BY_TOOL = {"claude": "CLAUDE.md", "codex": "AGENTS.md"}
 _GUIDANCE_HEADINGS = (
     "Build and Install",
@@ -139,7 +138,7 @@ def resolve_layout(
             tools_value = init_table.get("tools")
             version_value = init_table.get("framework_version")
 
-    project_dir_name = _DEFAULT_PROJECT_DIR
+    project_dir_name = DEFAULT_PROJECT_DIR
     if marker_status == "valid":
         if _is_project_dir_name(project_value):
             project_dir_name = project_value
@@ -148,8 +147,8 @@ def resolve_layout(
                 _finding(
                     1,
                     ".ai-team.toml",
-                    "Marker value [project].dir is missing or invalid; using the conventional 'project' directory.",
-                    "Set [project].dir to one usable relative directory name, such as 'project'.",
+                    f"Marker value [project].dir is missing or invalid; using the default '{DEFAULT_PROJECT_DIR}' directory.",
+                    f"Set [project].dir to one usable relative directory name, such as '{DEFAULT_PROJECT_DIR}'.",
                 )
             )
 

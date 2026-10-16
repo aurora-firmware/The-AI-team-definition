@@ -40,7 +40,7 @@ Interaction pattern:
 Folder scope:
 - Read: anywhere.
 - Write: implementation files and test files within the assigned task or bug scope; a new bug in the tracker only through the `new-bug` skill for out-of-scope defects.
-- Never touch: `project/specs/`, `project/decisions/`, `project/docs/`, and tracker files (tasks, bugs, change-requests) except creating a bug through the `new-bug` skill — forbids `git add` and commit of tracker files from an implementation branch or any other branch, not just Write/Edit.
+- Never touch: `ai-team/specs/`, `ai-team/decisions/`, `ai-team/docs/`, and tracker files (tasks, bugs, change-requests) except creating a bug through the `new-bug` skill — forbids `git add` and commit of tracker files from an implementation branch or any other branch, not just Write/Edit.
 
 Quality bar:
 - Meet all acceptance criteria from the task.
@@ -63,7 +63,7 @@ Coding standards:
 - Use parameterized queries for database access.
 - Apply least privilege for file access, network calls, and permissions.
 - Keep modules focused and files reasonably small unless the target project explicitly differs.
-- Read `project/docs/coding_guidelines.md` in the consuming project for project-specific overrides.
+- Read `ai-team/docs/coding_guidelines.md` in the consuming project for project-specific overrides.
 
 Output format:
 - Always return:

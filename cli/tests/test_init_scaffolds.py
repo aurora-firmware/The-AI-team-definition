@@ -728,7 +728,7 @@ def test_spec_breakdown_review_preserves_existing_output_format_and_verdicts() -
     source, claude, codex = _spec_breakdown_review_skill_texts()
     required_phrases = (
         "Result: PASS | FAIL | BLOCKED | ESCALATE",
-        "Spec reviewed: project/specs/<file>",
+        "Spec reviewed: ai-team/specs/<file>",
         "Tasks reviewed: <count>",
         "Next owner:",
     )
@@ -797,7 +797,7 @@ def test_dev_loop_discovers_baseline_test_command_before_claiming_task() -> None
         "project-specific guidance",
         "CLAUDE.md",
         "AGENTS.md",
-        "project/docs/coding_guidelines.md",
+        "ai-team/docs/coding_guidelines.md",
     )
 
     for phrase in required_phrases:

@@ -138,7 +138,7 @@ def test_usage_md_describes_ai_team_toml_marker():
 
 def test_usage_md_describes_ai_team_lock_sentinel_and_gitignore_coverage():
     """B-017: usage.md must document the .ai-team.lock sentinel, why it persists,
-    that the shipped project/.gitignore covers it, and the pre-fix residual case."""
+    that the shipped ai-team/.gitignore covers it, and the pre-fix residual case."""
     content = _content()
     lower = _lower()
 
@@ -149,7 +149,7 @@ def test_usage_md_describes_ai_team_lock_sentinel_and_gitignore_coverage():
         "usage.md must explain the sentinel persists by B-014's flock design"
     )
     assert ".gitignore" in content, (
-        "usage.md must document the shipped project/.gitignore covering the sentinel"
+        "usage.md must document the shipped ai-team/.gitignore covering the sentinel"
     )
     assert "before this" in lower or "retroactively" in lower, (
         "usage.md must call out the residual case for projects that ran "

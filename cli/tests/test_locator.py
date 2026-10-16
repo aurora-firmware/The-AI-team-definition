@@ -2,7 +2,7 @@
 Tests for T-002: ai_team.core.locator — find_project_root and ProjectRoot.
 
 Covers:
-  AC-1: Walk up from cwd to find a folder named 'project/' (default project_dir).
+  AC-1: Walk up from cwd to find a folder named 'ai-team/' (default project_dir).
   AC-2: AI_TEAM_ROOT env var is preferred over directory walking.
   AC-3: .ai-team.toml with [project] dir = "<name>" overrides the default folder name.
   AC-4: ProjectRootNotFound is raised when no root can be resolved, with a message
@@ -20,7 +20,7 @@ from ai_team.core.locator import ProjectRootNotFound, find_project_root
 # ---------------------------------------------------------------------------
 
 
-def make_project_layout(base: Path, project_dir_name: str = "project") -> Path:
+def make_project_layout(base: Path, project_dir_name: str = "ai-team") -> Path:
     """
     Create the minimal project folder hierarchy under *base* and return the
     repo root (base).  The layout is:
@@ -39,13 +39,13 @@ def make_project_layout(base: Path, project_dir_name: str = "project") -> Path:
 
 
 # ---------------------------------------------------------------------------
-# AC-1: Walk up from cwd and find the default 'project/' folder.
+# AC-1: Walk up from cwd and find the default 'ai-team/' folder.
 # ---------------------------------------------------------------------------
 
 
 def test_finds_project_root_in_same_directory_as_cwd(tmp_path):
     """
-    When cwd IS the repo root and a 'project/' folder exists there,
+    When cwd IS the repo root and a 'ai-team/' folder exists there,
     find_project_root returns a ProjectRoot whose repo equals that directory.
     """
     make_project_layout(tmp_path)
@@ -70,14 +70,14 @@ def test_project_root_exposes_project_dir_path(tmp_path):
     """ProjectRoot.project_dir is an absolute path pointing at the project folder."""
     make_project_layout(tmp_path)
     result = find_project_root(tmp_path)
-    assert result.project_dir == tmp_path / "project"
+    assert result.project_dir == tmp_path / "ai-team"
 
 
 def test_project_root_exposes_specs_path(tmp_path):
     """ProjectRoot.specs is the absolute path to the specs/ subdirectory."""
     make_project_layout(tmp_path)
     result = find_project_root(tmp_path)
-    assert result.specs == tmp_path / "project" / "specs"
+    assert result.specs == tmp_path / "ai-team" / "specs"
 
 
 def test_project_root_exposes_tracker_folders_with_default_location(tmp_path):
@@ -96,8 +96,8 @@ def test_project_root_exposes_decisions_and_docs(tmp_path):
     """ProjectRoot exposes decisions/ and docs/ paths."""
     make_project_layout(tmp_path)
     result = find_project_root(tmp_path)
-    assert result.decisions == tmp_path / "project" / "decisions"
-    assert result.docs == tmp_path / "project" / "docs"
+    assert result.decisions == tmp_path / "ai-team" / "decisions"
+    assert result.docs == tmp_path / "ai-team" / "docs"
 
 
 def test_repo_path_is_absolute_even_when_cwd_is_relative(tmp_path):
@@ -148,7 +148,7 @@ def test_env_var_resolves_project_dir_correctly(tmp_path, monkeypatch):
     monkeypatch.setenv("AI_TEAM_ROOT", str(env_repo))
 
     result = find_project_root(tmp_path)
-    assert result.project_dir == env_repo / "project"
+    assert result.project_dir == env_repo / "ai-team"
 
 
 def test_root_kwarg_overrides_env_var_and_walking(tmp_path, monkeypatch):
@@ -217,7 +217,7 @@ def test_toml_without_project_section_falls_through_to_folder_walking(tmp_path):
     (tmp_path / ".ai-team.toml").write_text("[init]\ntools = []\n")
 
     result = find_project_root(tmp_path)
-    assert result.project_dir == tmp_path / "project"
+    assert result.project_dir == tmp_path / "ai-team"
 
 
 # ---------------------------------------------------------------------------

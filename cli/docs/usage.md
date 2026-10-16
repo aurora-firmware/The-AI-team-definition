@@ -1,7 +1,7 @@
 # ai-team CLI Usage Guide
 
 This guide covers installation, initialisation, daily workflows, the expected
-`project/` folder structure, and a maintainer section. For an exhaustive list
+`ai-team/` folder structure, and a maintainer section. For an exhaustive list
 of every command, flag, and argument, see [commands.md](commands.md).
 
 ---
@@ -92,7 +92,7 @@ package-owned snapshots bundled inside the `ai_team.init.scaffolds` package.
 Running `ai-team init . --tools claude` writes:
 
 ```
-project/
+ai-team/
   specs/
   decisions/
   docs/
@@ -252,10 +252,10 @@ ai-team list bugs --state open
 ### Create a spec or ADR
 
 ```bash
-# New specification (lands in project/specs/ as S-NNN-<slug>.md)
+# New specification (lands in ai-team/specs/ as S-NNN-<slug>.md)
 ai-team spec new "Billing reconciliation" --author "planner" --status draft
 
-# New Architecture Decision Record (lands in project/decisions/)
+# New Architecture Decision Record (lands in ai-team/decisions/)
 ai-team adr new "Use PostgreSQL for ledger storage" --status proposed
 ```
 
@@ -297,7 +297,7 @@ commands give the context needed:
 # Inline summary in the terminal
 ai-team status
 
-# Write a full progress report to project/docs/reports/
+# Write a full progress report to ai-team/docs/reports/
 ai-team report
 
 # Override the output path
@@ -332,7 +332,7 @@ Exit code is 1 if any error-level finding is reported.
 ### Archive old artifacts
 
 Completed tasks and resolved bugs older than a threshold are moved to
-`project/archive/YYYY-MM/`:
+`ai-team/archive/YYYY-MM/`:
 
 ```bash
 # Preview what would be archived (default: older than 90 days)
@@ -360,7 +360,7 @@ the **locator**, which tries four strategies in order:
    ```
 3. **Walk up from `cwd` looking for `.ai-team.toml`** — uses the `[project] dir`
    value from the file as the artifact folder name.
-4. **Walk up from `cwd` looking for a folder named `project`** — the
+4. **Walk up from `cwd` looking for a folder named `ai-team`** — the
    convention-based fallback.
 
 If no project root is found the CLI exits with a `ProjectRootNotFound` error
@@ -373,7 +373,10 @@ similar to:
 
 ```toml
 [project]
-dir = "project"
+dir = "ai-team"
+
+[tracker]
+dir = ".ai-team/tracker"
 
 [init]
 tools = ["claude"]
@@ -381,14 +384,16 @@ framework_version = "0.1.0"
 ```
 
 The `[project] dir` key is what the locator reads in strategy 3. You can
-change this key if your project uses a different folder name than `project`.
+change this key if your project uses a different folder name than the default
+`ai-team`. Projects initialised before the default changed keep their
+`dir = "project"` setting and need no change.
 
 ### Expected layout
 
 ```
 <repo-root>/
   .ai-team.toml               ← locator marker; written by ai-team init
-  project/                    ← artifact root (name comes from [project] dir)
+  ai-team/                    ← artifact root (name comes from [project] dir)
     specs/                    ← feature specifications
       archive/                ← superseded spec versions
     decisions/                ← Architecture Decision Records (ADR-NNN-*.md)
@@ -424,7 +429,7 @@ never deleted: the lock is a kernel-level `flock` on the file, released
 automatically when the holding process exits, so leaving the sentinel on disk
 is harmless and removing it would reopen the race the lock exists to prevent.
 
-`ai-team init` scaffolds a `project/.gitignore` containing a single
+`ai-team init` scaffolds an `ai-team/.gitignore` containing a single
 `.ai-team.lock` entry, so the sentinel never shows up as untracked in `git
 status`. Projects that ran `ai-team init` before this `.gitignore` was added
 will not receive it retroactively — add a `.ai-team.lock` entry to your own

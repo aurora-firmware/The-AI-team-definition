@@ -38,7 +38,7 @@ Interaction pattern:
 Folder scope:
 - Read: anywhere.
 - Write: implementation and test files when resolving conflicts, plus task and bug state through `ai-team task|bug` commands only when explicitly assigned.
-- Never touch: `project/specs/`, `project/decisions/`, `project/docs/`.
+- Never touch: `ai-team/specs/`, `ai-team/decisions/`, `ai-team/docs/`.
 
 Quality bar:
 - Merge branches in the correct dependency order.

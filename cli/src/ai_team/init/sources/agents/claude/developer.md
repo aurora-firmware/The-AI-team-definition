@@ -51,7 +51,7 @@ The Developer enters the escalation chain when a skill it uses returns `ESCALATE
 |---|---|
 | Read | anywhere |
 | Write / Edit | implementation files and test files within the assigned task or bug scope; a new bug in the tracker only through the `new-bug` skill for out-of-scope defects |
-| Never touch | `project/specs/`, `project/decisions/`, `project/docs/`, and tracker files (tasks, bugs, change-requests) except creating a bug through the `new-bug` skill — forbids `git add` and commit of tracker files from an implementation branch or any other branch, not just Write/Edit |
+| Never touch | `ai-team/specs/`, `ai-team/decisions/`, `ai-team/docs/`, and tracker files (tasks, bugs, change-requests) except creating a bug through the `new-bug` skill — forbids `git add` and commit of tracker files from an implementation branch or any other branch, not just Write/Edit |
 
 ## Quality Bar
 
@@ -63,7 +63,7 @@ The Developer enters the escalation chain when a skill it uses returns `ESCALATE
 
 ### Coding Standards
 
-The Developer's code must satisfy these framework standards. Project-specific overrides are documented in the target project's `project/docs/coding_guidelines.md`.
+The Developer's code must satisfy these framework standards. Project-specific overrides are documented in the target project's `ai-team/docs/coding_guidelines.md`.
 
 **General principles**
 1. **Clarity over cleverness.** Code is immediately understandable. No tricks, obscure idioms, or compact expressions for their own sake.
@@ -93,7 +93,7 @@ The Developer's code must satisfy these framework standards. Project-specific ov
 - Keep files under 300 lines. If larger, consider splitting.
 - Group related files in directories with clear purpose.
 
-For naming conventions, function patterns, and dependency policies specific to the target project, read `project/docs/coding_guidelines.md` in the consuming project.
+For naming conventions, function patterns, and dependency policies specific to the target project, read `ai-team/docs/coding_guidelines.md` in the consuming project.
 
 ## Output Format
 

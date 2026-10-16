@@ -61,9 +61,9 @@ replace it with placeholders if needed.
 In your new project root, create these directories:
 
 ```bash
-mkdir -p project/specs/archive
-mkdir -p project/decisions
-mkdir -p project/docs
+mkdir -p ai-team/specs/archive
+mkdir -p ai-team/decisions
+mkdir -p ai-team/docs
 mkdir -p .claude/agents
 mkdir -p .claude/skills
 # Optional for OpenAI Codex compatibility:
@@ -73,10 +73,10 @@ mkdir -p .codex
 Add `.gitkeep` files to keep empty directories in git:
 
 ```bash
-for dir in project/specs/archive project/decisions; do
+for dir in ai-team/specs/archive ai-team/decisions; do
   touch "$dir/.gitkeep"
 done
-touch project/docs/coding_guidelines.md
+touch ai-team/docs/coding_guidelines.md
 ```
 
 Tasks, bugs, and change-requests do not live in the project directory. They live in the local tracker, outside version control. `ai-team init` in Step 3 configures it: it writes `[tracker] dir = ".ai-team/tracker"` to `.ai-team.toml`, creates the folder, and adds `/.ai-team/` to `.gitignore`. Do not create `.ai-team.toml` by hand before running `ai-team init`.
@@ -94,7 +94,7 @@ This exports from the CLI package scaffold sources:
 - **Agent definitions** into `.claude/agents/`
 - **Skill definitions** into `.claude/skills/<name>/SKILL.md`
 - **Templates** as skill assets under `.claude/skills/*/assets/`
-- **Project state directories** under `project/`
+- **Project state directories** under `ai-team/`
 - **`.ai-team.toml`** configuration file
 
 For OpenAI Codex compatibility, add `--tools codex` (or `--tools claude,codex`) to also export `.codex/agents/*.toml` Codex agent files. Those TOML files translate each Claude-style agent into Codex's custom-agent schema: `name`, `description`, and `developer_instructions`, with optional Codex-native settings such as `model`, `model_reasoning_effort`, and `sandbox_mode`.
@@ -103,7 +103,7 @@ The `ai-process/` specification documents are not exported. They live in the AI 
 
 ### Step 4: Create Your Project's CLAUDE.md and AGENTS.md
 
-Create a `CLAUDE.md` and `AGENTS.md` in your project root. The test instructions in these files are especially important: `dev-loop` starts baseline command discovery from root project guidance, then follows clear references to project-local docs such as `project/docs/coding_guidelines.md`, README files, build configuration, or other documented test instructions. If no automated baseline command is documented, or the available guidance is ambiguous, `dev-loop` will ask the human for the intended command or for explicit confirmation that no automated baseline test is available before claiming a task.
+Create a `CLAUDE.md` and `AGENTS.md` in your project root. The test instructions in these files are especially important: `dev-loop` starts baseline command discovery from root project guidance, then follows clear references to project-local docs such as `ai-team/docs/coding_guidelines.md`, README files, build configuration, or other documented test instructions. If no automated baseline command is documented, or the available guidance is ambiguous, `dev-loop` will ask the human for the intended command or for explicit confirmation that no automated baseline test is available before claiming a task.
 
 `ai-team init` can scaffold starter versions of both root guidance files when they are missing. Run `ai-team init . --tools claude` interactively and answer the prompts, or pass `--create-root-guidance` with `--no-interactive` to create them non-interactively. Existing root guidance files are never overwritten unless `--force` is also set.
 
@@ -120,10 +120,10 @@ Start your `CLAUDE.md` with this structure and customize the first section:
 
 | Folder | Purpose |
 |---|---|
-| `project/specs/` | Technical specifications for features and systems |
+| `ai-team/specs/` | Technical specifications for features and systems |
 | `.ai-team/tracker/` | Local work-item tracker (git-ignored): tasks, bugs, and change-requests; state is the `status` field |
-| `project/decisions/` | Architecture Decision Records (ADRs) |
-| `project/docs/` | Project-specific guidance for commands, coding conventions, and operations |
+| `ai-team/decisions/` | Architecture Decision Records (ADRs) |
+| `ai-team/docs/` | Project-specific guidance for commands, coding conventions, and operations |
 | `.claude/agents/` | Agent role definitions |
 | `.claude/skills/` | Reusable skill definitions (each as `<name>/SKILL.md`) |
 | `[source path]` | Source code location for this project |
@@ -136,7 +136,7 @@ Start your `CLAUDE.md` with this structure and customize the first section:
 - Use TEMPLATE files when creating new documents.
 - All documents use Markdown with YAML frontmatter.
 - Tasks, bugs, and change-requests live in the local tracker (`ai-team tracker path`), outside git. Change their state only through `ai-team task|bug|change-request` commands; never move or commit their files.
-- Architecture decisions require ADRs in `project/decisions/`.
+- Architecture decisions require ADRs in `ai-team/decisions/`.
 - Documents must be self-contained and readable on their own.
 
 ## Tech Stack
@@ -156,14 +156,14 @@ Start your `CLAUDE.md` with this structure and customize the first section:
 - ADRs: numbered sequentially (`NNN-short-title.md`).
 - All docs: YAML frontmatter with `title`, `status`, `created`.
 - Follow coding standards in `ai-process/guidelines/coding-standards.md`.
-- Follow project-specific coding rules in `project/docs/coding_guidelines.md`.
+- Follow project-specific coding rules in `ai-team/docs/coding_guidelines.md`.
 ```
 
 ### Step 5: Customize for Your Stack
 
 **Baseline test instructions** — Fill in the command agents should run to execute the test suite. Put it in root guidance (`CLAUDE.md` or `AGENTS.md`) or clearly reference a project-local doc that contains it. `dev-loop` reads project guidance at startup; if the command is missing or ambiguous, the loop asks for human clarification before claiming a task. If your project has no automated tests, state that explicitly so the loop can record the confirmation and continue.
 
-**`project/docs/coding_guidelines.md`** — Add project-specific rules:
+**`ai-team/docs/coding_guidelines.md`** — Add project-specific rules:
 - Stack and framework conventions.
 - Formatter, linter, and dependency policy.
 - Naming conventions and file layout.
@@ -200,7 +200,7 @@ Run these checks to confirm everything is in place:
 
 4. **Delete the test task**: Remove the test file you just created.
 
-5. **Project guidance exists**: Confirm root guidance has a real baseline test command or clearly points to `project/docs/coding_guidelines.md` or equivalent project-local guidance that contains it. If the project has no automated baseline test, state that explicitly.
+5. **Project guidance exists**: Confirm root guidance has a real baseline test command or clearly points to `ai-team/docs/coding_guidelines.md` or equivalent project-local guidance that contains it. If the project has no automated baseline test, state that explicitly.
 
 ### Step 7: Verify Packaging and Installation End-to-End (Maintainers)
 

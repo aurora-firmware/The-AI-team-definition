@@ -72,7 +72,7 @@ def test_tracker_dir_honours_relative_absolute_and_home_paths(
 ):
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     repo = tmp_path / "repo"
-    (repo / "project").mkdir(parents=True)
+    (repo / "ai-team").mkdir(parents=True)
     value = str(tmp_path / "abs") if configured == "ABSOLUTE" else configured
     (repo / ".ai-team.toml").write_text(
         f'[project]\ndir = "project"\n\n[tracker]\ndir = "{value}"\n', encoding="utf-8"
@@ -158,7 +158,7 @@ def test_change_request_set_status_and_show(initialized_repo):
 
 
 def test_commands_warn_while_legacy_folders_hold_files(initialized_repo):
-    legacy = initialized_repo / "project" / "tasks" / "pending" / "T-009-old.md"
+    legacy = initialized_repo / "ai-team" / "tasks" / "pending" / "T-009-old.md"
     legacy.parent.mkdir(parents=True)
     legacy.write_text("legacy", encoding="utf-8")
 
@@ -167,7 +167,7 @@ def test_commands_warn_while_legacy_folders_hold_files(initialized_repo):
     assert result.exit_code == 0
     assert json.loads(result.stdout) == []
     assert "legacy work-item folders" in result.stderr
-    assert str(initialized_repo / "project" / "tasks") in result.stderr
+    assert str(initialized_repo / "ai-team" / "tasks") in result.stderr
     assert "Migrating to the local tracker" in result.stderr
 
     legacy.unlink()
@@ -225,13 +225,13 @@ def test_sibling_bare_repositories_keep_separate_trackers(tmp_path):
 
 
 def test_legacy_archive_folder_triggers_the_warning(initialized_repo):
-    legacy = initialized_repo / "project" / "archive" / "2026-01" / "T-001-old.md"
+    legacy = initialized_repo / "ai-team" / "archive" / "2026-01" / "T-001-old.md"
     legacy.parent.mkdir(parents=True)
     legacy.write_text("legacy", encoding="utf-8")
 
     result = _invoke("validate", "--json")
 
-    assert str(initialized_repo / "project" / "archive") in result.stderr
+    assert str(initialized_repo / "ai-team" / "archive") in result.stderr
 
 
 def test_tasks_may_cite_a_change_request_as_their_spec(initialized_repo):
@@ -249,7 +249,7 @@ def test_tasks_may_cite_a_change_request_as_their_spec(initialized_repo):
 
 
 def test_list_spec_filter_matches_every_form_of_a_spec_reference(initialized_repo):
-    specs = initialized_repo / "project" / "specs"
+    specs = initialized_repo / "ai-team" / "specs"
     specs.mkdir(parents=True, exist_ok=True)
     (specs / "S-001-login.md").write_text(
         "---\ntitle: Login\nversion: '0.1'\nstatus: approved\n"

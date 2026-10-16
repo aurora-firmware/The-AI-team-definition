@@ -36,4 +36,4 @@ guessing.
 
 - Add project-specific coding standards, branch naming rules, or other norms
   that agents must follow.
-- Reference `project/docs/coding_guidelines.md` for detailed rules.
+- Reference `ai-team/docs/coding_guidelines.md` for detailed rules.

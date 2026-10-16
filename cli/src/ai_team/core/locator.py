@@ -7,7 +7,7 @@ Resolution order:
   3. Walk up from ``cwd`` looking for ``.ai-team.toml``; use its ``[project] dir``
      setting as the artifact-folder name.
   4. Walk up from ``cwd`` looking for a folder whose name matches ``project_dir``
-     (default ``"project"``).
+     (default ``DEFAULT_PROJECT_DIR``, ``"ai-team"``).
   5. Raise ``ProjectRootNotFound`` with a message naming the searched paths and
      suggesting ``ai-team init``.
 
@@ -22,6 +22,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ai_team.core.tracker import resolve_tracker_dir
+
+DEFAULT_PROJECT_DIR = "ai-team"
+"""Artifact folder used when ``.ai-team.toml`` sets no ``[project] dir``."""
 
 
 class ProjectRootNotFound(RuntimeError):
@@ -91,7 +94,7 @@ def find_project_root(
     cwd: Path,
     *,
     root: Path | None = None,
-    project_dir: str = "project",
+    project_dir: str = DEFAULT_PROJECT_DIR,
 ) -> ProjectRoot:
     """Locate the project root and return a ``ProjectRoot`` with all artifact paths.
 
@@ -106,7 +109,7 @@ def find_project_root(
         environment-variable and filesystem searches.  The ``project_dir``
         folder must still exist under ``root``.
     project_dir:
-        Name of the top-level artifact folder (default ``"project"``).  Used
+        Name of the top-level artifact folder (default ``"ai-team"``).  Used
         when no ``.ai-team.toml`` override is found.
 
     Raises

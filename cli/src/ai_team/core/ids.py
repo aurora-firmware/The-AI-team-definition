@@ -58,7 +58,7 @@ def next_spec_id(project_root: ProjectRoot) -> str:
 
 
 def next_adr_id(project_root: ProjectRoot) -> str:
-    """Return the next ADR ID in ADR-NNN format from project/decisions/."""
+    """Return the next ADR ID in ADR-NNN format from ai-team/decisions/."""
     return _next_id(
         prefix="ADR",
         directories=(project_root.decisions,),

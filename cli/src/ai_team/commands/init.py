@@ -10,6 +10,7 @@ from pathlib import Path
 import tomli_w
 import typer
 
+from ai_team.core.locator import DEFAULT_PROJECT_DIR
 from ai_team.core.tracker import DEFAULT_TRACKER_DIR, resolve_tracker_dir
 
 NAME = "init"
@@ -202,7 +203,7 @@ def init_command(
     ):
         planned: list[tuple[Path, Path]] = []
         planned.extend(
-            _plan_copies(scaffolds_path / "project", target_root / "project")
+            _plan_copies(scaffolds_path / "project", target_root / DEFAULT_PROJECT_DIR)
         )
 
         if "claude" in selected_tools:
@@ -251,7 +252,7 @@ def init_command(
             shutil.copy2(source, destination)
 
         marker_data = {
-            "project": {"dir": "project"},
+            "project": {"dir": DEFAULT_PROJECT_DIR},
             "tracker": {"dir": DEFAULT_TRACKER_DIR},
             "init": {
                 "tools": selected_tools,

@@ -14,8 +14,8 @@ The result of this skill is a Findings block; the architect role envelope wraps 
 ## Input Requirements
 
 - **Approved specification** — the spec that passed Gate 1.
-- **Planned task files** — the absolute path of every planned task file, passed by the caller. The tracker is outside the repository, so do not search for task files under `project/`.
-- **Decision records** — existing ADRs in `project/decisions/`.
+- **Planned task files** — the absolute path of every planned task file, passed by the caller. The tracker is outside the repository, so do not search for task files under `ai-team/`.
+- **Decision records** — existing ADRs in `ai-team/decisions/`.
 - **Project structure** — current files needed to verify paths and conflict risk.
 
 ## Procedure
@@ -25,7 +25,7 @@ Gate 2 is a technical preflight. During review, focus findings only on technical
 ### Step 1: Read Planning Context
 
 Read the approved specification and all task files for the plan under review.
-Read existing decision records in `project/decisions/`.
+Read existing decision records in `ai-team/decisions/`.
 Identify each task's dependencies, files to touch, acceptance criteria, and verification command.
 
 ### Step 2: Check Spec Coverage
@@ -89,7 +89,7 @@ Use this structure for the Findings block — matches the Architect agent's stan
 ```text
 Result: PASS | FAIL | BLOCKED | ESCALATE
 
-Spec reviewed: project/specs/<file>
+Spec reviewed: ai-team/specs/<file>
 Tasks reviewed: <count>
 
 Findings:

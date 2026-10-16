@@ -32,7 +32,7 @@ Task body.
 
 
 def _tasks_dir(tmp_path: Path) -> Path:
-    (tmp_path / "project").mkdir(exist_ok=True)
+    (tmp_path / "ai-team").mkdir(exist_ok=True)
     return tmp_path / ".ai-team" / "tracker" / "tasks"
 
 

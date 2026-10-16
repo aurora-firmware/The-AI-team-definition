@@ -10,7 +10,7 @@ from typer.testing import CliRunner
 @pytest.fixture(autouse=True)
 def _project_dir(tmp_path):
     """The locator needs the project directory; work items live in the tracker."""
-    (tmp_path / "project").mkdir(exist_ok=True)
+    (tmp_path / "ai-team").mkdir(exist_ok=True)
 
 
 TASK_TEMPLATE = """\
@@ -60,10 +60,10 @@ def _write(path: Path, content: str) -> None:
 def test_report_writes_default_dated_file_and_creates_reports_dir(
     monkeypatch, tmp_path: Path
 ) -> None:
-    """`ai-team report` writes to project/docs/reports/progress-report-YYYY-MM-DD.md."""
+    """`ai-team report` writes to ai-team/docs/reports/progress-report-YYYY-MM-DD.md."""
     from ai_team.cli import app
 
-    (tmp_path / "project").mkdir(exist_ok=True)
+    (tmp_path / "ai-team").mkdir(exist_ok=True)
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["report"])
@@ -71,7 +71,7 @@ def test_report_writes_default_dated_file_and_creates_reports_dir(
     assert result.exit_code == 0
     expected = (
         tmp_path
-        / "project"
+        / "ai-team"
         / "docs"
         / "reports"
         / f"progress-report-{date.today().isoformat()}.md"
@@ -87,7 +87,7 @@ def test_report_out_writes_populated_report_with_status_summary_fields(
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "specs" / "S-001.md",
+        tmp_path / "ai-team" / "specs" / "S-001.md",
         SPEC_TEMPLATE.format(title="Spec 1", status="approved"),
     )
     _write(

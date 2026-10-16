@@ -56,7 +56,7 @@ The Planner enters the escalation chain when the `spec-breakdown` skill returns 
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | `project/specs/`; tasks and change-requests in the tracker through the `new-task` and `change-request` skills |
+| Write / Edit | `ai-team/specs/`; tasks and change-requests in the tracker through the `new-task` and `change-request` skills |
 | Never touch | implementation files, test files |
 
 ## Quality Bar

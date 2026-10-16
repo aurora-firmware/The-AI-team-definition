@@ -10,7 +10,7 @@ from typer.testing import CliRunner
 @pytest.fixture(autouse=True)
 def _project_dir(tmp_path):
     """The locator needs the project directory; work items live in the tracker."""
-    (tmp_path / "project").mkdir(exist_ok=True)
+    (tmp_path / "ai-team").mkdir(exist_ok=True)
 
 
 TASK_TEMPLATE = """\
@@ -274,19 +274,19 @@ def test_list_specs_and_adrs_include_expected_columns_and_fields(monkeypatch, tm
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "specs" / "ai-team-cli.md",
+        tmp_path / "ai-team" / "specs" / "ai-team-cli.md",
         _spec("CLI Spec", "0.1", "approved"),
     )
     _write(
-        tmp_path / "project" / "specs" / "TEMPLATE-spec.md",
+        tmp_path / "ai-team" / "specs" / "TEMPLATE-spec.md",
         _spec("Template spec", "0.0", "draft"),
     )
     _write(
-        tmp_path / "project" / "decisions" / "ADR-001.md",
+        tmp_path / "ai-team" / "decisions" / "ADR-001.md",
         _adr("ADR-001", "Use Rich tables", "accepted"),
     )
     _write(
-        tmp_path / "project" / "decisions" / "TEMPLATE-adr.md",
+        tmp_path / "ai-team" / "decisions" / "TEMPLATE-adr.md",
         _adr("ADR-000", "Template adr", "proposed"),
     )
 
@@ -432,7 +432,7 @@ def test_list_specs_reports_frontmatter_id_not_filename_stem_for_prefixed_filena
 
     # New-style filename: S-NNN-slug.md — stem is "S-007-my-spec", frontmatter id is "S-007"
     _write(
-        tmp_path / "project" / "specs" / "S-007-my-spec.md",
+        tmp_path / "ai-team" / "specs" / "S-007-my-spec.md",
         _spec("My Spec", "1.0", "approved", spec_id="S-007"),
     )
 
