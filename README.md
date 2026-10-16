@@ -228,12 +228,11 @@ See `guides/setup-guide.md` for the complete file list, CLAUDE.md starter templa
 │   └── architecture/    AI team structure: roles, components, boundaries
 ├── docs/ai-team/        This repo's own managed artifacts (see `[project] dir` in .ai-team.toml)
 │   ├── specs/           Feature specifications (with archive/ for superseded versions)
-│   ├── tasks/           Task tracking (pending/ → in-progress/ → completed/ | blocked/)
-│   ├── bugs/            Bug reports (open/ → in-progress/ → resolved/)
-│   ├── change-requests/ Proposed framework or project changes awaiting planning
 │   ├── decisions/       Architecture Decision Records
 │   └── docs/            Project-specific commands, coding conventions, operations,
 │                        and generated reports under docs/reports/
+├── .ai-team/tracker/    Local, git-ignored work-item tracker: tasks, bugs, and change-requests
+│                        (state is each file's status field; see `ai-team tracker path`)
 ├── guides/              Human-facing setup and customization guides
 └── cli/                 `ai-team` CLI package and bundled init scaffolds (authoritative agent
                          and skill sources live under cli/src/ai_team/init/sources/)

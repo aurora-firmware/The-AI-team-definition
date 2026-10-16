@@ -60,10 +60,13 @@ The tasks are already in the tracker with status `planned`, listed by `ai-team l
 They are outside version control: there is nothing to commit, and `/dev-loop` ignores them until Step 7 activates them.
 
 ### Step 6: Architect Preflight
+Run `ai-team list tasks --state planned --spec <spec-or-cr-id> --json`, then `ai-team show <task-id> --json` for each listed task, and collect each task's absolute `path`.
+The tracker is outside the repository and the Architect does not run commands, so it receives the paths in the prompt.
+
 **Spawn the Architect subagent** with this prompt:
 
-> "Review the planned task plan listed by `ai-team list tasks --state planned --spec <spec-or-cr-id>` for the spec or change-request `<spec-or-cr-id>`.
-> Read each task file at the path `ai-team show <task-id> --json` reports.
+> "Review the planned task plan for the spec or change-request `<spec-or-cr-id>`.
+> The planned task files are: <task-id>: <absolute path>, one per task.
 > Use the spec-breakdown-review skill.
 > Validate dependency correctness, file conflict risk, architectural consistency with `project/decisions/`, atomicity, and implementation readiness.
 > If all is sound, return `Result: PASS` and state that the plan is ready for /dev-loop.

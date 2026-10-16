@@ -94,21 +94,15 @@ Running `ai-team init . --tools claude` writes:
 ```
 project/
   specs/
-  tasks/
-    pending/
-    in-progress/
-    completed/
-    blocked/
-  bugs/
-    open/
-    in-progress/
-    resolved/
   decisions/
   docs/
+.ai-team/
+  tracker/        ← local work-item tracker (git-ignored)
 .claude/
   agents/
   skills/
-.ai-team.toml
+.ai-team.toml     ← includes [tracker] dir = ".ai-team/tracker"
+.gitignore        ← gains a /.ai-team/ rule
 ```
 
 Running `ai-team init . --tools codex` additionally writes:
@@ -174,11 +168,15 @@ ai-team check-layout
 The command runs four ordered validation levels:
 
 1. **Level 1 — expected directories.** Checks the configured project directory,
-   every lifecycle directory in the current project scaffold, and the agent and
-   skill directories for each configured tool. Extra directories are allowed.
-2. **Level 2 — artifact names and frontmatter.** Checks managed specs, tasks,
-   bugs, change requests, and decisions for the expected filename, required
-   frontmatter, and agreement between lifecycle location and status.
+   every directory in the current project scaffold, and the agent and skill
+   directories for each configured tool. Extra directories are allowed. Also
+   reports a tracker folder that lies inside the repository but is not ignored
+   by git, and legacy `tasks/`, `bugs/`, `change-requests/`, or `archive/`
+   folders in the project directory that still hold files.
+2. **Level 2 — artifact names and frontmatter.** Checks managed specs and
+   decisions in the project directory, and tasks, bugs, and change requests in
+   the tracker, for the expected filename, required frontmatter, and an allowed
+   `status` value.
 3. **Level 3 — root guidance.** Checks `CLAUDE.md` for configured Claude tools
    and `AGENTS.md` for configured Codex tools. Each required file must contain
    non-placeholder `Build and Install`, `Test`, `Run`, `Lint and Format`, and
@@ -201,10 +199,10 @@ for the user, and no project guidance command is executed.
 # 1. Create a new pending task
 ai-team task new "Add user onboarding flow" --priority high --assigned-role developer
 
-# 2. Start work (moves to tasks/in-progress/)
+# 2. Start work (sets status: in-progress)
 ai-team task start T-001
 
-# 3. Mark complete (moves to tasks/completed/)
+# 3. Mark complete (sets status: completed)
 ai-team task complete T-001
 ```
 
@@ -237,10 +235,10 @@ ai-team show T-001
 # 1. File a new bug
 ai-team bug new "Login crashes on empty token" --severity high
 
-# 2. Start investigation (moves to bugs/in-progress/)
+# 2. Start investigation (sets status: in-progress)
 ai-team bug start B-001
 
-# 3. Resolve when fixed (moves to bugs/resolved/)
+# 3. Resolve when fixed (sets status: resolved)
 ai-team bug resolve B-001
 ```
 
@@ -393,33 +391,35 @@ change this key if your project uses a different folder name than `project`.
   project/                    ← artifact root (name comes from [project] dir)
     specs/                    ← feature specifications
       archive/                ← superseded spec versions
-    tasks/
-      pending/                ← tasks not yet started
-      in-progress/            ← tasks actively being worked on
-      completed/              ← finished tasks
-      blocked/                ← tasks with a recorded blocking reason
-    bugs/
-      open/                   ← newly filed bugs
-      in-progress/            ← bugs under active investigation
-      resolved/               ← fixed bugs
     decisions/                ← Architecture Decision Records (ADR-NNN-*.md)
     docs/                     ← project-specific docs: coding guidelines,
                               │  commands, stack-specific notes
+  .ai-team/tracker/           ← local work-item tracker ([tracker] dir; git-ignored)
+    tasks/                    ← T-NNN-*.md; state is the status field
+    bugs/                     ← B-NNN-*.md; state is the status field
+    change-requests/          ← CR-NNN-*.md; state is the status field
     archive/
-      YYYY-MM/                ← old completed/resolved artifacts (ai-team archive)
+      YYYY-MM/                ← old completed/resolved items (ai-team archive)
 ```
+
+Tasks, bugs, and change-requests live in the tracker, outside version control.
+A relative `[tracker] dir` resolves against the folder holding `.ai-team.toml`
+in the repository's main working tree, so every git worktree shares one
+tracker; `ai-team tracker path` prints the resolved folder.
 
 Artifact filenames follow the patterns `T-NNN-<slug>.md` (tasks),
 `B-NNN-<slug>.md` (bugs), `S-NNN-<slug>.md` (specs), and `ADR-NNN-<slug>.md`
-(ADRs). The CLI allocates the next sequential ID by scanning all state folders
-for a given artifact type. Legacy spec files without the `S-NNN-` prefix are
+(ADRs). The CLI allocates the next sequential task, bug, and change-request ID
+by scanning the tracker, including its archive, and the next spec ID by
+scanning `specs/` on the current branch. Legacy spec files without the `S-NNN-` prefix are
 also accepted by validation.
 
 ### The `.ai-team.lock` sentinel
 
-The first time `ai-team task new`, `bug new`, or `spec new` runs, it creates a
-project-local sentinel file at `<project_dir>/.ai-team.lock` to coordinate
-concurrent artifact-ID allocation across processes. This file is deliberately
+The first time `ai-team task new`, `bug new`, or `change-request new` runs, it
+creates a sentinel file at `<tracker>/.ai-team.lock`, and `spec new` creates one
+at `<project_dir>/.ai-team.lock`, to coordinate concurrent artifact-ID
+allocation across processes and worktrees. This file is deliberately
 never deleted: the lock is a kernel-level `flock` on the file, released
 automatically when the holding process exits, so leaving the sentinel on disk
 is harmless and removing it would reopen the race the lock exists to prevent.

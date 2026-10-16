@@ -19,7 +19,7 @@ Provided as `$ARGUMENTS`:
    If the input is already a branch name, set it as `source-branch`.
 3. Confirm the source branch exists: `git branch | grep <source-branch>`. If not found, stop with the same message.
 4. Confirm the destination branch exists: `git branch | grep <destination>`. If not found, stop with: "Destination branch '<destination>' not found."
-5. Run the before-point **Workspace Hygiene** check from the `git-conventions` skill on the current branch. Integration switches branches several times, so it must start from a clean tree.
+5. Run the before-point **Workspace Hygiene** check from the `git-conventions` skill on the current branch, and note that branch if the check parks anything. Integration switches branches several times, so it must start from a clean tree.
 
 ### Step 2: Find the Work Item and Verification Command
 
@@ -90,7 +90,7 @@ Capture stdout and stderr. Evaluate the result:
 - **Tests fail** → stop integration. Report:
   - Which tests failed and what the error output says.
   - This is a pre-merge failure — the branch should not be merged in this state.
-  - The work item file stays in `in-progress/` and the source branch stays open.
+  - The work item's status stays `in-progress` and the source branch stays open.
   - Instruct the Developer to fix the failing tests on the same branch and re-submit for integration.
 
 ### Step 5: Merge the Source Branch into Destination
@@ -178,7 +178,7 @@ Reached only when both Step 4 and Step 6 tests pass.
 
 4. **Run the after-point Workspace Hygiene check** on the destination branch.
    The test runs in Steps 4 and 6 commonly leave generated artifacts behind; ignore or park them as the check directs.
-   Then restore any changes parked in Step 1.
+   Then restore any changes parked in Step 1, following git-conventions › Restoring Parked Changes: on the branch where they were parked, or on the destination branch when they were parked on the source branch this step deleted.
 
 5. **Report success**:
    - The task status is `completed`: `ai-team show <task-id> --json` reports it. If it does not, stop and report that the lifecycle update did not land.
@@ -196,7 +196,7 @@ Reached only when both Step 4 and Step 6 tests pass.
 | Destination branch not found | Stop, report |
 | Diff is empty | Stop — nothing to do |
 | Expected behavior not met by diff | Stop — return to Developer |
-| Pre-merge tests fail (Step 4) | Stop — work item stays `in-progress/`, branch stays open, return to Developer |
+| Pre-merge tests fail (Step 4) | Stop — work item status stays `in-progress`, branch stays open, return to Developer |
 | Merge conflict that merge-conflicts cannot solve | Stop — escalate to architect |
 | Regressions found post-merge (Step 6) | File bugs, revert merge, stop |
 

@@ -180,7 +180,7 @@ The human runs `/status-report` when they want the full Gate 5 summary.
 1. Run the after-point Workspace Hygiene check and restore any changes this run parked.
 2. Return a short run summary in the chat — a few lines, not a report:
    - Bugs resolved and merged this run, with bug IDs and merge commits
-   - Bugs escalated and still in `in-progress/`, with the reason
+   - Bugs escalated and still `in-progress`, with the reason
    - Regression bugs filed this run, and any integration failure that stopped the loop
    - Changes parked or restored, and `.gitignore` patterns added, by the hygiene check
    - The next suggested action — for example `/bug-loop` for filed regressions, or `/status-report` for Gate 5 sign-off context when the queue is empty

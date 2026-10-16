@@ -14,7 +14,7 @@ The result of this skill is a Findings block; the architect role envelope wraps 
 ## Input Requirements
 
 - **Approved specification** — the spec that passed Gate 1.
-- **Planned task files** — the task plan listed by `ai-team list tasks --state planned --spec <spec-or-cr-id>`; `ai-team show <task-id> --json` reports each file's path.
+- **Planned task files** — the absolute path of every planned task file, passed by the caller. The tracker is outside the repository, so do not search for task files under `project/`.
 - **Decision records** — existing ADRs in `project/decisions/`.
 - **Project structure** — current files needed to verify paths and conflict risk.
 

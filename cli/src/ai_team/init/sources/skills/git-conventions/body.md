@@ -31,8 +31,9 @@ Project-specific commit scopes and any overrides belong in the project's own `CL
 The skill that creates a spec or change-request opens its planning branch:
 
 1. Run the before-point Workspace Hygiene check, then `git checkout dev-agent`.
-2. Run `git branch --list 'plan/*'`. IDs are allocated from the files on the current branch, so two open planning branches can allocate the same spec, change-request, or task ID.
-   If another planning branch is open, stop and ask the human whether to merge or abandon it first, or to continue and renumber at merge time.
+2. Run `git branch --list 'plan/*'`. Spec and ADR IDs are allocated from the files on the current branch, so two open planning branches can allocate the same spec or ADR ID.
+   Task and change-request IDs come from the shared tracker and never collide.
+   If another planning branch is open and this one will create a spec or an ADR, stop and ask the human whether to merge or abandon the other branch first, or to continue and renumber at merge time.
 3. Run the CLI command that allocates the artifact ID.
 4. Run `git checkout -b plan/<id>-<slug>`. A new spec file is untracked and carries over; commit it there. A change-request is created in the tracker and is never committed.
 
@@ -92,7 +93,8 @@ Every orchestrating procedure (`dev-loop`, `bug-loop`, `integrate`, `spec-breakd
 
 ### Restoring Parked Changes
 
-When the procedure that parked changes ends — on success or on a stop — return to the branch where they were parked and restore them:
+When the procedure that parked changes ends — on success or on a stop — return to the branch where they were parked and restore them.
+If the procedure deleted that branch — `integrate` deletes a merged source branch — restore them on the branch it was merged into, which now contains its history:
 
 1. Find the entry by its message in `git stash list` and run `git stash pop stash@{n}` for that entry only.
 2. If the pop conflicts, stop and report. Git keeps the stash entry on conflict; leave it there for the human.

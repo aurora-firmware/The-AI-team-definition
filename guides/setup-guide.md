@@ -79,13 +79,7 @@ done
 touch project/docs/coding_guidelines.md
 ```
 
-Tasks, bugs, and change-requests do not live in the project directory. They live in the local tracker, outside version control. `ai-team init` configures it; for a manual setup, add it yourself:
-
-```bash
-printf '\n[tracker]\ndir = ".ai-team/tracker"\n' >> .ai-team.toml
-mkdir -p .ai-team/tracker
-printf '\n/.ai-team/\n' >> .gitignore
-```
+Tasks, bugs, and change-requests do not live in the project directory. They live in the local tracker, outside version control. `ai-team init` in Step 3 configures it: it writes `[tracker] dir = ".ai-team/tracker"` to `.ai-team.toml`, creates the folder, and adds `/.ai-team/` to `.gitignore`. Do not create `.ai-team.toml` by hand before running `ai-team init`.
 
 ### Step 3: Export the Framework Files
 
@@ -141,7 +135,7 @@ Start your `CLAUDE.md` with this structure and customize the first section:
 
 - Use TEMPLATE files when creating new documents.
 - All documents use Markdown with YAML frontmatter.
-- Tasks move between directories: `pending/` → `in-progress/` → `completed/` or `blocked/`.
+- Tasks, bugs, and change-requests live in the local tracker (`ai-team tracker path`), outside git. Change their state only through `ai-team task|bug|change-request` commands; never move or commit their files.
 - Architecture decisions require ADRs in `project/decisions/`.
 - Documents must be self-contained and readable on their own.
 
