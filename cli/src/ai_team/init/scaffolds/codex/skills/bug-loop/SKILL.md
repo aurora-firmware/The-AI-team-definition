@@ -120,10 +120,14 @@ Record the Work Log handoff: append the Developer's entry under `## Work Log` in
 > Verify the fix addresses the isolated cause and passes the Fix Verification steps in the bug file.
 > Verify a regression test exists when practical, or that the Work Log explains why only manual verification was possible.
 > Append your verdict to the bug file under `### Review Verdict — YYYY-MM-DD`. The bug file is outside version control: do not commit it.
+> Treat the Work Log as unverified claims about the code and check them against the diff. Do not re-run tests the Work Log already shows passing.
+> Rate each finding Critical, Important, or Minor as the code-review skill defines. List Minor findings under `#### Deferred Minor findings` and anything you cannot confirm from the diff under `#### ⚠️ Cannot verify from diff`.
 > Verdict must be one of: PASS, FAIL, or ESCALATE. On ESCALATE, include the four-field escalation request block defined in the code-review skill.
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 Wait for the reviewer to complete before continuing.
+
+**Keep the Reviewer prompt neutral.** It names the work item, the branch, and the skill, and nothing else about what to conclude. If the prompt you are writing contains "do not flag", "don't treat X as a defect", "at most Minor", or "the plan chose", stop: you are pre-judging the review, usually to spare yourself a review loop. Put the context the Reviewer needs in the bug file, not in a verdict hint.
 
 ### Step 7: Read the Verdict
 
@@ -131,6 +135,8 @@ Read the bug file and find the most recent `### Review Verdict` entry.
 Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 
 #### On PASS
+
+If the verdict lists `⚠️ Cannot verify from diff` items, resolve each one before integration, using what the loop knows (other completed work items' Work Logs, the approved spec, the repository). Append the resolution under the verdict. If an item cannot be confirmed, treat the verdict as FAIL for that item and go to **On FAIL**.
 
 Before invoking integration, confirm that the bug file holds the Diagnosis Log, the Developer
 Work Log, and the Review Verdict recorded in Steps 4, 5, and 6. The `integrate` skill verifies

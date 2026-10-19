@@ -115,6 +115,19 @@ If the procedure deleted that branch — `integrate` deletes a merged source bra
 - Never discard or delete work the current step did not create — park it as described in Workspace Hygiene.
 - Never commit or merge lifecycle files — tasks, bugs, and change-requests — from an implementation branch or any other branch: they live in the local tracker, outside version control.
 
+## Rationalizations
+
+These thoughts mean stop and follow the branch and commit rules.
+
+| Excuse | Reality |
+|---|---|
+| "It is a one-line change, so I can commit it straight to the integration branch." | Implementation belongs on a task or bug branch. The size of the change does not move the rule. |
+| "The hook is slow or noisy, so `--no-verify` just this once." | Fix the cause of the hook failure. |
+| "I will amend the pushed commit to tidy the history." | Pushed commits are shared. Add a new commit instead. |
+| "These untracked files are in my way, so I will delete them." | Work this step did not create is not yours to discard. Park it as Workspace Hygiene describes. |
+| "I will force-push; nobody else uses this branch." | Shared branches never take a force-push. Check, then stop. |
+| "I will commit the task file with the code so it stays in sync." | Work items live in the tracker, outside every branch. Never commit them. |
+
 ## Common Pitfalls
 
 - Repeating the task or bug ID in the commit message — the branch name already carries it.

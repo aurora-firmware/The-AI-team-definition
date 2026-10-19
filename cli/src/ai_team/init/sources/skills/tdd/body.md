@@ -105,6 +105,19 @@ Question: [specific guidance needed to continue within the approved specificatio
 - Each completed TDD cycle is committed on the assigned implementation branch using the `git-conventions` skill.
 - The Work Log handoff contains one entry for the current session boundary.
 
+## Rationalizations
+
+These thoughts mean stop and return to the test-first cycle.
+
+| Excuse | Reality |
+|---|---|
+| "It is too simple to need a test first." | Simple code breaks too. The test takes a minute to write and fixes the behavior in place. |
+| "I already wrote the code; deleting it is wasteful." | That time is spent either way. Rewriting from a failing test gives code you can trust; bolting tests on afterwards gives code you cannot. |
+| "I will add the tests right after." | A test written after the code passes on the first run, so it proves nothing about the behavior. |
+| "I manually checked it, so it works." | A manual check is not repeatable and is not recorded. The next change breaks it unnoticed. |
+| "The test passed immediately, so the behavior must already exist." | Then the test does not test the new behavior. Rewrite it until it fails for the right reason. |
+| "This refactor is quick, tests can wait." | Refactoring without a green suite is rewriting without a net. Run the tests after each step. |
+
 ## Common Pitfalls
 
 - **Starting work without reading the Work Log** — always read every existing Work Log entry before the acceptance criteria or any other work.

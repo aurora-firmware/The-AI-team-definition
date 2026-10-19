@@ -4,7 +4,7 @@
 
 - **Task or bug file** — the task definition with acceptance criteria, or the bug report with diagnosis and fix-verification steps.
 - **Code changes** — the diff or set of modified files.
-- **Test results** — confirmation that all tests pass.
+- **Test results** — the test evidence in the Developer's Work Log (command and output). Do not re-run tests the Work Log already shows passing; run a command only to check something the Work Log does not cover.
 
 The task or bug file lives in the local tracker, outside version control; `ai-team show <id> --json` reports its path.
 Review verdicts are written there, never committed, and never placed on the implementation branch.
@@ -14,6 +14,7 @@ The two-stage checklist below is the canonical quality bar for all code reviews.
 
 ### Step 1: Read the Work Item
 Read the task or bug file completely.
+Treat the Work Log and every summary in it as unverified claims about the code, and check each claim against the diff. A stated rationale never lowers a finding's severity.
 For tasks, understand what was asked, what the acceptance criteria are, and which files should have been modified.
 For bugs, understand the symptom, reproduction status, diagnostic evidence, isolated fault, root cause or fault hypothesis, and Fix Verification steps.
 
@@ -51,12 +52,29 @@ For bug fixes, also check:
 - No unrelated refactoring, cleanup, or feature code is bundled into the fix.
 - The Diagnosis Log fix contract (isolated fault, planned fix, planned verification) matches what was actually implemented.
 
+### Severity
+
+Rate every finding from Stage 1 and Stage 2:
+
+| Severity | Meaning | Effect |
+|---|---|---|
+| **Critical** | Breaks an acceptance criterion or the fix contract, loses data, or opens a security hole | FAIL |
+| **Important** | The work cannot be trusted until it is fixed: missing or untrustworthy tests, wrong behavior in a realistic case, scope violations | FAIL |
+| **Minor** | Real but non-blocking: naming, small duplication, a style or readability improvement within project standards | PASS; recorded as a deferred Minor finding |
+
+An unmet acceptance criterion or an incomplete bug evidence chain is never Minor.
+
+### Cannot Verify From the Diff
+
+Some claims cannot be confirmed from the diff and the work item alone — for example, that a changed function's other callers still work, or that a behavior matches a task completed earlier in the run. Do not guess PASS or FAIL for them. List each one as `⚠️ Cannot verify from diff` with the claim and what would confirm it. The active loop holds the cross-task context and resolves each item before integration.
+If a finding already warrants FAIL, issue FAIL; the unverifiable items are still listed.
+
 ### Step 4: Produce Verdict
 
 The Reviewer's self-recovery threshold is **one review cycle** for ESCALATE-worthy issues. For ordinary quality issues, issue FAIL (the active loop allows up to three FAIL cycles per work item before it forces escalation on its own).
 
-- If all checks pass → **PASS**. Record the verdict for the active loop.
-- If an ordinary quality check fails (bug in logic, missing test, unclear name, etc.) → **FAIL** with specific, actionable feedback. The Developer fixes and re-submits.
+- If no Critical or Important finding remains → **PASS**. Record the verdict for the active loop, with any Minor findings and `⚠️ Cannot verify from diff` items listed.
+- If any Critical or Important finding remains (bug in logic, missing test, unmet criterion, etc.) → **FAIL** with specific, actionable feedback. The Developer fixes and re-submits.
 - If the code has a fundamental design issue that no amount of Developer fixes can address within the approved specification → **ESCALATE** immediately. Do not issue FAIL first and wait. ESCALATE-worthy examples: the spec is internally contradictory, the acceptance criteria cannot be met without a spec change, the diagnosis points at a root cause outside the bug's stated scope.
 
 ### Step 5: Record the Verdict
@@ -64,7 +82,7 @@ Append to the task or bug file under a `### Review Verdict — [date]` heading, 
 The first line of the section must be one of: `PASS`, `FAIL`, or `ESCALATE`.
 Do not commit anything: the verdict, and any bug filed through `new-bug` during this review, live in the tracker outside version control.
 
-**On PASS:** Record the verdict with a brief confirmation that both stages passed. Note any minor observations (non-blocking).
+**On PASS:** Record the verdict with a brief confirmation that both stages passed. Under a `#### Deferred Minor findings` heading, list each Minor finding with its location and suggested change, one per line. Under `#### ⚠️ Cannot verify from diff`, list each unverifiable claim. Omit a heading that has no entries. The `status-report` skill rolls the deferred Minor findings up for triage at Gate 5, so write each one so a person who has not seen the diff can act on it.
 
 **On FAIL:** Record the verdict and list each failed check with the location, what is wrong, and what should change. The work item stays `in-progress`. The Developer fixes the issues and re-submits. The active loop tracks the review cycle count. On a third consecutive FAIL, the active loop escalates to the Architect — the Reviewer does not need to change the verdict type.
 
@@ -75,15 +93,18 @@ The first line of the section is always one of: `PASS`, `FAIL`, or `ESCALATE`.
 
 ### On PASS
 Verdict: `PASS`
-A brief confirmation that both stages passed, noting any minor observations (non-blocking).
+A brief confirmation that both stages passed, then the `#### Deferred Minor findings` and `#### ⚠️ Cannot verify from diff` lists when they have entries.
 Next owner: active Development Loop or Bug-Fix Loop.
 
 ### On FAIL
 Verdict: `FAIL`
 For each failed check:
+- **Severity** — Critical or Important.
 - **File and location** — which file, which section or line.
 - **What is wrong** — specific description of the issue.
 - **What should change** — actionable guidance on how to fix it.
+
+List Minor findings and `⚠️ Cannot verify from diff` items after the failed checks, under the same headings as on PASS.
 
 ### On ESCALATE
 Verdict: `ESCALATE`
@@ -104,11 +125,30 @@ Next owner: active loop for Architect consultation.
 - For bug fixes, the diagnosis→fix evidence chain was explicitly verified before any other check.
 - For bug fixes, diagnostic evidence and Fix Verification were explicitly checked.
 - Feedback is specific and actionable — never vague.
+- Every finding carries a severity, and the verdict follows from it.
+- Claims in the Work Log were checked against the diff, not accepted.
+- Every Minor finding and unverifiable claim is recorded where the loop and Gate 5 can find it.
 - The reviewer checked the actual code, not just the test results.
 - No personal style preferences were enforced — only project standards from the coding guidelines.
 
+## Rationalizations
+
+These thoughts mean stop and verify against the code.
+
+| Excuse | Reality |
+|---|---|
+| "The Work Log says it works, and the tests pass." | The Work Log is the Developer's claim. Check the claim against the diff. |
+| "The Developer explained why this is fine." | A stated rationale never lowers a finding's severity. Judge the code. |
+| "It is only a small deviation from the criteria." | An unmet acceptance criterion is a FAIL, however small. |
+| "I cannot tell from the diff, so I will guess PASS to keep things moving." | Record it as `Cannot verify from diff` so the loop can check it with the cross-task context you lack. |
+| "This is a style preference, but I will block on it anyway." | Enforce project standards only. A preference is at most a deferred Minor finding. |
+| "The diff is large, so I will skim the rest." | Review the whole range, or return a FAIL asking for a smaller one. A skimmed review is a rubber stamp. |
+
 ## Common Pitfalls
 
+- **Trusting the report** — accepting the Work Log's summary or the Developer's rationale instead of reading the diff.
+- **Re-running the Developer's tests** — the Work Log carries that evidence; a repeat run adds latency, not coverage.
+- **Silent Minor findings** — noting a Minor observation in prose that no one will read. Use the `Deferred Minor findings` list.
 - **Rubber-stamping** — approving because tests pass without reading the code. Tests can have gaps.
 - **Bikeshedding** — spending review time on naming preferences or formatting instead of correctness and security.
 - **Vague feedback** — "this could be better" is not actionable. "This function handles the success case but does not handle the empty-input case described in acceptance criterion 3" is.

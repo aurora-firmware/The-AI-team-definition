@@ -47,6 +47,11 @@ For each open bug with severity `critical` or `high`, list ID, title, and severi
 Inspect recent integration evidence from completed task Work Logs, resolved bug Work Logs, and recent integration commits when available.
 Record the latest integration-test result or state that no integration evidence was found.
 
+### Step 4a: Roll Up Deferred Minor Findings
+
+Scan the `### Review Verdict` sections of completed tasks and resolved bugs for `#### Deferred Minor findings` lists. Collect every entry with its work item ID and location.
+A roll-up nobody reads is a silent discard, so present the entries to the human at Gate 5 and ask for a decision on each: fix now (file a bug or task), accept, or defer with a reason. Do not drop entries because they look small.
+
 ### Step 5: Produce Inline Summary
 
 Use `ai-team status` output as the inline summary. If the command cannot run, manually present the report in this format:
@@ -76,6 +81,9 @@ Use `ai-team status` output as the inline summary. If the command cannot run, ma
 
 ### Critical/High Bugs
 [list of critical and high severity open bugs]
+
+### Deferred Minor Findings
+[work item ID, location, finding — or "none"]
 ```
 
 If there are blocked tasks or critical/high bugs, add a `Recommended Actions` section suggesting next steps.
@@ -106,6 +114,7 @@ Tell the human the file path. Commit it only if the human asks and the project t
 - Counts exclude templates and `.gitkeep`.
 - Critical and high severity bugs are explicitly listed.
 - Blocked tasks include the blocking reason when one is recorded.
+- Every deferred Minor finding in the scanned Review Verdicts is listed.
 - The latest integration evidence is recorded or explicitly marked as not found.
 - The report gives the human enough context for Gate 5 final merge sign-off.
 
