@@ -218,7 +218,7 @@ When an orchestrator exhausts Phase 1 (Architect) without resolution, it produce
 `description`:
 - **Maximum 1024 characters.** Non-empty. No XML tags.
 - **Always third person.** The description is injected into the system prompt; first/second person ("I can…", "You can…") causes discovery problems.
-- State **what the skill does and when to use it** in the same sentence — concrete trigger words, artifacts, and process states.
+- State **what the skill does and when to use it** in the same sentence — concrete trigger words, artifacts, and process states. Put the weight on the triggering conditions and never list the steps: a description that summarizes the workflow gets followed in place of the skill (see `guides/skill-testing-guide.md`, *Skill Discovery Wording*).
 - Distinguish the skill from neighbouring skills.
 
 **Good example** (from `code-review/SKILL.md`):
@@ -433,6 +433,8 @@ For skills that bundle scripts under `scripts/`:
 If a skill invokes an MCP tool, always use the fully qualified `ServerName:tool_name` form (e.g., `BigQuery:bigquery_schema`, `GitHub:create_issue`). Without the prefix, lookup fails when multiple MCP servers are configured.
 
 ## Validation And Evaluation
+
+The method for proving a skill or a rule change works — baseline pressure scenario, change, re-run — is in `guides/skill-testing-guide.md`. The steps below are the summary.
 
 Build evaluations **before** writing extensive documentation. Skills should solve real, observed problems — not imagined ones.
 

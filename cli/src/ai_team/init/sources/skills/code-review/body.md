@@ -60,7 +60,7 @@ Rate every finding from Stage 1 and Stage 2:
 |---|---|---|
 | **Critical** | Breaks an acceptance criterion or the fix contract, loses data, or opens a security hole | FAIL |
 | **Important** | The work cannot be trusted until it is fixed: missing or untrustworthy tests, wrong behavior in a realistic case, scope violations | FAIL |
-| **Minor** | Real but non-blocking: naming, small duplication, a style or readability improvement within project standards | PASS; recorded as a deferred Minor finding |
+| **Minor** | Real but non-blocking: naming, small duplication, a style or readability improvement within project standards | PASS; recorded under the `#### Deferred Minor findings` heading — never only inline in the findings — so Gate 5 can roll it up |
 
 An unmet acceptance criterion or an incomplete bug evidence chain is never Minor.
 

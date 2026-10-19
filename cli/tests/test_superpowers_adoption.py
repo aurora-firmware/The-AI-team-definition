@@ -262,3 +262,33 @@ def test_status_report_and_loops_point_at_the_reconciliation():
     for name in ("dev-loop", "bug-loop"):
         assert "spec-truth reconciliation" in skill(name), name
     assert "completion mode" in agent("architect")
+
+
+# -- Phase 6: TDD for skills --------------------------------------------------
+
+
+def test_skill_testing_guide_defines_the_cycle_and_is_linked_from_the_template():
+    guide = (REPO / "guides" / "skill-testing-guide.md").read_text(encoding="utf-8")
+    template = (REPO / "guides" / "skill_template.md").read_text(encoding="utf-8")
+
+    for phrase in (
+        "Write the test first",
+        "Watch it fail (RED)",
+        "Watch it pass (GREEN)",
+        "pressure scenario",
+        "rationalizations",
+        "never lists the steps",
+    ):
+        assert phrase in guide, phrase
+    assert "guides/skill-testing-guide.md" in template
+    assert "never list the steps" in template
+
+
+def test_validation_report_records_baseline_and_with_change_runs():
+    report = (
+        REPO / "docs" / "ai-team" / "docs" / "skill_validation_report.md"
+    ).read_text(encoding="utf-8")
+
+    assert "| Old | New |" in report
+    assert "not validated by this run" in report
+    assert "## Limits" in report
