@@ -19,7 +19,7 @@ build manifests, or implementation code into the sections below.
 
 A project started from scratch with the AI team has no document above its specs. Every spec has to re-invent why the project exists and how it is split into components, so specs overlap, leave gaps, or fix interfaces before the component boundaries are settled, and each new session has no single place to learn what the project is for.
 This spec adds one canonical, high-level spec per project, **S-000**, written before any other spec. It states the purpose, users, pain points, use cases and solution in plain language, and breaks the solution into components with explicit boundaries and responsibilities. It never defines technology or interfaces.
-When it is done, a new project starts with S-000; every later spec covers one S-000 component or a slice of it; agents read S-000 at the start of a session; and the Architect checks each new or changed spec against it.
+When it is done, a new project starts with S-000; every later spec covers one S-000 component or a slice of it; the Planner and Architect read S-000 at the start of a session; and the Architect checks each new or changed spec against it.
 
 ## Exclusions
 
@@ -50,7 +50,7 @@ When it is done, a new project starts with S-000; every later spec covers one S-
 | Feature spec template and `new-spec` skill | Cover one component's contract; refer to S-000 for system-wide context | System-wide Architecture parts move out |
 | Architecture consistency review | Checks a new or changed spec against S-000 | Standing duty; no new gate |
 | CLI | Creates S-000 on request, protects its ID, refuses task creation from it | `spec new`, `task new`, `validate` |
-| Session-start rules | Agents read S-000 first when it exists | Project instruction scaffolds |
+| Session-start rules | Planner and Architect read S-000 first when it exists | Planner and Architect agent descriptions |
 
 ## S-000 content contract
 
@@ -92,7 +92,7 @@ A spec that needs something S-000 does not cover is a signal either to amend S-0
 
 1. **Creation.** The CLI creates S-000 on explicit request, from its own template, in the specs folder with ID `S-000` and the usual frontmatter. It refuses when an S-000 already exists, including in the spec archive. Normal spec creation is unchanged and still starts at S-001.
 2. **No tasks.** Spec breakdown refuses S-000 and says why. The CLI refuses to create a task whose source spec is S-000, and `validate` reports any task that names S-000 as its source spec.
-3. **Session start.** When S-000 exists and is approved, every role reads it at the start of a session before reading other specs. The project instruction scaffolds say so.
+3. **Session start.** When S-000 exists and is approved, the Planner and the Architect read it at the start of a session before reading other specs. The Developer, Reviewer and Integrator do not read it at session start; they work from their own agent descriptions and the task or bug they are given. The Planner and Architect agent descriptions say so.
 4. **Planner.** For a project with no specs, the Planner proposes writing S-000 first. For a project that already has specs, S-000 stays optional and the Planner does not require it.
 5. **Architecture review.** When S-000 exists, the architecture consistency review confirms that a new or changed spec stays within S-000's purpose and respects each component's boundary and responsibility, and reports a violation as drift per the existing finding rules.
 6. **Feature spec template.** The system-wide parts of the Architecture section move out of the feature spec template; the spec keeps principles specific to its own scope and refers to S-000 for the rest. Existing approved specs stay valid unchanged.
