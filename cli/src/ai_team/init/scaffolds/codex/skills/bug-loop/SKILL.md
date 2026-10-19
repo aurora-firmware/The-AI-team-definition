@@ -53,7 +53,7 @@ Each subagent starts cold, and the orchestrator's context is the scarce resource
 |---|---|
 | cheap | Mechanical, fully specified work items: a rename, a config change, a transcription from the spec |
 | standard | The default for the Developer, the Reviewer, and manual integration |
-| most capable | Architect consultation, the fresh Developer at review cycle 3, and any work item the Reviewer marked as a design risk |
+| most capable | Architect consultation, the fresh Developer on the third attempt (capability ladder), and any work item the Reviewer marked as a design risk |
 
 ## Procedure
 
@@ -189,8 +189,11 @@ that the latest verdict in the bug file is PASS before it merges.
 
 Increment the review cycle counter.
 
-- If **cycle < 3**: go back to **Step 5** (Developer fixes the issues noted in the Review Verdict)
-- If **cycle = 3**: treat as ESCALATE (max review cycles exceeded)
+Climb the capability ladder — each rung changes who attempts the fix, so a stuck bug is not retried identically:
+
+- If **cycle = 1**: go back to **Step 5** with the same Developer, who keeps the continuity of the session. The Developer fixes the issues noted in the Review Verdict.
+- If **cycle = 2**: go back to **Step 5** with a **fresh Developer subagent on the most capable tier**. Pass only the bug file path: its Work Log and Review Verdicts carry everything the fresh Developer needs, and it does not inherit the failed session's reasoning. This happens before any Architect consultation is spent.
+- If **cycle = 3**: treat as ESCALATE (max review cycles exceeded).
 
 #### On ESCALATE
 
@@ -207,6 +210,12 @@ Follow the two-phase escalation procedure below. Phase 1 is a single Architect c
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 If the Architect resolves the issue, go back to **Step 5** with the Architect's guidance.
+
+If the Architect adjudicates that specific findings of the last FAIL verdict should be **parked** rather than fixed — the bug meets its criteria without them — the loop makes each parked finding a durable artifact before continuing; a ledger line in the chat is not one:
+- file it as a new bug with the `new-bug` skill, naming this bug and the finding, or
+- record it under a `### Recorded deviation — YYYY-MM-DD` heading in the bug file with the Architect's rationale.
+
+Then spawn the Reviewer again (Step 6). Its prompt stays neutral; the recorded deviation is in the bug file, where the Reviewer reads it. Parked findings never count toward the cycle cap and are never deleted with the workspace.
 If the Architect cannot resolve it, proceed to Phase 2.
 
 **Phase 2 — Human Escalation:**

@@ -173,3 +173,49 @@ def test_owning_spec_records_the_phase_3_amendment_before_the_change():
     amendment = spec.split("## Amendment Log", 1)[1]
     assert "Interfaces: Consumes / Produces" in amendment
     assert "#31" in amendment
+
+
+# -- Phase 4: capability ladder, scope triage, section approval --------------
+
+
+def test_loops_climb_a_capability_ladder_before_consulting_the_architect():
+    for name, kind in (("dev-loop", "task"), ("bug-loop", "bug")):
+        body = skill(name)
+        on_fail = body.split("#### On FAIL", 1)[1].split("#### On ESCALATE", 1)[0]
+        assert "same Developer" in on_fail, name
+        assert "fresh Developer subagent on the most capable tier" in on_fail, name
+        assert "before any Architect consultation is spent" in on_fail, name
+        assert on_fail.index("cycle = 1") < on_fail.index("cycle = 2")
+        assert on_fail.index("cycle = 2") < on_fail.index("cycle = 3")
+
+
+def test_parked_findings_must_become_durable_artifacts():
+    for name in ("dev-loop", "bug-loop"):
+        body = skill(name)
+        escalate = body.split("#### On ESCALATE", 1)[1]
+        assert "**parked**" in escalate, name
+        assert "file it as a new bug" in escalate, name
+        assert "### Recorded deviation" in escalate, name
+        assert "a ledger line in the chat is not one" in escalate, name
+
+
+def test_brainstorm_triages_scope_before_asking_questions():
+    body = skill("brainstorm")
+
+    assert body.index("### Step 0: Triage the Scope") < body.index("### Step 1")
+    assert "independent subsystems" in body
+    assert "brainstorm only the first sub-project" in body
+
+
+def test_brainstorm_approves_the_design_section_by_section():
+    body = skill("brainstorm")
+    step6 = body.split("### Step 6", 1)[1].split("### Step 7", 1)[0]
+
+    assert "Section by Section" in body
+    assert (
+        "Stop and wait for the human's answer before presenting the next section"
+        in step6
+    )
+    assert '"no exclusions apply"' in step6
+    assert "Lead with your recommended option" in body
+    assert "Prefer multiple-choice questions" in body

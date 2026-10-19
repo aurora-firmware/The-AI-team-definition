@@ -11,6 +11,17 @@ The goal is to arrive at a well-understood, agreed direction *before* writing th
 
 ## Procedure
 
+### Step 0: Triage the Scope
+
+Read the request, then judge its size before spending any clarifying question.
+If it describes several independent subsystems — pieces that could be specified, built, and verified separately, such as "a billing system with invoicing, tax reporting, and a customer portal" — it is too large for one spec. An oversized spec needs constant amendment and stops being true.
+
+1. Say so to the human, and list the independent sub-projects with one line each.
+2. Propose the order, and the dependency between sub-projects, if any.
+3. Ask the human to confirm the split, then brainstorm only the first sub-project. Each remaining sub-project gets its own brainstorm, spec, and task plan later.
+
+If the request is a single coherent unit, continue to Step 1 without comment.
+
 ### Step 1: Understand the Request
 
 Read the feature request thoroughly.
@@ -55,6 +66,7 @@ Use these internal categories to plan coverage. Do not expose category names or 
 - Coverage of all six internal categories is the binding constraint. If one round cannot cover the material unknowns clearly, ask another round before moving on.
 - Silent skip is acceptable when a category has no material unknown for this request. Do not ask filler questions.
 - Avoid details that belong in the implementation phase, such as exact naming or file structure, unless they materially change the solution space.
+- Prefer multiple-choice questions where the answers can be enumerated. Offer your recommended choice first and say why; leave an open option for the human's own answer.
 - Ask the human and **stop**. Do not continue until answers are received.
 
 If there are no material unknowns, skip this step and proceed.
@@ -74,6 +86,7 @@ Do not write a full spec at this stage. These are sketches, not blueprints.
 ### Step 4: Present Alternatives and Get Direction
 
 Present the alternatives to the human in brief.
+**Lead with your recommended option and explain why** — tied to the human's stated priorities — before describing the others.
 Ask the human to indicate their preferred direction — or to name any constraint that should decide it.
 
 **Stop and wait for the human's response before continuing.**
@@ -88,17 +101,22 @@ Maximum one follow-up round.
 
 Skip this step if the direction is clear enough to write the spec.
 
-### Step 6: Confirm the Approach
+### Step 6: Confirm the Approach Section by Section
 
-Before writing the full specification, state the chosen approach in two or three sentences:
-- What it does
-- An exclusions line with one or more concrete exclusions, or the exact statement "no exclusions apply" when the human confirms there are none
-- Any constraints it assumes
+The spec becomes durable truth, so the human signs off on the design incrementally, not once at the end.
+Present the chosen approach in these sections, one at a time, each sized to its complexity (a few sentences when straightforward, a short paragraph when nuanced):
 
-Ask the human: "Does this match your intent? I'll write the spec based on this."
+1. **What it does** — the outcome and the main behavior.
+2. **Scope and exclusions** — an exclusions line with one or more concrete exclusions, or the exact statement "no exclusions apply" when the human confirms there are none.
+3. **Components and interfaces** — the parts that change and how they connect.
+4. **Constraints, error handling, and verification** — the constraints it assumes, how failures are handled, and how success will be observed.
+
+After each section ask: "Does this section match your intent?" **Stop and wait for the human's answer before presenting the next section.**
+If the human corrects a section, revise it and confirm it again. If the correction changes an earlier section, return to that section.
+
+When all sections are approved, state the full approach in two or three sentences and ask: "I'll write the spec based on this — ready?"
 
 **Stop and wait for confirmation before proceeding to Step 7.**
-If the human corrects something, update the summary and confirm again.
 
 ### Step 7: Produce the Specification
 
@@ -135,11 +153,16 @@ Because the human shaped the spec interactively, Gate 1 should be a quick confir
 - Exclusions are explicit.
 - The spec is self-contained: readable without opening other files.
 - The human confirmed the direction before the spec was written.
+- An oversized request was split into sub-projects, and only the first was brainstormed.
+- The human approved the design section by section, not only once at the end.
+- Recommended options were stated first, with reasons.
 
 ## Common Pitfalls
 
 - **Writing the spec before aligning** — producing a full document, then waiting for approval. The goal is to arrive at the spec *together*.
 - **Asking too many questions in one round** — aim for about five per round. If the six internal categories cannot be covered materially within that budget, run a second round rather than stretching a single round indefinitely.
+- **Brainstorming an oversized request whole** — a spec that spans several independent subsystems will need constant amendment. Split it in Step 0.
+- **One big confirmation at the end** — compressing the whole design into a single "does this match?" lets a wrong section ride through. Approve each section.
 - **Anchoring on the first idea** — always generate at least one meaningfully different alternative before committing to a direction.
 - **Solving the wrong problem** — re-read the original request after generating alternatives to verify you are addressing the actual need.
 - **Scope creep** — if an alternative requires significantly more work, record it as an explicit exclusion in the spec's Exclusions section rather than folding it into the current scope.
