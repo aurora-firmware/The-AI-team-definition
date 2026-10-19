@@ -1,7 +1,7 @@
 ---
 title: System Overview Spec (S-000)
 version: '0.1'
-status: draft  # draft | review | approved | superseded
+status: approved  # draft | review | approved | superseded
 created: '2026-10-19'
 author: planner
 id: S-007
@@ -105,7 +105,7 @@ A spec that needs something S-000 does not cover is a signal either to amend S-0
 
 ## Brownfield adoption
 
-In a project that already has specs, code or decisions, the agent can use `new-system-overview` to write S-000 from that existing material, to give the project one shared description of its purpose and components. The skill:
+In a project that already has specs, code or decisions, the agent can use `new-system-overview` to write S-000 from that existing material, to unify the project towards the ai-team process: S-000 becomes the shared description of its purpose and components, so that the process holds everything an agent needs to work on the project autonomously. The skill:
 
 - Reads the existing approved specs, accepted ADRs and project documentation, and inspects the code only to learn what exists, not to describe how it works.
 - Drafts S-000 under the same content contract, in plain language, describing what the project is for and how it divides, not how it is built today.
