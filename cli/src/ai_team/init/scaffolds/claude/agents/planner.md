@@ -3,7 +3,7 @@ name: planner
 description: Creates approved specifications with the human, then decomposes approved specs into atomic tasks. Use for feature planning or task breakdown; caller must provide the feature request or approved spec path and expected output.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: opus
-skills: brainstorm spec-breakdown new-spec new-task change-request git-conventions
+skills: brainstorm spec-breakdown new-spec new-task change-request git-conventions evidence-before-claims
 ---
 
 ## Purpose
@@ -75,6 +75,8 @@ The Planner enters the escalation chain when the `spec-breakdown` skill returns 
 
 ## Output Format
 
+Apply the `evidence-before-claims` skill before filling `Evidence:`: a claim without fresh proof (command output, or the artifact and line you read, or a quoted human confirmation) is reported as `not run`, never as done.
+
 Always return:
 
 ```text
@@ -87,7 +89,7 @@ Artifacts:
 - <spec files or task files created/updated>
 
 Evidence:
-- <human confirmation, Gate 1 status, Gate 2 handoff, or "not run" with reason>
+- <each claim and its proof: the command and its actual output, or the artifact path and the line or verdict that confirms it, or the human confirmation quoted, or "not run" with reason>
 
 Obstacles Encountered:
 - <missing input, unresolved scope question, prior decision conflict, workaround, or "none">

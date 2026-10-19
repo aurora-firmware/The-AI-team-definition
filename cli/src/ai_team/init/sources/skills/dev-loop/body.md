@@ -31,6 +31,21 @@ The loop applies the **Workspace Hygiene** check from the `git-conventions` skil
 Changes parked by this run are restored when the loop ends, on the branch where they were parked.
 A run never ends with untracked files or uncommitted changes that the run itself created.
 
+## Dispatch Discipline
+
+Each subagent starts cold, and the orchestrator's context is the scarce resource. These rules keep both small:
+
+- **Model tier at every spawn.** State the tier explicitly in each **Spawn** block, using the table below. The role's agent definition sets a default; the tier named at the spawn overrides it for that dispatch.
+- **Never paste prior-work-item history into a dispatch.** Pass the work item file path. A subagent reads what it needs from the file, and earlier items' logs do not belong in its prompt.
+- **Review packages, not diffs in context.** The loop writes the review range to a single file and passes its path (Step 6). The diff never enters the orchestrator's context.
+- **Record BASE before the Developer starts.** The branch's base commit is the start of every review range.
+
+| Tier | Use for |
+|---|---|
+| cheap | Mechanical, fully specified work items: a rename, a config change, a transcription from the spec |
+| standard | The default for the Developer, the Reviewer, and manual integration |
+| most capable | Architect consultation, the fresh Developer on the third attempt (capability ladder) |
+
 ## Procedure
 
 ### Step 1: Check the Queue
@@ -100,12 +115,13 @@ If no task has all dependencies satisfied, stop and report which tasks are waiti
 
 1. Run `ai-team task start T-NNN`. This sets the status to `in-progress`; there is nothing to commit.
 2. Switch to `{{integration_branch}}` and create the task branch from it: `git checkout -b task/T-NNN-short-description` (derive from the task filename).
+3. Record the base: `git rev-parse HEAD` on the new branch is `BASE`. Append `Base commit: <sha>` under `## Work Log` in the task file, so it survives a restart of the loop. Step 6 reviews `BASE..HEAD`.
 
 ### Step 5: Implementation Cycle
 
 Read the task file at the path reported by `ai-team show T-NNN --json`, and check out the task branch `task/T-NNN-...`.
 
-**Spawn the Developer subagent** with this prompt:
+**Spawn the Developer subagent** (tier: standard, or cheap for a mechanical task) with this prompt:
 
 > "Pick up the task from the task file `<task-path>` and implement it using the tdd skill.
 > You are on branch `task/T-NNN-...`. Commit after each red→green→refactor cycle.
@@ -122,15 +138,31 @@ Stay on the task branch — no switch and no commit. Bug files the Developer fil
 
 ### Step 6: Review Cycle
 
-**Spawn the Reviewer subagent** with this prompt:
+**Write the review package.** Record the range as `BASE..HEAD` of the task branch, with `BASE` from the claim in Step 4.
+Write one file, `<tracker-path>/review-packages/<id>.md` (find `<tracker-path>` with `ai-team tracker path`), holding the output of:
+
+```bash
+git log --oneline BASE..HEAD
+git diff --stat BASE..HEAD
+git diff -U10 BASE..HEAD
+```
+
+Rewrite it before every review cycle so it covers the whole range, including commits from earlier cycles. Delete it when the task leaves the loop. It lives in the tracker, so it is never committed.
+
+**Spawn the Reviewer subagent** (tier: standard) with this prompt:
 
 > "Review the task in the task file `<task-path>` using the code-review skill.
 > The Developer has completed their work on branch `task/T-NNN-...`.
+> The review range and its diff are in the review package `<package-path>`; read that one file instead of deriving the diff yourself.
 > Append your verdict to the task file's Review section under `### Review Verdict — YYYY-MM-DD`. The task file is outside version control: do not commit it.
+> Treat the Work Log as unverified claims about the code and check them against the diff. Do not re-run tests the Work Log already shows passing.
+> Rate each finding Critical, Important, or Minor as the code-review skill defines. List Minor findings under `#### Deferred Minor findings` and anything you cannot confirm from the diff under `#### ⚠️ Cannot verify from diff`.
 > Verdict must be one of: PASS, FAIL, or ESCALATE. On ESCALATE, include the four-field escalation request block defined in the code-review skill.
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 Wait for the reviewer to complete before continuing.
+
+**Keep the Reviewer prompt neutral.** It names the work item, the branch, and the skill, and nothing else about what to conclude. If the prompt you are writing contains "do not flag", "don't treat X as a defect", "at most Minor", or "the plan chose", stop: you are pre-judging the review, usually to spare yourself a review loop. Put the context the Reviewer needs in the task file, not in a verdict hint.
 
 ### Step 7: Read the Verdict
 
@@ -138,6 +170,8 @@ Read the task file and find the most recent `### Review Verdict` entry.
 Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 
 #### On PASS
+
+If the verdict lists `⚠️ Cannot verify from diff` items, resolve each one before integration, using what the loop knows (other completed work items' Work Logs, the approved spec, the repository). Append the resolution under the verdict. If an item cannot be confirmed, treat the verdict as FAIL for that item and go to **On FAIL**.
 
 Before invoking integration, confirm that the task file holds both the Developer Work Log entry
 and the Review Verdict recorded in Steps 5 and 6. The `integrate` skill verifies that the latest
@@ -160,15 +194,18 @@ verdict in the task file is PASS before it merges.
 
 Increment the review cycle counter.
 
-- If **cycle < 3**: go back to **Step 5** (Developer fixes the issues noted in the Review Verdict)
-- If **cycle = 3**: treat as ESCALATE (max review cycles exceeded)
+Climb the capability ladder — each rung changes who attempts the fix, so a stuck task is not retried identically:
+
+- If **cycle = 1**: go back to **Step 5** with the same Developer, who keeps the continuity of the session. The Developer fixes the issues noted in the Review Verdict.
+- If **cycle = 2**: go back to **Step 5** with a **fresh Developer subagent on the most capable tier**. Pass only the task file path: its Work Log and Review Verdicts carry everything the fresh Developer needs, and it does not inherit the failed session's reasoning. This happens before any Architect consultation is spent.
+- If **cycle = 3**: treat as ESCALATE (max review cycles exceeded).
 
 #### On ESCALATE
 
 Follow the two-phase escalation procedure below. Phase 1 is a single Architect consultation; Phase 2 is human escalation. The chain is linear — no second Architect round.
 
 **Phase 1 — Architect Consultation:**
-**Spawn the Architect subagent** with this prompt:
+**Spawn the Architect subagent** (tier: most capable) with this prompt:
 
 > "Use the escalation-review skill for the task in `<task-path>`.
 > Problem: <what the reviewer or loop found>
@@ -178,6 +215,12 @@ Follow the two-phase escalation procedure below. Phase 1 is a single Architect c
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 If the Architect resolves the issue, go back to **Step 5** with the Architect's guidance.
+
+If the Architect adjudicates that specific findings of the last FAIL verdict should be **parked** rather than fixed — the task meets its criteria without them — the loop makes each parked finding a durable artifact before continuing; a ledger line in the chat is not one:
+- file it as a new bug with the `new-bug` skill, naming this task and the finding, or
+- record it under a `### Recorded deviation — YYYY-MM-DD` heading in the task file with the Architect's rationale.
+
+Then spawn the Reviewer again (Step 6). Its prompt stays neutral; the recorded deviation is in the task file, where the Reviewer reads it. Parked findings never count toward the cycle cap and are never deleted with the workspace.
 
 **Phase 2 — Human Escalation:**
 If the Architect cannot resolve the issue:
@@ -196,7 +239,7 @@ The human runs `/status-report` when they want the full Gate 5 summary.
    - Tasks blocked or escalated, with the reason
    - Bugs filed this run, and any integration failure that stopped the loop
    - Changes parked or restored, and `.gitignore` patterns added, by the hygiene check
-   - The next suggested action — for example `/bug-loop` for filed regressions, or `/status-report` for Gate 5 sign-off context when the queue is empty
+   - The next suggested action — for example `/bug-loop` for filed regressions, or, when the queue is empty, asking the Architect for spec-truth reconciliation and then running `/status-report` for Gate 5 sign-off context
 
 ## Cycle Counter Reset
 

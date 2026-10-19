@@ -97,6 +97,7 @@ Each skill implements a workflow or action defined in the ai-process:
 | Skill | What it implements |
 |---|---|
 | **architecture-consistency-review** | Checks new or changed architecture artifacts against approved specs and accepted ADRs |
+| **evidence-before-claims** | Fresh command and actual output required before any claim of completion, passing, or merged |
 | **using-ai-team** | Meta-skill: matches the situation to a skill, and checks gate preconditions, before any other action |
 | **brainstorm** | Solution-space exploration before a spec is written |
 | **spec-breakdown** | Decomposition of a spec into atomic tasks |

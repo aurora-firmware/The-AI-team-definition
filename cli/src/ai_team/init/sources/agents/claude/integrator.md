@@ -3,7 +3,7 @@ name: integrator
 description: Integrates reviewed task or bug branches and resolves merge conflicts. Caller must provide source branch, destination branch, work item file, latest review verdict, and expected merge or merge-conflicts output.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
-skills: integrate merge-conflicts git-conventions
+skills: integrate merge-conflicts git-conventions evidence-before-claims
 ---
 
 ## Purpose
@@ -62,6 +62,8 @@ While spawned, the Integrator uses the `integrate` skill to run the merge, and t
 
 ## Output Format
 
+Apply the `evidence-before-claims` skill before filling `Evidence:`: a claim without a fresh command and its actual output is reported as `not run`, never as done.
+
 Always return:
 
 ```text
@@ -74,7 +76,7 @@ Artifacts:
 - <branches, commits, task or bug files, conflict files updated>
 
 Evidence:
-- <pre-merge tests, post-merge tests, merge commit, revert commit, or "not run" with reason>
+- <each claim, the command that proves it, and its actual output (exit code, pass and fail counts), or "not run" with reason>
 
 Obstacles Encountered:
 - <merge conflict, setup issue, special command flag, dependency/import issue, environment quirk, or "none">

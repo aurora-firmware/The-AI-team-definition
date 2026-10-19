@@ -117,6 +117,7 @@ ai-team init -> guidance templates -> project/root guidance -> dev-loop
 ### Component 1: Spec Breakdown Planning Updates
 
 **Purpose:** Ensure task breakdown explicitly considers documentation changes and test coverage as implementation work derived from the spec.
+Amendment 2026-10-19: each task also names the interfaces it consumes and produces, and carries no placeholder text (see the Amendment Log).
 **Estimated size:** Small.
 **Interfaces:** `spec-breakdown`, `new-task`, task template guidance, spec authoring guide references.
 
@@ -129,6 +130,7 @@ ai-team init -> guidance templates -> project/root guidance -> dev-loop
 ### Component 3: Technical Gate 2 Review
 
 **Purpose:** Make `spec-breakdown-review` feedback focus on technical task-plan criteria.
+Amendment 2026-10-19: the technical criteria include type and name consistency of the interfaces tasks consume and produce (see the Amendment Log).
 **Estimated size:** Small.
 **Interfaces:** `spec-breakdown-review` skill, quality gates, workflow overview, Architect role guidance.
 
@@ -244,8 +246,6 @@ Tests fail or command is missing/ambiguous -> escalate to human
 
 ## Amendment Log
 
-<!-- No amendments yet. Add rows only after Gate 1 approval when approved scope
-changes while tasks are in flight.
 | Date | What changed | Why | Affected tasks |
 |------|-------------|-----|----------------|
--->
+| 2026-10-19 | Task template gains an `Interfaces: Consumes / Produces` block; `new-task` bans placeholder text in a task; Gate 2 adds a type and name consistency check across tasks. Driven by issue #31 (superpowers comparison report items 2.1 and 2.2). | Gate 2 checked dependencies and file conflicts but could not catch one task defining `clearLayers()` while another calls `clearFullLayers()`, and nothing stopped placeholder vagueness reaching a task file. | None in flight |

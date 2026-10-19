@@ -32,6 +32,21 @@ The loop applies the **Workspace Hygiene** check from the `git-conventions` skil
 Changes parked by this run are restored when the loop ends, on the branch where they were parked.
 A run never ends with untracked files or uncommitted changes that the run itself created.
 
+## Dispatch Discipline
+
+Each subagent starts cold, and the orchestrator's context is the scarce resource. These rules keep both small:
+
+- **Model tier at every spawn.** State the tier explicitly in each **Spawn** block, using the table below. The role's agent definition sets a default; the tier named at the spawn overrides it for that dispatch.
+- **Never paste prior-work-item history into a dispatch.** Pass the work item file path. A subagent reads what it needs from the file, and earlier items' logs do not belong in its prompt.
+- **Review packages, not diffs in context.** The loop writes the review range to a single file and passes its path (Step 6). The diff never enters the orchestrator's context.
+- **Record BASE before the Developer starts.** The branch's base commit is the start of every review range.
+
+| Tier | Use for |
+|---|---|
+| cheap | Mechanical, fully specified work items: a rename, a config change, a transcription from the spec |
+| standard | The default for the Developer, the Reviewer, and manual integration |
+| most capable | Architect consultation, the fresh Developer on the third attempt (capability ladder) |
+
 ## Procedure
 
 ### Step 1: Check the Queue
@@ -62,10 +77,11 @@ Select the highest-severity unblocked bug:
    - Otherwise use `{{integration_branch}}` as both the base and target.
 4. Switch to the selected base and create the bug branch from it: `git checkout -b bug/B-NNN-short-description`
    - Derive the branch name from the bug filename (e.g., `B-001-system-prompt-exposed` → `bug/B-001-system-prompt-exposed`)
+5. Record the base: `git rev-parse HEAD` on the new branch is `BASE`. Append `Base commit: <sha>` under `## Work Log` in the bug file, so it survives a restart of the loop. Step 6 reviews `BASE..HEAD`.
 
 ### Step 4: Diagnosis Cycle
 
-**Spawn the Developer subagent** with this prompt:
+**Spawn the Developer subagent** (tier: standard) with this prompt:
 
 > "Diagnose the bug described in the bug file `<bug-path>`.
 > You are on branch `bug/B-NNN-...`.
@@ -86,7 +102,7 @@ Stay on the bug branch — no switch and no commit. That recorded entry is the f
 
 ### Step 5: Implementation Cycle
 
-**Spawn the Developer subagent** with this prompt:
+**Spawn the Developer subagent** (tier: standard) with this prompt:
 
 > "Fix the diagnosed bug described in the bug file `<bug-path>`.
 > You are on branch `bug/B-NNN-...`.
@@ -104,18 +120,34 @@ Record the Work Log handoff: append the Developer's entry under `## Work Log` in
 
 ### Step 6: Review Cycle
 
-**Spawn the Reviewer subagent** with this prompt:
+**Write the review package.** Record the range as `BASE..HEAD` of the bug branch, with `BASE` from the claim in Step 3.
+Write one file, `<tracker-path>/review-packages/<id>.md` (find `<tracker-path>` with `ai-team tracker path`), holding the output of:
+
+```bash
+git log --oneline BASE..HEAD
+git diff --stat BASE..HEAD
+git diff -U10 BASE..HEAD
+```
+
+Rewrite it before every review cycle so it covers the whole range, including commits from earlier cycles. Delete it when the bug leaves the loop. It lives in the tracker, so it is never committed.
+
+**Spawn the Reviewer subagent** (tier: standard) with this prompt:
 
 > "Review the bug fix described in the bug file `<bug-path>` using the code-review skill.
 > The Developer has completed their work on branch `bug/B-NNN-...`.
+> The review range and its diff are in the review package `<package-path>`; read that one file instead of deriving the diff yourself.
 > Verify the Diagnosis Log records reproduction status, evidence captured, isolated fault, and root cause or fault hypothesis.
 > Verify the fix addresses the isolated cause and passes the Fix Verification steps in the bug file.
 > Verify a regression test exists when practical, or that the Work Log explains why only manual verification was possible.
 > Append your verdict to the bug file under `### Review Verdict — YYYY-MM-DD`. The bug file is outside version control: do not commit it.
+> Treat the Work Log as unverified claims about the code and check them against the diff. Do not re-run tests the Work Log already shows passing.
+> Rate each finding Critical, Important, or Minor as the code-review skill defines. List Minor findings under `#### Deferred Minor findings` and anything you cannot confirm from the diff under `#### ⚠️ Cannot verify from diff`.
 > Verdict must be one of: PASS, FAIL, or ESCALATE. On ESCALATE, include the four-field escalation request block defined in the code-review skill.
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 Wait for the reviewer to complete before continuing.
+
+**Keep the Reviewer prompt neutral.** It names the work item, the branch, and the skill, and nothing else about what to conclude. If the prompt you are writing contains "do not flag", "don't treat X as a defect", "at most Minor", or "the plan chose", stop: you are pre-judging the review, usually to spare yourself a review loop. Put the context the Reviewer needs in the bug file, not in a verdict hint.
 
 ### Step 7: Read the Verdict
 
@@ -123,6 +155,8 @@ Read the bug file and find the most recent `### Review Verdict` entry.
 Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 
 #### On PASS
+
+If the verdict lists `⚠️ Cannot verify from diff` items, resolve each one before integration, using what the loop knows (other completed work items' Work Logs, the approved spec, the repository). Append the resolution under the verdict. If an item cannot be confirmed, treat the verdict as FAIL for that item and go to **On FAIL**.
 
 Before invoking integration, confirm that the bug file holds the Diagnosis Log, the Developer
 Work Log, and the Review Verdict recorded in Steps 4, 5, and 6. The `integrate` skill verifies
@@ -147,15 +181,18 @@ that the latest verdict in the bug file is PASS before it merges.
 
 Increment the review cycle counter.
 
-- If **cycle < 3**: go back to **Step 5** (Developer fixes the issues noted in the Review Verdict)
-- If **cycle = 3**: treat as ESCALATE (max review cycles exceeded)
+Climb the capability ladder — each rung changes who attempts the fix, so a stuck bug is not retried identically:
+
+- If **cycle = 1**: go back to **Step 5** with the same Developer, who keeps the continuity of the session. The Developer fixes the issues noted in the Review Verdict.
+- If **cycle = 2**: go back to **Step 5** with a **fresh Developer subagent on the most capable tier**. Pass only the bug file path: its Work Log and Review Verdicts carry everything the fresh Developer needs, and it does not inherit the failed session's reasoning. This happens before any Architect consultation is spent.
+- If **cycle = 3**: treat as ESCALATE (max review cycles exceeded).
 
 #### On ESCALATE
 
 Follow the two-phase escalation procedure below. Phase 1 is a single Architect consultation; Phase 2 is human escalation. The chain is linear — no second Architect round.
 
 **Phase 1 — Architect Consultation:**
-**Spawn the Architect subagent** with this prompt:
+**Spawn the Architect subagent** (tier: most capable) with this prompt:
 
 > "Use the escalation-review skill for the bug in `<bug-path>`.
 > Problem: <what the reviewer found>
@@ -165,6 +202,12 @@ Follow the two-phase escalation procedure below. Phase 1 is a single Architect c
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 If the Architect resolves the issue, go back to **Step 5** with the Architect's guidance.
+
+If the Architect adjudicates that specific findings of the last FAIL verdict should be **parked** rather than fixed — the bug meets its criteria without them — the loop makes each parked finding a durable artifact before continuing; a ledger line in the chat is not one:
+- file it as a new bug with the `new-bug` skill, naming this bug and the finding, or
+- record it under a `### Recorded deviation — YYYY-MM-DD` heading in the bug file with the Architect's rationale.
+
+Then spawn the Reviewer again (Step 6). Its prompt stays neutral; the recorded deviation is in the bug file, where the Reviewer reads it. Parked findings never count toward the cycle cap and are never deleted with the workspace.
 If the Architect cannot resolve it, proceed to Phase 2.
 
 **Phase 2 — Human Escalation:**
@@ -183,7 +226,7 @@ The human runs `/status-report` when they want the full Gate 5 summary.
    - Bugs escalated and still `in-progress`, with the reason
    - Regression bugs filed this run, and any integration failure that stopped the loop
    - Changes parked or restored, and `.gitignore` patterns added, by the hygiene check
-   - The next suggested action — for example `/bug-loop` for filed regressions, or `/status-report` for Gate 5 sign-off context when the queue is empty
+   - The next suggested action — for example `/bug-loop` for filed regressions, or, when the queue is empty, asking the Architect for spec-truth reconciliation and then running `/status-report` for Gate 5 sign-off context
 
 ## Cycle Counter Reset
 

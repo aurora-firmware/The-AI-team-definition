@@ -175,7 +175,7 @@ Orchestrators drive autonomous loops. They spawn subagents using a uniform promp
 
 ### Subagent spawn prompt
 
-Use the exact wording `**Spawn the <Role> subagent** with this prompt:` followed by a quoted prompt block. The prompt must:
+Use the exact wording `**Spawn the <Role> subagent** (tier: <cheap | standard | most capable>) with this prompt:` followed by a quoted prompt block. Name the model tier at every spawn; the orchestrator's Dispatch Discipline section defines the tiers. The prompt must:
 
 - Name the skill the subagent should use (e.g., *"implement it using the `tdd` skill"*).
 - Name the target branch or canonical file path.
@@ -185,7 +185,7 @@ Use the exact wording `**Spawn the <Role> subagent** with this prompt:` followed
 Example from `dev-loop/SKILL.md`:
 
 ```markdown
-**Spawn the Developer subagent** with this prompt:
+**Spawn the Developer subagent** (tier: standard) with this prompt:
 
 > "Pick up the task from the task file `<task-path>` and implement it using the tdd skill.
 > You are on branch `task/T-NNN-...`. Commit after each red→green→refactor cycle.
@@ -218,7 +218,7 @@ When an orchestrator exhausts Phase 1 (Architect) without resolution, it produce
 `description`:
 - **Maximum 1024 characters.** Non-empty. No XML tags.
 - **Always third person.** The description is injected into the system prompt; first/second person ("I can…", "You can…") causes discovery problems.
-- State **what the skill does and when to use it** in the same sentence — concrete trigger words, artifacts, and process states.
+- State **what the skill does and when to use it** in the same sentence — concrete trigger words, artifacts, and process states. Put the weight on the triggering conditions and never list the steps: a description that summarizes the workflow gets followed in place of the skill (see `guides/skill-testing-guide.md`, *Skill Discovery Wording*).
 - Distinguish the skill from neighbouring skills.
 
 **Good example** (from `code-review/SKILL.md`):
@@ -434,6 +434,8 @@ If a skill invokes an MCP tool, always use the fully qualified `ServerName:tool_
 
 ## Validation And Evaluation
 
+The method for proving a skill or a rule change works — baseline pressure scenario, change, re-run — is in `guides/skill-testing-guide.md`. The steps below are the summary.
+
 Build evaluations **before** writing extensive documentation. Skills should solve real, observed problems — not imagined ones.
 
 1. **Identify the gap.** Run a representative task without the skill. Note where Claude lacks context, picks the wrong default, or skips a step.
@@ -470,7 +472,7 @@ When Claude B forgets a rule, the rule probably isn't prominent enough — stren
 - Embedding role identity or authority in a skill.
 - Inventing a custom verdict vocabulary (`Gate 2 Verdict:`, `Review Status:`) instead of aligning with the caller's `Result:` shape.
 - Prose-only escalation without the 4-field structured block.
-- Inconsistent spawn wording (`Spawn the X role`, `invoke the X agent`). Use `**Spawn the <Role> subagent**` uniformly.
+- Inconsistent spawn wording (`Spawn the X role`, `invoke the X agent`). Use `**Spawn the <Role> subagent** (tier: ...)` uniformly.
 - Declaring `Skill(x)` in `allowed-tools` when the skill only references `x` descriptively and never invokes it.
 - Referencing `ai-process/` paths. Skills must be self-contained within `.claude/`.
 - First/second person in `description` (`I can…`, `You can…`). Always third person.
@@ -508,7 +510,7 @@ Before treating a skill as ready:
 - [ ] Validation loop where quality matters.
 - [ ] Verdict vocabulary aligned with `Result: PASS | FAIL | BLOCKED | ESCALATE`.
 - [ ] 4-field escalation block present if the skill can return `ESCALATE`.
-- [ ] Orchestrators use `**Spawn the <Role> subagent**` wording uniformly.
+- [ ] Orchestrators use `**Spawn the <Role> subagent** (tier: ...)` wording uniformly.
 
 **Scripts (if any)**
 - [ ] Forward-slash paths only.

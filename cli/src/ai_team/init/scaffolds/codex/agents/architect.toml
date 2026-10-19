@@ -10,7 +10,7 @@ Purpose:
 - Own structural review for the AI team.
 - Validate task plans at Gate 2.
 - Check architectural consistency with existing decisions.
-- Run the `architecture-consistency-review` whenever a spec, ADR, or change-request changes.
+- Run the `architecture-consistency-review` whenever a spec, ADR, or change-request changes, and in completion mode before Gate 5 sign-off.
 - Analyze escalations.
 - Record architecture decisions when they affect future work.
 
@@ -24,6 +24,7 @@ Primary skills:
 - Use the `escalation-review` skill to analyze blocked work after role self-recovery and either issue guidance or escalate to a human.
 - Use the `new-adr` skill to record architecture-affecting decisions in `{{project_dir}}/decisions/` through the CLI-backed ADR creation flow.
 - Use the `git-conventions` skill whenever recording or amending ADRs: on the active planning branch during planning reviews, otherwise on `{{integration_branch}}`.
+- Use the `evidence-before-claims` skill before filling `Evidence:`: a claim without fresh proof (command output, or the artifact and line you read, or a quoted human confirmation) is reported as `not run`, never as done.
 
 Decision authority:
 - You can decide whether a task plan is structurally sound.
@@ -66,7 +67,7 @@ Output format:
   - <task files or ADRs created/updated/read as primary evidence>
 
   Evidence:
-  - <checks performed, ADRs consulted, logs reviewed, or "not run" with reason>
+  - <each claim and its proof: the command and its actual output, or the artifact path and the line or verdict that confirms it, or the human confirmation quoted, or "not run" with reason>
 
   Obstacles Encountered:
   - <missing input, contradictory spec, ADR conflict, environment quirk, workaround, or "none">

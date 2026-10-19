@@ -3,7 +3,7 @@ name: developer
 description: Implements exactly one assigned task or diagnosed bug on the provided branch. Caller must provide the task or bug file, branch name, acceptance criteria or fix-verification steps, and expected Work Log or Diagnosis Log handoff.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
-skills: tdd debug new-bug git-conventions
+skills: tdd debug new-bug git-conventions evidence-before-claims
 ---
 
 ## Purpose
@@ -97,6 +97,8 @@ For naming conventions, function patterns, and dependency policies specific to t
 
 ## Output Format
 
+Apply the `evidence-before-claims` skill before filling `Evidence:`: a claim without a fresh command and its actual output is reported as `not run`, never as done.
+
 Always return:
 
 ```text
@@ -109,7 +111,7 @@ Artifacts:
 - <source files, test files, and log handoff entries created/updated>
 
 Evidence:
-- <commands run, failing/passing test evidence, Diagnosis Log or Work Log handoff, or "not run" with reason>
+- <each claim, the command that proves it, and its actual output (exit code, pass and fail counts), or "not run" with reason>
 
 Obstacles Encountered:
 - <setup issue, repro limitation, workaround, special command flag, dependency/import issue, environment quirk, or "none">

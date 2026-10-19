@@ -58,6 +58,17 @@ When invoking `new-adr`, provide the full required input set:
 - `status`: `accepted` — the Architect is adopting the decision now as part of approving the task plan
 Escalate to human through the Planner when the approved spec must change.
 
+### Step 5a: Check Interface Consistency
+
+For each task, read its `Interfaces` block and check names across the plan:
+
+- Every **Consumes** entry is produced by a task listed under that task's `Dependencies`, or already exists in the repository.
+- The consumed name and signature match the producing task's **Produces** entry exactly, including spelling, argument order, and types.
+- No two tasks **Produce** the same name with different signatures.
+- No task body refers to a type, function, or file that no task produces and the repository does not contain.
+
+Fix an obvious naming mismatch directly in the task files; request Planner revision when the mismatch needs a design choice.
+
 ### Step 6: Check Atomicity And Verification
 
 Confirm each task is independently implementable and verifiable.
@@ -67,6 +78,7 @@ Flag tasks that exceed the one-shottable threshold:
 - More than 5 acceptance criteria.
 - Description too large or ambiguous for one implementation session.
 - No clear verification command.
+- Placeholder text: `TBD`, `TODO`, "implement later", "add appropriate error handling", "similar to Task N", or an undefined reference.
 
 ### Step 7: Produce Verdict
 
@@ -120,6 +132,8 @@ Then produce a Phase 2 Human Escalation Report using the template defined in the
 - Every planned task in the plan was checked.
 - Dependencies are complete and refer to real tasks.
 - File conflict risks are resolved by dependency order or Planner correction.
+- Interface names and signatures are consistent across tasks.
+- No task contains placeholder text.
 - Existing ADRs were consulted before approval.
 - All tasks are atomic, verifiable, and ready for implementation.
 - Human escalation is used only when the approved specification or unresolved architecture decision must change.

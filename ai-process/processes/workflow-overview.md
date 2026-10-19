@@ -134,7 +134,7 @@ Before claiming the first task, the loop discovers the project's documented base
 5. Assigns the completed task to the **Reviewer** for two-stage code review — waits for a committed verdict.
 6. Reads the verdict (`PASS` / `FAIL` / `ESCALATE`) from the task file.
 7. On **PASS**: runs the integration procedure to merge the task branch into `dev-agent`, run tests, and set the task to `completed`. Picks the next task.
-8. On **FAIL** (cycles 1–2): sends task back to the Developer with the reviewer's feedback.
+8. On **FAIL** (cycle 1): sends the task back to the same Developer with the reviewer's feedback. On **FAIL** (cycle 2): sends it to a fresh Developer on the most capable model tier, which reads the task file instead of inheriting the failed session.
 9. On **FAIL** (cycle 3) or **ESCALATE**: consults the Architect first. If the Architect cannot resolve it, sets the task to `blocked` with the reason, and stops for human action.
 
 #### Developer details
@@ -158,7 +158,7 @@ Before claiming the first task, the loop discovers the project's documented base
 1. The task stays `in-progress`.
 2. Reviewer appends the verdict and specific, actionable feedback under `### Review Verdict — [date]`.
 3. The development loop routes the task back to the Developer for fixes on the same branch.
-4. Up to two retries (three total review attempts). On a third failure, the development loop escalates to Architect.
+4. Up to two retries (three total review attempts): the first retry keeps the same Developer, the second uses a fresh Developer on the most capable tier. On a third failure, the development loop escalates to Architect. The Architect may park specific findings, each of which becomes a filed bug or a recorded deviation in the work item file.
 
 #### When the development loop stops
 
@@ -176,7 +176,7 @@ If integration fails because the task branch introduces a regression, the integr
 The development loop stops until the regression bug is fixed on a branch based from that preserved task branch.
 
 Once the queue is empty and all tasks are `completed`, the development loop ends with a short run summary in the chat and does not write a report.
-Reporting is on demand: for Gate 5 the human runs `/status-report`, which produces the status summary.
+Before Gate 5 the Architect runs spec-truth reconciliation (`architecture-consistency-review` in completion mode, ADR-002) for each approved spec the work touched, then the human runs `/status-report`, which produces the status summary. Reporting is on demand.
 The status summary lists the approved specification, completed tasks, unresolved bugs by severity, and latest integration-test result.
 The human reviews that status summary and approves the merge to `main` (Gate 5).
 This is a sign-off — the human confirms the outcome matches the spec intent, not individual code diffs.
@@ -222,7 +222,7 @@ If the issue cannot be reproduced yet, the bug may still be filed, but the repor
 9. On **PASS**: runs the integration procedure to merge the bug branch into its target branch, then sets the bug to `resolved` with `ai-team bug resolve`.
    - Existing-defect bugs target `dev-agent`.
    - Task-regression bugs target the preserved task branch, after which the human restarts the development loop to retry task integration.
-10. On **FAIL** (cycles 1–2): sends the bug back to the Developer with the reviewer's feedback.
+10. On **FAIL** (cycle 1): sends the bug back to the same Developer with the reviewer's feedback. On **FAIL** (cycle 2): sends it to a fresh Developer on the most capable model tier.
 11. On **FAIL** (cycle 3) or **ESCALATE**: consults the Architect first. If the Architect cannot resolve it, stops and escalates to the human.
 
 #### When to start the bug-fix loop

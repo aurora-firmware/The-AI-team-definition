@@ -111,6 +111,19 @@ red→green→refactor cycle that follows.
 - No production code is changed by this skill.
 - No new debugging artifacts remain in the codebase (print statements, commented-out code).
 
+## Rationalizations
+
+These thoughts mean stop and return to evidence gathering before any fix.
+
+| Excuse | Reality |
+|---|---|
+| "I can see the fix already." | A fix without an isolated cause treats a symptom. Record the evidence first; the fix contract needs it. |
+| "I will try a quick patch and see." | Each guess adds noise and can hide the real fault. Change one thing at a time, and only after the cause is isolated. |
+| "It cannot be reproduced, so I will guess." | Without a reproduction you need an evidence-backed fault hypothesis. If you have neither, escalate. |
+| "The failing test is probably flaky." | Flakiness is a cause to isolate, not a reason to skip diagnosis. Re-run and record what varies. |
+| "While I am here I will clean this up." | Unrelated changes widen the diff, hide the fix, and fail review. File a separate item. |
+| "The Diagnosis Log can be filled in after the fix." | The log is the contract the fix is reviewed against. Filling it in afterwards invalidates the evidence chain. |
+
 ## Common Pitfalls
 
 - **Fixing symptoms, not causes** — if a function returns the wrong value, do not add a corrective step downstream. Fix the function.

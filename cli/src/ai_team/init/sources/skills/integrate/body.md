@@ -243,6 +243,19 @@ The active loop routes the request to the Architect via the `escalation-review` 
 - No lifecycle files were merged from implementation branches.
 - All commits follow the `git-conventions` skill.
 
+## Rationalizations
+
+These thoughts mean stop and run the step in full.
+
+| Excuse | Reality |
+|---|---|
+| "The source branch tests passed, so the post-merge run is redundant." | The merge combines two histories. Only the post-merge run shows whether they work together. |
+| "The Reviewer passed it, so I can skip verification." | The review checks the diff. Integration checks the merged result. |
+| "The failing test is unrelated to this change." | Prove it: run the same test on the destination branch before the merge. If it passes there, the merge caused it. |
+| "I will fix this small regression in place." | Integration never fixes. File the bug with the preserved source branch and stop. |
+| "The hook is failing on something trivial, so `--no-verify` is fine." | A hook failure is a signal. Fix the cause. |
+| "No baseline test command is documented, so there is nothing to run." | Flag the coverage gap as the procedure says. Do not report green on an unverified merge. |
+
 ## Common Pitfalls
 
 - Merging a branch whose tests already fail on the source branch.

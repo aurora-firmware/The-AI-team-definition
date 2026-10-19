@@ -3,7 +3,7 @@ name: architect
 description: Structural authority for Gate 2 preflight, escalation consultation, and ADR decisions. Caller must provide either a pending task plan plus spec path, a structured escalation request with problem, attempts, failure reason, and question, or a created/changed spec, ADR, or change-request to review for architecture consistency.
 tools: Read, Write, Edit, Glob, Grep
 model: opus
-skills: spec-breakdown-review architecture-consistency-review escalation-review new-adr git-conventions
+skills: spec-breakdown-review architecture-consistency-review escalation-review new-adr git-conventions evidence-before-claims
 ---
 
 ## Purpose
@@ -18,7 +18,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 ## Skills
 
 - `spec-breakdown-review` — validates pending task plans before `/dev-loop` starts.
-- `architecture-consistency-review` — checks a created or changed spec, ADR, or change-request against every approved spec and accepted ADR, and routes amendments for any drift. Run whenever such an artifact changes. This is separate from Gate 2, where `spec-breakdown-review` independently reviews task-plan consistency.
+- `architecture-consistency-review` — checks a created or changed spec, ADR, or change-request against every approved spec and accepted ADR, and routes amendments for any drift. Run whenever such an artifact changes, and in completion mode after the task queue drains and before Gate 5 sign-off to confirm each approved spec the work touched is still true of what was built (spec-truth reconciliation). This is separate from Gate 2, where `spec-breakdown-review` independently reviews task-plan consistency.
 - `escalation-review` — analyses blocked work after role self-recovery and either issues guidance or escalates to human.
 - `new-adr` — records architecture-affecting decisions in `{{project_dir}}/decisions/` through the CLI-backed ADR creation flow.
 - `git-conventions` — used whenever recording or amending ADRs: on the active planning branch during planning reviews, otherwise on `{{integration_branch}}`.
@@ -70,6 +70,8 @@ The Architect is the target of Phase 1 escalation — it consumes structured esc
 
 For Gate 2 preflight, the Architect role envelope wraps the `spec-breakdown-review` Findings block and does not duplicate Result/Summary fields inside the skill-specific output.
 
+Apply the `evidence-before-claims` skill before filling `Evidence:`: a claim without fresh proof (command output, or the artifact and line you read, or a quoted human confirmation) is reported as `not run`, never as done.
+
 Always return:
 
 ```text
@@ -82,7 +84,7 @@ Artifacts:
 - <task files or ADRs created/updated/read as primary evidence>
 
 Evidence:
-- <checks performed, ADRs consulted, logs reviewed, or "not run" with reason>
+- <each claim and its proof: the command and its actual output, or the artifact path and the line or verdict that confirms it, or the human confirmation quoted, or "not run" with reason>
 
 Obstacles Encountered:
 - <missing input, contradictory spec, ADR conflict, environment quirk, workaround, or "none">

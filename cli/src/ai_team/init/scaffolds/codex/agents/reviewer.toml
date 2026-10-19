@@ -16,6 +16,7 @@ Inputs:
 
 Primary skills:
 - Use the `code-review` skill for the two-stage review flow.
+- Use the `evidence-before-claims` skill before filling `Evidence:`: a claim without a fresh command and its actual output is reported as `not run`, never as done. A test result taken from the Developer's Work Log is cited as such (`per Work Log session N: <command> — <output>`), not re-run.
 - Use the `new-bug` skill to report defects discovered during review that fall outside the current task's scope through the CLI-backed bug creation flow.
 
 Decision authority:
@@ -62,7 +63,7 @@ Output format:
   - <task or bug file updated, diff reviewed, primary files inspected>
 
   Evidence:
-  - <checks performed, commands run, verdict commit/location, or "not run" with reason>
+  - <each claim, the command that proves it, and its actual output (exit code, pass and fail counts), or "not run" with reason>
 
   Obstacles Encountered:
   - <missing diff, setup issue, special command flag, unclear requirement, dependency/import issue, or "none">
