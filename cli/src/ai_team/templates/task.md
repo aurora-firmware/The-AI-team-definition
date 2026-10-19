@@ -17,6 +17,8 @@ Task Quality Rules (see the new-task skill for full details):
   - Self-contained — Description is enough to start without follow-up questions.
   - EARS — every AC matches one of the five EARS patterns below.
   - Dependency-honest — list every prior task this one reads from or modifies.
+  - Interface-explicit — Interfaces names every type, function, or file the task consumes and produces.
+  - No placeholders — no TBD, TODO, "implement later", or "similar to Task N"; every name used is defined in this or a dependency task.
 -->
 
 ## Description
@@ -50,6 +52,14 @@ AC-3: ...
 
 - `T-XXX` — brief description of what must be completed first
 - None (if no dependencies)
+
+## Interfaces
+
+<!-- Name each interface exactly as it will appear in code. A name consumed here
+must be produced by a task listed under Dependencies, or already exist. -->
+
+- **Consumes:** `name(signature)` from `T-XXX`, or "none"
+- **Produces:** `name(signature)` this task adds or changes, or "none"
 
 ## Files to Touch
 

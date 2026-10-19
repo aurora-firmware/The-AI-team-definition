@@ -40,7 +40,7 @@ When invoked directly by a human and required fields are missing, ask for the mi
    - `path` (absolute path to the created file)
 4. If `description` was provided, replace the default text in `## Description` with the caller-provided content.
 5. If `acceptance-criteria` were provided, replace placeholder `AC-*` lines in `## Acceptance Criteria` with the caller-provided list.
-6. Leave Dependencies, Files to Touch, and Verification as placeholders unless the caller explicitly provided values for those sections.
+6. Leave Dependencies, Interfaces, Files to Touch, and Verification as template text only when the caller provided no values for them and the task will be completed before it leaves the Planner; a task that reaches Gate 2 contains no template text (see **No placeholders**).
 7. Verify the drafted task (or placeholders that will be completed) can satisfy the Task Quality Rules below.
 8. Confirm creation using the CLI response values (`id` and `path`).
 
@@ -54,6 +54,8 @@ Every task file produced by this skill must be:
 - **Self-contained** — the Description provides enough context for an agent to start without asking follow-up questions. Any prior decisions, files, or conventions the task depends on are named explicitly.
 - **EARS-compliant acceptance criteria** — every AC matches one of the five EARS patterns documented in the template (Ubiquitous, Event-driven, Unwanted-behaviour, State-driven, Optional). An AC that resists EARS usually means the task is not atomic.
 - **Dependency-honest** — if the task reads or modifies something that another pending task creates, list that other task ID under `Dependencies`.
+- **Interface-explicit** — the `Interfaces` block names, exactly as they will appear in code, each type, function, or file the task **Consumes** (and the task that produces it) and **Produces**. Write `none` when there are none; never leave the block empty.
+- **No placeholders** — none of these appear in a task: `TBD`, `TODO`, "implement later", "fill in details"; "add appropriate error handling", "add validation", or "handle edge cases" without saying what; "write tests for the above" without naming the behavior to test; "similar to Task N" instead of the actual content; or a reference to a type, function, or method that no task defines. Replace each with the concrete content before the task leaves this skill.
 
 Rules that govern the *set of tasks* (no two tasks modifying the same file without a dependency, full coverage of the specification) are enforced by the `spec-breakdown` skill, not here. `new-task` enforces per-task shape; `spec-breakdown` enforces the plan as a whole.
 
@@ -63,4 +65,6 @@ Rules that govern the *set of tasks* (no two tasks modifying the same file witho
 - **Description is a ticket title, not enough to start** — agent has to open the spec or ask questions. Expand.
 - **Acceptance criteria are aspirational, not testable** — "Works well under load" is not an AC. Name the measurable behaviour.
 - **No verification command** — if the task has no way to prove it's done, its acceptance criteria are not specific enough.
+- **Placeholder survives** — "add error handling" or "similar to T-004" reads like a plan but is not one. Name the handling or repeat the content.
+- **Mismatched interface names** — the task consumes `clearFullLayers()` while its dependency produces `clearLayers()`. Copy names from the producing task.
 - **Hidden dependency** — the task reads a file a sibling task creates but no dependency is listed. The `spec-breakdown` Gate 2 preflight will catch this, but it's cheaper to catch here.

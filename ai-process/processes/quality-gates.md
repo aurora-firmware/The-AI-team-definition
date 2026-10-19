@@ -31,8 +31,10 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 - Task plan covers every requirement in the approved specification (spec-coverage verification).
 - Task dependencies are correct and complete.
 - File conflict risks are identified and resolved through dependencies or task changes.
+- Interfaces are consistent across tasks: every type, function, or file a task consumes is produced by a task it depends on (or already exists), under the same name and signature.
 - Task plan is architecturally consistent with existing decisions.
 - Tasks are atomic, independently verifiable, and ready for implementation.
+- No task contains placeholder text (`TBD`, `TODO`, "implement later", "add appropriate error handling", "similar to Task N", or a reference to something no task defines).
 
 **On failure:** Architect returns a correction request to the Planner. The Planner revises the task plan and resubmits it to Gate 2.
 

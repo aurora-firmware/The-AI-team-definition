@@ -124,3 +124,52 @@ def test_code_review_reviews_the_whole_range_from_base():
 
     assert "BASE..HEAD" in body
     assert "Never review `HEAD~1` alone" in body
+
+
+# -- Phase 3: task template, new-task, and the Gate 2 checklist --------------
+
+
+def test_task_template_has_an_interfaces_block_with_consumes_and_produces():
+    template = (CLI / "src" / "ai_team" / "templates" / "task.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "## Interfaces" in template
+    assert "**Consumes:**" in template and "**Produces:**" in template
+    assert template.index("## Dependencies") < template.index("## Interfaces")
+    assert template.index("## Interfaces") < template.index("## Files to Touch")
+
+
+def test_new_task_requires_interfaces_and_bans_placeholders():
+    body = skill("new-task")
+
+    assert "**Interface-explicit**" in body
+    assert "**No placeholders**" in body
+    for banned in ("TBD", "implement later", "similar to Task N", "handle edge cases"):
+        assert banned in body
+
+
+def test_gate_2_checks_interface_consistency_and_placeholders():
+    body = skill("spec-breakdown-review")
+    gates = (REPO / "ai-process" / "processes" / "quality-gates.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "Check Interface Consistency" in body
+    assert "match the producing task's **Produces** entry exactly" in body
+    assert "Interfaces are consistent across tasks" in gates
+    assert "No task contains placeholder text" in gates
+
+
+def test_owning_spec_records_the_phase_3_amendment_before_the_change():
+    spec = (
+        REPO
+        / "docs"
+        / "ai-team"
+        / "specs"
+        / "S-002-coordinated-process-and-cli-workflow-improvements.md"
+    ).read_text(encoding="utf-8")
+
+    amendment = spec.split("## Amendment Log", 1)[1]
+    assert "Interfaces: Consumes / Produces" in amendment
+    assert "#31" in amendment
