@@ -1,0 +1,24 @@
+{
+  "name": "ai-team",
+  "owner": {
+    "name": "AI team maintainers"
+  },
+  "description": "AI-team framework skills and agents: spec-driven planning, task and bug loops, code review, and gated integration, driven by the ai-team CLI.",
+  "plugins": [
+    {
+      "name": "ai-team",
+      "version": "0.11.0",
+      "source": "./plugins/ai-team",
+      "description": "AI-team framework skills and agents: spec-driven planning, task and bug loops, code review, and gated integration, driven by the ai-team CLI.",
+      "category": "Developer Tools",
+      "keywords": [
+        "ai-team",
+        "workflow",
+        "spec-driven",
+        "tdd",
+        "code-review",
+        "agents"
+      ]
+    }
+  ]
+}

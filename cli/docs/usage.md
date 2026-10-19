@@ -55,6 +55,15 @@ pipx install --force dist/*.whl
 and project skeleton into the package so that `ai-team init` ships up-to-date
 scaffolds. Always run it before `uv build`.
 
+The same script regenerates the plugin package under `plugins/ai-team/` (the
+Claude Code and Codex manifests, the shared skills, and the Claude Code agents,
+rendered with the default folder and branch) and the two marketplace files,
+`.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json`. The
+manifests carry the newest release tag as their version; when cutting a release,
+run `python scripts/sync_init_scaffolds.py --plugin-version <new-version>` before
+tagging so installed plugins see the update. Never edit the generated plugin
+files by hand.
+
 ### Verify the install
 
 ```bash

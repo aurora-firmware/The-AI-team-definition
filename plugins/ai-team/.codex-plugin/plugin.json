@@ -1,0 +1,35 @@
+{
+  "name": "ai-team",
+  "version": "0.11.0",
+  "description": "AI-team framework skills and agents: spec-driven planning, task and bug loops, code review, and gated integration, driven by the ai-team CLI.",
+  "author": {
+    "name": "AI team maintainers"
+  },
+  "homepage": "https://github.com/aurora-firmware/The-AI-team-definition",
+  "repository": "https://github.com/aurora-firmware/The-AI-team-definition",
+  "keywords": [
+    "ai-team",
+    "workflow",
+    "spec-driven",
+    "tdd",
+    "code-review",
+    "agents"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "AI Team",
+    "shortDescription": "Spec-driven planning, task loops, review, and gated integration.",
+    "longDescription": "Use the AI team skills to brainstorm and specify work, break specs into tasks, run the development and bug-fix loops, review code, and integrate branches through quality gates. Requires the ai-team CLI.",
+    "developerName": "AI team maintainers",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "I've got a feature I'd like to specify and build.",
+      "Run the development loop on the pending tasks."
+    ],
+    "category": "Developer Tools"
+  }
+}

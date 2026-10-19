@@ -116,6 +116,20 @@ Each skill implements a workflow or action defined in the ai-process:
 | **/new-adr** | Creates an Architecture Decision Record by invoking `ai-team adr new`, then fills ADR content |
 | **/status-report** | On demand only: summarizes project state with `ai-team status`, and writes a report file with `ai-team report` only when asked |
 
+## Installing as a Plugin
+
+The skills and agents are also packaged as a Claude Code plugin and a Codex plugin (`plugins/ai-team/`, generated from the CLI sources). Install them from this repository's marketplaces:
+
+```bash
+claude plugin marketplace add aurora-firmware/The-AI-team-definition
+claude plugin install ai-team@ai-team
+
+codex plugin marketplace add aurora-firmware/The-AI-team-definition
+codex plugin add ai-team@ai-team
+```
+
+The plugins need the `ai-team` CLI and use the default `ai-team/` folder and `dev-agent` branch; see [Alternative: Install the Skills as a Plugin](guides/setup-guide.md#alternative-install-the-skills-as-a-plugin) for the details and for when to use `ai-team init` instead.
+
 ## Agent Platform Compatibility
 
 The framework ships agent and skill definitions for two tools:
@@ -233,6 +247,7 @@ See `guides/setup-guide.md` for the complete file list, CLAUDE.md starter templa
 │                        and generated reports under docs/reports/
 ├── .ai-team/tracker/    Local, git-ignored work-item tracker: tasks, bugs, and change-requests
 │                        (state is each file's status field; see `ai-team tracker path`)
+├── plugins/ai-team/     Generated Claude Code and Codex plugin (see `.claude-plugin/` and `.agents/plugins/`)
 ├── guides/              Human-facing setup and customization guides
 └── cli/                 `ai-team` CLI package and bundled init scaffolds (authoritative agent
                          and skill sources live under cli/src/ai_team/init/sources/)

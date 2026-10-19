@@ -1,0 +1,219 @@
+---
+name: bug-loop
+description: Fully autonomous bug-fix loop. Picks open bugs one at a time, creates a dedicated branch from the correct base, drives each through diagnosis-first Developer → Reviewer cycles until the reviewer passes, then moves to the next bug. Stops only when the queue is empty or a bug cannot be resolved after full escalation. Use this whenever there are open bugs to fix.
+argument-hint: "[bug-id ...] — optional space-separated bug IDs (e.g., B-001 B-003). If omitted, processes all open bugs."
+allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate), Skill(git-conventions)
+disable-model-invocation: true
+---
+
+# Bug Loop
+
+Autonomous orchestrator that processes the open bug queue without human intervention.
+Each bug gets its own branch — bugs are never mixed on the same branch.
+Stops only when the queue is empty or when a bug requires human resolution after full escalation.
+
+## Input Requirements
+
+Optional: one or more bug IDs as `$ARGUMENTS` (e.g., `B-001 B-003`).
+- If bug IDs are provided, the loop processes only those bugs — skipping all others in the queue.
+- If omitted, the loop processes every bug with status `open`.
+
+Bugs live in the local tracker, outside version control. Their lifecycle state is the frontmatter `status` field.
+The orchestrator reads and changes bug state only through the `ai-team` CLI:
+- `ai-team list bugs --state open` — work queue
+- `ai-team list bugs --state in-progress` — active bug slot
+- `ai-team show <bug-id> --json` — the bug file's `path` and current frontmatter
+- `ai-team bug start|resolve <bug-id>` — lifecycle transitions
+
+Because the bug file is outside every branch, every role reads it from the same path, including on task-regression bug branches based on a preserved task branch.
+Recording lifecycle state never creates a commit and never needs a branch switch.
+
+## Workspace Hygiene
+
+The loop applies the **Workspace Hygiene** check from the `git-conventions` skill at these points:
+
+- **Startup** — before claiming a bug, on the branch the loop starts from.
+- **Before every branch switch** — a checkout refused because of a dirty tree is not a hard stop; run the check, then retry the checkout once.
+- **After every `integrate` invocation** — whether it succeeded or stopped.
+- **Before the loop ends** — in Step 8 and before reporting any hard stop.
+
+Changes parked by this run are restored when the loop ends, on the branch where they were parked.
+A run never ends with untracked files or uncommitted changes that the run itself created.
+
+## Procedure
+
+### Step 1: Check the Queue
+
+If `$ARGUMENTS` is non-empty:
+- Parse it as a space-separated list of bug IDs (e.g., `B-001 B-003`).
+- For each ID, run `ai-team show <id> --json` and confirm its `status` is `open`.
+- If any ID does not exist or is not `open`, stop with: "Bug <id> is not an open bug. Verify the ID and status."
+- Use this filtered list as the queue for the entire run.
+
+If `$ARGUMENTS` is empty, use `ai-team list bugs --state open` as the queue.
+
+If the queue is empty, proceed directly to **Step 8: Loop Complete** so the workspace is checked
+and the run summary is returned before the loop stops.
+
+### Step 2: Pick the Next Bug
+
+Select the highest-severity unblocked bug:
+1. **Severity order:** critical → high → medium → low (read from bug frontmatter `severity` field)
+2. **Tiebreak:** oldest `created` date first
+
+### Step 3: Claim the Bug
+
+1. Run `ai-team bug start B-NNN`. This sets the status to `in-progress`; there is nothing to commit.
+2. Read the bug file at the path reported by `ai-team show B-NNN --json`.
+3. Determine the bug branch base and target:
+   - If the bug frontmatter has a non-empty `source_branch`, use that branch as both the base and target.
+   - Otherwise use `dev-agent` as both the base and target.
+4. Switch to the selected base and create the bug branch from it: `git checkout -b bug/B-NNN-short-description`
+   - Derive the branch name from the bug filename (e.g., `B-001-system-prompt-exposed` → `bug/B-001-system-prompt-exposed`)
+
+### Step 4: Diagnosis Cycle
+
+**Spawn the Developer subagent** with this prompt:
+
+> "Diagnose the bug described in the bug file `<bug-path>`.
+> You are on branch `bug/B-NNN-...`.
+> Use the debug skill first.
+> The bug file is in the local tracker, outside version control: do not edit it, and never add it to a commit.
+> Do not change production code during diagnosis.
+> Reproduce or confirm the defect, gather relevant logs or command output, isolate the fault, and return a Diagnosis Log handoff entry.
+> The Diagnosis Log entry must record reproduction status, evidence captured, isolated fault, root cause or fault hypothesis, and planned verification.
+> If the bug cannot be reproduced and no evidence-backed fault hypothesis can be formed, return ESCALATE with the four-field escalation request block defined in the debug skill — do not guess.
+> Populate every field of the Output Format block, including `Obstacles Encountered`."
+
+Wait for the Developer to complete diagnosis before continuing.
+If the Developer returns `ESCALATE`, go directly to **On ESCALATE**.
+If the Developer does not return a Diagnosis Log handoff entry, stop with `BLOCKED` and report the missing handoff.
+
+Record the Diagnosis Log handoff: append the Developer's entry under `## Diagnosis Log` in the bug file.
+Stay on the bug branch — no switch and no commit. That recorded entry is the fix contract for Step 5.
+
+### Step 5: Implementation Cycle
+
+**Spawn the Developer subagent** with this prompt:
+
+> "Fix the diagnosed bug described in the bug file `<bug-path>`.
+> You are on branch `bug/B-NNN-...`.
+> Use the recorded Diagnosis Log as the implementation contract.
+> The bug file is in the local tracker, outside version control: do not edit it, and never add it to a commit.
+> Use the tdd skill where applicable: add or update a failing regression test when the defect can be tested automatically, verify it fails, implement the minimal fix, and verify it passes.
+> Commit after each red→green→refactor cycle.
+> Return a Work Log handoff entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The loop will append it to the bug file.
+> Populate every field of the Output Format block, including `Obstacles Encountered`."
+
+Wait for the Developer to complete before continuing.
+If the Developer does not return a Work Log handoff entry, stop with `BLOCKED` and report the missing handoff.
+
+Record the Work Log handoff: append the Developer's entry under `## Work Log` in the bug file. No switch and no commit.
+
+### Step 6: Review Cycle
+
+**Spawn the Reviewer subagent** with this prompt:
+
+> "Review the bug fix described in the bug file `<bug-path>` using the code-review skill.
+> The Developer has completed their work on branch `bug/B-NNN-...`.
+> Verify the Diagnosis Log records reproduction status, evidence captured, isolated fault, and root cause or fault hypothesis.
+> Verify the fix addresses the isolated cause and passes the Fix Verification steps in the bug file.
+> Verify a regression test exists when practical, or that the Work Log explains why only manual verification was possible.
+> Append your verdict to the bug file under `### Review Verdict — YYYY-MM-DD`. The bug file is outside version control: do not commit it.
+> Verdict must be one of: PASS, FAIL, or ESCALATE. On ESCALATE, include the four-field escalation request block defined in the code-review skill.
+> Populate every field of the Output Format block, including `Obstacles Encountered`."
+
+Wait for the reviewer to complete before continuing.
+
+### Step 7: Read the Verdict
+
+Read the bug file and find the most recent `### Review Verdict` entry.
+Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
+
+#### On PASS
+
+Before invoking integration, confirm that the bug file holds the Diagnosis Log, the Developer
+Work Log, and the Review Verdict recorded in Steps 4, 5, and 6. The `integrate` skill verifies
+that the latest verdict in the bug file is PASS before it merges.
+
+1. Invoke the `integrate` skill to merge the reviewed branch into the target branch chosen in Step 3:
+   > `/integrate bug/B-NNN-... <target-branch>`
+
+   The integrate skill handles test verification, the merge, regression checks, and branch deletion.
+   It reads the bug file for diagnosis and fix-verification context, but bug state changes remain owned by bug-loop.
+
+2. **If integrate succeeds** — run `ai-team bug resolve B-NNN`; there is nothing to commit.
+   Then go back to **Step 1** to pick the next bug.
+
+3. **If integrate fails** — stop the loop entirely and report:
+   - The failure reason (pre-merge test failure, unmet fix criteria, or post-merge regression).
+   - Which bug IDs were filed (if regressions were found).
+   - That the bug branch was NOT deleted, the target branch was left clean (integrate reverts on regression), and the bug status is still `in-progress`.
+   - Next step for the human: resolve the filed regression bugs before re-running the loop.
+
+#### On FAIL
+
+Increment the review cycle counter.
+
+- If **cycle < 3**: go back to **Step 5** (Developer fixes the issues noted in the Review Verdict)
+- If **cycle = 3**: treat as ESCALATE (max review cycles exceeded)
+
+#### On ESCALATE
+
+Follow the two-phase escalation procedure below. Phase 1 is a single Architect consultation; Phase 2 is human escalation. The chain is linear — no second Architect round.
+
+**Phase 1 — Architect Consultation:**
+**Spawn the Architect subagent** with this prompt:
+
+> "Use the escalation-review skill for the bug in `<bug-path>`.
+> Problem: <what the reviewer found>
+> Attempted: <what the Developer tried, including diagnosis attempts and review cycles>
+> Failed because: <why the bug still cannot pass>
+> Question: <specific guidance needed to continue within the bug report and approved specification>
+> Populate every field of the Output Format block, including `Obstacles Encountered`."
+
+If the Architect resolves the issue, go back to **Step 5** with the Architect's guidance.
+If the Architect cannot resolve it, proceed to Phase 2.
+
+**Phase 2 — Human Escalation:**
+1. Leave the bug `in-progress` — there is no `blocked` status for bugs. Append a dated `Escalated to human` entry to the bug's Work Log so the escalation is visible in the bug file.
+2. Stop the loop entirely.
+3. Produce the report using the Phase 2 Human Escalation Report template defined in the `escalation-review` skill. Fill every section (Work item, Original request, Self-recovery attempts, Architect analysis, Why human input is required, Decision needed).
+
+### Step 8: Loop Complete
+
+Reporting is on demand. Do not invoke the `status-report` skill and do not write a report file.
+The human runs `/status-report` when they want the full Gate 5 summary.
+
+1. Run the after-point Workspace Hygiene check and restore any changes this run parked.
+2. Return a short run summary in the chat — a few lines, not a report:
+   - Bugs resolved and merged this run, with bug IDs and merge commits
+   - Bugs escalated and still `in-progress`, with the reason
+   - Regression bugs filed this run, and any integration failure that stopped the loop
+   - Changes parked or restored, and `.gitignore` patterns added, by the hygiene check
+   - The next suggested action — for example `/bug-loop` for filed regressions, or `/status-report` for Gate 5 sign-off context when the queue is empty
+
+## Cycle Counter Reset
+
+The review cycle counter resets to 0 each time a new bug is picked up in Step 2.
+It is local to each bug — one bug failing twice does not affect the counter for the next bug.
+
+## Commit Conventions
+
+All commits follow the `git-conventions` skill.
+The loop itself makes no commits: bug state, Diagnosis Log, Work Log, and Review Verdict entries live in the tracker, outside version control.
+Implementation commits are made by the Developer on the bug branch, and the merge commit is made by the `integrate` skill.
+The orchestrator does not touch implementation or test files.
+
+## Hard Stops (Do Not Continue)
+
+- A bug reaches human escalation (Phase 2) — stop the loop, notify the human
+- A git operation fails (branch already exists, conflict on `dev-agent`, etc.) — stop and report the git error before attempting anything else
+- A bug already has status `in-progress` when the loop starts — stop and ask the human whether to resume that bug or treat it as abandoned
+- The Developer cannot reproduce the bug and cannot form an evidence-backed fault hypothesis — escalate instead of patching by guesswork
+
+## What This Skill Does NOT Do
+
+- Does not touch `main` — human-only branch
+- Does not modify specifications or task files
+- Does not fix integration failures — regressions are filed as bugs and the loop stops; fixing is the Developer's job on a subsequent cycle

@@ -81,6 +81,35 @@ touch ai-team/docs/coding_guidelines.md
 
 Tasks, bugs, and change-requests do not live in the project directory. They live in the local tracker, outside version control. `ai-team init` in Step 3 configures it: it writes `[tracker] dir = ".ai-team/tracker"` to `.ai-team.toml`, creates the folder, and adds `/.ai-team/` to `.gitignore`. To use a different artifact folder (at any depth, such as `docs/ai-team`) or integration branch, pass `--project-dir` and `--integration-branch` to `ai-team init`, or set `[project] dir` and `[git] integration_branch` in `.ai-team.toml` before running it. `ai-team init` keeps existing values, and `ai-team init --force` refreshes the generated agents and skills without rewriting the file. Generated agents and skills carry the configured folder and branch, so re-run `ai-team init --force` after changing either, rather than editing the generated files by hand.
 
+### Alternative: Install the Skills as a Plugin
+
+The skills (and, for Claude Code, the agents) are also published as a plugin, so
+a project can install and update them through the tool's own plugin mechanism
+instead of `ai-team init`.
+
+Claude Code:
+
+```bash
+claude plugin marketplace add aurora-firmware/The-AI-team-definition
+claude plugin install ai-team@ai-team
+claude plugin update ai-team@ai-team        # later, to update
+```
+
+Codex:
+
+```bash
+codex plugin marketplace add aurora-firmware/The-AI-team-definition
+codex plugin add ai-team@ai-team
+codex plugin marketplace upgrade ai-team    # later, to update
+```
+
+What the plugin does and does not cover:
+
+- **Needs the CLI.** The skills call the `ai-team` CLI, so install it first (Step 1).
+- **Skills only for Codex.** The Codex plugin carries the skills; the Codex agents (`.codex/agents/*.toml`) still come from `ai-team init --tools codex`. The Claude Code plugin carries the skills and the five agents.
+- **Default folder and branch.** Plugin files are static, so they name the default artifact folder (`ai-team/`) and integration branch (`dev-agent`). A project that sets `[project] dir` or `[git] integration_branch` should use `ai-team init`, which renders those settings into the generated files.
+- **Still run `ai-team init`** for the project skeleton, `.ai-team.toml`, and the tracker; the plugin does not create them.
+
 ### Step 3: Export the Framework Files
 
 Run `ai-team init` to export the bundled agent definitions, skill definitions, and templates into your project:
