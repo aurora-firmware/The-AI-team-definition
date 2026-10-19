@@ -12,7 +12,7 @@ from ai_team.commands import discover_and_mount
 
 DEVELOPMENT_WARNING = (
     "Warning: ai-team is under development. Please report issues at "
-    "https://github.com/aurora-firmware/The-AI-team-definition/issues"
+    "https://github.com/aurora-firmware/the-ai-team/issues"
 )
 
 

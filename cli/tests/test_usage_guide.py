@@ -27,7 +27,7 @@ USAGE_MD = REPO_ROOT / "cli" / "docs" / "usage.md"
 COMMANDS_MD = REPO_ROOT / "cli" / "docs" / "commands.md"
 DEVELOPMENT_WARNING = (
     "Warning: ai-team is under development. Please report issues at "
-    "https://github.com/aurora-firmware/The-AI-team-definition/issues"
+    "https://github.com/aurora-firmware/the-ai-team/issues"
 )
 
 

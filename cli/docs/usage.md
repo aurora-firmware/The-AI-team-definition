@@ -21,7 +21,7 @@ of every command, flag, and argument, see [commands.md](commands.md).
 For every invocation, `ai-team` emits this warning exactly once:
 
 ```text
-Warning: ai-team is under development. Please report issues at https://github.com/aurora-firmware/The-AI-team-definition/issues
+Warning: ai-team is under development. Please report issues at https://github.com/aurora-firmware/the-ai-team/issues
 ```
 
 The warning goes to stderr for help, version, successful commands, failed

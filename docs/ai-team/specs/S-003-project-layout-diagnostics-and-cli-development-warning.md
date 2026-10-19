@@ -164,7 +164,7 @@ The command exits successfully when no issues are found and unsuccessfully when
 one or more issues are reported. The report order follows validation level,
 then path, so repeated runs against unchanged input are deterministic.
 
-**Contract — warning text:** `Warning: ai-team is under development. Please report issues at https://github.com/aurora-firmware/The-AI-team-definition/issues`
+**Contract — warning text:** `Warning: ai-team is under development. Please report issues at https://github.com/aurora-firmware/the-ai-team/issues`
 
 ## Configuration Requirements
 
