@@ -17,10 +17,10 @@ This module has no Typer dependency and may be imported from anywhere.
 from __future__ import annotations
 
 import os
-import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
+from ai_team.core.config import marker_project_dir, read_marker
 from ai_team.core.tracker import resolve_tracker_dir
 
 DEFAULT_PROJECT_DIR = "ai-team"
@@ -109,7 +109,8 @@ def find_project_root(
         environment-variable and filesystem searches.  The ``project_dir``
         folder must still exist under ``root``.
     project_dir:
-        Name of the top-level artifact folder (default ``"ai-team"``).  Used
+        Relative path of the artifact folder (default ``"ai-team"``; nested
+        paths such as ``docs/ai-team`` are accepted).  Used
         when no ``.ai-team.toml`` override is found.
 
     Raises
@@ -187,17 +188,9 @@ def find_project_root(
 
 
 def _toml_project_dir(directory: Path) -> str | None:
-    """Return the ``[project] dir`` value from ``.ai-team.toml`` in *directory*.
+    """Return the usable ``[project] dir`` value from ``.ai-team.toml`` in *directory*.
 
     Returns ``None`` if the file does not exist, cannot be parsed, or does not
-    contain the ``[project] dir`` key.
+    hold a valid relative folder (any depth, no ``..``) under ``[project] dir``.
     """
-    toml_path = directory / ".ai-team.toml"
-    if not toml_path.is_file():
-        return None
-    try:
-        with toml_path.open("rb") as fh:
-            data = tomllib.load(fh)
-    except OSError, tomllib.TOMLDecodeError:
-        return None
-    return data.get("project", {}).get("dir")
+    return marker_project_dir(read_marker(directory))

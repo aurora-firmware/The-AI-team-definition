@@ -12,6 +12,7 @@ from importlib.resources.abc import Traversable
 from pathlib import Path
 from typing import Literal
 
+from ai_team.core.config import is_valid_project_dir
 from ai_team.core.locator import DEFAULT_PROJECT_DIR, ProjectRoot
 from ai_team.core.tracker import (
     MIGRATION_GUIDE,
@@ -73,17 +74,6 @@ def _finding(
     return LayoutFinding(level, path, problem, suggested_fix)
 
 
-def _is_project_dir_name(value: object) -> bool:
-    return (
-        isinstance(value, str)
-        and bool(value)
-        and value not in {".", ".."}
-        and "/" not in value
-        and "\\" not in value
-        and not Path(value).is_absolute()
-    )
-
-
 def _is_version(value: object) -> bool:
     return isinstance(value, str) and _VERSION_PATTERN.fullmatch(value) is not None
 
@@ -140,7 +130,7 @@ def resolve_layout(
 
     project_dir_name = DEFAULT_PROJECT_DIR
     if marker_status == "valid":
-        if _is_project_dir_name(project_value):
+        if is_valid_project_dir(project_value):
             project_dir_name = project_value
         else:
             findings.append(
@@ -148,7 +138,7 @@ def resolve_layout(
                     1,
                     ".ai-team.toml",
                     f"Marker value [project].dir is missing or invalid; using the default '{DEFAULT_PROJECT_DIR}' directory.",
-                    f"Set [project].dir to one usable relative directory name, such as '{DEFAULT_PROJECT_DIR}'.",
+                    f"Set [project].dir to a relative directory path inside the repository without '..', such as '{DEFAULT_PROJECT_DIR}' or 'docs/{DEFAULT_PROJECT_DIR}'.",
                 )
             )
 
@@ -350,7 +340,7 @@ def check_level_2(contract: LayoutContract) -> list[LayoutFinding]:
         ]
 
     root = ProjectRoot._from_repo_and_project_dir_name(
-        contract.repo, contract.project_dir.name
+        contract.repo, contract.project_dir.relative_to(contract.repo).as_posix()
     )
     findings: list[LayoutFinding] = []
     scopes = (

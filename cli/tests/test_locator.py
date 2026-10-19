@@ -267,3 +267,24 @@ def test_raises_when_env_var_points_to_repo_without_project_folder(
 
     with pytest.raises(ProjectRootNotFound):
         find_project_root(tmp_path)
+
+
+def test_toml_config_accepts_nested_project_dir(tmp_path):
+    """A nested ``[project] dir`` such as ``docs/ai-team`` resolves at any depth."""
+    make_project_layout(tmp_path, project_dir_name="docs/ai-team")
+    (tmp_path / ".ai-team.toml").write_text('[project]\ndir = "docs/ai-team"\n')
+    start = tmp_path / "src" / "pkg"
+    start.mkdir(parents=True)
+
+    result = find_project_root(start)
+
+    assert result.project_dir == tmp_path / "docs" / "ai-team"
+    assert result.specs == tmp_path / "docs" / "ai-team" / "specs"
+
+
+def test_toml_config_ignores_project_dir_that_escapes_the_repository(tmp_path):
+    """A ``..`` component is not a usable ``[project] dir``; the default applies."""
+    make_project_layout(tmp_path)
+    (tmp_path / ".ai-team.toml").write_text('[project]\ndir = "../elsewhere"\n')
+
+    assert find_project_root(tmp_path).project_dir == tmp_path / "ai-team"

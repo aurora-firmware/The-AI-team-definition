@@ -20,8 +20,8 @@ Inputs are described in the agent description (frontmatter). If any required inp
 - `spec-breakdown-review` — validates pending task plans before `/dev-loop` starts.
 - `architecture-consistency-review` — checks a created or changed spec, ADR, or change-request against every approved spec and accepted ADR, and routes amendments for any drift. Run whenever such an artifact changes. This is separate from Gate 2, where `spec-breakdown-review` independently reviews task-plan consistency.
 - `escalation-review` — analyses blocked work after role self-recovery and either issues guidance or escalates to human.
-- `new-adr` — records architecture-affecting decisions in `ai-team/decisions/` through the CLI-backed ADR creation flow.
-- `git-conventions` — used whenever recording or amending ADRs: on the active planning branch during planning reviews, otherwise on `dev-agent`.
+- `new-adr` — records architecture-affecting decisions in `{{project_dir}}/decisions/` through the CLI-backed ADR creation flow.
+- `git-conventions` — used whenever recording or amending ADRs: on the active planning branch during planning reviews, otherwise on `{{integration_branch}}`.
 
 ## Decision Authority
 
@@ -56,8 +56,8 @@ The Architect is the target of Phase 1 escalation — it consumes structured esc
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | planned task files in the tracker (preflight corrections), `ai-team/decisions/` (ADRs and amendments) |
-| Never touch | implementation files, test files, `ai-team/specs/` |
+| Write / Edit | planned task files in the tracker (preflight corrections), `{{project_dir}}/decisions/` (ADRs and amendments) |
+| Never touch | implementation files, test files, `{{project_dir}}/specs/` |
 
 ## Quality Bar
 

@@ -13,9 +13,9 @@ Gate 2 technical readiness is owned by the `spec-breakdown-review` skill.
 ## Procedure
 
 ### Step 0: Check Out the Planning Branch
-The breakdown runs on the planning branch of the spec or change-request it decomposes (`plan/<id>-…`), never on `dev-agent`.
+The breakdown runs on the planning branch of the spec or change-request it decomposes (`plan/<id>-…`), never on `{{integration_branch}}`.
 If that branch exists, run the before-point Workspace Hygiene check from the `git-conventions` skill and check it out.
-If it does not exist — the approved spec is already on `dev-agent` — open one as described in **Opening a Planning Branch** in the `git-conventions` skill.
+If it does not exist — the approved spec is already on `{{integration_branch}}` — open one as described in **Opening a Planning Branch** in the `git-conventions` skill.
 
 ### Step 1: Identify Components
 Read the specification and list every distinct unit of work.
@@ -68,7 +68,7 @@ The tracker is outside the repository and the Architect does not run commands, s
 > "Review the planned task plan for the spec or change-request `<spec-or-cr-id>`.
 > The planned task files are: <task-id>: <absolute path>, one per task.
 > Use the spec-breakdown-review skill.
-> Validate dependency correctness, file conflict risk, architectural consistency with `ai-team/decisions/`, atomicity, and implementation readiness.
+> Validate dependency correctness, file conflict risk, architectural consistency with `{{project_dir}}/decisions/`, atomicity, and implementation readiness.
 > If all is sound, return `Result: PASS` and state that the plan is ready for /dev-loop.
 > If issues are found, return `Result: FAIL` with exact Planner corrections, or `Result: ESCALATE` only when a problem requires changing the approved specification.
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
@@ -79,15 +79,15 @@ If the Architect escalates because the approved specification must change, stop 
 
 ### Step 7: Merge the Planning Branch and Activate the Tasks
 Only after the Architect returns `PASS`:
-1. Run the before-point Workspace Hygiene check, then `git checkout dev-agent`.
-2. If the planning branch has commits (`git rev-list --count dev-agent..plan/<id>-<slug>` is not 0), run `git merge --no-ff plan/<id>-<slug> -m "chore(plan): merge <id> <short-description>"`.
+1. Run the before-point Workspace Hygiene check, then `git checkout {{integration_branch}}`.
+2. If the planning branch has commits (`git rev-list --count {{integration_branch}}..plan/<id>-<slug>` is not 0), run `git merge --no-ff plan/<id>-<slug> -m "chore(plan): merge <id> <short-description>"`.
    If the merge conflicts, abort it with `git merge --abort` and stop: report the conflicting planning files to the human. Do not resolve planning conflicts automatically.
    A planning branch with no commits — a change-request that amends no spec and raises no ADR — is not merged.
 3. Run the after-point Workspace Hygiene check.
 4. Delete the planning branch with `git branch -d plan/<id>-<slug>`. If `-d` refuses, stop and report — never force deletion.
 5. Activate the plan: for every task in `ai-team list tasks --state planned --spec <id>`, run `ai-team task set-status <task-id> pending`.
 
-Until this step, the tasks stay `planned` and invisible to `/dev-loop`, and `dev-agent` carries none of the spec or change-request changes.
+Until this step, the tasks stay `planned` and invisible to `/dev-loop`, and `{{integration_branch}}` carries none of the spec or change-request changes.
 
 ## Output Format
 

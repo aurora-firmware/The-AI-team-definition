@@ -14,21 +14,21 @@ Project-specific commit scopes and any overrides belong in the project's own `CL
 | Branch | Purpose | Who touches it |
 |---|---|---|
 | `main` | Production-ready releases | Human only — never automated roles |
-| `dev-agent` | Integration target | The integration procedure merges task branches here; the Integrator handles manual merges and conflicts; the Planner merges planning branches here after Gate 2; Architects commit ADRs raised outside planning here |
+| `{{integration_branch}}` | Integration target | The integration procedure merges task branches here; the Integrator handles manual merges and conflicts; the Planner merges planning branches here after Gate 2; Architects commit ADRs raised outside planning here |
 | `plan/S-NNN-short-description` or `plan/CR-NNN-short-description` | Planning branch for one spec or change-request: the spec, spec amendments, and ADRs raised by its consistency review | Planner and Architect only — no source code |
 | `task/T-NNN-short-description` | Single task implementation branch | Developer only for source, tests, and project artifacts |
 | `bug/B-NNN-short-description` | Single bug diagnosis and fix branch | Developer only for source, tests, and project artifacts |
 
 **Rules:**
 - No automated role ever commits to `main`.
-- `dev-agent` receives merge commits from the integration procedure, the Integrator role, and planning-branch merges, and direct ADR commits from the Architect (no direct source code).
-- Developer always works on a task branch, never on `dev-agent`.
-- Task branches are created when the Developer picks up a task and deleted after successful integration into `dev-agent`.
+- `{{integration_branch}}` receives merge commits from the integration procedure, the Integrator role, and planning-branch merges, and direct ADR commits from the Architect (no direct source code).
+- Developer always works on a task branch, never on `{{integration_branch}}`.
+- Task branches are created when the Developer picks up a task and deleted after successful integration into `{{integration_branch}}`.
 - Bug branches are created when the bug-fix loop picks up a bug.
-  Existing-defect bug branches are based on `dev-agent`; task-regression bug branches are based on the bug report's `source_branch`.
-- Planning branches are created from `dev-agent` when a spec or change-request is created. Every planning artifact for that work is committed there, never directly on `dev-agent`.
-  The Planner merges the planning branch into `dev-agent` with `--no-ff` only after Gate 2 passes, then deletes it with `git branch -d`.
-  `dev-agent` therefore never carries a spec amendment without the task plan that implements it. Abandoning a spec or change-request means the human deletes its planning branch.
+  Existing-defect bug branches are based on `{{integration_branch}}`; task-regression bug branches are based on the bug report's `source_branch`.
+- Planning branches are created from `{{integration_branch}}` when a spec or change-request is created. Every planning artifact for that work is committed there, never directly on `{{integration_branch}}`.
+  The Planner merges the planning branch into `{{integration_branch}}` with `--no-ff` only after Gate 2 passes, then deletes it with `git branch -d`.
+  `{{integration_branch}}` therefore never carries a spec amendment without the task plan that implements it. Abandoning a spec or change-request means the human deletes its planning branch.
 - Tasks, bugs, and change-requests live in the local tracker (`ai-team tracker path`), outside version control and outside every branch.
   Their lifecycle state is the frontmatter `status` field. Recording state, Work Logs, Diagnosis Logs, or Review Verdicts never creates a commit and never requires a branch switch.
 
@@ -36,14 +36,14 @@ Project-specific commit scopes and any overrides belong in the project's own `CL
 
 The skill that creates a spec or change-request opens its planning branch:
 
-1. Run the before-point Workspace Hygiene check, then `git checkout dev-agent`.
+1. Run the before-point Workspace Hygiene check, then `git checkout {{integration_branch}}`.
 2. Run `git branch --list 'plan/*'`. Spec and ADR IDs are allocated from the files on the current branch, so two open planning branches can allocate the same spec or ADR ID.
    Task and change-request IDs come from the shared tracker and never collide.
    If another planning branch is open and this one will create a spec or an ADR, stop and ask the human whether to merge or abandon the other branch first, or to continue and renumber at merge time.
 3. Run the CLI command that allocates the artifact ID.
 4. Run `git checkout -b plan/<id>-<slug>`. A new spec file is untracked and carries over; commit it there. A change-request is created in the tracker and is never committed.
 
-When an approved spec already on `dev-agent` needs a breakdown and has no planning branch, open one the same way and skip step 3.
+When an approved spec already on `{{integration_branch}}` needs a breakdown and has no planning branch, open one the same way and skip step 3.
 
 ## Commit Message Format
 
@@ -71,9 +71,9 @@ chore(plan): merge S-004 billing export
 | Role | Commits when | Branch |
 |---|---|---|
 | **Planner** | Each spec or spec amendment is finalized | `plan/…` |
-| **Planner** | One merge commit per planning branch after Gate 2 passes | `dev-agent` |
+| **Planner** | One merge commit per planning branch after Gate 2 passes | `{{integration_branch}}` |
 | **Developer** | After each implementation cycle for source, tests, and project artifacts | `task/T-NNN-…` or `bug/B-NNN-…` |
-| **Architect** | After producing an ADR or amendment | `plan/…` when raised during planning; otherwise `dev-agent` |
+| **Architect** | After producing an ADR or amendment | `plan/…` when raised during planning; otherwise `{{integration_branch}}` |
 | **Integrator** | One merge commit per task or bug branch merged into its target branch | target branch |
 
 ## Workspace Hygiene
@@ -115,7 +115,7 @@ If the procedure deleted that branch — `integrate` deletes a merged source bra
 ## Hard Rules
 
 - No `--no-verify`. Fix the hook failure instead.
-- No `--force` or `--force-with-lease` on shared branches (`dev-agent`, `main`).
+- No `--force` or `--force-with-lease` on shared branches (`{{integration_branch}}`, `main`).
 - No amending commits that have already been pushed.
 - Never commit secrets, `.env` files, or credentials.
 - Never discard or delete work the current step did not create — park it as described in Workspace Hygiene.
@@ -124,5 +124,5 @@ If the procedure deleted that branch — `integrate` deletes a merged source bra
 ## Common Pitfalls
 
 - Repeating the task or bug ID in the commit message — the branch name already carries it.
-- Committing implementation code to `dev-agent` — implementation belongs on a task or bug branch.
+- Committing implementation code to `{{integration_branch}}` — implementation belongs on a task or bug branch.
 - Using `--no-verify` to bypass a hook failure — fix the underlying cause instead.

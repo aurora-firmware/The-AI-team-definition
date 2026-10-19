@@ -11,6 +11,8 @@ Project-specific commit scopes and any overrides belong in the project's own `CL
 
 ## Branch Model
 
+`dev-agent` is the default integration branch. A project can use another name with `[git] integration_branch` in `.ai-team.toml` (or `ai-team init --integration-branch`); the generated skills and agents then name that branch wherever this document says `dev-agent`.
+
 | Branch | Purpose | Who touches it |
 |---|---|---|
 | `main` | Production-ready releases | Human only — never automated roles |

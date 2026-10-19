@@ -80,7 +80,9 @@ ai-team init [PATH] [OPTIONS]
 |---|---|
 | `--tools TEXT` | Comma-separated tool names to scaffold (e.g. `claude`, `codex`, `all`, `none`). |
 | `--dry-run` | Print what would be written without touching the filesystem. |
-| `--force` | Overwrite existing files. Without this flag the command refuses to overwrite. |
+| `--force` | Overwrite existing files. Without this flag the command refuses to overwrite. On a repository that already has `.ai-team.toml`, the configured `[project] dir`, `[tracker] dir`, `[git] integration_branch`, and any other tables are kept, so `--force` only refreshes the generated agents and skills. |
+| `--project-dir TEXT` | Artifact folder, at any depth (e.g. `docs/ai-team`). Defaults to the configured `[project] dir`, else `ai-team`. Must be relative and contain no `..`. |
+| `--integration-branch TEXT` | Branch that task, bug, and planning work integrates into. Defaults to the configured `[git] integration_branch`, else `dev-agent`. |
 | `--no-interactive` | Skip all prompts. Requires `--tools` to be provided explicitly. |
 | `--create-root-guidance` | When used with `--no-interactive`, create root `CLAUDE.md` and `AGENTS.md` from starter templates. Defaults to false (skipped). |
 
@@ -378,15 +380,28 @@ dir = "ai-team"
 [tracker]
 dir = ".ai-team/tracker"
 
+[git]
+integration_branch = "dev-agent"
+
 [init]
 tools = ["claude"]
 framework_version = "0.1.0"
 ```
 
-The `[project] dir` key is what the locator reads in strategy 3. You can
-change this key if your project uses a different folder name than the default
-`ai-team`. Projects initialised before the default changed keep their
-`dir = "project"` setting and need no change.
+The `[project] dir` key is what the locator reads in strategy 3. It accepts any
+relative folder inside the repository, at any depth (for example
+`docs/ai-team`), with no `..` component; `check-layout` validates it and checks
+the artifacts inside it. Projects initialised before the default changed keep
+their `dir = "project"` setting and need no change.
+
+The `[git] integration_branch` key names the branch that task, bug, and
+planning work integrates into (default `dev-agent`).
+
+The generated agents and skills name these two settings through the
+`{{project_dir}}` and `{{integration_branch}}` placeholders. `ai-team init`
+fills them in from `.ai-team.toml` when it writes the files, so after changing
+either setting, run `ai-team init . --tools <tools> --force` to refresh them.
+Hand edits to generated files are overwritten by that refresh.
 
 ### Expected layout
 

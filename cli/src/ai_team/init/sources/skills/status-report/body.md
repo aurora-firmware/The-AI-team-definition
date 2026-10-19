@@ -5,7 +5,7 @@ The development and bug-fix loops never invoke this skill — they end with a sh
 
 ## Input Requirements
 
-- **Project state** — `ai-team/specs/` and `ai-team/decisions/` in the repository; tasks, bugs, and change-requests in the local tracker, read through `ai-team list`.
+- **Project state** — `{{project_dir}}/specs/` and `{{project_dir}}/decisions/` in the repository; tasks, bugs, and change-requests in the local tracker, read through `ai-team list`.
 - **Integration evidence** — completed task Work Logs, resolved bug Work Logs, or recent integration commits when available.
 - **AI team CLI** — `ai-team status` and `ai-team report` are available.
 
@@ -23,7 +23,7 @@ The command scans the project state directories, excludes template files and `.g
 
 ### Step 2: Count Current State
 
-Count specs and ADRs in `ai-team/specs/` and `ai-team/decisions/`, excluding template files and `.gitkeep`.
+Count specs and ADRs in `{{project_dir}}/specs/` and `{{project_dir}}/decisions/`, excluding template files and `.gitkeep`.
 Count tasks and bugs by status with `ai-team list tasks --json` and `ai-team list bugs --json` (the `state` field is the frontmatter `status`):
 - tasks: `planned`, `pending`, `in-progress`, `completed`, `blocked`, `cancelled`
 - bugs: `open`, `in-progress`, `resolved`
@@ -83,15 +83,15 @@ When a file is requested, run the CLI report command from the repository root:
 ai-team report
 ```
 
-By default, it writes `ai-team/docs/reports/progress-report-[today's date].md` and creates `ai-team/docs/reports/` if needed.
+By default, it writes `{{project_dir}}/docs/reports/progress-report-[today's date].md` and creates `{{project_dir}}/docs/reports/` if needed.
 The full report includes completed tasks, in-progress details, blocked items with action needed, bug listing, next actions, and risks or concerns.
-`ai-team/docs/reports/` is ignored by the scaffolded `ai-team/.gitignore`, so the file does not dirty the working tree.
+`{{project_dir}}/docs/reports/` is ignored by the scaffolded `{{project_dir}}/.gitignore`, so the file does not dirty the working tree.
 Tell the human the file path. Commit it only if the human asks and the project tracks reports.
 
 ## Output Format
 
 - **Inline summary:** Gate 5 status summary using the markdown structure above.
-- **Report file:** `ai-team/docs/reports/progress-report-[today's date].md`, only when the human asked for one.
+- **Report file:** `{{project_dir}}/docs/reports/progress-report-[today's date].md`, only when the human asked for one.
 - **Evidence:** latest integration result or a clear statement that no integration evidence was found.
 
 ## Quality Criteria

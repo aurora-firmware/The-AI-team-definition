@@ -6,7 +6,7 @@ The goal is to arrive at a well-understood, agreed direction *before* writing th
 ## Input Requirements
 
 - **Feature request or problem description** — what needs to be solved and why.
-- **Existing specifications and decisions** — context from `ai-team/specs/` and `ai-team/decisions/` to avoid contradictions.
+- **Existing specifications and decisions** — context from `{{project_dir}}/specs/` and `{{project_dir}}/decisions/` to avoid contradictions.
 - **Constraints** — any technical, time, or scope constraints stated by the human.
 
 ## Procedure
@@ -18,7 +18,7 @@ Separate what is known from what is unknown or ambiguous:
 - **Known**: stated requirements, explicit constraints, referenced existing systems.
 - **Unknown**: unstated priorities, scope boundaries, user-facing behaviour details, performance expectations, integration points not mentioned.
 
-Read `ai-team/specs/` and `ai-team/decisions/` to surface any existing decisions that bear on this feature.
+Read `{{project_dir}}/specs/` and `{{project_dir}}/decisions/` to surface any existing decisions that bear on this feature.
 
 ### Step 2: Clarification Round
 
@@ -143,5 +143,5 @@ Because the human shaped the spec interactively, Gate 1 should be a quick confir
 - **Anchoring on the first idea** — always generate at least one meaningfully different alternative before committing to a direction.
 - **Solving the wrong problem** — re-read the original request after generating alternatives to verify you are addressing the actual need.
 - **Scope creep** — if an alternative requires significantly more work, record it as an explicit exclusion in the spec's Exclusions section rather than folding it into the current scope.
-- **Missing constraints** — check `ai-team/decisions/` before proposing anything that contradicts a prior decision.
+- **Missing constraints** — check `{{project_dir}}/decisions/` before proposing anything that contradicts a prior decision.
 - **Embedding the implementation in the spec** — pasting near-complete config files, CI manifests, or build files into the spec, instead of describing them as requirements. This pre-empts the task plan and the Developer, and the spec rots when the real code evolves. Describe the contract; the implementation is the Developer's job.

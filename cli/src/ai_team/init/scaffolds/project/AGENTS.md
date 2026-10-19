@@ -1,6 +1,6 @@
 # Project Guidance for Agents
 
-This `ai-team/` directory is the canonical workspace for project artifacts used
+This `{{project_dir}}/` directory is the canonical workspace for project artifacts used
 by agent workflows.
 
 ## Folder Purpose

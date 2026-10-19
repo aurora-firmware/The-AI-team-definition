@@ -23,5 +23,5 @@ When invoked directly by a human and required fields are missing, ask only for t
    - `id` (for example, `ADR-003`)
    - `path` (absolute path to the created ADR file)
 4. Open the created ADR file and fill body sections from the supplied `description`, replacing placeholder section content where appropriate.
-5. Confirm the file exists under `ai-team/decisions/` and return the CLI response values (`id` and `path`).
+5. Confirm the file exists under `{{project_dir}}/decisions/` and return the CLI response values (`id` and `path`).
 6. After recording the ADR, run the `architecture-consistency-review` skill — the Architect runs both ADR creation and this review — to check the decision against every approved spec and accepted ADR before treating it as settled.

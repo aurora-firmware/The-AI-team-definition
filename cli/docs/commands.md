@@ -278,6 +278,8 @@ $ ai-team init [OPTIONS] [PATH] COMMAND [ARGS]...
 * `--dry-run`
 * `--no-interactive`
 * `--create-root-guidance`
+* `--project-dir TEXT`: Artifact folder, at any depth (default: the configured one, else &#x27;ai-team&#x27;).
+* `--integration-branch TEXT`: Branch work integrates into (default: the configured one, else &#x27;dev-agent&#x27;).
 * `--help`: Show this message and exit.
 
 ## `ai-team list`

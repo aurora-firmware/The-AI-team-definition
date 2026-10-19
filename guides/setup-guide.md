@@ -79,7 +79,7 @@ done
 touch ai-team/docs/coding_guidelines.md
 ```
 
-Tasks, bugs, and change-requests do not live in the project directory. They live in the local tracker, outside version control. `ai-team init` in Step 3 configures it: it writes `[tracker] dir = ".ai-team/tracker"` to `.ai-team.toml`, creates the folder, and adds `/.ai-team/` to `.gitignore`. Do not create `.ai-team.toml` by hand before running `ai-team init`.
+Tasks, bugs, and change-requests do not live in the project directory. They live in the local tracker, outside version control. `ai-team init` in Step 3 configures it: it writes `[tracker] dir = ".ai-team/tracker"` to `.ai-team.toml`, creates the folder, and adds `/.ai-team/` to `.gitignore`. To use a different artifact folder (at any depth, such as `docs/ai-team`) or integration branch, pass `--project-dir` and `--integration-branch` to `ai-team init`, or set `[project] dir` and `[git] integration_branch` in `.ai-team.toml` before running it. `ai-team init` keeps existing values, and `ai-team init --force` refreshes the generated agents and skills without rewriting the file. Generated agents and skills carry the configured folder and branch, so re-run `ai-team init --force` after changing either, rather than editing the generated files by hand.
 
 ### Step 3: Export the Framework Files
 
@@ -94,7 +94,7 @@ This exports from the CLI package scaffold sources:
 - **Agent definitions** into `.claude/agents/`
 - **Skill definitions** into `.claude/skills/<name>/SKILL.md`
 - **Templates** as skill assets under `.claude/skills/*/assets/`
-- **Project state directories** under `ai-team/`
+- **Project state directories** under `ai-team/` (or the folder set by `--project-dir`)
 - **`.ai-team.toml`** configuration file
 
 For OpenAI Codex compatibility, add `--tools codex` (or `--tools claude,codex`) to also export `.codex/agents/*.toml` Codex agent files. Those TOML files translate each Claude-style agent into Codex's custom-agent schema: `name`, `description`, and `developer_instructions`, with optional Codex-native settings such as `model`, `model_reasoning_effort`, and `sandbox_mode`.

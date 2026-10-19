@@ -22,7 +22,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 - `new-spec` — to create specification documents through the CLI-backed spec creation flow.
 - `new-task` — to create task files during plan decomposition through the CLI-backed task creation flow.
 - `change-request` — to create change-request artifacts when approved scope needs to be revised.
-- `git-conventions` — used whenever opening a planning branch, finalizing specification files on it, and merging it into `dev-agent` after Gate 2.
+- `git-conventions` — used whenever opening a planning branch, finalizing specification files on it, and merging it into `{{integration_branch}}` after Gate 2.
 
 ## Decision Authority
 
@@ -56,7 +56,7 @@ The Planner enters the escalation chain when the `spec-breakdown` skill returns 
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | `ai-team/specs/`; tasks and change-requests in the tracker through the `new-task` and `change-request` skills |
+| Write / Edit | `{{project_dir}}/specs/`; tasks and change-requests in the tracker through the `new-task` and `change-request` skills |
 | Never touch | implementation files, test files |
 
 ## Quality Bar

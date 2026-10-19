@@ -6,7 +6,7 @@ Merge a reviewed task or bug branch into a destination branch after verifying ex
 
 Provided as `$ARGUMENTS`:
 - **Required** — branch name (e.g., `task/T-012-settings-api`, `bug/B-003-login-crash`) **or** task ID (e.g., `T-012`). If a task ID is given, derive the branch by scanning `git branch` for a branch containing that ID.
-- **Optional** — destination branch (default: `dev-agent`). If provided as a second argument, use it; otherwise use `dev-agent`.
+- **Optional** — destination branch (default: `{{integration_branch}}`). If provided as a second argument, use it; otherwise use `{{integration_branch}}`.
 
 ## Procedure
 
@@ -14,7 +14,7 @@ Provided as `$ARGUMENTS`:
 
 1. Parse `$ARGUMENTS`:
    - First token → branch or task ID.
-   - Second token (if present) → destination branch; otherwise `destination = dev-agent`.
+   - Second token (if present) → destination branch; otherwise `destination = {{integration_branch}}`.
 2. If the input looks like a task ID (`T-NNN` pattern), run `git branch | grep <task-id>` to find the full branch name and set it as `source-branch`. If zero matches are found, stop with: "Branch for <task-id> not found. Check that the branch exists locally."
    If the input is already a branch name, set it as `source-branch`.
 3. Confirm the source branch exists: `git branch | grep <source-branch>`. If not found, stop with the same message.
@@ -36,7 +36,7 @@ Read them through the paths the `ai-team` CLI reports — never from a copy insi
 6. If a bug file is found, read it completely — focus on the **Summary**, **Diagnosis Log**, **Fix Verification**, **Work Log**, and **Review** sections.
 7. Determine the source-branch verification command before checking out the source branch. Lookup order:
    - The work item's `## Verification` or `## Fix Verification` section, if it contains concrete automated command(s).
-   - Target-project guidance such as the project `CLAUDE.md`, `ai-team/docs/coding_guidelines.md`, README, build configuration, or human-provided instructions.
+   - Target-project guidance such as the project `CLAUDE.md`, `{{project_dir}}/docs/coding_guidelines.md`, README, build configuration, or human-provided instructions.
    - If no automated verification command can be determined, stop with `BLOCKED` and ask the human for the project verification command.
    This is the command Step 4 runs on the source branch. It is scoped to the work item and must not be assumed to also cover the destination branch.
 8. Determine the destination-branch verification command — the check Step 6 runs after the merge to catch regressions outside the work item's own declared scope. Do not default this to the source-branch command from item 7; determine it separately:

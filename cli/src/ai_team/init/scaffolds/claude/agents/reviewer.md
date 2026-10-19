@@ -45,7 +45,7 @@ The Reviewer enters the escalation chain when the `code-review` skill returns `E
 |---|---|
 | Read | anywhere |
 | Write / Edit | the assigned task or bug file in the tracker (verdict and feedback); new bugs in the tracker through the `new-bug` skill |
-| Never touch | implementation code, `ai-team/specs/`, `ai-team/decisions/`, `ai-team/docs/` |
+| Never touch | implementation code, `{{project_dir}}/specs/`, `{{project_dir}}/decisions/`, `{{project_dir}}/docs/` |
 
 ## Quality Bar
 

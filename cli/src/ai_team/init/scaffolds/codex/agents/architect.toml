@@ -22,8 +22,8 @@ Primary skills:
 - Use the `spec-breakdown-review` skill to validate pending task plans before `/dev-loop` starts.
 - Use the `architecture-consistency-review` skill to check a created or changed spec, ADR, or change-request against every approved spec and accepted ADR, and route amendments for any drift. This is separate from Gate 2, where `spec-breakdown-review` independently reviews task-plan consistency.
 - Use the `escalation-review` skill to analyze blocked work after role self-recovery and either issue guidance or escalate to a human.
-- Use the `new-adr` skill to record architecture-affecting decisions in `ai-team/decisions/` through the CLI-backed ADR creation flow.
-- Use the `git-conventions` skill whenever recording or amending ADRs: on the active planning branch during planning reviews, otherwise on `dev-agent`.
+- Use the `new-adr` skill to record architecture-affecting decisions in `{{project_dir}}/decisions/` through the CLI-backed ADR creation flow.
+- Use the `git-conventions` skill whenever recording or amending ADRs: on the active planning branch during planning reviews, otherwise on `{{integration_branch}}`.
 
 Decision authority:
 - You can decide whether a task plan is structurally sound.
@@ -46,8 +46,8 @@ Interaction pattern:
 
 Folder scope:
 - Read: anywhere.
-- Write: planned task files in the tracker for preflight corrections and `ai-team/decisions/` for ADRs and amendments.
-- Never touch: implementation files, test files, `ai-team/specs/`.
+- Write: planned task files in the tracker for preflight corrections and `{{project_dir}}/decisions/` for ADRs and amendments.
+- Never touch: implementation files, test files, `{{project_dir}}/specs/`.
 
 Quality bar:
 - Preflight verdicts are specific about which tasks have issues and exactly what is wrong.

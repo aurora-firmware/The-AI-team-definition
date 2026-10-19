@@ -50,7 +50,7 @@ and the run summary is returned before the loop stops.
 
 The baseline guard runs once at loop startup. It is NOT re-checked between tasks. Rationale: post-merge regressions are caught by the integrate skill's destination-branch test step; re-checking between tasks adds latency without adding coverage.
 
-Discover and run the project's baseline test command from project-specific guidance before claiming any task. Start with root guidance (`CLAUDE.md`, `AGENTS.md`, or equivalent instructions provided in the session), then follow clear references to project-local docs such as `ai-team/docs/coding_guidelines.md`, README files, build configuration, or other documented test instructions. Prefer an explicitly documented test command over inferring one from dependencies or filenames.
+Discover and run the project's baseline test command from project-specific guidance before claiming any task. Start with root guidance (`CLAUDE.md`, `AGENTS.md`, or equivalent instructions provided in the session), then follow clear references to project-local docs such as `{{project_dir}}/docs/coding_guidelines.md`, README files, build configuration, or other documented test instructions. Prefer an explicitly documented test command over inferring one from dependencies or filenames.
 
 Skip this step when looping back after a completed task (control returns to Step 1, which skips Step 2 on subsequent iterations).
 
@@ -99,7 +99,7 @@ If no task has all dependencies satisfied, stop and report which tasks are waiti
 ### Step 4: Claim the Task
 
 1. Run `ai-team task start T-NNN`. This sets the status to `in-progress`; there is nothing to commit.
-2. Switch to `dev-agent` and create the task branch from it: `git checkout -b task/T-NNN-short-description` (derive from the task filename).
+2. Switch to `{{integration_branch}}` and create the task branch from it: `git checkout -b task/T-NNN-short-description` (derive from the task filename).
 
 ### Step 5: Implementation Cycle
 
@@ -143,8 +143,8 @@ Before invoking integration, confirm that the task file holds both the Developer
 and the Review Verdict recorded in Steps 5 and 6. The `integrate` skill verifies that the latest
 verdict in the task file is PASS before it merges.
 
-1. Invoke the `integrate` skill to merge the reviewed branch into `dev-agent`:
-   > `/integrate task/T-NNN-... dev-agent`
+1. Invoke the `integrate` skill to merge the reviewed branch into `{{integration_branch}}`:
+   > `/integrate task/T-NNN-... {{integration_branch}}`
 
    The integrate skill handles test verification, the merge, regression checks, setting the task to `completed`, and branch deletion.
 
@@ -153,7 +153,7 @@ verdict in the task file is PASS before it merges.
 3. **If integrate fails** — stop the loop entirely and report:
    - The failure reason (pre-merge test failure, unmet acceptance criteria, or post-merge regression).
    - Which bug IDs were filed (if regressions were found).
-   - That the feature branch was NOT deleted and `dev-agent` was left clean (integrate reverts on regression).
+   - That the feature branch was NOT deleted and `{{integration_branch}}` was left clean (integrate reverts on regression).
    - Next step for the human: run `/bug-loop` to autonomously fix the filed regressions, then re-run `/dev-loop`.
 
 #### On FAIL
@@ -214,7 +214,7 @@ The orchestrator does not touch implementation or test files.
 
 - A task is set to `blocked` — stop the loop, notify the human
 - Integration fails for any reason (pre-merge test failure, unmet criteria, post-merge regression) — stop the loop, report the failure and any filed bug IDs
-- A git operation fails (branch already exists, merge conflict on `dev-agent`, etc.) — stop and report the git error before attempting anything else
+- A git operation fails (branch already exists, merge conflict on `{{integration_branch}}`, etc.) — stop and report the git error before attempting anything else
 - A task already has status `in-progress` when the loop starts — stop and ask the human whether to resume that task or treat it as abandoned
 
 ## What This Skill Does NOT Do

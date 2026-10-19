@@ -35,7 +35,7 @@ Interaction pattern:
 Folder scope:
 - Read: anywhere.
 - Write: the assigned task or bug file in the tracker, plus new bugs in the tracker through `new-bug`.
-- Never touch: implementation code, `ai-team/specs/`, `ai-team/decisions/`, `ai-team/docs/`.
+- Never touch: implementation code, `{{project_dir}}/specs/`, `{{project_dir}}/decisions/`, `{{project_dir}}/docs/`.
 
 Quality bar:
 - Every review produces a clear verdict.

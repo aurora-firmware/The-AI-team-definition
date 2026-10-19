@@ -17,8 +17,8 @@ Whenever an architecture artifact changes:
 ## Input Requirements
 
 - **Changed artifact** — the ADR, spec, or change-request just created or amended, and which kind it is. If it was not provided, return `BLOCKED`.
-- **Decision records** — all ADRs in `ai-team/decisions/`; treat `accepted` ones as binding.
-- **Specifications** — all specs in `ai-team/specs/`; treat `approved` ones as binding.
+- **Decision records** — all ADRs in `{{project_dir}}/decisions/`; treat `accepted` ones as binding.
+- **Specifications** — all specs in `{{project_dir}}/specs/`; treat `approved` ones as binding.
 - **Change scope** — for an amendment or change-request, the specific decision, section, or requirement that changed.
 
 ## Procedure
@@ -31,7 +31,7 @@ For an approved change-request, treat the approved change-request itself as the 
 
 ### Step 2: Read the Binding Set
 
-Read every accepted ADR in `ai-team/decisions/` and every approved spec in `ai-team/specs/`. These are the artifacts the change must not contradict.
+Read every accepted ADR in `{{project_dir}}/decisions/` and every approved spec in `{{project_dir}}/specs/`. These are the artifacts the change must not contradict.
 
 ### Step 3: Check for Contradiction
 
@@ -42,7 +42,7 @@ For each binding artifact, decide whether the changed artifact contradicts it �
 This review **reports** contradictions as findings to the owning role — it does not edit specs or apply amendments itself. This is the same model as `spec-breakdown-review`, which returns findings to the Planner for revision. Route each contradiction by which artifact is the wrong side:
 
 - **The changed artifact is a pre-Gate-1 draft spec** → return the findings to the Planner, who revises the draft directly. Do **not** add an Amendment Log entry — a draft's Amendment Log stays empty until Gate 1 approval. The Architect and Planner iterate until the draft is consistent; the human then approves at Gate 1 as usual.
-- **An approved spec is the affected side** → return the findings to the Planner, who amends the approved spec in place — on the planning branch of the spec or change-request under review, never directly on `dev-agent` — and records the change in its Amendment Log, naming the driving ADR ID when an ADR caused the change. For findings raised from an approved change-request, the Planner uses the approved change-request as the authoritative intent while applying those consistency fixes.
+- **An approved spec is the affected side** → return the findings to the Planner, who amends the approved spec in place — on the planning branch of the spec or change-request under review, never directly on `{{integration_branch}}` — and records the change in its Amendment Log, naming the driving ADR ID when an ADR caused the change. For findings raised from an approved change-request, the Planner uses the approved change-request as the authoritative intent while applying those consistency fixes.
 - **An ADR is the affected side** → the Architect amends or supersedes the ADR; use `new-adr` to record a superseding decision.
 - **A finding can be resolved procedurally without changing the approved change-request intent** → route the correction to the owning role and continue; Planner-owned amendments stay anchored to the approved change-request.
 - **A finding would change the approved change-request intent** → stop and ask the Human to revise, reject, or reaffirm the CR before any downstream artifact is amended.

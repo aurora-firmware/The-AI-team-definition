@@ -59,7 +59,7 @@ Select the highest-severity unblocked bug:
 2. Read the bug file at the path reported by `ai-team show B-NNN --json`.
 3. Determine the bug branch base and target:
    - If the bug frontmatter has a non-empty `source_branch`, use that branch as both the base and target.
-   - Otherwise use `dev-agent` as both the base and target.
+   - Otherwise use `{{integration_branch}}` as both the base and target.
 4. Switch to the selected base and create the bug branch from it: `git checkout -b bug/B-NNN-short-description`
    - Derive the branch name from the bug filename (e.g., `B-001-system-prompt-exposed` → `bug/B-001-system-prompt-exposed`)
 
@@ -200,7 +200,7 @@ The orchestrator does not touch implementation or test files.
 ## Hard Stops (Do Not Continue)
 
 - A bug reaches human escalation (Phase 2) — stop the loop, notify the human
-- A git operation fails (branch already exists, conflict on `dev-agent`, etc.) — stop and report the git error before attempting anything else
+- A git operation fails (branch already exists, conflict on `{{integration_branch}}`, etc.) — stop and report the git error before attempting anything else
 - A bug already has status `in-progress` when the loop starts — stop and ask the human whether to resume that bug or treat it as abandoned
 - The Developer cannot reproduce the bug and cannot form an evidence-backed fault hypothesis — escalate instead of patching by guesswork
 

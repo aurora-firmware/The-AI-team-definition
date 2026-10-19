@@ -4,7 +4,7 @@
 
 - **Task or bug file** — with acceptance criteria or fix-verification steps.
 - **Project test setup** — test framework, directory structure, how to run tests.
-- **Target-project coding guidance** — the project `CLAUDE.md`, `ai-team/docs/coding_guidelines.md`, README, build configuration, and any human-provided instructions (the framework-level coding standards are carried by the invoking role's definition).
+- **Target-project coding guidance** — the project `CLAUDE.md`, `{{project_dir}}/docs/coding_guidelines.md`, README, build configuration, and any human-provided instructions (the framework-level coding standards are carried by the invoking role's definition).
 
 Task and bug files live in the local tracker, outside version control; the active loop passes their path.
 Read their existing Work Log and Diagnosis Log entries, but return new log content as a handoff to the active loop instead of editing lifecycle files directly.
@@ -111,6 +111,6 @@ Question: [specific guidance needed to continue within the approved specificatio
 - **Writing implementation first** — this defeats the purpose of TDD. Always write the test first.
 - **Tests that test implementation** — test what the code does (behavior), not how it does it (implementation details). If you refactor internals, tests should still pass.
 - **Skipping the "verify it fails" step** — a test that passes before implementation is not testing anything. It gives false confidence.
-- **Committing outside the branch model** — implementation commits belong only on the assigned task or bug branch, never on `dev-agent`.
+- **Committing outside the branch model** — implementation commits belong only on the assigned task or bug branch, never on `{{integration_branch}}`.
 - **Over-refactoring** — refactor only when the code is messy enough to slow down the next test cycle. Do not refactor preemptively.
 - **Giant test functions** — each test should check one thing. If a test has multiple assertions checking different behaviors, split it.
