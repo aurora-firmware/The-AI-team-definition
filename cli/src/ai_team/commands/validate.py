@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import typer
 from rich.table import Table
 
-from ai_team.core.locator import find_project_root
+from ai_team.commands._shared import project_root
 from ai_team.core.validate import validate_project
 from ai_team.render import console, print_json
 
@@ -60,7 +58,7 @@ def default(
     ),
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
-    root = find_project_root(Path.cwd())
+    root = project_root()
     (
         selected_tasks,
         selected_bugs,

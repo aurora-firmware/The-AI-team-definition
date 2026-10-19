@@ -9,9 +9,11 @@ from pathlib import Path
 import typer
 from rich.markdown import Markdown
 
+from ai_team.commands._shared import project_root
 from ai_team.core.fs import read_artifact
-from ai_team.core.locator import ProjectRoot, find_project_root
+from ai_team.core.locator import ProjectRoot
 from ai_team.core.models import parse_bug, parse_task
+from ai_team.core.tracker import iter_items
 from ai_team.render import console, print_json
 
 NAME = "status"
@@ -127,50 +129,56 @@ def _latest_integration_result(root: ProjectRoot) -> str:
     return value
 
 
+def _by_status(paths: list[Path], parser) -> dict[str, list[tuple[Path, object]]]:
+    """Group parsed work items by their frontmatter ``status``."""
+    grouped: dict[str, list[tuple[Path, object]]] = {}
+    for path in paths:
+        model = parser(path)
+        grouped.setdefault(model.status, []).append((path, model))
+    return grouped
+
+
 def _payload(root: ProjectRoot) -> dict[str, object]:
-    in_progress_tasks: list[InProgressTask] = []
-    for path in _iter_markdown_files(root.tasks_in_progress):
-        task = parse_task(path)
-        in_progress_tasks.append(
-            InProgressTask(
-                id=task.id,
-                title=task.title,
-                assigned_role=task.assigned_role,
-            )
-        )
+    tasks_by_status = _by_status(iter_items(root.tasks), parse_task)
+    bugs_by_status = _by_status(iter_items(root.bugs), parse_bug)
 
-    blocked_tasks: list[BlockedTask] = []
-    for path in _iter_markdown_files(root.tasks_blocked):
-        task = parse_task(path)
-        blocked_tasks.append(
-            BlockedTask(
-                id=task.id,
-                title=task.title,
-                blocking_reason=_blocking_reason(path),
-            )
-        )
+    def count_tasks(status: str) -> int:
+        return len(tasks_by_status.get(status, []))
 
-    critical_high_bugs: list[CriticalBug] = []
-    for path in _iter_markdown_files(root.bugs_open):
-        bug = parse_bug(path)
-        if bug.severity in {"critical", "high"}:
-            critical_high_bugs.append(
-                CriticalBug(id=bug.id, title=bug.title, severity=bug.severity)
-            )
+    def count_bugs(status: str) -> int:
+        return len(bugs_by_status.get(status, []))
+
+    in_progress_tasks: list[InProgressTask] = [
+        InProgressTask(id=task.id, title=task.title, assigned_role=task.assigned_role)
+        for _, task in tasks_by_status.get("in-progress", [])
+    ]
+
+    blocked_tasks: list[BlockedTask] = [
+        BlockedTask(
+            id=task.id, title=task.title, blocking_reason=_blocking_reason(path)
+        )
+        for path, task in tasks_by_status.get("blocked", [])
+    ]
+
+    critical_high_bugs: list[CriticalBug] = [
+        CriticalBug(id=bug.id, title=bug.title, severity=bug.severity)
+        for _, bug in bugs_by_status.get("open", [])
+        if bug.severity in {"critical", "high"}
+    ]
 
     payload: dict[str, object] = {
         "counts": {
             "specs_active": _count(root.specs),
             "tasks": {
-                "pending": _count(root.tasks_pending),
-                "in_progress": _count(root.tasks_in_progress),
-                "completed": _count(root.tasks_completed),
-                "blocked": _count(root.tasks_blocked),
+                "pending": count_tasks("pending"),
+                "in_progress": count_tasks("in-progress"),
+                "completed": count_tasks("completed"),
+                "blocked": count_tasks("blocked"),
             },
             "bugs": {
-                "open": _count(root.bugs_open),
-                "in_progress": _count(root.bugs_in_progress),
-                "resolved": _count(root.bugs_resolved),
+                "open": count_bugs("open"),
+                "in_progress": count_bugs("in-progress"),
+                "resolved": count_bugs("resolved"),
             },
             "adrs": _count(root.decisions),
         },
@@ -268,7 +276,7 @@ def _to_markdown(payload: dict[str, object]) -> str:
 def default(
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
-    root = find_project_root(Path.cwd())
+    root = project_root()
     payload = _payload(root)
     if as_json:
         print_json(payload)

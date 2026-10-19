@@ -86,7 +86,7 @@ For bug fixes, the Developer follows a diagnosis-first debugging procedure befor
 |---|---|---|
 | Human | Planner | Feature request or problem description |
 | Planner | Human | Specification for approval |
-| Planner | Task directory | Task files in `project/tasks/pending/` |
+| Planner | Local tracker | Tasks created as `planned`, set to `pending` after the planning branch merges |
 | Planner | Architect | Gate 2 evaluation request |
 | Planner | Architect | Created/changed spec or change-request for Architecture Consistency Review (before Gate 1, or before change-request amendments are applied) |
 | Architect | Planner | Consistency findings on a created/changed spec or change-request |

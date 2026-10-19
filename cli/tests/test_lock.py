@@ -34,7 +34,7 @@ from ai_team.core.models import Task
 
 def test_allocation_lock_serializes_two_threads_racing_for_the_same_lock(tmp_path):
     """A second thread's critical section never overlaps the first's."""
-    project_dir = tmp_path / "project"
+    project_dir = tmp_path / "ai-team"
     project_dir.mkdir()
 
     order: list[str] = []
@@ -83,7 +83,7 @@ def test_allocation_lock_releases_after_a_normal_exit_so_a_later_caller_can_acqu
     tmp_path,
 ):
     """The lock is available again once a completed ``with`` block exits."""
-    project_dir = tmp_path / "project"
+    project_dir = tmp_path / "ai-team"
     project_dir.mkdir()
 
     with allocation_lock(project_dir):
@@ -103,7 +103,7 @@ def test_allocation_lock_releases_after_a_normal_exit_so_a_later_caller_can_acqu
 
 def test_allocation_lock_releases_even_when_the_block_raises(tmp_path):
     """A crashing holder still releases the lock; no stale lock is left behind."""
-    project_dir = tmp_path / "project"
+    project_dir = tmp_path / "ai-team"
     project_dir.mkdir()
 
     class Boom(Exception):
@@ -120,7 +120,7 @@ def test_allocation_lock_releases_even_when_the_block_raises(tmp_path):
 
 def test_allocation_lock_raises_lock_timeout_when_already_held(tmp_path):
     """Acquisition gives up after the bounded timeout instead of hanging forever."""
-    project_dir = tmp_path / "project"
+    project_dir = tmp_path / "ai-team"
     project_dir.mkdir()
 
     holder_entered = threading.Event()
@@ -180,7 +180,7 @@ def test_create_artifact_with_lock_prevents_interleaved_scans_across_two_threads
     starting until thread one's entire allocate+write critical section has
     completed.
     """
-    project_dir = tmp_path / "project"
+    project_dir = tmp_path / "ai-team"
     dest_dir = project_dir / "tasks" / "pending"
     dest_dir.mkdir(parents=True)
 
@@ -251,7 +251,7 @@ def test_create_artifact_with_lock_propagates_artifact_exists_without_leaking_th
     """When ``write_artifact`` refuses to overwrite, the lock is still released."""
     from ai_team.core.fs import ArtifactExists
 
-    project_dir = tmp_path / "project"
+    project_dir = tmp_path / "ai-team"
     dest_dir = project_dir / "tasks" / "pending"
     dest_dir.mkdir(parents=True)
 

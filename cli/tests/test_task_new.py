@@ -5,9 +5,16 @@ import threading
 from datetime import date
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from ai_team.core.models import parse_task
+
+
+@pytest.fixture(autouse=True)
+def _project_dir(tmp_path):
+    """The locator needs the project directory; work items live in the tracker."""
+    (tmp_path / "ai-team").mkdir(exist_ok=True)
 
 
 def _mkdir(path: Path) -> None:
@@ -20,17 +27,17 @@ def test_task_new_creates_pending_task_with_defaults_and_prints_absolute_path(
     """`ai-team task new` creates one pending task file and echoes its absolute path."""
     from ai_team.cli import app
 
-    _mkdir(tmp_path / "project" / "tasks" / "pending")
+    _mkdir(tmp_path / ".ai-team" / "tracker" / "tasks")
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["task", "new", "Ship API"])
 
-    expected = tmp_path / "project" / "tasks" / "pending" / "T-001-ship-api.md"
+    expected = tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001-ship-api.md"
 
     assert result.exit_code == 0
     assert result.stdout.strip() == str(expected)
 
-    files = list((tmp_path / "project" / "tasks" / "pending").glob("*.md"))
+    files = list((tmp_path / ".ai-team" / "tracker" / "tasks").glob("*.md"))
     assert files == [expected]
 
     task = parse_task(expected)
@@ -47,7 +54,7 @@ def test_task_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
     """`task new --json` emits id/path and writes frontmatter from supplied flags."""
     from ai_team.cli import app
 
-    _mkdir(tmp_path / "project" / "tasks" / "pending")
+    _mkdir(tmp_path / ".ai-team" / "tracker" / "tasks")
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(
@@ -67,7 +74,7 @@ def test_task_new_supports_custom_flags_and_json_output(monkeypatch, tmp_path):
     )
 
     expected = (
-        tmp_path / "project" / "tasks" / "pending" / "T-001-build-auth-gateway.md"
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001-build-auth-gateway.md"
     )
     payload = json.loads(result.stdout)
 
@@ -91,7 +98,7 @@ def test_task_new_refuses_to_overwrite_when_allocated_path_exists(
     """Existing output path causes non-zero exit and preserves file bytes."""
     from ai_team.cli import app
 
-    pending = tmp_path / "project" / "tasks" / "pending"
+    pending = tmp_path / ".ai-team" / "tracker" / "tasks"
     _mkdir(pending)
 
     existing = pending / "T-001-ship-api.md"
@@ -110,14 +117,14 @@ def test_task_new_substitutes_body_h1_with_provided_title(monkeypatch, tmp_path)
     """`task new` replaces the body H1 placeholder with the provided title."""
     from ai_team.cli import app
 
-    _mkdir(tmp_path / "project" / "tasks" / "pending")
+    _mkdir(tmp_path / ".ai-team" / "tracker" / "tasks")
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["task", "new", "My New Task"])
 
     assert result.exit_code == 0
 
-    expected = tmp_path / "project" / "tasks" / "pending" / "T-001-my-new-task.md"
+    expected = tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001-my-new-task.md"
     content = expected.read_text(encoding="utf-8")
 
     assert "# My New Task" in content
@@ -139,10 +146,10 @@ def test_task_new_allocates_distinct_ids_for_two_concurrent_callers(
     """
     import ai_team.commands.task as task_cmd
 
-    pending = tmp_path / "project" / "tasks" / "pending"
+    pending = tmp_path / ".ai-team" / "tracker" / "tasks"
     _mkdir(pending)
     for state in ("in-progress", "completed", "blocked"):
-        _mkdir(tmp_path / "project" / "tasks" / state)
+        _mkdir(tmp_path / "ai-team" / "tasks" / state)
 
     monkeypatch.chdir(tmp_path)
 
@@ -173,6 +180,7 @@ def test_task_new_allocates_distinct_ids_for_two_concurrent_callers(
                 priority="medium",
                 assigned_role="unassigned",
                 spec=None,
+                status="pending",
                 as_json=False,
             )
         except BaseException as exc:  # noqa: BLE001 - surfaced via `errors`

@@ -12,7 +12,7 @@ This document maps the ai-process roles, procedures, processes, and gates to the
 
 | Role | Purpose | Procedures Used | Receives From | Hands Off To | Implementation |
 |---|---|---|---|---|---|
-| Planner | Creates specifications with the human, then decomposes approved specifications into executable tasks | Brainstorm; Spec Breakdown | Human | Human (approval), Task directory (`pending/`), Architect (Gate 2; Architecture Consistency Review for created/changed specs and change-requests) | `.claude/agents/planner.md` |
+| Planner | Creates specifications with the human, then decomposes approved specifications into executable tasks | Brainstorm; Spec Breakdown | Human | Human (approval), Local tracker (`planned` → `pending` tasks), Architect (Gate 2; Architecture Consistency Review for created/changed specs and change-requests) | `.claude/agents/planner.md` |
 | Architect | Owns structural review: Gate 2 preflight, architectural consistency, escalation analysis, and ADR decisions | Spec Breakdown Review; Architecture Consistency Review; Escalation Review; New ADR | Planner (Gate 2; Architecture Consistency Review for created/changed specs and change-requests), Any blocked role | Planner (revision requests, consistency findings), Requesting role (directives), Human (escalation), Decision Log | `.claude/agents/architect.md` |
 | Developer | Implements tasks and fixes bugs; diagnoses bugs before changing production code | TDD; Debug | Development Loop or Bug-Fix Loop | Reviewer | `.claude/agents/developer.md` |
 | Reviewer | Reviews task acceptance, bug diagnosis, targeted fixes, verification evidence, and code quality | Code Review | Developer (via Development Loop or Bug-Fix Loop) | Development Loop or Bug-Fix Loop (verdict in task or bug file) | `.claude/agents/reviewer.md` |
@@ -23,7 +23,7 @@ This document maps the ai-process roles, procedures, processes, and gates to the
 | Procedure | Purpose | Used By | Implementation |
 |---|---|---|---|
 | Brainstorm | Explore the request, alternatives, constraints, and prior decisions before writing a specification | Planner | `.claude/skills/brainstorm/SKILL.md` |
-| Change Request (intake) | Capture smaller desired changes and possible spec amendments without the full brainstorm-to-spec flow; produces tasks and amendments as needed | Planner, Human | `ai-team change-request new`; template at `cli/src/ai_team/templates/change-request.md`; artifacts stored in `project/change-requests/` |
+| Change Request (intake) | Capture smaller desired changes and possible spec amendments without the full brainstorm-to-spec flow; produces tasks and amendments as needed | Planner, Human | `ai-team change-request new`; template at `cli/src/ai_team/templates/change-request.md`; artifacts stored in the local tracker |
 | Spec Breakdown | Decompose an approved specification into atomic tasks with dependencies, acceptance criteria, and verification | Planner | `.claude/skills/spec-breakdown/SKILL.md` |
 | Spec Breakdown Review | Validate task dependencies, file conflict risk, decision-record consistency, atomicity, and implementation readiness (evaluates Gate 2) | Architect | `.claude/skills/spec-breakdown-review/SKILL.md` |
 | Architecture Consistency Review | Check a created or changed spec, ADR, or change-request against every approved spec and accepted ADR, and route amendments for any drift | Architect | `.claude/skills/architecture-consistency-review/SKILL.md` |
@@ -34,17 +34,17 @@ This document maps the ai-process roles, procedures, processes, and gates to the
 | Merge Conflicts | Resolve git merge conflicts while preserving both sides' intent | Integrator | `.claude/skills/merge-conflicts/SKILL.md` |
 | Escalation Review | Analyse blocked work after role self-recovery and issue guidance or escalate to human | Architect | `.claude/skills/escalation-review/SKILL.md` |
 | New Specification | Create a specification document from the standard template | Planner | `.claude/skills/new-spec/SKILL.md` |
-| New Task | Create a task file in `project/tasks/pending/` from the standard template | Planner | `.claude/skills/new-task/SKILL.md` |
-| New Bug | Create an evidence-rich bug report in `project/bugs/open/` from the standard template | Human, Developer, Reviewer, Integrate | `.claude/skills/new-bug/SKILL.md` |
-| New ADR | Create an architecture decision record in `project/decisions/` from the standard template | Architect | `.claude/skills/new-adr/SKILL.md` |
-| Status Report | Summarize specifications, tasks, bugs, decisions, and integration state for Gate 5 | Development Loop, Bug-Fix Loop, Human | `.claude/skills/status-report/SKILL.md` |
+| New Task | Create a task in the local tracker from the standard template | Planner | `.claude/skills/new-task/SKILL.md` |
+| New Bug | Create an evidence-rich `open` bug report in the local tracker from the standard template | Human, Developer, Reviewer, Integrate | `.claude/skills/new-bug/SKILL.md` |
+| New ADR | Create an architecture decision record in `ai-team/decisions/` from the standard template | Architect | `.claude/skills/new-adr/SKILL.md` |
+| Status Report | Summarize specifications, tasks, bugs, decisions, and integration state for Gate 5, on demand | Human | `.claude/skills/status-report/SKILL.md` |
 
 ## Processes
 
 | Process | Purpose | Started By | Implementation |
 |---|---|---|---|
-| Development Loop | Autonomous task loop across `project/tasks/pending/`: Developer → Reviewer → Integration until the queue is empty, blocked, or escalated | Human after Gate 2 passes | `.claude/skills/dev-loop/SKILL.md` |
-| Bug-Fix Loop | Diagnosis-first bug loop across `project/bugs/open/`: Debug → implementation → Reviewer → Integrate until the queue is empty or escalated | Human when open bugs need resolution | `.claude/skills/bug-loop/SKILL.md` |
+| Development Loop | Autonomous task loop across `pending` tasks: Developer → Reviewer → Integration until the queue is empty, blocked, or escalated | Human after Gate 2 passes | `.claude/skills/dev-loop/SKILL.md` |
+| Bug-Fix Loop | Diagnosis-first bug loop across `open` bugs: Debug → implementation → Reviewer → Integrate until the queue is empty or escalated | Human when open bugs need resolution | `.claude/skills/bug-loop/SKILL.md` |
 
 ## Gates
 
@@ -60,13 +60,11 @@ This document maps the ai-process roles, procedures, processes, and gates to the
 
 | Component | Type | Purpose | Location |
 |---|---|---|---|
-| Specifications | Directory | Feature and system specs | `project/specs/` |
-| Change Requests | Directory | Lightweight intake artifacts for smaller changes; produced by `ai-team change-request new` | `project/change-requests/` |
-| Task Board | Directory tree | Task lifecycle tracking | `project/tasks/{pending,in-progress,completed,blocked}/` |
-| Bug Tracker | Directory tree | Bug lifecycle tracking | `project/bugs/{open,in-progress,resolved}/` |
-| Decision Log | Directory | Architecture decision records | `project/decisions/` |
+| Specifications | Directory | Feature and system specs | `ai-team/specs/` |
+| Local Tracker | Directory outside version control | Tasks, bugs, and change-requests; lifecycle state is the frontmatter `status` field; one tracker per repository, shared by all worktrees | `[tracker] dir` in `.ai-team.toml` (default `.ai-team/tracker/`) |
+| Decision Log | Directory | Architecture decision records | `ai-team/decisions/` |
 | Root Guidance Files | Files | Project-level command documentation for autonomous agents; `## Test` section is the canonical home for the baseline test command consumed by `dev-loop` | `CLAUDE.md` and `AGENTS.md` at the project root; scaffolded by `ai-team init` from templates in `cli/src/ai_team/init/sources/root/` |
-| Project Guidance Files | Files | Artifact directory orientation for agents; always generated by `ai-team init` | `project/CLAUDE.md` and `project/AGENTS.md`; scaffolded from `cli/src/ai_team/init/sources/project/` |
+| Project Guidance Files | Files | Artifact directory orientation for agents; always generated by `ai-team init` | `ai-team/CLAUDE.md` and `ai-team/AGENTS.md`; scaffolded from `cli/src/ai_team/init/sources/project/` |
 | Templates | Procedure assets | Reusable document formats | `.claude/skills/*/assets/` |
 | Process Docs | Directory | Workflow and procedure definitions (spec layer only — not exported by `ai-team init`) | `ai-process/processes/` |
 | Guidelines | Directory | Standards and checklists (spec layer only — not exported by `ai-team init`) | `ai-process/guidelines/` |
@@ -81,11 +79,11 @@ Action skills that create or report on project artifacts invoke `ai-team` CLI co
 | Skill | CLI Command(s) | Purpose |
 |---|---|---|
 | `new-spec` | `ai-team spec new` | Create a new specification document |
-| `new-task` | `ai-team task new` | Create a new task file in `project/tasks/pending/` |
-| `new-bug` | `ai-team bug new` | Create a new bug report in `project/bugs/open/` |
-| `new-adr` | `ai-team adr new` | Create a new architecture decision record in `project/decisions/` |
+| `new-task` | `ai-team task new` | Create a new task in the local tracker |
+| `new-bug` | `ai-team bug new` | Create a new bug report in the local tracker |
+| `new-adr` | `ai-team adr new` | Create a new architecture decision record in `ai-team/decisions/` |
 | `status-report` | `ai-team status`, `ai-team report` | Generate inline Gate 5 summary and full progress report |
-| *(change-request intake)* | `ai-team change-request new` | Create a change-request document in `project/change-requests/` |
+| *(change-request intake)* | `ai-team change-request new` | Create a change-request in the local tracker |
 
 ## Interaction Diagram
 

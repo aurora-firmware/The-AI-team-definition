@@ -9,8 +9,10 @@ import typer
 from rich.markdown import Markdown
 from typer.core import TyperGroup
 
+from ai_team.commands._shared import project_root
 from ai_team.core.fs import read_artifact
-from ai_team.core.locator import ProjectRoot, find_project_root
+from ai_team.core.locator import ProjectRoot
+from ai_team.core.tracker import iter_items
 from ai_team.render import console, print_json
 
 NAME = "show"
@@ -29,51 +31,31 @@ app = typer.Typer(
 )
 
 
-def _search_roots(root: ProjectRoot) -> list[Path]:
+Kind = Literal["task", "bug", "change-request", "spec", "adr"]
+
+
+def _search_roots(root: ProjectRoot) -> list[tuple[Kind, Path]]:
     return [
-        root.tasks_pending,
-        root.tasks_in_progress,
-        root.tasks_completed,
-        root.tasks_blocked,
-        root.bugs_open,
-        root.bugs_in_progress,
-        root.bugs_resolved,
-        root.specs,
-        root.decisions,
+        ("task", root.tasks),
+        ("bug", root.bugs),
+        ("change-request", root.change_requests),
+        ("spec", root.specs),
+        ("adr", root.decisions),
     ]
 
 
-def _artifact_files(roots: list[Path]) -> list[Path]:
-    files: list[Path] = []
-    for root in roots:
-        files.extend(
-            sorted(
-                path
-                for path in root.glob("*.md")
-                if path.is_file()
-                and path.name != ".gitkeep"
-                and not path.match("TEMPLATE-*.md")
-            )
-        )
+def _artifact_files(roots: list[tuple[Kind, Path]]) -> list[tuple[Kind, Path]]:
+    files: list[tuple[Kind, Path]] = []
+    for kind, folder in roots:
+        files.extend((kind, path) for path in iter_items(folder))
     return files
 
 
-def _kind_for_path(path: Path) -> Literal["task", "bug", "spec", "adr"]:
-    if "tasks" in path.parts:
-        return "task"
-    if "bugs" in path.parts:
-        return "bug"
-    if "specs" in path.parts:
-        return "spec"
-    return "adr"
-
-
-def _matches_identifier(identifier: str, path: Path) -> bool:
+def _matches_identifier(identifier: str, kind: Kind, path: Path) -> bool:
     token = identifier.lower()
     if token in path.stem.lower():
         return True
 
-    kind = _kind_for_path(path)
     if kind == "spec":
         return False
 
@@ -84,9 +66,13 @@ def _matches_identifier(identifier: str, path: Path) -> bool:
     return token == str(model_id).lower()
 
 
-def _resolve_matches(identifier: str, roots: list[Path]) -> list[Path]:
+def _resolve_matches(
+    identifier: str, roots: list[tuple[Kind, Path]]
+) -> list[tuple[Kind, Path]]:
     return [
-        path for path in _artifact_files(roots) if _matches_identifier(identifier, path)
+        (kind, path)
+        for kind, path in _artifact_files(roots)
+        if _matches_identifier(identifier, kind, path)
     ]
 
 
@@ -106,11 +92,11 @@ def default(
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     """Show an artifact file by ID or slug fragment."""
-    root = find_project_root(Path.cwd())
+    root = project_root()
     search_roots = _search_roots(root)
     matches = _resolve_matches(identifier, search_roots)
     if not matches:
-        searched = ", ".join(str(path) for path in search_roots)
+        searched = ", ".join(str(folder) for _, folder in search_roots)
         typer.echo(
             f"Artifact '{identifier}' not found. Searched roots: {searched}",
             err=True,
@@ -122,13 +108,13 @@ def default(
             f"Multiple artifacts matched '{identifier}':",
             err=True,
         )
-        for match in matches:
+        for _, match in matches:
             typer.echo(f"- {match}", err=True)
         raise typer.Exit(code=1)
 
-    selected = matches[0]
+    kind, selected = matches[0]
     if as_json:
-        model, body = read_artifact(selected, _kind_for_path(selected))
+        model, body = read_artifact(selected, kind)
         print_json(
             {
                 "path": str(selected),

@@ -29,7 +29,7 @@ The `ai-process/` specification documents (process docs, guidelines, architectur
 **`CLAUDE.md`** — Your project's identity:
 - Replace the project name and purpose description.
 - Add your tech stack, repository layout, and the specific build/run/test/lint commands agents should use.
-- Point agents to project-local conventions, including `project/docs/coding_guidelines.md` if present.
+- Point agents to project-local conventions, including `ai-team/docs/coding_guidelines.md` if present.
 - Keep the Repository Map, How to Work Here, and Conventions sections. Update paths to match your project layout.
 
 **`README.md`** — Your project's README:
@@ -38,7 +38,7 @@ The `ai-process/` specification documents (process docs, guidelines, architectur
 
 **Project-local coding guidance** — Stack-specific rules:
 - Keep `ai-process/guidelines/coding-standards.md` as the framework's general, language-agnostic baseline unless you are intentionally forking the process.
-- Put project-specific coding rules in `project/docs/coding_guidelines.md` or another project-local document referenced by your `CLAUDE.md`.
+- Put project-specific coding rules in `ai-team/docs/coding_guidelines.md` or another project-local document referenced by your `CLAUDE.md`.
 - Include formatter, linter, test framework, dependency policy, naming conventions, file layout, and framework conventions there.
 - Agents and skills should discover these details from the target project instead of relying on hardcoded defaults in the framework.
 
@@ -145,7 +145,7 @@ If you have an existing codebase:
 1. Follow the setup guide to create the directory structure alongside your existing code.
 2. Your existing source code stays where it is — the framework directories are additive.
 3. Write or update `CLAUDE.md` so agents can find project commands, coding guidance, and repository layout.
-4. Create `project/docs/coding_guidelines.md` for stack-specific conventions if those rules are not already documented elsewhere.
-5. Migrate existing issues/tasks by creating task files in `project/tasks/pending/` for each open item.
-6. Write a specification for the current system state in `project/specs/` — this becomes the baseline.
-7. Create an ADR in `project/decisions/` documenting the decision to adopt this framework.
+4. Create `ai-team/docs/coding_guidelines.md` for stack-specific conventions if those rules are not already documented elsewhere.
+5. Migrate existing issues/tasks by creating a task for each open item with `ai-team task new` (they land in the local tracker).
+6. Write a specification for the current system state in `ai-team/specs/` — this becomes the baseline.
+7. Create an ADR in `ai-team/decisions/` documenting the decision to adopt this framework.

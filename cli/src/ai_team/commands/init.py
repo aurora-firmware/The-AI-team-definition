@@ -10,6 +10,18 @@ from pathlib import Path
 import tomli_w
 import typer
 
+from ai_team.core.config import (
+    DEFAULT_INTEGRATION_BRANCH,
+    is_valid_branch_name,
+    is_valid_project_dir,
+    marker_integration_branch,
+    marker_project_dir,
+    read_marker,
+    render_placeholders,
+)
+from ai_team.core.locator import DEFAULT_PROJECT_DIR
+from ai_team.core.tracker import DEFAULT_TRACKER_DIR, resolve_tracker_dir
+
 NAME = "init"
 app = typer.Typer(
     help="Scaffold an AI-team repository.",
@@ -30,6 +42,21 @@ _ROOT_GUIDANCE_DECLINED_MESSAGE = (
 
 def _iter_files(root: Path) -> list[Path]:
     return sorted(path for path in root.rglob("*") if path.is_file())
+
+
+def _tracker_ignore_rule(tracker_dir: str) -> str | None:
+    """Return the root ``.gitignore`` rule for the configured tracker folder.
+
+    The default folder keeps its historical rule (the whole ``/.ai-team/``
+    folder); any other relative folder is ignored by its full path. Absolute
+    and ``~`` paths live outside the repository and need no rule.
+    """
+    configured = Path(tracker_dir).expanduser()
+    if configured.is_absolute():
+        return None
+    if tracker_dir == DEFAULT_TRACKER_DIR:
+        return f"/{Path(DEFAULT_TRACKER_DIR).parts[0]}/"
+    return f"/{configured.as_posix().strip('/')}/"
 
 
 def _plan_copies(source: Path, destination: Path) -> list[tuple[Path, Path]]:
@@ -81,16 +108,66 @@ def _next_steps() -> list[str]:
     ]
 
 
+def _ensure_tracker(target_root: Path, tracker_dir: str, dry_run: bool) -> None:
+    """Create the configured tracker folder and make git ignore it (spec S-006).
+
+    The folder is the one every tracker command resolves, so in a linked
+    worktree it is created in the main working tree.
+
+    The ignore rule is appended to the repository's root ``.gitignore`` only when
+    no identical line exists, so re-running ``init`` never duplicates or removes
+    rules.
+    """
+    tracker = resolve_tracker_dir(target_root)
+    ignore_rule = _tracker_ignore_rule(tracker_dir)
+    gitignore = target_root / ".gitignore"
+    existing = (
+        gitignore.read_text(encoding="utf-8").splitlines()
+        if gitignore.is_file()
+        else []
+    )
+    needs_rule = ignore_rule is not None and ignore_rule not in (
+        line.strip() for line in existing
+    )
+
+    if dry_run:
+        typer.echo(f"WOULD CREATE: {tracker}")
+        if needs_rule:
+            typer.echo(f"WOULD UPDATE: {gitignore}")
+        return
+
+    tracker.mkdir(parents=True, exist_ok=True)
+    if needs_rule:
+        prefix = ""
+        if existing:
+            text = gitignore.read_text(encoding="utf-8")
+            prefix = "" if text.endswith("\n") else "\n"
+            prefix += "\n"
+        with gitignore.open("a", encoding="utf-8") as stream:
+            stream.write(
+                f"{prefix}# ai-team local work-item tracker (tasks, bugs, change-requests)\n"
+                f"{ignore_rule}\n"
+            )
+
+
+def _write_rendered(source: Path, destination: Path, settings: dict[str, str]) -> None:
+    """Copy *source* to *destination*, filling the packaged-source placeholders."""
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    text = render_placeholders(source.read_text(encoding="utf-8"), **settings)
+    destination.write_text(text, encoding="utf-8")
+    shutil.copymode(source, destination)
+
+
 def _copy_root_guidance_file(
     source: Path,
     destination: Path,
     force: bool,
+    settings: dict[str, str],
 ) -> None:
     """Copy a single root guidance file; overwrite only when *force* is True."""
     if destination.exists() and not force:
         return
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(source, destination)
+    _write_rendered(source, destination, settings)
 
 
 def _handle_root_guidance(
@@ -100,6 +177,7 @@ def _handle_root_guidance(
     create_root_guidance: bool,
     force: bool,
     dry_run: bool,
+    settings: dict[str, str],
 ) -> bool:
     """Prompt for or create root guidance files.  Returns True if any file was declined."""
     declined = False
@@ -119,7 +197,7 @@ def _handle_root_guidance(
         if no_interactive:
             # AC-3: deterministic — only create when the flag is set
             if create_root_guidance:
-                _copy_root_guidance_file(source, destination, force)
+                _copy_root_guidance_file(source, destination, force, settings)
         else:
             # AC-1 / AC-2: interactive — ask the user
             create = typer.confirm(
@@ -127,7 +205,7 @@ def _handle_root_guidance(
                 default=True,
             )
             if create:
-                _copy_root_guidance_file(source, destination, force)
+                _copy_root_guidance_file(source, destination, force, settings)
             else:
                 declined = True
 
@@ -142,8 +220,24 @@ def init_command(
     dry_run: bool = typer.Option(False, "--dry-run"),
     no_interactive: bool = typer.Option(False, "--no-interactive"),
     create_root_guidance: bool = typer.Option(False, "--create-root-guidance"),
+    project_dir: str | None = typer.Option(
+        None,
+        "--project-dir",
+        help="Artifact folder, at any depth (default: the configured one, else 'ai-team').",
+    ),
+    integration_branch: str | None = typer.Option(
+        None,
+        "--integration-branch",
+        help="Branch work integrates into (default: the configured one, else 'dev-agent').",
+    ),
 ) -> None:
-    """Initialize scaffold files in *path*."""
+    """Initialize scaffold files in *path*.
+
+    On a repository that already has ``.ai-team.toml``, the configured
+    ``[project] dir``, ``[tracker] dir``, and ``[git] integration_branch`` are
+    kept, so ``--force`` refreshes generated agents and skills without
+    rewriting user configuration.
+    """
     try:
         selected_tools = _resolve_tools(tools, no_interactive)
     except ValueError as exc:
@@ -151,6 +245,27 @@ def init_command(
         raise typer.Exit(code=1) from exc
 
     target_root = path.resolve()
+    existing_marker = read_marker(target_root)
+    project_dir = (
+        project_dir or marker_project_dir(existing_marker) or DEFAULT_PROJECT_DIR
+    )
+    integration_branch = (
+        integration_branch
+        or marker_integration_branch(existing_marker)
+        or DEFAULT_INTEGRATION_BRANCH
+    )
+    if not is_valid_project_dir(project_dir):
+        typer.echo(
+            f"Invalid project dir '{project_dir}': use a relative folder path "
+            "inside the repository without '..'.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    if not is_valid_branch_name(integration_branch):
+        typer.echo(f"Invalid integration branch '{integration_branch}'.", err=True)
+        raise typer.Exit(code=1)
+    settings = {"project_dir": project_dir, "integration_branch": integration_branch}
+    tracker_dir = existing_marker.get("tracker", {}).get("dir") or DEFAULT_TRACKER_DIR
 
     scaffolds = resources.files("ai_team.init") / "scaffolds"
     sources = resources.files("ai_team.init") / "sources"
@@ -160,7 +275,7 @@ def init_command(
     ):
         planned: list[tuple[Path, Path]] = []
         planned.extend(
-            _plan_copies(scaffolds_path / "project", target_root / "project")
+            _plan_copies(scaffolds_path / "project", target_root / project_dir)
         )
 
         if "claude" in selected_tools:
@@ -190,7 +305,9 @@ def init_command(
                 create_root_guidance,
                 force,
                 dry_run=True,
+                settings=settings,
             )
+            _ensure_tracker(target_root, tracker_dir, dry_run=True)
 
         if collisions and not force:
             typer.echo(
@@ -204,18 +321,31 @@ def init_command(
             return
 
         for source, destination in planned:
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source, destination)
+            _write_rendered(source, destination, settings)
 
-        marker_data = {
-            "project": {"dir": "project"},
-            "init": {
-                "tools": selected_tools,
-                "framework_version": importlib.metadata.version("ai-team"),
-            },
+        # Keep every setting the user already configured; only the values this
+        # command owns (project, tracker, git, init) are refreshed.
+        marker_data = dict(existing_marker)
+        marker_data["project"] = {
+            **existing_marker.get("project", {}),
+            "dir": project_dir,
+        }
+        marker_data["tracker"] = {
+            **existing_marker.get("tracker", {}),
+            "dir": tracker_dir,
+        }
+        marker_data["git"] = {
+            **existing_marker.get("git", {}),
+            "integration_branch": integration_branch,
+        }
+        marker_data["init"] = {
+            **existing_marker.get("init", {}),
+            "tools": selected_tools,
+            "framework_version": importlib.metadata.version("ai-team"),
         }
         marker.parent.mkdir(parents=True, exist_ok=True)
         marker.write_text(tomli_w.dumps(marker_data), encoding="utf-8")
+        _ensure_tracker(target_root, tracker_dir, dry_run=False)
 
         # Handle root guidance files (outside the collision-checked scaffold set)
         declined = _handle_root_guidance(
@@ -225,6 +355,7 @@ def init_command(
             create_root_guidance,
             force,
             dry_run=False,
+            settings=settings,
         )
 
     typer.echo("Initialization complete.")

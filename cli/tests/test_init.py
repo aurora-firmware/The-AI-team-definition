@@ -23,13 +23,15 @@ def test_init_defaults_to_cwd_and_scaffolds_project_claude_and_marker(
     marker = target / ".ai-team.toml"
 
     assert result.exit_code == 0
-    assert (target / "project" / "tasks" / "pending" / ".gitkeep").is_file()
+    assert (target / "ai-team" / "specs" / ".gitkeep").is_file()
+    assert not (target / "ai-team" / "tasks").exists()
+    assert (target / ".ai-team" / "tracker").is_dir()
     assert (target / ".claude" / "agents" / "planner.md").is_file()
     assert not (target / "ai-process").exists()
     assert marker.is_file()
 
     data = tomllib.loads(marker.read_text(encoding="utf-8"))
-    assert data["project"]["dir"] == "project"
+    assert data["project"]["dir"] == "ai-team"
     assert data["init"]["tools"] == ["claude"]
     assert "include_ai_process" not in data["init"]
     assert isinstance(data["init"]["framework_version"], str)
@@ -48,7 +50,8 @@ def test_init_scaffolds_explicit_target_path_with_claude_and_marker(tmp_path):
 
     marker = target / ".ai-team.toml"
     assert result.exit_code == 0
-    assert (target / "project" / "bugs" / "open" / ".gitkeep").is_file()
+    assert (target / "ai-team" / "decisions" / ".gitkeep").is_file()
+    assert not (target / "ai-team" / "bugs").exists()
     assert (target / ".claude" / "skills" / "brainstorm" / "SKILL.md").is_file()
     assert marker.is_file()
     assert not (target / "ai-process").exists()
@@ -61,7 +64,7 @@ def test_init_refuses_to_overwrite_when_force_is_not_set(monkeypatch, tmp_path):
     target = tmp_path / "repo"
     target.mkdir()
 
-    existing = target / "project" / "specs" / ".gitkeep"
+    existing = target / "ai-team" / "specs" / ".gitkeep"
     existing.parent.mkdir(parents=True, exist_ok=True)
     existing.write_text("occupied\n", encoding="utf-8")
 
@@ -93,7 +96,8 @@ def test_init_dry_run_lists_files_and_writes_nothing(tmp_path):
 
     assert result.exit_code == 0
     assert "WOULD WRITE:" in result.output
-    assert str(target / "project" / "tasks" / "pending" / ".gitkeep") in result.output
+    assert str(target / "ai-team" / "specs" / ".gitkeep") in result.output
+    assert f"WOULD CREATE: {target / '.ai-team' / 'tracker'}" in result.output
     assert str(target / ".claude" / "agents" / "planner.md") in result.output
     assert str(target / ".ai-team.toml") in result.output
     assert not target.exists()
@@ -125,7 +129,7 @@ def test_init_force_allows_overwriting_existing_files(monkeypatch, tmp_path):
 
     target = tmp_path / "repo"
     target.mkdir()
-    existing = target / "project" / "specs" / ".gitkeep"
+    existing = target / "ai-team" / "specs" / ".gitkeep"
     existing.parent.mkdir(parents=True, exist_ok=True)
     existing.write_text("occupied\n", encoding="utf-8")
 
@@ -142,7 +146,7 @@ def test_init_force_allows_overwriting_existing_files(monkeypatch, tmp_path):
     assert existing.read_text(encoding="utf-8") == ""
     assert (target / ".claude" / "skills" / "tdd" / "SKILL.md").is_file()
     data = tomllib.loads(marker.read_text(encoding="utf-8"))
-    assert data["project"]["dir"] == "project"
+    assert data["project"]["dir"] == "ai-team"
 
 
 def test_init_tools_codex_scaffolds_codex_agents_and_skills(tmp_path):
@@ -159,7 +163,7 @@ def test_init_tools_codex_scaffolds_codex_agents_and_skills(tmp_path):
     assert (target / ".codex" / "agents" / "planner.toml").is_file()
     assert (target / ".codex" / "skills" / "tdd" / "SKILL.md").is_file()
     assert (target / ".codex" / "skills" / "change-request" / "SKILL.md").is_file()
-    assert (target / "project" / "change-requests" / ".gitkeep").is_file()
+    assert not (target / "ai-team" / "change-requests").exists()
     assert not (target / ".claude").exists()
     assert not (target / "ai-process").exists()
 
@@ -219,7 +223,7 @@ def test_init_interactive_does_not_prompt_for_ai_process_snapshot(tmp_path):
 
 
 def test_init_creates_project_guidance_files(tmp_path):
-    """AC-3: init writes project/CLAUDE.md and project/AGENTS.md."""
+    """AC-3: init writes ai-team/CLAUDE.md and ai-team/AGENTS.md."""
     from ai_team.cli import app
 
     target = tmp_path / "repo"
@@ -229,12 +233,12 @@ def test_init_creates_project_guidance_files(tmp_path):
     )
 
     assert result.exit_code == 0
-    assert (target / "project" / "CLAUDE.md").is_file()
-    assert (target / "project" / "AGENTS.md").is_file()
+    assert (target / "ai-team" / "CLAUDE.md").is_file()
+    assert (target / "ai-team" / "AGENTS.md").is_file()
 
 
 def test_init_dry_run_includes_project_guidance_files(tmp_path):
-    """AC-3: dry-run output lists project/CLAUDE.md and project/AGENTS.md."""
+    """AC-3: dry-run output lists ai-team/CLAUDE.md and ai-team/AGENTS.md."""
     from ai_team.cli import app
 
     target = tmp_path / "new-repo"
@@ -244,20 +248,20 @@ def test_init_dry_run_includes_project_guidance_files(tmp_path):
     )
 
     assert result.exit_code == 0
-    assert str(target / "project" / "CLAUDE.md") in result.output
-    assert str(target / "project" / "AGENTS.md") in result.output
+    assert str(target / "ai-team" / "CLAUDE.md") in result.output
+    assert str(target / "ai-team" / "AGENTS.md") in result.output
 
 
 def test_init_refuses_when_project_guidance_file_exists_without_force(
     monkeypatch, tmp_path
 ):
-    """AC-4: init exits non-zero when project/CLAUDE.md already exists without --force."""
+    """AC-4: init exits non-zero when ai-team/CLAUDE.md already exists without --force."""
     from ai_team.cli import app
 
     target = tmp_path / "repo"
     target.mkdir()
 
-    existing = target / "project" / "CLAUDE.md"
+    existing = target / "ai-team" / "CLAUDE.md"
     existing.parent.mkdir(parents=True, exist_ok=True)
     existing.write_text("occupied\n", encoding="utf-8")
 
@@ -276,7 +280,7 @@ def test_init_force_overwrites_project_guidance_files(monkeypatch, tmp_path):
     target = tmp_path / "repo"
     target.mkdir()
 
-    existing = target / "project" / "CLAUDE.md"
+    existing = target / "ai-team" / "CLAUDE.md"
     existing.parent.mkdir(parents=True, exist_ok=True)
     existing.write_text("old content\n", encoding="utf-8")
 
@@ -287,7 +291,7 @@ def test_init_force_overwrites_project_guidance_files(monkeypatch, tmp_path):
 
     assert result.exit_code == 0
     assert existing.read_text(encoding="utf-8") != "old content\n"
-    assert (target / "project" / "AGENTS.md").is_file()
+    assert (target / "ai-team" / "AGENTS.md").is_file()
 
 
 # ── Root guidance file tests (T-050) ─────────────────────────────────────────
@@ -476,7 +480,7 @@ def test_force_flag_overwrites_existing_root_guidance_files(tmp_path):
 
 
 def test_init_scaffolds_project_gitignore_ignoring_the_lock_sentinel(tmp_path):
-    """B-017: init writes project/.gitignore covering the .ai-team.lock sentinel."""
+    """B-017: init writes ai-team/.gitignore covering the .ai-team.lock sentinel."""
     from ai_team.cli import app
 
     target = tmp_path / "repo"
@@ -486,9 +490,11 @@ def test_init_scaffolds_project_gitignore_ignoring_the_lock_sentinel(tmp_path):
     )
 
     assert result.exit_code == 0
-    gitignore = target / "project" / ".gitignore"
+    gitignore = target / "ai-team" / ".gitignore"
     assert gitignore.is_file()
-    assert gitignore.read_text(encoding="utf-8") == ".ai-team.lock\n"
+    ignored = gitignore.read_text(encoding="utf-8").splitlines()
+    assert ".ai-team.lock" in ignored
+    assert "docs/reports/" in ignored
 
 
 def test_ai_team_lock_sentinel_is_not_untracked_after_task_creation(
@@ -516,7 +522,7 @@ def test_ai_team_lock_sentinel_is_not_untracked_after_task_creation(
     task_result = CliRunner().invoke(app, ["task", "new", "Anything", "--json"])
     assert task_result.exit_code == 0
 
-    lock_file = target / "project" / ".ai-team.lock"
+    lock_file = target / ".ai-team" / "tracker" / ".ai-team.lock"
     assert lock_file.is_file()
 
     status = subprocess.run(
@@ -527,6 +533,32 @@ def test_ai_team_lock_sentinel_is_not_untracked_after_task_creation(
         text=True,
     )
 
-    assert "ai-team.lock" not in status.stdout, (
-        f"unexplained untracked .ai-team.lock in git status:\n{status.stdout}"
+    assert status.stdout == "", (
+        f"task creation left the working tree dirty:\n{status.stdout}"
     )
+
+
+def test_init_configures_tracker_and_ignores_it_idempotently(tmp_path):
+    """S-006: init writes [tracker] dir, creates the folder, and ignores it once."""
+    import tomllib
+
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    target.mkdir()
+    (target / ".gitignore").write_text("node_modules/", encoding="utf-8")
+
+    for extra in ([], ["--force"]):
+        result = CliRunner().invoke(
+            app,
+            ["init", str(target), "--tools", "claude", "--no-interactive", *extra],
+        )
+        assert result.exit_code == 0, result.output
+
+    marker = tomllib.loads((target / ".ai-team.toml").read_text(encoding="utf-8"))
+    assert marker["tracker"]["dir"] == ".ai-team/tracker"
+    assert (target / ".ai-team" / "tracker").is_dir()
+
+    lines = (target / ".gitignore").read_text(encoding="utf-8").splitlines()
+    assert lines[0] == "node_modules/"
+    assert lines.count("/.ai-team/") == 1

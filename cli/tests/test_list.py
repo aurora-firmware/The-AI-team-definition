@@ -3,7 +3,15 @@
 import json
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
+
+
+@pytest.fixture(autouse=True)
+def _project_dir(tmp_path):
+    """The locator needs the project directory; work items live in the tracker."""
+    (tmp_path / "ai-team").mkdir(exist_ok=True)
+
 
 TASK_TEMPLATE = """\
 ---
@@ -128,20 +136,20 @@ def test_list_tasks_displays_all_states_in_rich_table_and_skips_templates(
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "tasks" / "pending" / "T-001.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001.md",
         _task("T-001", "Pending task", "pending", "high"),
     )
     _write(
-        tmp_path / "project" / "tasks" / "in-progress" / "T-002.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-002.md",
         _task("T-002", "In-progress task", "in-progress"),
     )
     _write(
-        tmp_path / "project" / "tasks" / "completed" / "T-003.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-003.md",
         _task("T-003", "Completed task", "completed", "low", "reviewer"),
     )
-    _write(tmp_path / "project" / "tasks" / "blocked" / ".gitkeep", "")
+    _write(tmp_path / ".ai-team" / "tracker" / "tasks" / ".gitkeep", "")
     _write(
-        tmp_path / "project" / "tasks" / "pending" / "TEMPLATE-task.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "TEMPLATE-task.md",
         _task("T-000", "Template task", "pending"),
     )
 
@@ -166,11 +174,11 @@ def test_list_tasks_state_filter_only_includes_matching_folder(monkeypatch, tmp_
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "tasks" / "pending" / "T-001.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001.md",
         _task("T-001", "Pending task", "pending"),
     )
     _write(
-        tmp_path / "project" / "tasks" / "in-progress" / "T-002.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-002.md",
         _task("T-002", "In-progress task", "in-progress"),
     )
 
@@ -189,7 +197,7 @@ def test_list_tasks_json_outputs_plain_list_without_rich_table(monkeypatch, tmp_
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "tasks" / "pending" / "T-001.md",
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001.md",
         _task("T-001", "Pending task", "pending", "high", "developer"),
     )
 
@@ -216,18 +224,18 @@ def test_list_bugs_renders_table_and_json_and_skips_templates(monkeypatch, tmp_p
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "bugs" / "open" / "B-001.md",
+        tmp_path / ".ai-team" / "tracker" / "bugs" / "B-001.md",
         _bug("B-001", "Open bug", "high", "open"),
     )
     _write(
-        tmp_path / "project" / "bugs" / "in-progress" / "B-002.md",
+        tmp_path / ".ai-team" / "tracker" / "bugs" / "B-002.md",
         _bug("B-002", "In-progress bug", "low", "in-progress"),
     )
     _write(
-        tmp_path / "project" / "bugs" / "open" / "TEMPLATE-bug.md",
+        tmp_path / ".ai-team" / "tracker" / "bugs" / "TEMPLATE-bug.md",
         _bug("B-000", "Template bug", "low", "open"),
     )
-    _write(tmp_path / "project" / "bugs" / "resolved" / ".gitkeep", "")
+    _write(tmp_path / ".ai-team" / "tracker" / "bugs" / ".gitkeep", "")
 
     monkeypatch.chdir(tmp_path)
 
@@ -266,19 +274,19 @@ def test_list_specs_and_adrs_include_expected_columns_and_fields(monkeypatch, tm
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "specs" / "ai-team-cli.md",
+        tmp_path / "ai-team" / "specs" / "ai-team-cli.md",
         _spec("CLI Spec", "0.1", "approved"),
     )
     _write(
-        tmp_path / "project" / "specs" / "TEMPLATE-spec.md",
+        tmp_path / "ai-team" / "specs" / "TEMPLATE-spec.md",
         _spec("Template spec", "0.0", "draft"),
     )
     _write(
-        tmp_path / "project" / "decisions" / "ADR-001.md",
+        tmp_path / "ai-team" / "decisions" / "ADR-001.md",
         _adr("ADR-001", "Use Rich tables", "accepted"),
     )
     _write(
-        tmp_path / "project" / "decisions" / "TEMPLATE-adr.md",
+        tmp_path / "ai-team" / "decisions" / "TEMPLATE-adr.md",
         _adr("ADR-000", "Template adr", "proposed"),
     )
 
@@ -331,15 +339,27 @@ def test_list_change_requests_displays_id_title_state_in_rich_table(
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "change-requests" / "CR-001-add-new-step.md",
+        tmp_path
+        / ".ai-team"
+        / "tracker"
+        / "change-requests"
+        / "CR-001-add-new-step.md",
         _change_request("CR-001", "Add new step", "pending"),
     )
     _write(
-        tmp_path / "project" / "change-requests" / "CR-002-revise-scope.md",
+        tmp_path
+        / ".ai-team"
+        / "tracker"
+        / "change-requests"
+        / "CR-002-revise-scope.md",
         _change_request("CR-002", "Revise scope", "approved"),
     )
     _write(
-        tmp_path / "project" / "change-requests" / "TEMPLATE-change-request.md",
+        tmp_path
+        / ".ai-team"
+        / "tracker"
+        / "change-requests"
+        / "TEMPLATE-change-request.md",
         _change_request("CR-000", "Template CR", "pending"),
     )
 
@@ -363,7 +383,11 @@ def test_list_change_requests_json_outputs_machine_readable_rows(monkeypatch, tm
     from ai_team.cli import app
 
     _write(
-        tmp_path / "project" / "change-requests" / "CR-001-add-new-step.md",
+        tmp_path
+        / ".ai-team"
+        / "tracker"
+        / "change-requests"
+        / "CR-001-add-new-step.md",
         _change_request("CR-001", "Add new step", "pending"),
     )
 
@@ -389,7 +413,9 @@ def test_list_change_requests_returns_empty_list_when_no_change_requests_exist(
     """`list change-requests` returns an empty list without error when folder is empty."""
     from ai_team.cli import app
 
-    (tmp_path / "project" / "change-requests").mkdir(parents=True, exist_ok=True)
+    (tmp_path / ".ai-team" / "tracker" / "change-requests").mkdir(
+        parents=True, exist_ok=True
+    )
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["list", "change-requests", "--json"])
@@ -406,7 +432,7 @@ def test_list_specs_reports_frontmatter_id_not_filename_stem_for_prefixed_filena
 
     # New-style filename: S-NNN-slug.md — stem is "S-007-my-spec", frontmatter id is "S-007"
     _write(
-        tmp_path / "project" / "specs" / "S-007-my-spec.md",
+        tmp_path / "ai-team" / "specs" / "S-007-my-spec.md",
         _spec("My Spec", "1.0", "approved", spec_id="S-007"),
     )
 

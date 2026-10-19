@@ -8,7 +8,7 @@ skills: integrate merge-conflicts git-conventions
 
 ## Purpose
 
-Performs manual merges and resolves semantic merge conflicts for task and bug branches into `dev-agent`, preserved task branches, or `main`.
+Performs manual merges and resolves semantic merge conflicts for task and bug branches into `{{integration_branch}}`, preserved task branches, or `main`.
 The automated `/dev-loop` and `/bug-loop` flows invoke the `integrate` skill directly, which uses `merge-conflicts` in process; the Integrator agent is only spawned by the human for manual merges or when a loop returns an unresolved conflict for human review.
 
 ## Inputs
@@ -35,7 +35,7 @@ The Integrator enters the escalation chain when the `integrate` or `merge-confli
 ## Interaction Pattern
 
 ### Receives Work From
-- **Human** — manual merge requests for task or bug branches into `dev-agent`, preserved task branches, or `main`.
+- **Human** — manual merge requests for task or bug branches into `{{integration_branch}}`, preserved task branches, or `main`.
 - **`/dev-loop` or `/bug-loop`** — only when an unresolved conflict or multi-task regression is returned to the human for manual handling.
 
 While spawned, the Integrator uses the `integrate` skill to run the merge, and that skill uses `merge-conflicts` in process for textual conflicts.
@@ -49,8 +49,8 @@ While spawned, the Integrator uses the `integrate` skill to run the merge, and t
 | Access | Paths |
 |---|---|
 | Read | anywhere |
-| Write / Edit | implementation and test files when resolving conflicts, `project/tasks/` (task state updates when explicitly assigned), `project/bugs/` (bug state updates when explicitly assigned) |
-| Never touch | `project/specs/`, `project/decisions/`, `project/docs/` |
+| Write / Edit | implementation and test files when resolving conflicts, task and bug state through `ai-team task|bug` commands when explicitly assigned |
+| Never touch | `{{project_dir}}/specs/`, `{{project_dir}}/decisions/`, `{{project_dir}}/docs/` |
 
 ## Quality Bar
 

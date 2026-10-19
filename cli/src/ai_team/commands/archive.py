@@ -8,13 +8,14 @@ from pathlib import Path
 
 import typer
 
+from ai_team.commands._shared import project_root
 from ai_team.core.fs import move_artifact
-from ai_team.core.locator import find_project_root
 from ai_team.core.models import parse_bug, parse_task
+from ai_team.core.tracker import iter_items
 
 NAME = "archive"
 app = typer.Typer(
-    help="Archive old completed tasks and resolved bugs into project/archive/YYYY-MM/."
+    help="Archive old completed tasks and resolved bugs into the tracker's archive/YYYY-MM/."
 )
 
 _DURATION_RE = re.compile(r"^(?P<amount>\d+)(?P<unit>[dwmy])$")
@@ -33,21 +34,14 @@ def _parse_older_than(value: str) -> timedelta:
     return timedelta(days=amount * factors[unit])
 
 
-def _iter_markdown_files(folder: Path):
-    if not folder.exists():
-        return
-    for path in sorted(folder.glob("*.md")):
-        if path.name == ".gitkeep" or path.match("TEMPLATE-*.md"):
-            continue
-        yield path
-
-
-def _created_date(path: Path) -> date:
-    if path.name.startswith("T-"):
-        model = parse_task(path)
-    else:
-        model = parse_bug(path)
-    return date.fromisoformat(model.created)
+def _archivable(folder: Path, parser, done_status: str) -> list[tuple[Path, date]]:
+    """Return ``(path, created)`` for work items in *folder* whose status is *done_status*."""
+    items: list[tuple[Path, date]] = []
+    for path in iter_items(folder):
+        model = parser(path)
+        if model.status == done_status and model.created:
+            items.append((path, date.fromisoformat(model.created)))
+    return items
 
 
 @app.callback(invoke_without_command=True)
@@ -62,22 +56,17 @@ def archive(
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
 
-    root = find_project_root(Path.cwd())
-    archive_root = root.project_dir / "archive"
+    root = project_root()
     cutoff = date.today() - delta
 
     moves: list[tuple[Path, Path]] = []
-    for source in _iter_markdown_files(root.tasks_completed):
-        created = _created_date(source)
+    candidates = _archivable(root.tasks, parse_task, "completed") + _archivable(
+        root.bugs, parse_bug, "resolved"
+    )
+    for source, created in candidates:
         if created < cutoff:
             bucket = created.strftime("%Y-%m")
-            moves.append((source, archive_root / bucket / source.name))
-
-    for source in _iter_markdown_files(root.bugs_resolved):
-        created = _created_date(source)
-        if created < cutoff:
-            bucket = created.strftime("%Y-%m")
-            moves.append((source, archive_root / bucket / source.name))
+            moves.append((source, root.archive / bucket / source.name))
 
     for source, destination in moves:
         if dry_run:

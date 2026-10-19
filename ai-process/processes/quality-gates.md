@@ -49,7 +49,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 **When:** After a Developer completes a task or bug fix.
 **Evaluator:** Reviewer role (two stages).
-**Output:** Review Verdict entry committed to the canonical task or bug file on `dev-agent`.
+**Output:** Review Verdict entry recorded in the task or bug file in the local tracker.
 
 ### Stage 1: Spec Compliance
 **Pass criteria:**
@@ -59,7 +59,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 ### Stage 2: Code Quality
 **Pass criteria:**
-- Code follows the coding standards: `ai-process/guidelines/coding-standards.md` (general) and `project/docs/coding_guidelines.md` (project-specific tech-stack rules, if present).
+- Code follows the coding standards: `ai-process/guidelines/coding-standards.md` (general) and `ai-team/docs/coding_guidelines.md` (project-specific tech-stack rules, if present).
 - Relevant tests exist for the changed behavior.
 - The Developer's Work Log records local test evidence or explains why a local test run was not possible.
 - No security vulnerabilities introduced.
@@ -68,25 +68,25 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 ### Bug Fix Criteria
 For bug fixes, the Reviewer also verifies:
-- The complete diagnosis→fix evidence chain is present: the committed Diagnosis Log entry (the fix contract) records reproduction status, captured evidence, isolated fault, and root cause or fault hypothesis; the fix addresses that isolated cause; and the Fix Verification steps from the bug report confirm the defect is resolved.
+- The complete diagnosis→fix evidence chain is present: the recorded Diagnosis Log entry (the fix contract) records reproduction status, captured evidence, isolated fault, and root cause or fault hypothesis; the fix addresses that isolated cause; and the Fix Verification steps from the bug report confirm the defect is resolved.
 - The Diagnosis Log records reproduction status, captured evidence, isolated fault, and root cause or fault hypothesis.
 - The fix targets the isolated cause rather than masking the symptom downstream.
 - A regression test exists when the defect can be tested automatically, or the Work Log explains why only manual verification is possible.
 - The Fix Verification steps from the bug report were run or a clear reason is recorded.
 
-**On failure:** The Reviewer records specific feedback in the canonical work item. The active loop returns the work item to the Developer for another implementation cycle. After the third failed review or any `ESCALATE` verdict, the active loop consults the Architect before stopping for human action.
+**On failure:** The Reviewer records specific feedback in the work item file. The active loop returns the work item to the Developer for another implementation cycle. After the third failed review or any `ESCALATE` verdict, the active loop consults the Architect before stopping for human action.
 
 ## Gate 4: Integration Tests
 
 **When:** After each task or bug fix passes code review (Gate 3), during integration by the active loop.
 **Evaluator:** Automated test suite, run by the integration procedure.
 **Pass criteria:**
-- The latest committed canonical PASS verdict on `dev-agent` confirms the branch passed Gate 3 before the merge is attempted.
+- The latest PASS verdict recorded in the work item file confirms the branch passed Gate 3 before the merge is attempted.
 - All unit tests pass on the source branch (pre-merge).
 - All unit and integration tests pass on the destination branch after the merge (regression check).
 - No unresolved merge conflicts remain.
 
-**On failure:** The integration procedure reverts the merge commit, files a bug report for each regression on `dev-agent`, and stops the active loop. The source branch is preserved for fixing.
+**On failure:** The integration procedure reverts the merge commit, files a bug report in the tracker for each regression, and stops the active loop. The source branch is preserved for fixing.
 Regression bug reports must record the preserved source branch as `source_branch` so the bug-fix loop can branch from and merge back into that branch before integration is retried.
 
 ## Development Loop Baseline Guard
@@ -95,8 +95,9 @@ Before the development loop claims its first task it discovers the documented ba
 
 ## Gate 5: Final Merge Sign-off
 
-**When:** After the task queue is empty and all tasks are in `completed/`.
+**When:** After the task queue is empty and all tasks are `completed`.
 **Evaluator:** Human.
+**Input:** The status summary the human requests on demand with `/status-report`. The loops do not produce it automatically.
 **Pass criteria:**
 - Integration tests are green.
 - No open bugs with severity `critical` or `high`.

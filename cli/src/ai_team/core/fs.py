@@ -22,14 +22,19 @@ from typing import Literal
 from ai_team.core.models import (
     Adr,
     Bug,
+    ChangeRequest,
     Spec,
     Task,
     dump_frontmatter,
     parse_adr,
     parse_bug,
+    parse_change_request,
     parse_spec,
     parse_task,
 )
+
+ArtifactKind = Literal["task", "bug", "spec", "adr", "change-request"]
+ArtifactModel = Task | Bug | Spec | Adr | ChangeRequest
 
 # ---------------------------------------------------------------------------
 # Errors
@@ -54,6 +59,7 @@ _PARSERS = {
     "bug": parse_bug,
     "spec": parse_spec,
     "adr": parse_adr,
+    "change-request": parse_change_request,
 }
 
 
@@ -79,16 +85,20 @@ def _extract_body(path: Path) -> str:
     return body
 
 
-def _infer_kind(path: Path) -> Literal["task", "bug", "spec", "adr"]:
-    """Infer the artifact kind from the raw frontmatter content of *path*.
+def _infer_kind(path: Path) -> ArtifactKind:
+    """Infer the artifact kind of *path*.
 
-    Heuristic: inspect unique field names present in the frontmatter block.
+    Change-requests are recognised by their ``CR-`` filename prefix, because
+    their frontmatter fields are a subset of an ADR's. Otherwise the heuristic
+    inspects unique field names present in the frontmatter block.
 
       - ``severity`` key  → bug
       - ``assigned-role`` key → task
       - ``author`` key → spec
       - otherwise → adr
     """
+    if path.name.startswith("CR-"):
+        return "change-request"
     text = path.read_text(encoding="utf-8")
     # Extract only the text between the two --- fences.
     parts = text.split("---")
@@ -124,8 +134,8 @@ def _write_atomically(path: Path, content: str) -> None:
 
 def read_artifact(
     path: Path | str,
-    kind: Literal["task", "bug", "spec", "adr"],
-) -> tuple[Task | Bug | Spec | Adr, str]:
+    kind: ArtifactKind,
+) -> tuple[ArtifactModel, str]:
     """Parse an artifact file and return ``(model, body)``.
 
     The returned *body* is the markdown text that follows the closing ``---``
@@ -142,7 +152,7 @@ def read_artifact(
     Returns
     -------
     tuple[model, body]
-        A ``(Task | Bug | Spec | Adr, str)`` pair.
+        A ``(model, body)`` pair for the requested kind.
 
     Raises
     ------
@@ -163,7 +173,7 @@ def read_artifact(
 
 def write_artifact(
     path: Path | str,
-    model: Task | Bug | Spec | Adr,
+    model: ArtifactModel,
     body: str,
     *,
     overwrite: bool = False,
@@ -239,7 +249,9 @@ def move_artifact(src: Path | str, dest: Path | str) -> None:
     os.replace(src, dest)
 
 
-def update_status(path: Path | str, new_status: str) -> None:
+def update_status(
+    path: Path | str, new_status: str, kind: ArtifactKind | None = None
+) -> None:
     """Rewrite the ``status`` frontmatter field in *path*, preserving everything else.
 
     Reads the artifact using the appropriate ``parse_*`` function (which
@@ -247,7 +259,8 @@ def update_status(path: Path | str, new_status: str) -> None:
     writes back via ``dump_frontmatter`` so that YAML comments and key order
     survive the rewrite.
 
-    The artifact kind is inferred automatically from frontmatter field names.
+    The artifact kind is inferred from the filename and frontmatter field names
+    unless *kind* is given.
 
     Parameters
     ----------
@@ -267,7 +280,8 @@ def update_status(path: Path | str, new_status: str) -> None:
     if not path.exists():
         raise ArtifactNotFound(f"Artifact file not found: {path!s}")
 
-    kind = _infer_kind(path)
+    if kind is None:
+        kind = _infer_kind(path)
     model, body = read_artifact(path, kind)
     model.status = new_status
     content = dump_frontmatter(model, body)

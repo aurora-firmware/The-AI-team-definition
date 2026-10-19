@@ -28,7 +28,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from ai_team.core.fs import write_artifact
-from ai_team.core.models import Adr, Bug, Spec, Task
+from ai_team.core.models import Adr, Bug, ChangeRequest, Spec, Task
 
 _LOCK_FILENAME = ".ai-team.lock"
 _DEFAULT_TIMEOUT_SECONDS = 10.0
@@ -111,7 +111,7 @@ def create_artifact_with_lock(
     project_dir: Path,
     *,
     allocate_id: Callable[[], str],
-    build: Callable[[str], tuple[Path, Task | Bug | Spec | Adr, str]],
+    build: Callable[[str], tuple[Path, Task | Bug | Spec | Adr | ChangeRequest, str]],
     timeout: float = _DEFAULT_TIMEOUT_SECONDS,
 ) -> tuple[str, Path]:
     """Allocate a new artifact ID and write its file in one locked critical section.

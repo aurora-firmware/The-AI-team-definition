@@ -2,9 +2,9 @@
 committing lifecycle files on task branches.
 
 Fix Verification (from the bug report):
-- The Developer agent definition names `project/tasks/` and `project/bugs/` as
-  out of bounds for Write/Edit and for `git add`/commit, with the `new-bug`
-  exception stated explicitly.
+- The Developer agent definition names tracker files (tasks, bugs,
+  change-requests; spec S-006) as out of bounds for Write/Edit and for
+  `git add`/commit, with the `new-bug` exception stated explicitly.
 - `git-conventions` lists lifecycle-file commits from an implementation branch
   under Hard Rules.
 - Both Claude and Codex Developer definitions carry the same boundary.
@@ -76,26 +76,26 @@ def _never_touch_line(body: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# AC-1: Claude Developer Folder Scope names project/tasks/ and project/bugs/
+# AC-1: Claude Developer Folder Scope names ai-team/tasks/ and ai-team/bugs/
 # ---------------------------------------------------------------------------
 
 
 def test_claude_developer_never_touch_lists_lifecycle_paths() -> None:
-    """The Claude Developer Folder Scope 'Never touch' row must name
-    project/tasks/ and project/bugs/ as out of bounds."""
+    """The Claude Developer 'Never touch' entry must name tracker work items
+    (tasks, bugs, change-requests) as out of bounds."""
     for text in _claude_developer_texts():
         never_touch = _never_touch_line(text)
         assert never_touch, "Claude developer.md must contain a 'Never touch' line"
-        assert "project/tasks/" in never_touch
-        assert "project/bugs/" in never_touch
+        assert "tracker files" in never_touch
+        assert "tasks, bugs, change-requests" in never_touch
 
 
 def test_claude_developer_never_touch_states_new_bug_exception() -> None:
-    """The 'Never touch' row must state the project/bugs/open/ exception via
-    the new-bug skill explicitly, not just omit it silently."""
+    """The 'Never touch' row must state the bug-creation exception via the
+    new-bug skill explicitly, not just omit it silently."""
     for text in _claude_developer_texts():
         never_touch = _never_touch_line(text)
-        assert "project/bugs/open/" in never_touch
+        assert "creating a bug" in never_touch
         assert "new-bug" in never_touch
 
 
@@ -116,21 +116,21 @@ def test_claude_developer_never_touch_forbids_git_add_and_commit() -> None:
 
 
 def test_codex_developer_never_touch_lists_lifecycle_paths() -> None:
-    """The Codex Developer Folder scope 'Never touch' line must name
-    project/tasks/ and project/bugs/ as out of bounds."""
+    """The Codex Developer 'Never touch' entry must name tracker work items
+    (tasks, bugs, change-requests) as out of bounds."""
     for text in _codex_developer_texts():
         never_touch = _never_touch_line(text)
         assert never_touch, "Codex developer.toml must contain a 'Never touch' line"
-        assert "project/tasks/" in never_touch
-        assert "project/bugs/" in never_touch
+        assert "tracker files" in never_touch
+        assert "tasks, bugs, change-requests" in never_touch
 
 
 def test_codex_developer_never_touch_states_new_bug_exception() -> None:
-    """The Codex 'Never touch' line must state the project/bugs/open/
-    exception via the new-bug skill explicitly."""
+    """The Codex 'Never touch' line must state the bug-creation exception via
+    the new-bug skill explicitly."""
     for text in _codex_developer_texts():
         never_touch = _never_touch_line(text)
-        assert "project/bugs/open/" in never_touch
+        assert "creating a bug" in never_touch
         assert "new-bug" in never_touch
 
 

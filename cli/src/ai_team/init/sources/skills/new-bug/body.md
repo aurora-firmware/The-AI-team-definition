@@ -38,4 +38,5 @@ When invoked directly by a human and required fields are missing, ask only for t
    - Fill in the expected and actual behaviour sections.
    - Fill in the evidence section with reproduction steps and observable output.
    - Fill in the fix-verification section.
-7. Confirm the file exists under `project/bugs/open/` and return the created path and ID.
+7. Confirm the file exists at the path the CLI returned (the tracker's `bugs/` folder, status `open`) and return the created path and ID.
+   The bug file is outside version control: never commit it, from any branch.

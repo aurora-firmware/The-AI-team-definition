@@ -64,7 +64,7 @@ def test_every_invocation_emits_development_warning_once(
     from ai_team.cli import app
 
     monkeypatch.chdir(tmp_path)
-    (tmp_path / "project").mkdir()
+    (tmp_path / "ai-team").mkdir()
 
     result = CliRunner().invoke(app, args)
 
@@ -77,7 +77,7 @@ def test_json_command_keeps_warning_out_of_stdout(monkeypatch, tmp_path):
     from ai_team.cli import app
 
     monkeypatch.chdir(tmp_path)
-    (tmp_path / "project").mkdir()
+    (tmp_path / "ai-team").mkdir()
 
     result = CliRunner().invoke(app, ["list", "tasks", "--json"])
 

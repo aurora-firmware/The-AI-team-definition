@@ -14,8 +14,8 @@ The result of this skill is a Findings block; the architect role envelope wraps 
 ## Input Requirements
 
 - **Approved specification** — the spec that passed Gate 1.
-- **Pending task files** — task plan in `project/tasks/pending/`.
-- **Decision records** — existing ADRs in `project/decisions/`.
+- **Planned task files** — the absolute path of every planned task file, passed by the caller. The tracker is outside the repository, so do not search for task files under `{{project_dir}}/`.
+- **Decision records** — existing ADRs in `{{project_dir}}/decisions/`.
 - **Project structure** — current files needed to verify paths and conflict risk.
 
 ## Procedure
@@ -25,12 +25,12 @@ Gate 2 is a technical preflight. During review, focus findings only on technical
 ### Step 1: Read Planning Context
 
 Read the approved specification and all task files for the plan under review.
-Read existing decision records in `project/decisions/`.
+Read existing decision records in `{{project_dir}}/decisions/`.
 Identify each task's dependencies, files to touch, acceptance criteria, and verification command.
 
 ### Step 2: Check Spec Coverage
 
-Verify spec coverage: confirm that the full set of pending tasks covers the entire approved specification with no features, sections, or behaviors left unaddressed.
+Verify spec coverage: confirm that the full set of planned tasks covers the entire approved specification with no features, sections, or behaviors left unaddressed.
 If any part of the spec is not covered by at least one task, flag the gap.
 Do not pass Gate 2 if the plan leaves spec sections unimplemented without explicit justification.
 
@@ -70,7 +70,7 @@ Flag tasks that exceed the one-shottable threshold:
 
 ### Step 7: Produce Verdict
 
-If the plan passes, state that Gate 2 passes and the pending queue is ready for `/dev-loop`.
+If the plan passes, state that Gate 2 passes and the plan is ready to merge and activate for `/dev-loop`.
 
 If the plan fails:
 
@@ -89,7 +89,7 @@ Use this structure for the Findings block — matches the Architect agent's stan
 ```text
 Result: PASS | FAIL | BLOCKED | ESCALATE
 
-Spec reviewed: project/specs/<file>
+Spec reviewed: {{project_dir}}/specs/<file>
 Tasks reviewed: <count>
 
 Findings:
@@ -117,7 +117,7 @@ Then produce a Phase 2 Human Escalation Report using the template defined in the
 
 ## Quality Criteria
 
-- Every pending task in the plan was checked.
+- Every planned task in the plan was checked.
 - Dependencies are complete and refer to real tasks.
 - File conflict risks are resolved by dependency order or Planner correction.
 - Existing ADRs were consulted before approval.

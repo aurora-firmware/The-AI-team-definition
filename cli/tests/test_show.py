@@ -5,6 +5,13 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
+
+@pytest.fixture(autouse=True)
+def _project_dir(tmp_path):
+    """The locator needs the project directory; work items live in the tracker."""
+    (tmp_path / "ai-team").mkdir(exist_ok=True)
+
+
 TASK_TEMPLATE = """\
 ---
 id: "{id}"
@@ -87,7 +94,9 @@ def test_show_exact_id_single_match_prints_markdown(monkeypatch, tmp_path):
     """`ai-team show T-001` prints markdown when exactly one file matches."""
     from ai_team.cli import app
 
-    task_path = tmp_path / "project" / "tasks" / "pending" / "T-001-initial-scaffold.md"
+    task_path = (
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001-initial-scaffold.md"
+    )
     _write(task_path, _task("T-001", "Initial scaffold", "Task body line."))
 
     monkeypatch.chdir(tmp_path)
@@ -104,7 +113,7 @@ def test_show_json_outputs_path_frontmatter_and_body(monkeypatch, tmp_path):
 
     from ai_team.cli import app
 
-    task_path = tmp_path / "project" / "tasks" / "pending" / "T-002-json-case.md"
+    task_path = tmp_path / ".ai-team" / "tracker" / "tasks" / "T-002-json-case.md"
     _write(task_path, _task("T-002", "JSON case", "Body for json."))
 
     monkeypatch.chdir(tmp_path)
@@ -163,28 +172,16 @@ def test_show_resolves_ids_across_artifact_types_and_states(
     from ai_team.cli import app
 
     if artifact_path[0] == "tasks":
-        path = (
-            tmp_path
-            / "project"
-            / artifact_path[0]
-            / artifact_path[1]
-            / artifact_path[2]
-        )
+        path = tmp_path / ".ai-team" / "tracker" / "tasks" / artifact_path[2]
         content = _task(identifier, expected_text, "Task content.")
     elif artifact_path[0] == "bugs":
-        path = (
-            tmp_path
-            / "project"
-            / artifact_path[0]
-            / artifact_path[1]
-            / artifact_path[2]
-        )
+        path = tmp_path / ".ai-team" / "tracker" / "bugs" / artifact_path[2]
         content = _bug(identifier, expected_text, artifact_path[1], "Bug content.")
     elif artifact_path[0] == "specs":
-        path = tmp_path / "project" / artifact_path[0] / artifact_path[1]
+        path = tmp_path / "ai-team" / artifact_path[0] / artifact_path[1]
         content = _spec(expected_text, "Spec content.")
     else:
-        path = tmp_path / "project" / artifact_path[0] / artifact_path[1]
+        path = tmp_path / "ai-team" / artifact_path[0] / artifact_path[1]
         content = _adr(identifier, expected_text, "ADR content.")
 
     _write(path, content)
@@ -202,8 +199,8 @@ def test_show_multiple_matches_prints_candidates_to_stderr_and_exits_non_zero(
     """Ambiguous identifiers print candidate paths to stderr and exit non-zero."""
     from ai_team.cli import app
 
-    first = tmp_path / "project" / "tasks" / "pending" / "T-100-shared-slug.md"
-    second = tmp_path / "project" / "tasks" / "completed" / "T-101-shared-slug.md"
+    first = tmp_path / ".ai-team" / "tracker" / "tasks" / "T-100-shared-slug.md"
+    second = tmp_path / ".ai-team" / "tracker" / "tasks" / "T-101-shared-slug.md"
     _write(first, _task("T-100", "Shared slug one", "Body one."))
     _write(second, _task("T-101", "Shared slug two", "Body two."))
 
@@ -222,15 +219,10 @@ def test_show_no_match_prints_not_found_with_searched_roots_and_exits_non_zero(
     """No matches print a not-found message naming searched roots and exit non-zero."""
     from ai_team.cli import app
 
-    (tmp_path / "project" / "tasks" / "pending").mkdir(parents=True)
-    (tmp_path / "project" / "tasks" / "in-progress").mkdir(parents=True)
-    (tmp_path / "project" / "tasks" / "completed").mkdir(parents=True)
-    (tmp_path / "project" / "tasks" / "blocked").mkdir(parents=True)
-    (tmp_path / "project" / "bugs" / "open").mkdir(parents=True)
-    (tmp_path / "project" / "bugs" / "in-progress").mkdir(parents=True)
-    (tmp_path / "project" / "bugs" / "resolved").mkdir(parents=True)
-    (tmp_path / "project" / "specs").mkdir(parents=True)
-    (tmp_path / "project" / "decisions").mkdir(parents=True)
+    (tmp_path / ".ai-team" / "tracker" / "tasks").mkdir(parents=True)
+    (tmp_path / ".ai-team" / "tracker" / "bugs").mkdir(parents=True)
+    (tmp_path / "ai-team" / "specs").mkdir(parents=True)
+    (tmp_path / "ai-team" / "decisions").mkdir(parents=True)
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["show", "T-999"])
@@ -239,7 +231,8 @@ def test_show_no_match_prints_not_found_with_searched_roots_and_exits_non_zero(
     stderr = result.stderr
     assert "not found" in stderr.lower()
     assert "T-999" in stderr
-    assert str(tmp_path / "project" / "tasks") in stderr
-    assert str(tmp_path / "project" / "bugs") in stderr
-    assert str(tmp_path / "project" / "specs") in stderr
-    assert str(tmp_path / "project" / "decisions") in stderr
+    assert str(tmp_path / ".ai-team" / "tracker" / "tasks") in stderr
+    assert str(tmp_path / ".ai-team" / "tracker" / "bugs") in stderr
+    assert str(tmp_path / ".ai-team" / "tracker" / "change-requests") in stderr
+    assert str(tmp_path / "ai-team" / "specs") in stderr
+    assert str(tmp_path / "ai-team" / "decisions") in stderr

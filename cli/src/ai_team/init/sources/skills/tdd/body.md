@@ -4,9 +4,9 @@
 
 - **Task or bug file** — with acceptance criteria or fix-verification steps.
 - **Project test setup** — test framework, directory structure, how to run tests.
-- **Target-project coding guidance** — the project `CLAUDE.md`, `project/docs/coding_guidelines.md`, README, build configuration, and any human-provided instructions (the framework-level coding standards are carried by the invoking role's definition).
+- **Target-project coding guidance** — the project `CLAUDE.md`, `{{project_dir}}/docs/coding_guidelines.md`, README, build configuration, and any human-provided instructions (the framework-level coding standards are carried by the invoking role's definition).
 
-Task and bug files are canonical lifecycle state on `dev-agent`.
+Task and bug files live in the local tracker, outside version control; the active loop passes their path.
 Read their existing Work Log and Diagnosis Log entries, but return new log content as a handoff to the active loop instead of editing lifecycle files directly.
 
 ## Procedure
@@ -66,7 +66,7 @@ Continue until all criteria have tests and passing implementations.
 After refactor and before handing back to the orchestrator, prepare a dated Work Log entry using the heading `### Session N — YYYY-MM-DD`.
 Use a free-prose body that summarizes what was done, what was tried and rejected, and what remains.
 The session number increments monotonically across all sessions on the same task or bug.
-Return this entry to the active loop. The loop appends and commits it to the canonical task or bug file on `dev-agent`.
+Return this entry to the active loop. The loop appends it to the task or bug file in the tracker.
 
 ## Escalation
 
@@ -107,10 +107,10 @@ Question: [specific guidance needed to continue within the approved specificatio
 
 ## Common Pitfalls
 
-- **Starting work without reading the Work Log** — always read every existing canonical Work Log entry before the acceptance criteria or any other work.
+- **Starting work without reading the Work Log** — always read every existing Work Log entry before the acceptance criteria or any other work.
 - **Writing implementation first** — this defeats the purpose of TDD. Always write the test first.
 - **Tests that test implementation** — test what the code does (behavior), not how it does it (implementation details). If you refactor internals, tests should still pass.
 - **Skipping the "verify it fails" step** — a test that passes before implementation is not testing anything. It gives false confidence.
-- **Committing outside the branch model** — implementation commits belong only on the assigned task or bug branch, never on `dev-agent`.
+- **Committing outside the branch model** — implementation commits belong only on the assigned task or bug branch, never on `{{integration_branch}}`.
 - **Over-refactoring** — refactor only when the code is messy enough to slow down the next test cycle. Do not refactor preemptively.
 - **Giant test functions** — each test should check one thing. If a test has multiple assertions checking different behaviors, split it.

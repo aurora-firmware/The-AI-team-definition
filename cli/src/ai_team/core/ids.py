@@ -21,29 +21,29 @@ _SPEC_FRONTMATTER_ID_PATTERN = re.compile(
 
 
 def next_task_id(project_root: ProjectRoot) -> str:
-    """Return the next task ID in T-NNN format across all task state folders."""
+    """Return the next task ID in T-NNN format across the tracker and its archive."""
     return _next_id(
         prefix="T",
-        directories=(
-            project_root.tasks_pending,
-            project_root.tasks_in_progress,
-            project_root.tasks_completed,
-            project_root.tasks_blocked,
-        ),
+        directories=(project_root.tasks, *_archive_buckets(project_root)),
         pattern=_TASK_PATTERN,
     )
 
 
 def next_bug_id(project_root: ProjectRoot) -> str:
-    """Return the next bug ID in B-NNN format across all bug state folders."""
+    """Return the next bug ID in B-NNN format across the tracker and its archive."""
     return _next_id(
         prefix="B",
-        directories=(
-            project_root.bugs_open,
-            project_root.bugs_in_progress,
-            project_root.bugs_resolved,
-        ),
+        directories=(project_root.bugs, *_archive_buckets(project_root)),
         pattern=_BUG_PATTERN,
+    )
+
+
+def _archive_buckets(project_root: ProjectRoot) -> tuple[Path, ...]:
+    """Return the ``YYYY-MM`` archive bucket folders in the tracker."""
+    if not project_root.archive.is_dir():
+        return ()
+    return tuple(
+        sorted(path for path in project_root.archive.iterdir() if path.is_dir())
     )
 
 
@@ -58,7 +58,7 @@ def next_spec_id(project_root: ProjectRoot) -> str:
 
 
 def next_adr_id(project_root: ProjectRoot) -> str:
-    """Return the next ADR ID in ADR-NNN format from project/decisions/."""
+    """Return the next ADR ID in ADR-NNN format from ai-team/decisions/."""
     return _next_id(
         prefix="ADR",
         directories=(project_root.decisions,),

@@ -11,7 +11,7 @@ Those rules are then **implemented** by four things, all packaged inside the `ai
 
 - the **agents** — the roles that carry out the process (authored under `cli/src/ai_team/init/sources/agents/`);
 - the **skills** — the procedures the agents follow (authored under `cli/src/ai_team/init/sources/skills/`);
-- the **project skeleton** — the managed `project/` directory layout scaffolded into target repositories (authored under `cli/src/ai_team/init/sources/project/`);
+- the **project skeleton** — the managed `ai-team/` directory layout scaffolded into target repositories (authored under `cli/src/ai_team/init/sources/project/`);
 - the **root guidance templates** — starter `CLAUDE.md` and `AGENTS.md` files for project-specific commands and conventions (authored under `cli/src/ai_team/init/sources/root/`);
 - the **`ai-team` CLI** (`cli/`) — the tooling that supports the skills by managing project artifacts and bootstrapping the framework into new repositories.
 
@@ -114,7 +114,7 @@ Each skill implements a workflow or action defined in the ai-process:
 | **/new-task** | Creates a pending task by invoking `ai-team task new` |
 | **/new-bug** | Creates an evidence-backed bug report by invoking `ai-team bug new`, then fills bug content |
 | **/new-adr** | Creates an Architecture Decision Record by invoking `ai-team adr new`, then fills ADR content |
-| **/status-report** | Summarizes project state by invoking `ai-team status` and writes a report with `ai-team report` |
+| **/status-report** | On demand only: summarizes project state with `ai-team status`, and writes a report file with `ai-team report` only when asked |
 
 ## Agent Platform Compatibility
 
@@ -158,7 +158,7 @@ From the target repository root:
 ai-team init . --tools all --no-interactive --create-root-guidance
 ```
 
-This creates the managed `project/` folders, copies the bundled agents and skills into the target project's `.claude/` and/or `.codex/` directories, writes `.ai-team.toml`, and optionally creates starter root `CLAUDE.md` and `AGENTS.md` files.
+This creates the managed `ai-team/` folders, copies the bundled agents and skills into the target project's `.claude/` and/or `.codex/` directories, writes `.ai-team.toml`, and optionally creates starter root `CLAUDE.md` and `AGENTS.md` files.
 The `ai-process/` specification documents are not exported; they live in this meta-repository only and serve as the authoritative spec for the rules the agents and skills implement.
 
 Use `--dry-run` to preview files before writing. Use `--force` only when you intentionally want existing files overwritten. In non-interactive setup, omit `--create-root-guidance` if you do not want starter root guidance files.
@@ -191,12 +191,12 @@ The action skills use those commands internally. For example, `/new-task` delega
 The most common loop is:
 
 1. Create or approve a spec.
-2. Create tasks in `project/tasks/pending/`.
+2. Break it into tasks; they live in the local tracker (`ai-team tracker path`), outside version control.
 3. Run `/dev-loop` to implement, review, integrate, and complete tasks.
 4. Run `/bug-loop` for open bugs.
 5. Run `ai-team status` and `ai-team report` for Gate 5 sign-off context.
 
-After initialization, still add your project's `CLAUDE.md`, stack-specific commands, and coding guidance in `project/docs/`.
+After initialization, still add your project's `CLAUDE.md`, stack-specific commands, and coding guidance in `ai-team/docs/`.
 Keep the framework files generic unless you intentionally fork the process.
 
 The normal workflow is:
@@ -205,7 +205,7 @@ The normal workflow is:
 2. Planner decomposes the approved spec into tasks.
 3. Architect validates the task plan at Gate 2.
 4. Human starts `/dev-loop`; Gate 3 code review and Gate 4 integration run inside the loop.
-5. Bugs are filed in `project/bugs/open/` and handled through `/bug-loop`.
+5. Bugs are filed in the local tracker and handled through `/bug-loop`.
 6. Human approves the final `dev-agent` → `main` merge at Gate 5.
 
 See `guides/setup-guide.md` for the complete file list, CLAUDE.md starter template, and verification steps.
@@ -228,12 +228,11 @@ See `guides/setup-guide.md` for the complete file list, CLAUDE.md starter templa
 │   └── architecture/    AI team structure: roles, components, boundaries
 ├── docs/ai-team/        This repo's own managed artifacts (see `[project] dir` in .ai-team.toml)
 │   ├── specs/           Feature specifications (with archive/ for superseded versions)
-│   ├── tasks/           Task tracking (pending/ → in-progress/ → completed/ | blocked/)
-│   ├── bugs/            Bug reports (open/ → in-progress/ → resolved/)
-│   ├── change-requests/ Proposed framework or project changes awaiting planning
 │   ├── decisions/       Architecture Decision Records
 │   └── docs/            Project-specific commands, coding conventions, operations,
 │                        and generated reports under docs/reports/
+├── .ai-team/tracker/    Local, git-ignored work-item tracker: tasks, bugs, and change-requests
+│                        (state is each file's status field; see `ai-team tracker path`)
 ├── guides/              Human-facing setup and customization guides
 └── cli/                 `ai-team` CLI package and bundled init scaffolds (authoritative agent
                          and skill sources live under cli/src/ai_team/init/sources/)

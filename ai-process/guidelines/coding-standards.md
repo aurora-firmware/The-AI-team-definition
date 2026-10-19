@@ -11,7 +11,7 @@ They are intentionally language-agnostic.
 When bootstrapping a new project, extend them with language-specific conventions, examples, and tooling rules relevant to your stack.
 Project-specific overrides should be documented in the project's own guidelines.
 
-**For naming conventions, function patterns, and dependency policies**, see `project/docs/coding_guidelines.md` (when working within a project). Each project should maintain its own extensions to these framework standards.
+**For naming conventions, function patterns, and dependency policies**, see `ai-team/docs/coding_guidelines.md` (when working within a project). Each project should maintain its own extensions to these framework standards.
 
 ## General Principles
 

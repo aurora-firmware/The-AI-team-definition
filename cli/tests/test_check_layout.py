@@ -17,10 +17,10 @@ def test_check_layout_reports_all_findings_in_level_and_path_order(
 
     findings = [
         LayoutFinding(4, ".ai-team.toml", "version differs", "update version"),
-        LayoutFinding(2, "project/tasks/z.md", "bad frontmatter", "fix metadata"),
-        LayoutFinding(1, "project/tasks", "directory missing", "restore scaffold"),
+        LayoutFinding(2, "ai-team/tasks/z.md", "bad frontmatter", "fix metadata"),
+        LayoutFinding(1, "ai-team/tasks", "directory missing", "restore scaffold"),
         LayoutFinding(3, "AGENTS.md", "section missing", "add section"),
-        LayoutFinding(2, "project/tasks/a.md", "bad filename", "rename file"),
+        LayoutFinding(2, "ai-team/tasks/a.md", "bad filename", "rename file"),
     ]
     received_repositories: list[Path] = []
 
@@ -38,10 +38,10 @@ def test_check_layout_reports_all_findings_in_level_and_path_order(
     assert "5 layout findings" in result.stdout
     expected_order = [
         "Level: 1",
-        "Path: project/tasks",
+        "Path: ai-team/tasks",
         "Level: 2",
-        "Path: project/tasks/a.md",
-        "Path: project/tasks/z.md",
+        "Path: ai-team/tasks/a.md",
+        "Path: ai-team/tasks/z.md",
         "Level: 3",
         "Path: AGENTS.md",
         "Level: 4",

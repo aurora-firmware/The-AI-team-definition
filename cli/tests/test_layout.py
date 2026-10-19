@@ -23,7 +23,7 @@ from ai_team.core.layout import (
 def _write_marker(
     repo: Path,
     *,
-    project_dir: str = "project",
+    project_dir: str = "ai-team",
     tools: tuple[str, ...] = ("claude", "codex"),
     version: str = "1.2.3",
 ) -> None:
@@ -38,7 +38,7 @@ def _write_marker(
 
 def _create_current_scaffold(repo: Path, tools: tuple[str, ...]) -> None:
     scaffold_root = resources.files("ai_team.init").joinpath("scaffolds")
-    for source_name, destination_name in (("project", "project"),) + tuple(
+    for source_name, destination_name in (("project", "ai-team"),) + tuple(
         (tool, f".{tool}") for tool in tools
     ):
         source = scaffold_root.joinpath(source_name)
@@ -64,6 +64,11 @@ def _snapshot(repo: Path) -> list[tuple[str, bool, bytes | None]]:
 def _write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+    # Work items live in the tracker; artifact checks still need the project dir.
+    for parent in path.parents:
+        if parent.name == ".ai-team":
+            (parent.parent / "ai-team").mkdir(exist_ok=True)
+            break
 
 
 def _frontmatter(**values: str) -> str:
@@ -137,7 +142,7 @@ def test_resolve_layout_reports_marker_faults_and_uses_safe_conventions(
 
     contract, findings = resolve_layout(tmp_path, current_version="1.2.3")
 
-    assert contract.project_dir == tmp_path / "project"
+    assert contract.project_dir == tmp_path / "ai-team"
     assert contract.tools == ()
     assert findings
     assert all(finding.suggested_fix for finding in findings)
@@ -149,16 +154,16 @@ def test_level_1_reports_every_missing_current_scaffold_directory_and_allows_ext
 ) -> None:
     _write_marker(tmp_path, tools=("codex",))
     _create_current_scaffold(tmp_path, ("codex",))
-    shutil.rmtree(tmp_path / "project" / "tasks" / "blocked")
+    shutil.rmtree(tmp_path / "ai-team" / "specs")
     shutil.rmtree(tmp_path / ".codex" / "agents")
-    (tmp_path / "project" / "extra").mkdir()
+    (tmp_path / "ai-team" / "extra").mkdir()
     contract, resolution_findings = resolve_layout(tmp_path, current_version="1.2.3")
 
     findings = check_level_1(contract)
 
     assert resolution_findings == []
     assert {finding.path for finding in findings} == {
-        "project/tasks/blocked",
+        "ai-team/specs",
         ".codex/agents",
     }
     assert all(finding.level == 1 for finding in findings)
@@ -169,7 +174,7 @@ def test_level_1_reports_every_missing_current_scaffold_directory_and_allows_ext
     ("relative_path", "content", "expected_problem"),
     [
         (
-            "project/specs/Bad Spec.md",
+            "ai-team/specs/Bad Spec.md",
             _frontmatter(
                 id="S-001",
                 title="Spec",
@@ -181,7 +186,7 @@ def test_level_1_reports_every_missing_current_scaffold_directory_and_allows_ext
             "filename",
         ),
         (
-            "project/tasks/pending/T-001-task.md",
+            ".ai-team/tracker/tasks/T-001-task.md",
             _frontmatter(
                 id="T-001",
                 title="Task",
@@ -192,7 +197,7 @@ def test_level_1_reports_every_missing_current_scaffold_directory_and_allows_ext
             "frontmatter",
         ),
         (
-            "project/bugs/open/not-a-bug.md",
+            ".ai-team/tracker/bugs/not-a-bug.md",
             _frontmatter(
                 id="B-001",
                 title="Bug",
@@ -203,7 +208,7 @@ def test_level_1_reports_every_missing_current_scaffold_directory_and_allows_ext
             "filename",
         ),
         (
-            "project/change-requests/request.md",
+            ".ai-team/tracker/change-requests/request.md",
             _frontmatter(
                 id="CR-001",
                 title="Request",
@@ -213,7 +218,7 @@ def test_level_1_reports_every_missing_current_scaffold_directory_and_allows_ext
             "filename",
         ),
         (
-            "project/decisions/decision.md",
+            "ai-team/decisions/decision.md",
             _frontmatter(
                 id="ADR-001",
                 title="Decision",
@@ -244,14 +249,14 @@ def test_level_2_reuses_artifact_filename_and_frontmatter_rules(
 
 
 @pytest.mark.parametrize(
-    ("relative_path", "status", "folder"),
+    ("relative_path", "status"),
     [
-        ("project/tasks/pending/T-001-task.md", "completed", "pending"),
-        ("project/bugs/open/B-001-bug.md", "resolved", "open"),
+        (".ai-team/tracker/tasks/T-001-task.md", "done"),
+        (".ai-team/tracker/bugs/B-001-bug.md", "closed"),
     ],
 )
-def test_level_2_reports_lifecycle_status_mismatches_with_actionable_fix(
-    tmp_path: Path, relative_path: str, status: str, folder: str
+def test_level_2_reports_invalid_status_values_with_actionable_fix(
+    tmp_path: Path, relative_path: str, status: str
 ) -> None:
     _write_marker(tmp_path, tools=())
     if "/tasks/" in relative_path:
@@ -276,21 +281,50 @@ def test_level_2_reports_lifecycle_status_mismatches_with_actionable_fix(
 
     findings = check_level_2(contract)
 
-    mismatch = next(
-        finding for finding in findings if "does not match" in finding.problem
+    invalid = next(
+        finding for finding in findings if "is not one of" in finding.problem
     )
-    assert folder in mismatch.problem
-    assert "status" in mismatch.suggested_fix.lower()
-    assert "move" in mismatch.suggested_fix.lower()
+    assert status in invalid.problem
+    assert "allowed values" in invalid.suggested_fix.lower()
+
+
+def test_level_1_reports_unmigrated_legacy_work_item_folders(tmp_path: Path) -> None:
+    _write_marker(tmp_path, tools=())
+    _create_current_scaffold(tmp_path, ())
+    _write(tmp_path / "ai-team" / "tasks" / "pending" / "T-001-old.md", "legacy")
+    (tmp_path / "ai-team" / "bugs" / "open").mkdir(parents=True)
+    contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
+
+    findings = check_level_1(contract)
+
+    assert [finding.path for finding in findings] == ["ai-team/tasks"]
+    assert "legacy" in findings[0].problem.lower()
+    assert "migrating to the local tracker" in findings[0].suggested_fix.lower()
+
+
+def test_level_1_reports_tracker_inside_repository_that_git_does_not_ignore(
+    tmp_path: Path,
+) -> None:
+    import subprocess
+
+    _write_marker(tmp_path, tools=())
+    _create_current_scaffold(tmp_path, ())
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
+
+    assert [finding.path for finding in check_level_1(contract)] == [".ai-team/tracker"]
+
+    (tmp_path / ".gitignore").write_text("/.ai-team/\n", encoding="utf-8")
+    assert check_level_1(contract) == []
 
 
 def test_level_2_ignores_placeholders_and_non_artifact_documentation(
     tmp_path: Path,
 ) -> None:
     _write_marker(tmp_path, tools=())
-    _write(tmp_path / "project/tasks/pending/.gitkeep", "")
-    _write(tmp_path / "project/tasks/pending/TEMPLATE-task.md", "not frontmatter")
-    _write(tmp_path / "project/docs/Bad Documentation.md", "not frontmatter")
+    _write(tmp_path / ".ai-team/tracker/tasks/.gitkeep", "")
+    _write(tmp_path / ".ai-team/tracker/tasks/TEMPLATE-task.md", "not frontmatter")
+    _write(tmp_path / "ai-team/docs/Bad Documentation.md", "not frontmatter")
     contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
 
     assert check_level_2(contract) == []
@@ -301,11 +335,11 @@ def test_level_2_reports_malformed_artifact_and_continues_independent_checks(
 ) -> None:
     _write_marker(tmp_path, tools=())
     _write(
-        tmp_path / "project/tasks/pending/T-001-malformed.md",
+        tmp_path / ".ai-team/tracker/tasks/T-001-malformed.md",
         "---\ninvalid: [yaml\n---\n",
     )
     _write(
-        tmp_path / "project/decisions/bad-name.md",
+        tmp_path / "ai-team/decisions/bad-name.md",
         _frontmatter(
             id="ADR-001",
             title="Decision",
@@ -318,8 +352,8 @@ def test_level_2_reports_malformed_artifact_and_continues_independent_checks(
     findings = check_level_2(contract)
 
     assert {finding.path for finding in findings} == {
-        "project/tasks/pending/T-001-malformed.md",
-        "project/decisions/bad-name.md",
+        ".ai-team/tracker/tasks/T-001-malformed.md",
+        "ai-team/decisions/bad-name.md",
     }
     assert any("frontmatter" in finding.problem.lower() for finding in findings)
     assert any("filename" in finding.problem.lower() for finding in findings)
@@ -329,7 +363,7 @@ def test_invalid_artifact_encoding_is_blocked_and_guidance_check_continues(
     tmp_path: Path,
 ) -> None:
     _write_marker(tmp_path, tools=("codex",))
-    artifact = tmp_path / "project/tasks/pending/T-001-invalid-encoding.md"
+    artifact = tmp_path / ".ai-team/tracker/tasks/T-001-invalid-encoding.md"
     artifact.parent.mkdir(parents=True)
     artifact.write_bytes(b"\xff")
 
@@ -489,7 +523,7 @@ def test_level_4_accepts_only_an_exact_version_match(tmp_path: Path) -> None:
 
 def test_check_layout_runs_artifact_and_guidance_levels(tmp_path: Path) -> None:
     _write_marker(tmp_path, tools=("codex",))
-    _write(tmp_path / "project/tasks/pending/T-001-task.md", "not frontmatter")
+    _write(tmp_path / ".ai-team/tracker/tasks/T-001-task.md", "not frontmatter")
 
     findings = check_layout(tmp_path, current_version="1.2.3")
 
@@ -502,7 +536,7 @@ def test_check_layout_returns_ordered_findings_without_modifying_repository(
     tmp_path: Path,
 ) -> None:
     _write_marker(tmp_path, tools=("claude",), version="1.0.0")
-    (tmp_path / "project" / "unexpected").mkdir(parents=True)
+    (tmp_path / "ai-team" / "unexpected").mkdir(parents=True)
     before = _snapshot(tmp_path)
 
     findings = check_layout(tmp_path, current_version="2.0.0")

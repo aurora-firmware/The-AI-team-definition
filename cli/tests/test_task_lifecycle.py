@@ -1,4 +1,8 @@
-"""Tests for T-014: task lifecycle commands."""
+"""Tests for task lifecycle commands on field-based state (T-014, S-006).
+
+Tasks live in the local tracker; every transition rewrites the frontmatter
+``status`` in place and never moves the file.
+"""
 
 from datetime import date
 from pathlib import Path
@@ -27,184 +31,195 @@ Task body.
 """
 
 
-def _write_task(path: Path, task_id: str, title: str, status: str) -> None:
+def _tasks_dir(tmp_path: Path) -> Path:
+    (tmp_path / "ai-team").mkdir(exist_ok=True)
+    return tmp_path / ".ai-team" / "tracker" / "tasks"
+
+
+def _write_task(tmp_path: Path, task_id: str, status: str) -> Path:
+    path = _tasks_dir(tmp_path) / f"{task_id}-demo-task.md"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
-        TASK_TEMPLATE.format(id=task_id, title=title, status=status),
+        TASK_TEMPLATE.format(id=task_id, title="Demo Task", status=status),
         encoding="utf-8",
     )
+    return path
 
 
-def test_task_start_moves_pending_task_to_in_progress_and_updates_status(
-    monkeypatch, tmp_path
+@pytest.mark.parametrize(
+    ("command", "from_status", "to_status"),
+    [
+        ("start", "pending", "in-progress"),
+        ("complete", "in-progress", "completed"),
+        ("unblock", "blocked", "in-progress"),
+    ],
+)
+def test_transition_updates_status_in_place(
+    monkeypatch, tmp_path, command, from_status, to_status
 ):
-    """`task start` moves pending->in-progress and sets frontmatter status."""
+    """Transitions set the status field and leave the file where it is."""
     from ai_team.cli import app
 
-    pending = tmp_path / "project" / "tasks" / "pending" / "T-042-demo-task.md"
-    _write_task(pending, "T-042", "Demo Task", "pending")
+    path = _write_task(tmp_path, "T-042", from_status)
 
     monkeypatch.chdir(tmp_path)
-    result = CliRunner().invoke(app, ["task", "start", "T-042"])
+    result = CliRunner().invoke(app, ["task", command, "T-042"])
 
-    destination = tmp_path / "project" / "tasks" / "in-progress" / "T-042-demo-task.md"
-    assert result.exit_code == 0
-    assert not pending.exists()
-    assert destination.exists()
-    assert parse_task(destination).status == "in-progress"
+    assert result.exit_code == 0, result.output
+    assert path.exists()
+    assert parse_task(path).status == to_status
+    assert str(path.resolve()) in result.output
 
 
-def test_task_complete_moves_in_progress_task_to_completed_and_updates_status(
-    monkeypatch, tmp_path
-):
-    """`task complete` moves in-progress->completed and sets frontmatter status."""
+def test_task_block_sets_blocked_and_appends_reason(monkeypatch, tmp_path):
+    """`task block --reason` sets blocked status and logs a dated reason entry."""
     from ai_team.cli import app
 
-    source = tmp_path / "project" / "tasks" / "in-progress" / "T-043-demo-task.md"
-    _write_task(source, "T-043", "Demo Task", "in-progress")
-
-    monkeypatch.chdir(tmp_path)
-    result = CliRunner().invoke(app, ["task", "complete", "T-043"])
-
-    destination = tmp_path / "project" / "tasks" / "completed" / "T-043-demo-task.md"
-    assert result.exit_code == 0
-    assert not source.exists()
-    assert destination.exists()
-    assert parse_task(destination).status == "completed"
-
-
-def test_task_unblock_moves_blocked_task_to_in_progress_and_updates_status(
-    monkeypatch, tmp_path
-):
-    """`task unblock` moves blocked->in-progress and sets frontmatter status."""
-    from ai_team.cli import app
-
-    source = tmp_path / "project" / "tasks" / "blocked" / "T-044-demo-task.md"
-    _write_task(source, "T-044", "Demo Task", "blocked")
-
-    monkeypatch.chdir(tmp_path)
-    result = CliRunner().invoke(app, ["task", "unblock", "T-044"])
-
-    destination = tmp_path / "project" / "tasks" / "in-progress" / "T-044-demo-task.md"
-    assert result.exit_code == 0
-    assert not source.exists()
-    assert destination.exists()
-    assert parse_task(destination).status == "in-progress"
-
-
-def test_task_block_moves_task_to_blocked_updates_status_and_appends_reason(
-    monkeypatch, tmp_path
-):
-    """`task block --reason` moves task, sets blocked status, and logs reason entry."""
-    from ai_team.cli import app
-
-    source = tmp_path / "project" / "tasks" / "pending" / "T-045-demo-task.md"
-    source.parent.mkdir(parents=True, exist_ok=True)
-    source.write_text(
-        """\
----
-id: "T-045"
-title: "Demo Task"
-status: pending
-priority: medium
-assigned-role: developer
-created: 2026-05-10
----
-
-## Description
-
-Task body.
-
-## Work Log
-
-### Session 1 — 2026-05-09
-initial setup complete
-""",
+    path = _tasks_dir(tmp_path) / "T-045-demo-task.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        TASK_TEMPLATE.format(id="T-045", title="Demo Task", status="pending")
+        + "\n### Session 1 — 2026-05-09\ninitial setup complete\n",
         encoding="utf-8",
     )
 
     monkeypatch.chdir(tmp_path)
     reason = "waiting on architect decision"
-    result = CliRunner().invoke(
-        app,
-        ["task", "block", "T-045", "--reason", reason],
-    )
+    result = CliRunner().invoke(app, ["task", "block", "T-045", "--reason", reason])
 
-    destination = tmp_path / "project" / "tasks" / "blocked" / "T-045-demo-task.md"
-    assert result.exit_code == 0
-    assert not source.exists()
-    assert destination.exists()
-    assert parse_task(destination).status == "blocked"
-
-    _, body = read_artifact(destination, "task")
+    assert result.exit_code == 0, result.output
+    assert parse_task(path).status == "blocked"
+    _, body = read_artifact(path, "task")
     assert "### Session 2" in body
     assert date.today().isoformat() in body
-    assert reason in body
+    assert f"Blocked: {reason}" in body
 
 
-def test_task_block_moves_completed_task_to_blocked(monkeypatch, tmp_path):
-    """`task block` can move a task from completed->blocked."""
+def test_task_block_accepts_completed_task(monkeypatch, tmp_path):
+    """`task block` can block a task from any status."""
     from ai_team.cli import app
 
-    source = tmp_path / "project" / "tasks" / "completed" / "T-046-demo-task.md"
-    _write_task(source, "T-046", "Demo Task", "completed")
+    path = _write_task(tmp_path, "T-046", "completed")
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(
-        app,
-        ["task", "block", "T-046", "--reason", "needs rework"],
+        app, ["task", "block", "T-046", "--reason", "needs rework"]
     )
 
-    destination = tmp_path / "project" / "tasks" / "blocked" / "T-046-demo-task.md"
-    assert result.exit_code == 0
-    assert not source.exists()
-    assert destination.exists()
-    assert parse_task(destination).status == "blocked"
+    assert result.exit_code == 0, result.output
+    assert parse_task(path).status == "blocked"
 
 
 @pytest.mark.parametrize(
-    ("command", "state", "task_id", "extra_args", "expected_state"),
+    ("command", "status", "extra_args"),
     [
-        ("start", "in-progress", "T-050", [], "in-progress"),
-        ("complete", "completed", "T-051", [], "completed"),
-        ("block", "blocked", "T-052", ["--reason", "new reason"], "blocked"),
-        ("unblock", "in-progress", "T-053", [], "in-progress"),
+        ("start", "in-progress", []),
+        ("complete", "completed", []),
+        ("block", "blocked", ["--reason", "new reason"]),
+        ("unblock", "in-progress", []),
     ],
 )
-def test_lifecycle_command_is_idempotent_when_task_already_in_destination_state(
-    monkeypatch, tmp_path, command, state, task_id, extra_args, expected_state
+def test_lifecycle_command_is_idempotent_when_already_in_destination_status(
+    monkeypatch, tmp_path, command, status, extra_args
 ):
-    """Lifecycle commands are no-ops when task is already in destination."""
+    """Lifecycle commands are byte-for-byte no-ops when already in the target status."""
     from ai_team.cli import app
 
-    task_path = tmp_path / "project" / "tasks" / state / f"{task_id}-demo-task.md"
-    _write_task(task_path, task_id, "Demo Task", state)
-    before_bytes = task_path.read_bytes()
+    path = _write_task(tmp_path, "T-050", status)
+    before_bytes = path.read_bytes()
 
     monkeypatch.chdir(tmp_path)
-    result = CliRunner().invoke(app, ["task", command, task_id, *extra_args])
+    result = CliRunner().invoke(app, ["task", command, "T-050", *extra_args])
 
     assert result.exit_code == 0
-    assert f"already in {expected_state}" in result.output
-    assert task_path.exists()
-    assert task_path.read_bytes() == before_bytes
+    assert f"already in {status}" in result.output
+    assert path.read_bytes() == before_bytes
 
 
-def test_lifecycle_command_reports_not_found_and_names_searched_folders(
-    monkeypatch, tmp_path
+@pytest.mark.parametrize(
+    ("command", "status"),
+    [
+        ("start", "completed"),
+        ("start", "planned"),
+        ("complete", "pending"),
+        ("unblock", "pending"),
+    ],
+)
+def test_lifecycle_command_rejects_unexpected_source_status(
+    monkeypatch, tmp_path, command, status
 ):
-    """Missing task ID returns non-zero and includes searched lifecycle folders."""
+    """A shortcut command refuses a task that is not in its expected source status."""
     from ai_team.cli import app
 
-    for state in ("pending", "in-progress", "completed", "blocked"):
-        (tmp_path / "project" / "tasks" / state).mkdir(parents=True, exist_ok=True)
+    path = _write_task(tmp_path, "T-060", status)
+    before_bytes = path.read_bytes()
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["task", command, "T-060"])
+
+    assert result.exit_code != 0
+    assert f"is '{status}'" in result.stderr
+    assert path.read_bytes() == before_bytes
+
+
+@pytest.mark.parametrize(
+    "status", ["planned", "pending", "in-progress", "blocked", "completed", "cancelled"]
+)
+def test_set_status_accepts_every_allowed_status(monkeypatch, tmp_path, status):
+    """`task set-status` moves a task to any allowed status."""
+    from ai_team.cli import app
+
+    start = "pending" if status != "pending" else "planned"
+    path = _write_task(tmp_path, "T-070", start)
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["task", "set-status", "T-070", status])
+
+    assert result.exit_code == 0, result.output
+    assert parse_task(path).status == status
+
+
+def test_set_status_rejects_unknown_status(monkeypatch, tmp_path):
+    """`task set-status` refuses values outside the allowed task statuses."""
+    from ai_team.cli import app
+
+    path = _write_task(tmp_path, "T-071", "pending")
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["task", "set-status", "T-071", "done"])
+
+    assert result.exit_code != 0
+    assert parse_task(path).status == "pending"
+
+
+def test_set_status_records_reason_in_work_log(monkeypatch, tmp_path):
+    """`task set-status --reason` records the reason as a Work Log entry."""
+    from ai_team.cli import app
+
+    path = _write_task(tmp_path, "T-072", "planned")
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(
+        app,
+        ["task", "set-status", "T-072", "cancelled", "--reason", "CR-004 rejected"],
+    )
+
+    assert result.exit_code == 0, result.output
+    _, body = read_artifact(path, "task")
+    assert "Status set to cancelled: CR-004 rejected" in body
+
+
+def test_lifecycle_command_reports_not_found_and_names_tracker_folder(
+    monkeypatch, tmp_path
+):
+    """A missing task ID returns non-zero and names the tracker tasks folder."""
+    from ai_team.cli import app
+
+    _tasks_dir(tmp_path).mkdir(parents=True)
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(app, ["task", "start", "T-999"])
 
     assert result.exit_code != 0
     assert "not found" in result.stderr.lower()
-    assert "tasks/pending" in result.stderr
-    assert "tasks/in-progress" in result.stderr
-    assert "tasks/completed" in result.stderr
-    assert "tasks/blocked" in result.stderr
+    assert ".ai-team/tracker/tasks" in result.stderr

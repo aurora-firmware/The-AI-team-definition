@@ -8,10 +8,11 @@ from typing import Any
 
 import typer
 
+from ai_team.commands._shared import project_root
 from ai_team.commands.status import _payload
-from ai_team.core.locator import find_project_root
 from ai_team.core.models import parse_adr, parse_bug, parse_spec, parse_task
 from ai_team.core.templates import load_template
+from ai_team.core.tracker import iter_items
 
 NAME = "report"
 app = typer.Typer(help="Write a Gate 5 progress report.", invoke_without_command=True)
@@ -72,8 +73,10 @@ def _spec_rows(root) -> str:
 
 def _completed_rows(root) -> str:
     rows: list[str] = []
-    for path in _iter_markdown_files(root.tasks_completed):
+    for path in iter_items(root.tasks):
         task = parse_task(path)
+        if task.status != "completed":
+            continue
         rows.append(f"| {task.id} | {task.title} | {task.assigned_role} |")
     return _as_rows(rows, "| none | n/a | n/a |")
 
@@ -115,13 +118,11 @@ def _diagnosis_status(state: str) -> str:
 
 def _bug_rows(root) -> str:
     rows: list[str] = []
-    for state, folder in (
-        ("open", root.bugs_open),
-        ("in-progress", root.bugs_in_progress),
-        ("resolved", root.bugs_resolved),
-    ):
-        for path in _iter_markdown_files(folder):
-            bug = parse_bug(path)
+    bugs = [parse_bug(path) for path in iter_items(root.bugs)]
+    for state in ("open", "in-progress", "resolved"):
+        for bug in bugs:
+            if bug.status != state:
+                continue
             rows.append(
                 f"| {bug.id} | {bug.title} | {bug.severity} | {state} | "
                 f"{_diagnosis_status(state)} |"
@@ -243,7 +244,7 @@ def default(
     ),
 ) -> None:
     """Write the bundled progress-report template to disk."""
-    root = find_project_root(Path.cwd())
+    root = project_root()
     report_date = date.today().isoformat()
     payload: dict[str, Any] = _payload(root)
 

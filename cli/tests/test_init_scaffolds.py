@@ -243,14 +243,6 @@ def test_sync_script_replaces_project_with_empty_lifecycle_skeleton(
     project_root = repo / "cli" / "src" / "ai_team" / "init" / "scaffolds" / "project"
     expected_files = {
         Path("specs/.gitkeep"),
-        Path("tasks/pending/.gitkeep"),
-        Path("tasks/in-progress/.gitkeep"),
-        Path("tasks/completed/.gitkeep"),
-        Path("tasks/blocked/.gitkeep"),
-        Path("bugs/open/.gitkeep"),
-        Path("bugs/in-progress/.gitkeep"),
-        Path("bugs/resolved/.gitkeep"),
-        Path("change-requests/.gitkeep"),
         Path("decisions/.gitkeep"),
         Path("docs/.gitkeep"),
         Path("CLAUDE.md"),
@@ -332,7 +324,8 @@ def test_package_owned_project_gitignore_source_ignores_the_lock_sentinel() -> N
     source_text = source_gitignore.read_text(encoding="utf-8")
     scaffold_text = scaffold_gitignore.read_text(encoding="utf-8")
 
-    assert source_text == ".ai-team.lock\n"
+    assert ".ai-team.lock" in source_text.splitlines()
+    assert "docs/reports/" in source_text.splitlines()
     assert scaffold_text == source_text
 
 
@@ -387,7 +380,8 @@ def test_init_scaffolds_export_change_request_skill_and_project_directory() -> N
 
     assert (source_skill / "body.md").is_file()
     assert (source_skill / "metadata.toml").is_file()
-    assert (scaffold_project / "change-requests" / ".gitkeep").is_file()
+    # Change-requests live in the local tracker (S-006), not the project scaffold.
+    assert not (scaffold_project / "change-requests").exists()
 
     for tool in ("claude", "codex"):
         scaffold_skill = (
@@ -734,7 +728,7 @@ def test_spec_breakdown_review_preserves_existing_output_format_and_verdicts() -
     source, claude, codex = _spec_breakdown_review_skill_texts()
     required_phrases = (
         "Result: PASS | FAIL | BLOCKED | ESCALATE",
-        "Spec reviewed: project/specs/<file>",
+        "Spec reviewed: {{project_dir}}/specs/<file>",
         "Tasks reviewed: <count>",
         "Next owner:",
     )
@@ -803,7 +797,7 @@ def test_dev_loop_discovers_baseline_test_command_before_claiming_task() -> None
         "project-specific guidance",
         "CLAUDE.md",
         "AGENTS.md",
-        "project/docs/coding_guidelines.md",
+        "{{project_dir}}/docs/coding_guidelines.md",
     )
 
     for phrase in required_phrases:

@@ -187,10 +187,10 @@ Example from `dev-loop/SKILL.md`:
 ```markdown
 **Spawn the Developer subagent** with this prompt:
 
-> "Pick up the task from the canonical task file `project/tasks/in-progress/<task-file>` on `dev-agent` and implement it using the tdd skill.
+> "Pick up the task from the task file `<task-path>` and implement it using the tdd skill.
 > You are on branch `task/T-NNN-...`. Commit after each red→green→refactor cycle.
-> Do not edit the task lifecycle file on the task branch.
-> Return a Work Log handoff entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The loop will append and commit it on `dev-agent`.
+> The task file is in the local tracker, outside version control: do not edit it, and never add it to a commit.
+> Return a Work Log handoff entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The loop will append it to the task file.
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
 ```
 
