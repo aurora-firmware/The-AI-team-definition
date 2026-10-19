@@ -96,7 +96,8 @@ A spec that needs something S-000 does not cover is a signal either to amend S-0
 4. **Planner.** For a project with no specs, the Planner proposes writing S-000 first. For a project that already has specs, S-000 stays optional and the Planner does not require it.
 5. **Architecture review.** When S-000 exists, the architecture consistency review confirms that a new or changed spec stays within S-000's purpose and respects each component's boundary and responsibility, and reports a violation as drift per the existing finding rules.
 6. **Feature spec template.** The system-wide parts of the Architecture section move out of the feature spec template; the spec keeps principles specific to its own scope and refers to S-000 for the rest. Existing approved specs stay valid unchanged.
-7. **Quality gate.** Gate 1 criteria apply to S-000 with its own pass criteria: plain language, no technology or interfaces, every use case tied to a pain point, every component with a boundary and responsibility, and no unresolved `[TODO]`.
+7. **Quality gate.** Gate 1 criteria apply to S-000 with its own pass criteria: plain language, no technology or interfaces, every use case tied to a pain point, every component with a boundary and responsibility, and no unresolved `[TODO]`. These replace, rather than add to, the Gate 1 criterion that the architecture is detailed enough to derive tasks, which S-000 cannot meet by design.
+8. **Completion review.** The pre-Gate-5 completion review (ADR-002) does not include S-000, because S-000 has no tasks or Work Logs to reconcile.
 
 ## Implementation Order
 
