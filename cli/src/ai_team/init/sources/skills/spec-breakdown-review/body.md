@@ -51,7 +51,7 @@ When invoking `new-adr`, provide the full required input set:
 - `status`: `accepted` — the Architect is adopting the decision now as part of approving the task plan
 Escalate to human through the Planner when the approved spec must change.
 
-### Step 4a: Check Interface Consistency
+### Step 5a: Check Interface Consistency
 
 For each task, read its `Interfaces` block and check names across the plan:
 

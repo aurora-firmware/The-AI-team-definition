@@ -52,7 +52,7 @@ If it has not run, or returned `FAIL` with amendments still unapplied, list that
 
 ### Step 5: Produce Inline Summary
 
-Use `ai-team status` output as the inline summary. If the command cannot run, manually present the report in this format:
+Use `ai-team status` output as the inline summary, then always append the Step 4a roll-up and the Step 4b reconciliation state after it. If the command cannot run, manually present the report in this format:
 
 ```markdown
 ## Status Report — [today's date]
@@ -84,7 +84,7 @@ Use `ai-team status` output as the inline summary. If the command cannot run, ma
 [work item ID, location, finding — or "none"]
 ```
 
-If there are blocked tasks or critical/high bugs, add a `Recommended Actions` section suggesting next steps.
+If there are blocked tasks, critical/high bugs, or spec-truth reconciliation has not passed, add a `Recommended Actions` section suggesting next steps.
 
 ### Step 6: Write Full Report (Only When Asked)
 

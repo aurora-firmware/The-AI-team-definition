@@ -185,7 +185,7 @@ Use the exact wording `**Spawn the <Role> subagent** (tier: <cheap | standard | 
 Example from `dev-loop/SKILL.md`:
 
 ```markdown
-**Spawn the Developer subagent** with this prompt:
+**Spawn the Developer subagent** (tier: standard) with this prompt:
 
 > "Pick up the task from the task file `<task-path>` and implement it using the tdd skill.
 > You are on branch `task/T-NNN-...`. Commit after each red→green→refactor cycle.
@@ -472,7 +472,7 @@ When Claude B forgets a rule, the rule probably isn't prominent enough — stren
 - Embedding role identity or authority in a skill.
 - Inventing a custom verdict vocabulary (`Gate 2 Verdict:`, `Review Status:`) instead of aligning with the caller's `Result:` shape.
 - Prose-only escalation without the 4-field structured block.
-- Inconsistent spawn wording (`Spawn the X role`, `invoke the X agent`). Use `**Spawn the <Role> subagent**` uniformly.
+- Inconsistent spawn wording (`Spawn the X role`, `invoke the X agent`). Use `**Spawn the <Role> subagent** (tier: ...)` uniformly.
 - Declaring `Skill(x)` in `allowed-tools` when the skill only references `x` descriptively and never invokes it.
 - Referencing `ai-process/` paths. Skills must be self-contained within `.claude/`.
 - First/second person in `description` (`I can…`, `You can…`). Always third person.
@@ -510,7 +510,7 @@ Before treating a skill as ready:
 - [ ] Validation loop where quality matters.
 - [ ] Verdict vocabulary aligned with `Result: PASS | FAIL | BLOCKED | ESCALATE`.
 - [ ] 4-field escalation block present if the skill can return `ESCALATE`.
-- [ ] Orchestrators use `**Spawn the <Role> subagent**` wording uniformly.
+- [ ] Orchestrators use `**Spawn the <Role> subagent** (tier: ...)` wording uniformly.
 
 **Scripts (if any)**
 - [ ] Forward-slash paths only.

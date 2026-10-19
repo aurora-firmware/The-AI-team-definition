@@ -102,7 +102,7 @@ def test_every_role_wires_evidence_into_its_output_envelope():
         assert "evidence-before-claims" in claude.split("---")[1], role
         for text in (claude, codex):
             assert "evidence-before-claims" in text, role
-            assert "the command that proves it, and its actual output" in text, role
+            assert "its actual output" in text, role
 
 
 def test_loops_apply_context_and_cost_engineering():
@@ -185,8 +185,9 @@ def test_loops_climb_a_capability_ladder_before_consulting_the_architect():
         assert "same Developer" in on_fail, name
         assert "fresh Developer subagent on the most capable tier" in on_fail, name
         assert "before any Architect consultation is spent" in on_fail, name
-        assert on_fail.index("cycle = 1") < on_fail.index("cycle = 2")
-        assert on_fail.index("cycle = 2") < on_fail.index("cycle = 3")
+        assert f"Pass only the {kind} file path" in on_fail, name
+        assert on_fail.index("cycle = 1") < on_fail.index("cycle = 2"), name
+        assert on_fail.index("cycle = 2") < on_fail.index("cycle = 3"), name
 
 
 def test_parked_findings_must_become_durable_artifacts():
@@ -292,3 +293,11 @@ def test_validation_report_records_baseline_and_with_change_runs():
     assert "| Old | New |" in report
     assert "not validated by this run" in report
     assert "## Limits" in report
+
+
+def test_evidence_rule_allows_cited_and_artifact_proof():
+    body = skill("evidence-before-claims")
+    assert "per Work Log session N" in body
+    assert "Roles without a shell prove document claims" in body
+    for role in ("reviewer", "architect", "planner"):
+        assert "evidence-before-claims" in agent(role), role

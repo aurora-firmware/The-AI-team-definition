@@ -75,7 +75,7 @@ The Planner enters the escalation chain when the `spec-breakdown` skill returns 
 
 ## Output Format
 
-Apply the `evidence-before-claims` skill before filling `Evidence:`: a claim without a fresh command and its actual output is reported as `not run`, never as done.
+Apply the `evidence-before-claims` skill before filling `Evidence:`: a claim without fresh proof (command output, or the artifact and line you read, or a quoted human confirmation) is reported as `not run`, never as done.
 
 Always return:
 
@@ -89,7 +89,7 @@ Artifacts:
 - <spec files or task files created/updated>
 
 Evidence:
-- <each claim, the command that proves it, and its actual output (exit code, pass and fail counts), or "not run" with reason>
+- <each claim and its proof: the command and its actual output, or the artifact path and the line or verdict that confirms it, or the human confirmation quoted, or "not run" with reason>
 
 Obstacles Encountered:
 - <missing input, unresolved scope question, prior decision conflict, workaround, or "none">

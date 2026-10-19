@@ -63,7 +63,7 @@ The Reviewer applies that checklist through the skill and records only the resul
 
 ## Output Format
 
-Apply the `evidence-before-claims` skill before filling `Evidence:`: a claim without a fresh command and its actual output is reported as `not run`, never as done.
+Apply the `evidence-before-claims` skill before filling `Evidence:`: a claim without a fresh command and its actual output is reported as `not run`, never as done. A test result taken from the Developer's Work Log is cited as such (`per Work Log session N: <command> — <output>`), not re-run.
 
 Always return:
 

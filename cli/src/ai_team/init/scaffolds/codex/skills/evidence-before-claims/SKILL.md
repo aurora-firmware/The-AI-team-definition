@@ -38,6 +38,7 @@ If any step is skipped, do not make the claim. State what was not verified inste
 | Agent or loop step completed | The diff or tracker state showing the change | The agent reporting success |
 | Requirements met | A line-by-line check of each acceptance criterion | Tests passing |
 | Branch merged | The merge commit on the destination and a green post-merge run | The merge command exiting 0 |
+| Document or plan is consistent, approved, or complete | The artifact path plus the decisive line, section, or verdict read from it; for approval, the human's confirmation quoted | "Looks consistent", an unread file |
 | Review passed | The verdict recorded in the work item file | A chat message saying PASS |
 
 ### Step 3: Record the Evidence
@@ -76,3 +77,6 @@ These thoughts mean stop and run the command.
 - Reusing output from before the last edit.
 - Reporting a partial run as a full one.
 - Hedging a claim ("seems to work") instead of verifying it or marking it unverified.
+
+A claim that rests on someone else's earlier run (for example a Developer's Work Log test result a Reviewer is told not to repeat) is cited, not re-run: write `tests pass (per Work Log session N: <command> — <output>)`. A cited claim is labelled as cited and never presented as this role's own run.
+Roles without a shell prove document claims with the artifact read, not a command.

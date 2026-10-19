@@ -44,7 +44,7 @@ Each subagent starts cold, and the orchestrator's context is the scarce resource
 |---|---|
 | cheap | Mechanical, fully specified work items: a rename, a config change, a transcription from the spec |
 | standard | The default for the Developer, the Reviewer, and manual integration |
-| most capable | Architect consultation, the fresh Developer on the third attempt (capability ladder), and any work item the Reviewer marked as a design risk |
+| most capable | Architect consultation, the fresh Developer on the third attempt (capability ladder) |
 
 ## Procedure
 

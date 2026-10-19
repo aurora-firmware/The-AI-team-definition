@@ -63,7 +63,7 @@ They are outside version control: there is nothing to commit, and `/dev-loop` ig
 Run `ai-team list tasks --state planned --spec <spec-or-cr-id> --json`, then `ai-team show <task-id> --json` for each listed task, and collect each task's absolute `path`.
 The tracker is outside the repository and the Architect does not run commands, so it receives the paths in the prompt.
 
-**Spawn the Architect subagent** with this prompt:
+**Spawn the Architect subagent** (tier: most capable) with this prompt:
 
 > "Review the planned task plan for the spec or change-request `<spec-or-cr-id>`.
 > The planned task files are: <task-id>: <absolute path>, one per task.
