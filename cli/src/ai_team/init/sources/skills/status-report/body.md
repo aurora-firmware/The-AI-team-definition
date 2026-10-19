@@ -45,6 +45,11 @@ Record the latest integration-test result or state that no integration evidence 
 Scan the `### Review Verdict` sections of completed tasks and resolved bugs for `#### Deferred Minor findings` lists. Collect every entry with its work item ID and location.
 A roll-up nobody reads is a silent discard, so present the entries to the human at Gate 5 and ask for a decision on each: fix now (file a bug or task), accept, or defer with a reason. Do not drop entries because they look small.
 
+### Step 4b: Check Spec-Truth Reconciliation
+
+When every task is `completed`, check whether the Architect has run spec-truth reconciliation (`architecture-consistency-review` in completion mode) for the approved specs the work touched, and what it returned.
+If it has not run, or returned `FAIL` with amendments still unapplied, list that under `Recommended Actions` — Gate 5 requires a `PASS` or applied amendments.
+
 ### Step 5: Produce Inline Summary
 
 Use `ai-team status` output as the inline summary. If the command cannot run, manually present the report in this format:
@@ -108,6 +113,7 @@ Tell the human the file path. Commit it only if the human asks and the project t
 - Critical and high severity bugs are explicitly listed.
 - Blocked tasks include the blocking reason when one is recorded.
 - Every deferred Minor finding in the scanned Review Verdicts is listed.
+- When the queue is empty, the state of spec-truth reconciliation is stated.
 - The latest integration evidence is recorded or explicitly marked as not found.
 - The report gives the human enough context for Gate 5 final merge sign-off.
 

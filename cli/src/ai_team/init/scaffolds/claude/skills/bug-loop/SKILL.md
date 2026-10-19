@@ -234,7 +234,7 @@ The human runs `/status-report` when they want the full Gate 5 summary.
    - Bugs escalated and still `in-progress`, with the reason
    - Regression bugs filed this run, and any integration failure that stopped the loop
    - Changes parked or restored, and `.gitignore` patterns added, by the hygiene check
-   - The next suggested action — for example `/bug-loop` for filed regressions, or `/status-report` for Gate 5 sign-off context when the queue is empty
+   - The next suggested action — for example `/bug-loop` for filed regressions, or, when the queue is empty, asking the Architect for spec-truth reconciliation and then running `/status-report` for Gate 5 sign-off context
 
 ## Cycle Counter Reset
 

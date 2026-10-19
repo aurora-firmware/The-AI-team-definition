@@ -40,7 +40,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 ## Architecture Consistency Review
 
-**When:** Whenever a specification, an ADR, or a change-request is created, accepted, amended, or superseded — at ADR authoring time (`new-adr`), after a draft spec is made TODO-free and before Gate 1 approval, after an amended spec is made TODO-free and before Architect consistency review continues, and after a change-request becomes TODO-free and gains human approval. This is a standing duty, not a numbered gate.
+**When:** Whenever a specification, an ADR, or a change-request is created, accepted, amended, or superseded — at ADR authoring time (`new-adr`), after a draft spec is made TODO-free and before Gate 1 approval, after an amended spec is made TODO-free and before Architect consistency review continues, and after a change-request becomes TODO-free and gains human approval. This is a standing duty, not a numbered gate. It also runs on **completion**: after the task queue drains and before Gate 5 sign-off, the Architect re-reads each approved spec the work touched against the completed Work Logs, the ADRs created mid-flight, and the deferred-Minor roll-up, then confirms the spec is still true or routes amendments to the Planner (ADR-002).
 **Evaluator:** Architect.
 **Executable procedure:** the `architecture-consistency-review` skill, exported by `ai-team init`, owns the actual check, finding routing, and escalation behaviour. This section is the spec-layer description of *why* and *when* the duty runs; the skill is *how* it runs. The Architect runs it directly when authoring an ADR; for a created or amended spec or an approved change-request, the Planner-owned procedure hands the changed artifact to the Architect (Next Owner: Architect), who runs the review and returns findings — the same Planner↔Architect handoff pattern as Gate 2.
 **Why:** Approved specs and accepted ADRs are both binding sources of truth (see Gate 2). A new or changed decision can silently contradict something an existing spec or ADR already records, leaving two authoritative artifacts that disagree until someone notices by hand.
@@ -104,7 +104,10 @@ Before the development loop claims its first task it discovers the documented ba
 - Integration tests are green.
 - No open bugs with severity `critical` or `high`.
 - The status summary matches the approved specification.
+- The latest spec-truth reconciliation returned `PASS`, or every amendment it routed has been applied (see [Architecture Consistency Review](#architecture-consistency-review)).
 - The status summary lists completed tasks, unresolved bugs by severity, and latest integration-test result.
+
+**Before sign-off:** The Architect runs spec-truth reconciliation (ADR-002) — `architecture-consistency-review` in completion mode — for every approved spec the completed work touched.
 
 **On failure:** Human provides feedback. New tasks are created to address issues.
 

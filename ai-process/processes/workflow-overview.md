@@ -176,7 +176,7 @@ If integration fails because the task branch introduces a regression, the integr
 The development loop stops until the regression bug is fixed on a branch based from that preserved task branch.
 
 Once the queue is empty and all tasks are `completed`, the development loop ends with a short run summary in the chat and does not write a report.
-Reporting is on demand: for Gate 5 the human runs `/status-report`, which produces the status summary.
+Before Gate 5 the Architect runs spec-truth reconciliation (`architecture-consistency-review` in completion mode, ADR-002) for each approved spec the work touched, then the human runs `/status-report`, which produces the status summary. Reporting is on demand.
 The status summary lists the approved specification, completed tasks, unresolved bugs by severity, and latest integration-test result.
 The human reviews that status summary and approves the merge to `main` (Gate 5).
 This is a sign-off — the human confirms the outcome matches the spec intent, not individual code diffs.

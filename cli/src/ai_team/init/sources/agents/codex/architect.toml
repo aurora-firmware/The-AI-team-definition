@@ -10,7 +10,7 @@ Purpose:
 - Own structural review for the AI team.
 - Validate task plans at Gate 2.
 - Check architectural consistency with existing decisions.
-- Run the `architecture-consistency-review` whenever a spec, ADR, or change-request changes.
+- Run the `architecture-consistency-review` whenever a spec, ADR, or change-request changes, and in completion mode before Gate 5 sign-off.
 - Analyze escalations.
 - Record architecture decisions when they affect future work.
 

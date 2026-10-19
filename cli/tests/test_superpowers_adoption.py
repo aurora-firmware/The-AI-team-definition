@@ -219,3 +219,46 @@ def test_brainstorm_approves_the_design_section_by_section():
     assert '"no exclusions apply"' in step6
     assert "Lead with your recommended option" in body
     assert "Prefer multiple-choice questions" in body
+
+
+# -- Phase 5: spec-truth reconciliation at Gate 5 ----------------------------
+
+
+def test_adr_002_records_the_reconciliation_decision():
+    adrs = list((REPO / "docs" / "ai-team" / "decisions").glob("ADR-002-*.md"))
+
+    assert len(adrs) == 1
+    text = adrs[0].read_text(encoding="utf-8")
+    assert "status: accepted" in text
+    assert "ADR-000" not in text and "[Decision Title]" not in text
+    for heading in ("## Context", "## Decision", "## Consequences"):
+        assert heading in text
+    assert "architecture-consistency-review" in text
+
+
+def test_consistency_review_gains_a_completion_trigger_with_the_same_routing():
+    body = skill("architecture-consistency-review")
+
+    assert "## Completion Mode" in body
+    assert "spec-truth reconciliation" in body
+    assert "Work Logs" in body and "deferred-Minor" in body
+    assert "Routing** is unchanged" in body
+    assert "the Planner amends the approved spec" in body
+
+
+def test_gate_5_requires_the_reconciliation_result():
+    gates = (REPO / "ai-process" / "processes" / "quality-gates.md").read_text(
+        encoding="utf-8"
+    )
+    gate_5 = gates.split("## Gate 5", 1)[1]
+
+    assert "spec-truth reconciliation" in gate_5
+    assert "returned `PASS`, or every amendment it routed has been applied" in gate_5
+    assert "ADR-002" in gates
+
+
+def test_status_report_and_loops_point_at_the_reconciliation():
+    assert "Spec-Truth Reconciliation" in skill("status-report")
+    for name in ("dev-loop", "bug-loop"):
+        assert "spec-truth reconciliation" in skill(name), name
+    assert "completion mode" in agent("architect")

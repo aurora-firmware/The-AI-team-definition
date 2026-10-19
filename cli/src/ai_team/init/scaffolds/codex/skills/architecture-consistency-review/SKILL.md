@@ -19,11 +19,24 @@ Whenever an architecture artifact changes:
 
 - **New or accepted ADR** — after `new-adr` records the decision (run by the Architect).
 - **New or amended spec** — after a spec is created (`new-spec`, before Gate 1 sign-off settles) or amended (an Amendment Log entry added during spec revision or change-request intake).
+- **Completed work (spec-truth reconciliation, ADR-002)** — after the task queue drains and before the human gives Gate 5 sign-off. Here the trigger is completion, not a changed artifact; see **Completion Mode** below.
 - **Change-request** — after the human approves a TODO-free change-request and before the proposed spec amendments are applied. The approved change-request is the authoritative intent for any Planner-owned consistency fixes.
+
+## Completion Mode
+
+In completion mode the review confirms that each approved spec is still true of what was built. It uses the same binding set, findings block, routing rules, and verdicts as every other trigger, with these differences:
+
+- **Changed artifact** — each approved spec touched by the completed work, named by the caller. Do not review specs the work did not touch.
+- **Evidence read in place of a delta** — the Work Logs of the completed tasks and resolved bugs that implemented the spec, every ADR created or amended while the work was in flight, and the deferred-Minor findings roll-up (`status-report`).
+- **Step 1** isolates what the spec asserts (requirements, interfaces, guarantees) instead of what changed.
+- **Step 3** checks each assertion against the evidence: a requirement the work did not deliver, behavior the work added that the spec does not describe, or an interface that now differs. Record each drift with the spec statement and the evidence that contradicts it.
+- **Routing** is unchanged: the Planner amends the approved spec on a planning branch and records the change in its Amendment Log; the Architect amends or supersedes ADRs; a drift that needs a decision beyond an amendment escalates.
+
+A `PASS` means every touched spec is still true. Gate 5 accepts a `PASS`, or a `FAIL` whose routed amendments have all been applied.
 
 ## Input Requirements
 
-- **Changed artifact** — the ADR, spec, or change-request just created or amended, and which kind it is. If it was not provided, return `BLOCKED`.
+- **Changed artifact** — the ADR, spec, or change-request just created or amended, and which kind it is; in completion mode, the approved specs the completed work touched. If it was not provided, return `BLOCKED`.
 - **Decision records** — all ADRs in `{{project_dir}}/decisions/`; treat `accepted` ones as binding.
 - **Specifications** — all specs in `{{project_dir}}/specs/`; treat `approved` ones as binding.
 - **Change scope** — for an amendment or change-request, the specific decision, section, or requirement that changed.
@@ -96,6 +109,7 @@ Next owner:
 
 ## Common Pitfalls
 
+- **Skipping the evidence in completion mode.** A spec cannot be confirmed from the spec alone; read the Work Logs and mid-flight ADRs.
 - **Reviewing the whole artifact instead of the change.** For an amendment, check the delta against the binding set, not every line.
 - **Editing a spec to fix drift.** Specs are the Planner's; route the amendment, do not write it.
 - **Treating a `proposed` ADR or `draft` spec as binding.** Only `accepted` ADRs and `approved` specs constrain the change.
