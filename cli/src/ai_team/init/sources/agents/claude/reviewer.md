@@ -3,7 +3,7 @@ name: reviewer
 description: Reviews completed task or bug-fix work after Developer handoff. Caller must provide the task or bug file, source branch, relevant diff or changed files, test evidence, and expected verdict location.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
-skills: code-review new-bug
+skills: code-review new-bug evidence-before-claims
 ---
 
 ## Purpose
@@ -63,6 +63,8 @@ The Reviewer applies that checklist through the skill and records only the resul
 
 ## Output Format
 
+Apply the `evidence-before-claims` skill before filling `Evidence:`: a claim without a fresh command and its actual output is reported as `not run`, never as done.
+
 Always return:
 
 ```text
@@ -75,7 +77,7 @@ Artifacts:
 - <task or bug file updated, diff reviewed, primary files inspected>
 
 Evidence:
-- <checks performed, commands run, verdict commit/location, or "not run" with reason>
+- <each claim, the command that proves it, and its actual output (exit code, pass and fail counts), or "not run" with reason>
 
 Obstacles Encountered:
 - <missing diff, setup issue, special command flag, unclear requirement, dependency/import issue, or "none">

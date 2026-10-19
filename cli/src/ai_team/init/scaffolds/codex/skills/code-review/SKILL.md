@@ -10,7 +10,7 @@ effort: high
 ## Input Requirements
 
 - **Task or bug file** — the task definition with acceptance criteria, or the bug report with diagnosis and fix-verification steps.
-- **Code changes** — the diff or set of modified files.
+- **Code changes** — the review package the loop wrote (`git log`, `git diff --stat`, and `git diff -U10` for `BASE..HEAD`), or a `BASE..HEAD` range to diff yourself. Review the whole range. Never review `HEAD~1` alone: a multi-commit branch silently loses its earlier commits.
 - **Test results** — the test evidence in the Developer's Work Log (command and output). Do not re-run tests the Work Log already shows passing; run a command only to check something the Work Log does not cover.
 
 The task or bug file lives in the local tracker, outside version control; `ai-team show <id> --json` reports its path.
@@ -134,6 +134,7 @@ Next owner: active loop for Architect consultation.
 - Feedback is specific and actionable — never vague.
 - Every finding carries a severity, and the verdict follows from it.
 - Claims in the Work Log were checked against the diff, not accepted.
+- The reviewed range runs from the recorded base commit to the branch head.
 - Every Minor finding and unverifiable claim is recorded where the loop and Gate 5 can find it.
 - The reviewer checked the actual code, not just the test results.
 - No personal style preferences were enforced — only project standards from the coding guidelines.
@@ -154,6 +155,7 @@ These thoughts mean stop and verify against the code.
 ## Common Pitfalls
 
 - **Trusting the report** — accepting the Work Log's summary or the Developer's rationale instead of reading the diff.
+- **Reviewing only the last commit** — the range starts at `BASE`, the commit the branch was created from, not at `HEAD~1`.
 - **Re-running the Developer's tests** — the Work Log carries that evidence; a repeat run adds latency, not coverage.
 - **Silent Minor findings** — noting a Minor observation in prose that no one will read. Use the `Deferred Minor findings` list.
 - **Rubber-stamping** — approving because tests pass without reading the code. Tests can have gaps.

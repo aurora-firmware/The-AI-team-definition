@@ -78,3 +78,49 @@ def test_status_report_rolls_up_deferred_minor_findings_for_gate_5():
     assert "Deferred Minor findings" in body
     assert "### Deferred Minor Findings" in body
     assert "silent discard" in body
+
+
+# -- Phase 2: evidence before claims, context and cost engineering -----------
+
+
+def test_evidence_skill_has_gate_function_and_common_failures():
+    body = skill("evidence-before-claims")
+
+    for step in ("**Identify**", "**Run**", "**Read**", "**Verify**", "**Only then**"):
+        assert step in body
+    assert "| Claim | Requires | Not sufficient |" in body
+    assert "The agent reporting success" in body
+    assert "## Rationalizations" in body
+
+
+def test_every_role_wires_evidence_into_its_output_envelope():
+    for role in ("architect", "developer", "integrator", "planner", "reviewer"):
+        claude = agent(role)
+        codex = (SOURCES / "agents" / "codex" / f"{role}.toml").read_text(
+            encoding="utf-8"
+        )
+        assert "evidence-before-claims" in claude.split("---")[1], role
+        for text in (claude, codex):
+            assert "evidence-before-claims" in text, role
+            assert "the command that proves it, and its actual output" in text, role
+
+
+def test_loops_apply_context_and_cost_engineering():
+    for name in ("dev-loop", "bug-loop"):
+        body = skill(name)
+        assert "## Dispatch Discipline" in body, name
+        assert "Never paste prior-work-item history into a dispatch" in body, name
+        assert "git diff -U10 BASE..HEAD" in body, name
+        assert "git rev-parse HEAD" in body and "Base commit:" in body, name
+        assert "review-packages" in body, name
+        for tier in ("cheap", "standard", "most capable"):
+            assert f"| {tier} |" in body, (name, tier)
+        assert "**Spawn the Reviewer subagent** (tier: standard)" in body, name
+        assert "**Spawn the Architect subagent** (tier: most capable)" in body, name
+
+
+def test_code_review_reviews_the_whole_range_from_base():
+    body = skill("code-review")
+
+    assert "BASE..HEAD" in body
+    assert "Never review `HEAD~1` alone" in body

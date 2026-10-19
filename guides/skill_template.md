@@ -175,7 +175,7 @@ Orchestrators drive autonomous loops. They spawn subagents using a uniform promp
 
 ### Subagent spawn prompt
 
-Use the exact wording `**Spawn the <Role> subagent** with this prompt:` followed by a quoted prompt block. The prompt must:
+Use the exact wording `**Spawn the <Role> subagent** (tier: <cheap | standard | most capable>) with this prompt:` followed by a quoted prompt block. Name the model tier at every spawn; the orchestrator's Dispatch Discipline section defines the tiers. The prompt must:
 
 - Name the skill the subagent should use (e.g., *"implement it using the `tdd` skill"*).
 - Name the target branch or canonical file path.

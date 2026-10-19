@@ -31,6 +31,21 @@ The loop applies the **Workspace Hygiene** check from the `git-conventions` skil
 Changes parked by this run are restored when the loop ends, on the branch where they were parked.
 A run never ends with untracked files or uncommitted changes that the run itself created.
 
+## Dispatch Discipline
+
+Each subagent starts cold, and the orchestrator's context is the scarce resource. These rules keep both small:
+
+- **Model tier at every spawn.** State the tier explicitly in each **Spawn** block, using the table below. The role's agent definition sets a default; the tier named at the spawn overrides it for that dispatch.
+- **Never paste prior-work-item history into a dispatch.** Pass the work item file path. A subagent reads what it needs from the file, and earlier items' logs do not belong in its prompt.
+- **Review packages, not diffs in context.** The loop writes the review range to a single file and passes its path (Step 6). The diff never enters the orchestrator's context.
+- **Record BASE before the Developer starts.** The branch's base commit is the start of every review range.
+
+| Tier | Use for |
+|---|---|
+| cheap | Mechanical, fully specified work items: a rename, a config change, a transcription from the spec |
+| standard | The default for the Developer, the Reviewer, and manual integration |
+| most capable | Architect consultation, the fresh Developer at review cycle 3, and any work item the Reviewer marked as a design risk |
+
 ## Procedure
 
 ### Step 1: Check the Queue
@@ -100,12 +115,13 @@ If no task has all dependencies satisfied, stop and report which tasks are waiti
 
 1. Run `ai-team task start T-NNN`. This sets the status to `in-progress`; there is nothing to commit.
 2. Switch to `{{integration_branch}}` and create the task branch from it: `git checkout -b task/T-NNN-short-description` (derive from the task filename).
+3. Record the base: `git rev-parse HEAD` on the new branch is `BASE`. Append `Base commit: <sha>` under `## Work Log` in the task file, so it survives a restart of the loop. Step 6 reviews `BASE..HEAD`.
 
 ### Step 5: Implementation Cycle
 
 Read the task file at the path reported by `ai-team show T-NNN --json`, and check out the task branch `task/T-NNN-...`.
 
-**Spawn the Developer subagent** with this prompt:
+**Spawn the Developer subagent** (tier: standard, or cheap for a mechanical task) with this prompt:
 
 > "Pick up the task from the task file `<task-path>` and implement it using the tdd skill.
 > You are on branch `task/T-NNN-...`. Commit after each red→green→refactor cycle.
@@ -122,10 +138,22 @@ Stay on the task branch — no switch and no commit. Bug files the Developer fil
 
 ### Step 6: Review Cycle
 
-**Spawn the Reviewer subagent** with this prompt:
+**Write the review package.** Record the range as `BASE..HEAD` of the task branch, with `BASE` from the claim in Step 4.
+Write one file, `<tracker-path>/review-packages/<id>.md` (find `<tracker-path>` with `ai-team tracker path`), holding the output of:
+
+```bash
+git log --oneline BASE..HEAD
+git diff --stat BASE..HEAD
+git diff -U10 BASE..HEAD
+```
+
+Rewrite it before every review cycle so it covers the whole range, including commits from earlier cycles. Delete it when the task leaves the loop. It lives in the tracker, so it is never committed.
+
+**Spawn the Reviewer subagent** (tier: standard) with this prompt:
 
 > "Review the task in the task file `<task-path>` using the code-review skill.
 > The Developer has completed their work on branch `task/T-NNN-...`.
+> The review range and its diff are in the review package `<package-path>`; read that one file instead of deriving the diff yourself.
 > Append your verdict to the task file's Review section under `### Review Verdict — YYYY-MM-DD`. The task file is outside version control: do not commit it.
 > Treat the Work Log as unverified claims about the code and check them against the diff. Do not re-run tests the Work Log already shows passing.
 > Rate each finding Critical, Important, or Minor as the code-review skill defines. List Minor findings under `#### Deferred Minor findings` and anything you cannot confirm from the diff under `#### ⚠️ Cannot verify from diff`.
@@ -174,7 +202,7 @@ Increment the review cycle counter.
 Follow the two-phase escalation procedure below. Phase 1 is a single Architect consultation; Phase 2 is human escalation. The chain is linear — no second Architect round.
 
 **Phase 1 — Architect Consultation:**
-**Spawn the Architect subagent** with this prompt:
+**Spawn the Architect subagent** (tier: most capable) with this prompt:
 
 > "Use the escalation-review skill for the task in `<task-path>`.
 > Problem: <what the reviewer or loop found>

@@ -3,7 +3,7 @@ name: architect
 description: Structural authority for Gate 2 preflight, escalation consultation, and ADR decisions. Caller must provide either a pending task plan plus spec path, a structured escalation request with problem, attempts, failure reason, and question, or a created/changed spec, ADR, or change-request to review for architecture consistency.
 tools: Read, Write, Edit, Glob, Grep
 model: opus
-skills: spec-breakdown-review architecture-consistency-review escalation-review new-adr git-conventions
+skills: spec-breakdown-review architecture-consistency-review escalation-review new-adr git-conventions evidence-before-claims
 ---
 
 ## Purpose
@@ -70,6 +70,8 @@ The Architect is the target of Phase 1 escalation — it consumes structured esc
 
 For Gate 2 preflight, the Architect role envelope wraps the `spec-breakdown-review` Findings block and does not duplicate Result/Summary fields inside the skill-specific output.
 
+Apply the `evidence-before-claims` skill before filling `Evidence:`: a claim without a fresh command and its actual output is reported as `not run`, never as done.
+
 Always return:
 
 ```text
@@ -82,7 +84,7 @@ Artifacts:
 - <task files or ADRs created/updated/read as primary evidence>
 
 Evidence:
-- <checks performed, ADRs consulted, logs reviewed, or "not run" with reason>
+- <each claim, the command that proves it, and its actual output (exit code, pass and fail counts), or "not run" with reason>
 
 Obstacles Encountered:
 - <missing input, contradictory spec, ADR conflict, environment quirk, workaround, or "none">
