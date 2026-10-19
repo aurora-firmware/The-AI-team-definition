@@ -27,6 +27,7 @@ This document maps the ai-process roles, procedures, processes, and gates to the
 | Spec Breakdown | Decompose an approved specification into atomic tasks with dependencies, acceptance criteria, and verification | Planner | `.claude/skills/spec-breakdown/SKILL.md` |
 | Spec Breakdown Review | Validate task dependencies, file conflict risk, decision-record consistency, atomicity, and implementation readiness (evaluates Gate 2) | Architect | `.claude/skills/spec-breakdown-review/SKILL.md` |
 | Architecture Consistency Review | Check a created or changed spec, ADR, or change-request against every approved spec and accepted ADR, and route amendments for any drift | Architect | `.claude/skills/architecture-consistency-review/SKILL.md` |
+| Using AI Team | Match the situation to a skill and check gate preconditions before any other action | All roles | `.claude/skills/using-ai-team/SKILL.md` |
 | TDD | Write a failing test, verify failure, implement the minimal change, verify pass, and refactor | Developer | `.claude/skills/tdd/SKILL.md` |
 | Debug | Reproduce or confirm a defect, gather evidence, isolate the fault, record a root-cause hypothesis, then permit fixing | Developer | `.claude/skills/debug/SKILL.md` |
 | Code Review | Review tasks for acceptance compliance and bugs for diagnosis, root-cause fit, verification, and code quality | Reviewer | `.claude/skills/code-review/SKILL.md` |
