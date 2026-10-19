@@ -27,7 +27,8 @@ When it is done, a new project starts with S-000; every later spec covers one S-
 - **A `component` field in spec frontmatter, or a component-to-spec mapping.** The ID `0` is the only marker that a spec is the project overview. A spec names the S-000 component it covers in its Purpose, in prose.
 - **Progress tracking inside S-000.** S-000 does not record which components are specified, in progress or done. Pending and completed work is read from specs and tasks.
 - **Technology choices and interface contracts in S-000.** They belong in later specs and ADRs.
-- **Retrofitting existing projects.** Projects that already have specs are not required to create S-000, and existing specs are not migrated.
+- **Mandatory adoption or migration in existing projects.** Projects that already have specs are not required to create S-000, and existing specs are not rewritten to the new template. They can still adopt S-000 through the brownfield path below.
+- **A switch to turn the missing-S-000 hint off.** The hint is always on.
 - **Changing the rules for how feature specs are decomposed or reviewed**, except where this spec says so below.
 
 ## Architecture
@@ -45,7 +46,7 @@ When it is done, a new project starts with S-000; every later spec covers one S-
 | Component | Responsibility | Notes |
 |---|---|---|
 | S-000 spec template | Fixed section structure for the overview | Separate from the feature spec template |
-| `new-system-overview` skill | Procedure for writing S-000 with the human, from a project description | Calls the CLI to create the file; Planner-owned |
+| `new-system-overview` skill | Procedure for writing S-000 with the human, from a project description or, in an existing project, from the existing specs, decisions and code | Calls the CLI to create the file; Planner-owned |
 | Spec authoring guide | Content contract for S-000 and the S-000 versus spec boundary | Single owner of "what goes where" |
 | Feature spec template and `new-spec` skill | Cover one component's contract; refer to S-000 for system-wide context | System-wide Architecture parts move out |
 | Architecture consistency review | Checks a new or changed spec against S-000 | Standing duty; no new gate |
@@ -95,12 +96,21 @@ A spec that needs something S-000 does not cover is a signal either to amend S-0
 2. **No tasks.** Spec breakdown refuses S-000 and says why. The CLI refuses to create a task whose source spec is S-000, and `validate` reports any task that names S-000 as its source spec.
 3. **Session start.** When S-000 exists and is approved, the Planner and the Architect read it at the start of a session before reading other specs. The Developer, Reviewer and Integrator do not read it at session start; they work from their own agent descriptions and the task or bug they are given. The Planner and Architect agent descriptions say so.
 4. **Planner.** For a project with no specs, the Planner proposes writing S-000 first. For a project that already has specs, S-000 stays optional and the Planner does not require it.
-5. **Missing-S-000 hints.** When no S-000 exists (in the specs folder or its archive), the CLI prints a one-line hint, pointing to the way to create it, from `validate`, from every command that creates an artifact (`spec new`, `task new`, `bug new`, `adr new`, `change-request new`) and from the report commands. The hint is advisory: it never changes the exit code, never blocks the command, and goes to the error stream so that `--json` output on the standard stream stays valid. Creating S-000 itself does not print the hint.
+5. **Missing-S-000 hints.** When no S-000 exists (in the specs folder or its archive), the CLI prints a one-line hint, pointing to the way to create it, from `validate`, from every command that creates an artifact (`spec new`, `task new`, `bug new`, `adr new`, `change-request new`) and from the report commands. The hint is always on and not configurable. It is advisory: it never changes the exit code, never blocks the command, and goes to the error stream so that `--json` output on the standard stream stays valid. Creating S-000 itself does not print the hint.
 6. **Skill suggestions.** The `using-ai-team` skill and the `brainstorm` skill tell the agent, when S-000 does not exist, to suggest to the human starting with the system overview before writing a feature spec. The human may decline, in which case the work continues as before and the agent does not repeat the suggestion in the same session.
 7. **Architecture review.** When S-000 exists, the architecture consistency review confirms that a new or changed spec stays within S-000's purpose and respects each component's boundary and responsibility, and reports a violation as drift per the existing finding rules.
 8. **Feature spec template.** The system-wide parts of the Architecture section move out of the feature spec template; the spec keeps principles specific to its own scope and refers to S-000 for the rest. Existing approved specs stay valid unchanged.
 9. **Quality gate.** Gate 1 criteria apply to S-000 with its own pass criteria: plain language, no technology or interfaces, every use case tied to a pain point, every component with a boundary and responsibility, and no unresolved `[TODO]`. These replace, rather than add to, the Gate 1 criterion that the architecture is detailed enough to derive tasks, which S-000 cannot meet by design.
 10. **Completion review.** The pre-Gate-5 completion review (ADR-002) does not include S-000, because S-000 has no tasks or Work Logs to reconcile.
+
+## Brownfield adoption
+
+In a project that already has specs, code or decisions, the agent can use `new-system-overview` to write S-000 from that existing material, to give the project one shared description of its purpose and components. The skill:
+
+- Reads the existing approved specs, accepted ADRs and project documentation, and inspects the code only to learn what exists, not to describe how it works.
+- Drafts S-000 under the same content contract, in plain language, describing what the project is for and how it divides, not how it is built today.
+- Reports every place where existing specs overlap, leave a gap, or disagree with the drafted components, as findings for the human, the Planner and the Architect. It does not amend approved specs itself; amendments follow the normal amendment flow.
+- Goes through the same Architect review and human Gate 1 approval as any S-000.
 
 ## Implementation Order
 
@@ -108,7 +118,7 @@ A spec that needs something S-000 does not cover is a signal either to amend S-0
 |---|---|---|
 | 1 | Authoring guide: S-000 content contract and S-000 versus spec boundary | Nothing |
 | 2 | S-000 template, `ai-team spec new` creation path, ID and duplicate protection | Phase 1 |
-| 3 | `new-system-overview` skill; breakdown refusal; CLI refusal and `validate` check for tasks from S-000; missing-S-000 hints in the CLI | Phase 2 |
+| 3 | `new-system-overview` skill, including the brownfield path; breakdown refusal; CLI refusal and `validate` check for tasks from S-000; missing-S-000 hints in the CLI | Phase 2 |
 | 4 | Feature spec template and `new-spec` skill changes; Planner and session-start rules; `using-ai-team` and `brainstorm` suggestions; Gate 1 criteria; architecture consistency review check | Phases 1–3 |
 | 5 | Regenerate scaffolds and CLI docs; update the component map | Phase 4 |
 
