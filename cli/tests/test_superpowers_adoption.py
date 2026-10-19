@@ -298,6 +298,10 @@ def test_validation_report_records_baseline_and_with_change_runs():
 def test_evidence_rule_allows_cited_and_artifact_proof():
     body = skill("evidence-before-claims")
     assert "per Work Log session N" in body
-    assert "Roles without a shell prove document claims" in body
+    assert (
+        "Roles without a shell"
+        in body.split("### Step 3", 1)[1].split("## Output Format", 1)[0]
+    )
     for role in ("reviewer", "architect", "planner"):
         assert "evidence-before-claims" in agent(role), role
+    assert "per Work Log session N" in agent("reviewer")

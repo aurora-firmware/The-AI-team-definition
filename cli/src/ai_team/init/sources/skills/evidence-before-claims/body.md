@@ -13,6 +13,8 @@ Claiming work is done, fixed, passing, or reviewed without fresh evidence is a f
 
 Before making any claim or writing any `Evidence:` entry:
 
+This gate covers a claim about your own work. Two exceptions apply: a claim that rests on someone else's recorded run is cited, not re-run (Step 3); a claim about a document or approval is proved by the artifact read, not a command (Step 2).
+
 1. **Identify** the command that proves the claim.
 2. **Run** the full command, fresh and complete — not a subset, and not a result from earlier in the session.
 3. **Read** the full output: check the exit code and count the failures.
@@ -25,7 +27,7 @@ If any step is skipped, do not make the claim. State what was not verified inste
 
 | Claim | Requires | Not sufficient |
 |---|---|---|
-| Tests pass | Test command output with zero failures, from this run | An earlier run, "should pass", a passing subset |
+| Tests pass | Test command output with zero failures, from this run, or a recorded run by another role cited as such (Step 3) | Your own earlier run, "should pass", a passing subset |
 | Build succeeds | Build command output with exit code 0 | Linting passing, a clean-looking log |
 | Bug is fixed | The original reproduction now passing, plus the regression test | The code changed, "looks right" |
 | Regression test works | Red then green: it failed without the fix and passes with it | It passes once |
@@ -40,14 +42,17 @@ If any step is skipped, do not make the claim. State what was not verified inste
 Write each `Evidence:` entry as the claim, the command run, and the decisive output (exit code, pass and fail counts, the relevant lines).
 Use `not run` only with the reason, and never alongside a claim that the check passed.
 
+A claim that rests on someone else's earlier run (for example a Developer's Work Log test result a Reviewer is told not to repeat) is cited, not re-run: write `tests pass (per Work Log session N: <command> — <output>)`. A cited claim is labelled as cited and never presented as this role's own run.
+A claim about a document or approval is recorded as `<claim> — <artifact path, line or verdict> — <what it says>`; roles without a shell use this form.
+
 ## Output Format
 
-- **Evidence entries:** one per claim, in the form `<claim> — <command> — <decisive output>`.
+- **Evidence entries:** one per claim, in the form `<claim> — <command> — <decisive output>`; a cited run reads `<claim> (per <source>: <command> — <output>)`; a document claim reads `<claim> — <artifact and line or verdict> — <what it says>`.
 - **Unverified claims:** listed separately as `not verified: <claim> — <reason>`.
 
 ## Quality Criteria
 
-- Every claim of completion, passing, fixed, or merged names the command that proved it.
+- Every claim of completion, passing, fixed, or merged names the command that proved it, or the cited run or artifact read that proved it.
 - The command ran in full after the last change to the code under test.
 - Failures and warnings in the output were read, not skimmed.
 - A claim that could not be verified is reported as unverified, not omitted.
@@ -71,6 +76,3 @@ These thoughts mean stop and run the command.
 - Reusing output from before the last edit.
 - Reporting a partial run as a full one.
 - Hedging a claim ("seems to work") instead of verifying it or marking it unverified.
-
-A claim that rests on someone else's earlier run (for example a Developer's Work Log test result a Reviewer is told not to repeat) is cited, not re-run: write `tests pass (per Work Log session N: <command> — <output>)`. A cited claim is labelled as cited and never presented as this role's own run.
-Roles without a shell prove document claims with the artifact read, not a command.
