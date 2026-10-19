@@ -36,10 +36,11 @@ Before the first action of a request — including a clarifying question, a code
 
 The skill chain is gated. Before starting a stage, confirm the artifact it needs exists:
 
-1. Implementation needs a task that passed Gate 2 (`pending` in the tracker), which needs an approved spec or an approved change-request.
-2. Task breakdown needs a spec that is approved and free of human-answerable `[TODO]` markers.
-3. Integration needs a Reviewer PASS recorded in the task or bug file.
-4. Merging the integration branch into `main` needs the human's Gate 5 sign-off.
+1. Implementing a task needs a task that passed Gate 2 (`pending` or `in-progress` in the tracker), which needs an approved spec or an approved change-request.
+2. Fixing a bug needs a bug file with a Diagnosis Log, produced by `debug`.
+3. Task breakdown needs a spec that is approved and free of human-answerable `[TODO]` markers.
+4. Integration needs a Reviewer PASS recorded in the task or bug file.
+5. Merging the integration branch into `main` needs the human's Gate 5 sign-off.
 
 If a precondition is missing, stop and report which artifact is missing and which skill produces it. Do not do the earlier stage's work inline to get around it.
 

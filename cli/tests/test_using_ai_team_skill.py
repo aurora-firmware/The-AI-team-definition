@@ -15,7 +15,7 @@ def test_dispatch_table_names_only_existing_skills():
     existing = {path.name for path in SKILLS.iterdir() if path.is_dir()}
     table_rows = [line for line in BODY.splitlines() if line.startswith("| ")]
     named = {
-        name for row in table_rows[2:] for name in re.findall(r"`([a-z][a-z-]+)`", row)
+        name for row in table_rows[1:] for name in re.findall(r"`([a-z][a-z-]+)`", row)
     }
 
     assert named
