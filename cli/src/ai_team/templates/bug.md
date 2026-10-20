@@ -60,6 +60,10 @@ Use `unknown` if not yet isolated.
 
 ## Fix Verification
 
+<!-- Run context: each line runs from the repository root in a fresh shell,
+independently of the other lines; a line that needs another directory changes
+into it on that line (`cd <dir> && <command>`). -->
+
 ```bash
 # Command(s) to verify the bug is fixed
 ```
