@@ -13,7 +13,12 @@ from typing import Literal
 import typer
 from slugify import slugify
 
-from ai_team.commands._shared import append_work_log_entry, project_root, template_body
+from ai_team.commands._shared import (
+    append_work_log_entry,
+    hint_missing_overview,
+    project_root,
+    template_body,
+)
 from ai_team.core.fs import ArtifactExists, read_artifact, update_status
 from ai_team.core.ids import is_overview_reference, next_task_id
 from ai_team.core.lock import LockTimeout, create_artifact_with_lock
@@ -96,6 +101,7 @@ def new_task(
         raise typer.Exit(code=1)
 
     root = project_root()
+    hint_missing_overview(root)
 
     def build(task_id: str) -> tuple[Path, Task, str]:
         slug = slugify(title)

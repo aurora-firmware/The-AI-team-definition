@@ -255,3 +255,44 @@ def test_status_prints_no_hint_when_s_000_exists(project):
 
     assert result.exit_code == 0
     assert OVERVIEW_HINT not in result.stderr
+
+
+_TRACKER_COMMANDS = [
+    ["task", "new", "Do thing"],
+    ["bug", "new", "Broken thing"],
+    ["change-request", "new", "Change thing"],
+]
+
+
+@pytest.mark.parametrize("args", _TRACKER_COMMANDS)
+def test_tracker_new_commands_print_hint_to_stderr_when_no_s_000(project, args):
+    from ai_team.cli import app
+
+    result = CliRunner().invoke(app, [*args, "--json"])
+
+    assert result.exit_code == 0
+    assert OVERVIEW_HINT in result.stderr
+    assert OVERVIEW_HINT not in result.stdout
+    assert set(json.loads(result.stdout)) == {"id", "path"}
+
+
+@pytest.mark.parametrize("args", _TRACKER_COMMANDS)
+def test_tracker_new_commands_print_no_hint_when_s_000_exists(project, args):
+    from ai_team.cli import app
+
+    _add_overview(project)
+
+    result = CliRunner().invoke(app, args)
+
+    assert result.exit_code == 0
+    assert OVERVIEW_HINT not in result.stderr
+
+
+def test_task_new_refused_for_s_000_prints_only_the_refusal(project):
+    from ai_team.cli import app
+
+    result = CliRunner().invoke(app, ["task", "new", "Do thing", "--spec", "S-000"])
+
+    assert result.exit_code == 1
+    assert "S-000 is the project overview" in result.stderr
+    assert OVERVIEW_HINT not in result.stderr
