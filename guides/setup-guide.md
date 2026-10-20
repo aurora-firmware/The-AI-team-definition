@@ -105,7 +105,7 @@ The `ai-process/` specification documents are not exported. They live in the AI 
 
 Create a `CLAUDE.md` and `AGENTS.md` in your project root. The test instructions in these files are especially important: `dev-loop` starts baseline command discovery from root project guidance, then follows clear references to project-local docs such as `ai-team/docs/coding_guidelines.md`, README files, build configuration, or other documented test instructions. If no automated baseline command is documented, or the available guidance is ambiguous, `dev-loop` will ask the human for the intended command or for explicit confirmation that no automated baseline test is available before claiming a task.
 
-`ai-team init` can scaffold starter versions of both root guidance files when they are missing. Run `ai-team init . --tools claude` interactively and answer the prompts, or pass `--create-root-guidance` with `--no-interactive` to create them non-interactively. Existing root guidance files are never overwritten unless `--force` is also set.
+`ai-team init` can scaffold starter versions of both root guidance files when they are missing. Run `ai-team init . --tools claude` interactively and answer the prompts, or pass `--create-root-guidance` to create them without prompting (in either mode). Existing root guidance files are never overwritten unless `--force` is also set: `--force` alone prompts in interactive mode and leaves them untouched with `--no-interactive`, while `--force --create-root-guidance` overwrites them without prompting. Every existing file that `init` replaces is reported as `OVERWROTE: <path>`; newly created files are not.
 
 Start your `CLAUDE.md` with this structure and customize the first section:
 

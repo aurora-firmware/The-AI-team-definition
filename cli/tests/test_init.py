@@ -562,3 +562,140 @@ def test_init_configures_tracker_and_ignores_it_idempotently(tmp_path):
     lines = (target / ".gitignore").read_text(encoding="utf-8").splitlines()
     assert lines[0] == "node_modules/"
     assert lines.count("/.ai-team/") == 1
+
+
+# ── Root guidance contract and overwrite report (B-018) ─────────────────────
+
+
+def _repo_with_custom_root_guidance(tmp_path):
+    target = tmp_path / "repo"
+    target.mkdir()
+    for name in ("CLAUDE.md", "AGENTS.md"):
+        (target / name).write_text("custom\n", encoding="utf-8")
+    return target
+
+
+def _overwrote_lines(output):
+    return [line for line in output.splitlines() if line.startswith("OVERWROTE: ")]
+
+
+def _init(target, *flags, input=None):
+    from ai_team.cli import app
+
+    return CliRunner().invoke(
+        app, ["init", str(target), "--tools", "claude", *flags], input=input
+    )
+
+
+def test_interactive_force_overwrites_and_reports_root_guidance_on_yes(tmp_path):
+    target = _repo_with_custom_root_guidance(tmp_path)
+
+    result = _init(target, "--force", input="y\ny\n")
+
+    assert result.exit_code == 0
+    assert (target / "CLAUDE.md").read_text(encoding="utf-8") != "custom\n"
+    assert f"OVERWROTE: {target / 'CLAUDE.md'}" in result.output
+    assert f"OVERWROTE: {target / 'AGENTS.md'}" in result.output
+
+
+def test_interactive_force_keeps_and_does_not_report_root_guidance_on_no(tmp_path):
+    target = _repo_with_custom_root_guidance(tmp_path)
+
+    result = _init(target, "--force", input="n\nn\n")
+
+    assert result.exit_code == 0
+    assert (target / "CLAUDE.md").read_text(encoding="utf-8") == "custom\n"
+    assert f"OVERWROTE: {target / 'CLAUDE.md'}" not in result.output
+    assert f"OVERWROTE: {target / 'AGENTS.md'}" not in result.output
+
+
+def test_interactive_force_with_create_root_guidance_overwrites_without_prompt(
+    tmp_path,
+):
+    target = _repo_with_custom_root_guidance(tmp_path)
+
+    result = _init(target, "--force", "--create-root-guidance")
+
+    assert result.exit_code == 0
+    assert "Create root" not in result.output
+    assert (target / "CLAUDE.md").read_text(encoding="utf-8") != "custom\n"
+    assert f"OVERWROTE: {target / 'CLAUDE.md'}" in result.output
+    assert f"OVERWROTE: {target / 'AGENTS.md'}" in result.output
+
+
+def test_interactive_create_root_guidance_creates_missing_files_without_prompt(
+    tmp_path,
+):
+    target = tmp_path / "repo"
+
+    result = _init(target, "--create-root-guidance")
+
+    assert result.exit_code == 0
+    assert "Create root" not in result.output
+    assert (target / "CLAUDE.md").is_file()
+    assert (target / "AGENTS.md").is_file()
+
+
+def test_non_interactive_force_with_create_root_guidance_overwrites_and_reports(
+    tmp_path,
+):
+    target = _repo_with_custom_root_guidance(tmp_path)
+
+    result = _init(target, "--force", "--no-interactive", "--create-root-guidance")
+
+    assert result.exit_code == 0
+    assert (target / "CLAUDE.md").read_text(encoding="utf-8") != "custom\n"
+    assert f"OVERWROTE: {target / 'CLAUDE.md'}" in result.output
+    assert f"OVERWROTE: {target / 'AGENTS.md'}" in result.output
+
+
+def test_non_interactive_force_without_flag_leaves_root_guidance_untouched(tmp_path):
+    target = _repo_with_custom_root_guidance(tmp_path)
+
+    result = _init(target, "--force", "--no-interactive")
+
+    assert result.exit_code == 0
+    assert (target / "CLAUDE.md").read_text(encoding="utf-8") == "custom\n"
+    assert (target / "AGENTS.md").read_text(encoding="utf-8") == "custom\n"
+    assert f"OVERWROTE: {target / 'CLAUDE.md'}" not in result.output
+
+
+def test_create_root_guidance_without_force_leaves_existing_files_untouched(
+    tmp_path,
+):
+    target = _repo_with_custom_root_guidance(tmp_path)
+
+    result = _init(target, "--create-root-guidance")
+
+    assert result.exit_code == 0
+    assert (target / "CLAUDE.md").read_text(encoding="utf-8") == "custom\n"
+    assert _overwrote_lines(result.output) == []
+
+
+def test_fresh_init_reports_no_overwrites(tmp_path):
+    target = tmp_path / "repo"
+
+    result = _init(target, "--no-interactive", "--create-root-guidance")
+
+    assert result.exit_code == 0
+    assert _overwrote_lines(result.output) == []
+
+
+def test_force_rerun_reports_existing_files_but_not_newly_created_ones(tmp_path):
+    target = tmp_path / "repo"
+    _init(target, "--no-interactive", "--create-root-guidance")
+    (target / "AGENTS.md").unlink()
+
+    result = _init(target, "--force", "--no-interactive", "--create-root-guidance")
+
+    assert result.exit_code == 0
+    reported = _overwrote_lines(result.output)
+    assert f"OVERWROTE: {target / '.ai-team.toml'}" in reported
+    assert (
+        f"OVERWROTE: {target / '.claude' / 'skills' / 'tdd' / 'SKILL.md'}" in reported
+    )
+    assert f"OVERWROTE: {target / 'CLAUDE.md'}" in reported
+    assert f"OVERWROTE: {target / 'AGENTS.md'}" not in reported
+    assert result.output.index("OVERWROTE:") < result.output.index(
+        "Initialization complete."
+    )
