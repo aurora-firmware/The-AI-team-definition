@@ -46,8 +46,8 @@ What this specification explicitly does NOT cover:
   process contract and the affected skill procedures. Creating a separate skill
   would add a new process component for behavior currently needed by only
   brainstorm and change-request.
-- **Editing repo-local exported skill copies.** The `.codex/` and `.claude/`
-  folders in this repository are not the source of truth for framework
+- **Editing repo-local exported skill copies.** The `.agents/`, `.codex/` and
+  `.claude/` folders in this repository are not the source of truth for framework
   behavior. This work updates source process documents and source skill
   definitions, then regenerates packaged scaffolds.
 - **Changing the autonomous development loop.** This work ends at the point
@@ -232,7 +232,7 @@ Accepted CR proceeds to existing task breakdown and Gate 2 flow
 - **What must exist:** A source-of-truth authoring path for skill behavior.
   **Where it lives:** `cli/src/ai_team/init/sources/skills/` and the process
   docs under `ai-process/processes/`.
-  **Constraints:** Local `.codex/` and `.claude/` exported skill copies are not
+  **Constraints:** Local `.agents/`, `.codex/` and `.claude/` exported skill copies are not
   edited to change framework behavior.
   **Missing-value behaviour:** If source skill definitions or process docs
   cannot be updated consistently, the work is incomplete.
@@ -267,8 +267,6 @@ Accepted CR proceeds to existing task breakdown and Gate 2 flow
 
 ## Amendment Log
 
-<!-- Optional. Use when an approved spec is amended after tasks are in flight.
 | Date | What changed | Why | Affected tasks |
 |------|-------------|-----|----------------|
-| YYYY-MM-DD | Description of change | Reason for amendment | T-XXX, T-YYY |
--->
+| 2026-10-20 | The exclusion and configuration requirement on repo-local exported skill copies also name `.agents/`. Wording only. Driven by CR-002. | Codex skills are now exported to `.agents/skills/`. | None in flight |

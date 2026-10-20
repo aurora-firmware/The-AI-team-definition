@@ -37,7 +37,8 @@ What this specification explicitly does NOT cover:
   separately; existing commands that already support JSON must remain valid.
 - **Changing existing command failures.** Other commands are not required to
   invoke `check-layout` or replace their current error messages with layout
-  diagnostics.
+  diagnostics. The version mismatch warning never changes a command's stdout,
+  JSON output, or exit code.
 
 ## Architecture
 
@@ -64,6 +65,8 @@ CLI invocation
   |
   +--> development warning ---------------------------> stderr
   |
+  +--> version mismatch warning (marker version differs) --> stderr
+  |
   +--> check-layout
          |
          +--> level 1: expected directories
@@ -79,6 +82,7 @@ CLI invocation
 | Component | Responsibility | Notes |
 |---|---|---|
 | CLI development warning | Tells users the CLI is evolving and where to report defects. | Emitted exactly once for every process invocation, including help, version, successful commands, failed commands, and commands using JSON output. |
+| Version mismatch warning | Tells users and agents that the project's scaffolds were written by a different CLI version than the one running. | Emitted once, on stderr, after the development warning, only when `.ai-team.toml` records a `framework_version` that differs from the running CLI. Never changes stdout, JSON output, or the exit code. |
 | Layout contract resolver | Determines the repository root, configured project directory, selected AI tools, expected scaffold directories, and running CLI version. | Consumes `.ai-team.toml` when present and the current installed package contract; does not consult the network. |
 | Layout checks | Evaluate the four validation levels without modifying the repository. | Later levels report blocked or missing prerequisites clearly instead of crashing. |
 | Issue reporter | Aggregates findings into human-readable CLI output. | Each finding exposes level, path, problem, and suggested fix; a clean project has an unambiguous success result. |
@@ -109,11 +113,21 @@ CLI invocation
 **Estimated size:** Small.
 **Interfaces:** `ai-team check-layout`, hierarchical check findings, terminal output, and process exit status.
 
+### Component 5: Version Mismatch Warning
+
+Amendment 2026-10-20 (CR-002).
+
+**Purpose:** Warn on every invocation inside a project whose recorded framework version differs from the running CLI.
+**Estimated size:** Small.
+**Interfaces:** CLI process entry point, the `.ai-team.toml` reader shared with level 4, the installed distribution version, and stderr.
+
 ## Workflow
 
 ```
 User invokes any ai-team command
   +--> emit the development warning once on stderr
+  +--> if .ai-team.toml records a framework_version that differs from the
+  |    running CLI, emit the version mismatch warning once on stderr
   +--> continue normal command processing
 
 User invokes ai-team check-layout
@@ -141,8 +155,18 @@ not be completed rather than raising an unhandled exception.
 1. **Level 1 — expected directories.** The repository must contain the
    configured project directory and every lifecycle directory in the current
    CLI project scaffold. For each tool named in `.ai-team.toml`, its current
-   agent and skill scaffold directories must also exist. Extra directories are
-   permitted and are not findings.
+   agent and skill scaffold directories must also exist, at the export paths
+   below. Extra directories are permitted and are not findings.
+
+   | Tool | Agents | Skills |
+   |---|---|---|
+   | `claude` | `.claude/agents/` | `.claude/skills/` |
+   | `codex` | `.codex/agents/` | `.agents/skills/` |
+
+   For a configured `codex` tool, a legacy `.codex/skills/<name>/` folder whose
+   name is a framework-owned skill is a finding; the suggested fix is to rerun
+   `ai-team init --force`. Legacy folders for skills the framework does not own
+   are not findings.
 2. **Level 2 — artifact names and frontmatter.** Every managed artifact file in
    specs, tasks, bugs, change requests, and decisions must match the filename
    convention for its artifact type and must have syntactically valid,
@@ -166,6 +190,14 @@ then path, so repeated runs against unchanged input are deterministic.
 
 **Contract — warning text:** `Warning: ai-team is under development. Please report issues at https://github.com/aurora-firmware/the-ai-team/issues`
 
+**Contract — version mismatch warning text:** ``Warning: .ai-team.toml framework_version <configured> does not match ai-team <running>. Install ai-team <configured>, or run `ai-team init --force` to update the project to <running>.``
+
+The version mismatch warning uses the same exact comparison as level 4. It is
+not emitted when no `.ai-team.toml` is found, when the marker has no `[init]`
+table or no `framework_version` value, when the marker cannot be parsed, for
+`ai-team init`, or for `--help` and `--version` runs that do not resolve a
+project. Those marker cases remain level 4 findings.
+
 ## Configuration Requirements
 
 - **What must exist:** The repository marker identifying the project directory,
@@ -173,9 +205,11 @@ then path, so repeated runs against unchanged input are deterministic.
   **Where it lives:** Root `.ai-team.toml`.
   **Constraints:** The project directory is a usable relative directory name;
   configured tools are supported by the running CLI; the framework version is
-  compared exactly with the installed distribution version.
+  compared exactly with the installed distribution version, both by level 4
+  and by the version mismatch warning.
   **Missing-value behaviour:** Record an actionable finding and continue every
-  check that can still be evaluated safely from repository conventions.
+  check that can still be evaluated safely from repository conventions. The
+  version mismatch warning is skipped.
 
 - **What must exist:** Root guidance for each configured AI tool.
   **Where it lives:** Root `CLAUDE.md` for Claude and root `AGENTS.md` for Codex.
@@ -200,7 +234,10 @@ then path, so repeated runs against unchanged input are deterministic.
 | 2 | Establish local layout-contract resolution and the four read-only validation levels with automated coverage. | Phase 1 |
 | 3 | Expose `ai-team check-layout` with deterministic reporting, suggested fixes, and clean/issue exit behavior. | Phase 2 |
 | 4 | Update user and generated command documentation, then verify the complete CLI test, lint, scaffold-sync, and build checks. | Phases 1-3 |
+| 5 | Add the version mismatch warning, and move the level 1 Codex skill path to `.agents/skills/` with the legacy-folder finding (CR-002). | Phases 1-4 |
 
 ## Amendment Log
 
-<!-- No amendments. Add rows only after Gate 1 approval. -->
+| Date | What changed | Why | Affected tasks |
+|------|-------------|-----|----------------|
+| 2026-10-20 | Added the version mismatch warning (Component 5, warning text contract, workflow, configuration). Level 1 now names per-tool export paths: Codex skills move from `.codex/skills/` to `.agents/skills/`, and a legacy framework-owned `.codex/skills/<name>/` folder is a finding. Driven by CR-002. | Only `check-layout` compared `framework_version`, so stale scaffolds and an older CLI gave wrong results without a warning (report #1, #7). Codex discovers repository skills in `.agents/skills/` and is deprecating `.codex/skills/`. | None in flight |
