@@ -168,13 +168,21 @@ def _ensure_tracker(target_root: Path, tracker_dir: str, dry_run: bool) -> None:
 def _write_rendered(source: Path, destination: Path, settings: dict[str, str]) -> None:
     """Copy *source* to *destination*, filling the packaged-source placeholders.
 
+    A source that is not valid UTF-8 (for example an image) is copied byte for
+    byte, without placeholder substitution.
+
     Reports ``OVERWROTE: <path>`` once the write succeeds when *destination*
     already existed.
     """
     existed = destination.exists()
     destination.parent.mkdir(parents=True, exist_ok=True)
-    text = render_placeholders(source.read_text(encoding="utf-8"), **settings)
-    destination.write_text(text, encoding="utf-8")
+    content = source.read_bytes()
+    try:
+        text = content.decode("utf-8")
+    except UnicodeDecodeError:
+        destination.write_bytes(content)
+    else:
+        destination.write_text(render_placeholders(text, **settings), encoding="utf-8")
     shutil.copymode(source, destination)
     if existed:
         _report_overwrite(destination)
