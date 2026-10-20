@@ -10,7 +10,8 @@ created: '2026-06-05'
 ## Context
 
 The AI-team framework ships skills for two runtime targets: Claude (`.claude/skills/`) and
-Codex (`.codex/skills/`). Each skill is authored once in a source tree and exported as a
+Codex (`.codex/skills/`). Since CR-002 (2026-10-20), Codex skills are exported to
+`.agents/skills/`; the decision below is unaffected. Each skill is authored once in a source tree and exported as a
 scaffold for both tools.
 
 During the 2026-05 full-skills review (`full_skills_review.md`, issue P2), a question arose
