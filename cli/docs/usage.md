@@ -379,7 +379,10 @@ ai-team report --out /tmp/custom-report.md
 in-progress tasks, blocked tasks, critical/high bugs, and the latest
 integration result. The integration result cites the newest Work Log session
 of a completed task or resolved bug (ID, session, date, and first line), or
-`not found` when no such session exists.
+`not found` when no such session exists. The integration result is read only
+from Work Log headings of the exact form `### Session N — YYYY-MM-DD` (an em
+dash, with `N` a session number); a completed task or resolved bug whose
+sessions use any other heading form reports `not found`.
 
 `ai-team report` renders the same data into a markdown file using the bundled
 report template.
