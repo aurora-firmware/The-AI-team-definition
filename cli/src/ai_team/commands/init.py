@@ -103,7 +103,7 @@ def _resolve_tools(tools: str | None, no_interactive: bool) -> list[str]:
 def _next_steps() -> list[str]:
     return [
         "Run /brainstorm to explore the request and constraints.",
-        "Run /write-plan to break the spec into tasks.",
+        "Run /spec-breakdown to break the approved spec into tasks.",
         "Run /dev-loop to execute tasks through review and integration.",
     ]
 
