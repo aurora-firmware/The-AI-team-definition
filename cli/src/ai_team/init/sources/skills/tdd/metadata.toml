@@ -1,13 +1,13 @@
 [claude]
 header = """---
 name: tdd
-description: Test-driven implementation cycle for tasks and diagnosed bug fixes. Use after task assignment, or after a bug has a Diagnosis Log, to write a failing test, verify failure, implement the minimal change, verify pass, and refactor.
+description: Implements assigned tasks using their planned verification mode, either a test-driven cycle or a recorded design review for prose-only tasks. Applies the test-driven cycle to bug fixes after a Diagnosis Log exists.
 allowed-tools: Read, Grep, Glob, Write, Edit, Bash, Skill(git-conventions)
 ---"""
 
 [codex]
 header = """---
 name: tdd
-description: Test-driven implementation cycle for tasks and diagnosed bug fixes. Use after task assignment, or after a bug has a Diagnosis Log, to write a failing test, verify failure, implement the minimal change, verify pass, and refactor.
+description: Implements assigned tasks using their planned verification mode, either a test-driven cycle or a recorded design review for prose-only tasks. Applies the test-driven cycle to bug fixes after a Diagnosis Log exists.
 allowed-tools: Read, Grep, Glob, Write, Edit, Bash, Skill(git-conventions)
 ---"""
