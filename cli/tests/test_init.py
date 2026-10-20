@@ -155,7 +155,7 @@ def test_init_force_allows_overwriting_existing_files(monkeypatch, tmp_path):
 
 
 def test_init_tools_codex_scaffolds_codex_agents_and_skills(tmp_path):
-    """`--tools codex` scaffolds .codex/agents/ and .codex/skills/ directories."""
+    """`--tools codex` scaffolds .codex/agents/ and .agents/skills/ directories."""
     from ai_team.cli import app
 
     target = tmp_path / "repo"
@@ -166,15 +166,45 @@ def test_init_tools_codex_scaffolds_codex_agents_and_skills(tmp_path):
 
     assert result.exit_code == 0
     assert (target / ".codex" / "agents" / "planner.toml").is_file()
-    assert (target / ".codex" / "skills" / "tdd" / "SKILL.md").is_file()
-    assert (target / ".codex" / "skills" / "change-request" / "SKILL.md").is_file()
+    assert (target / ".agents" / "skills" / "tdd" / "SKILL.md").is_file()
+    assert (target / ".agents" / "skills" / "change-request" / "SKILL.md").is_file()
     assert not (target / "ai-team" / "change-requests").exists()
     assert not (target / ".claude").exists()
     assert not (target / "ai-process").exists()
 
 
+def test_init_tools_codex_does_not_create_codex_skills_directory(tmp_path):
+    """Codex skills go to .agents/skills, never .codex/skills."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    result = CliRunner().invoke(
+        app,
+        ["init", str(target), "--tools", "codex", "--no-interactive"],
+    )
+
+    assert result.exit_code == 0
+    assert not (target / ".codex" / "skills").exists()
+
+
+def test_init_tools_claude_keeps_claude_agents_and_skills(tmp_path):
+    """`--tools claude` still writes .claude/agents and .claude/skills."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    result = CliRunner().invoke(
+        app,
+        ["init", str(target), "--tools", "claude", "--no-interactive"],
+    )
+
+    assert result.exit_code == 0
+    assert (target / ".claude" / "agents" / "planner.md").is_file()
+    assert (target / ".claude" / "skills" / "tdd" / "SKILL.md").is_file()
+    assert not (target / ".agents").exists()
+
+
 def test_init_tools_codex_scaffolds_real_files_not_symlinks(tmp_path):
-    """`--tools codex` writes real files, not symlinks, under .codex/."""
+    """`--tools codex` writes real files, not symlinks, under .codex/ and .agents/."""
     from ai_team.cli import app
 
     target = tmp_path / "repo"
@@ -184,7 +214,7 @@ def test_init_tools_codex_scaffolds_real_files_not_symlinks(tmp_path):
     )
 
     agent_file = target / ".codex" / "agents" / "planner.toml"
-    skill_file = target / ".codex" / "skills" / "tdd" / "SKILL.md"
+    skill_file = target / ".agents" / "skills" / "tdd" / "SKILL.md"
     assert agent_file.is_file() and not agent_file.is_symlink()
     assert skill_file.is_file() and not skill_file.is_symlink()
 

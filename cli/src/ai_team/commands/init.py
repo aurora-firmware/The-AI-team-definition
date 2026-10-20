@@ -20,6 +20,7 @@ from ai_team.core.config import (
     render_placeholders,
 )
 from ai_team.core.locator import DEFAULT_PROJECT_DIR
+from ai_team.core.tool_paths import TOOL_EXPORT_PATHS
 from ai_team.core.tracker import DEFAULT_TRACKER_DIR, resolve_tracker_dir
 
 NAME = "init"
@@ -324,15 +325,14 @@ def init_command(
             _plan_copies(scaffolds_path / "project", target_root / project_dir)
         )
 
-        if "claude" in selected_tools:
-            planned.extend(
-                _plan_copies(scaffolds_path / "claude", target_root / ".claude")
-            )
-
-        if "codex" in selected_tools:
-            planned.extend(
-                _plan_copies(scaffolds_path / "codex", target_root / ".codex")
-            )
+        for tool in selected_tools:
+            for scaffold_subfolder, destination in TOOL_EXPORT_PATHS[tool]:
+                planned.extend(
+                    _plan_copies(
+                        scaffolds_path / tool / scaffold_subfolder,
+                        target_root / destination,
+                    )
+                )
 
         marker = target_root / ".ai-team.toml"
         planned_destinations = [destination for _, destination in planned] + [marker]
