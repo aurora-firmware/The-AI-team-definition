@@ -69,7 +69,9 @@ Rate every finding from Stage 1 and Stage 2:
 | **Important** | The work cannot be trusted until it is fixed: missing or untrustworthy tests, wrong behavior in a realistic case, scope violations | FAIL |
 | **Minor** | Real but non-blocking: naming, small duplication, a style or readability improvement within project standards | PASS; recorded under the `#### Deferred Minor findings` heading — never only inline in the findings — so Gate 5 can roll it up |
 
-An unmet acceptance criterion or an incomplete bug evidence chain is never Minor.
+A finding is at least **Important** when it breaks CI or depends on an environment CI does not provide — for example local git history beyond the checkout depth, network access, or the developer's installed tool versions. When the project has CI configuration, compare the new tests against it.
+
+An unmet acceptance criterion, an incomplete bug evidence chain, or a finding that contradicts an explicit sentence of the task Description (for example "The function never raises") is never Minor.
 
 ### Cannot Verify From the Diff
 
