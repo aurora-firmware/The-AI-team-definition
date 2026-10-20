@@ -54,6 +54,8 @@ Then fill in the task body so it satisfies:
 - **Dependencies**: List of task IDs that must complete first.
 - **Files to touch**: Exact file paths that will be created or modified.
 - **Verification mode**: the Planner decides per task whether it is verified by a **test** or a **design review**. A task that changes code, CLI output, or a rule a test can observe gets a **test**, and its test file is in Files to Touch. A task that changes only prose (guides, process docs, skill wording no test pins) gets a **design review**, recorded with the `Design review:` Verification form defined by `new-task`, listing the source spec, the accepted ADRs, and S-000 when it exists. Anything a test can observe gets a test. If the task changes a shared or public interface (an API, schema, shared library function, or contract consumed by code outside the task's own module), `## Verification` must include the project's documented baseline/full-suite command in addition to any module-scoped command — a module-scoped command alone is not sufficient for such tasks.
+- **Regeneration**: a task regenerates the generated files (scaffolds, docs) its own change affects and lists them in Files to Touch. A plan never ends with a separate "regenerate everything" task.
+- **Command reference**: a task that changes a command's arguments, options or help text lists the project's generated command reference, named in its guidance, in Files to Touch. The command that regenerates it is the project's own, named in its guidance.
 
 During task writing, consider documentation updates as implementation work derived from the approved spec, not as a prerequisite before creating tasks.
 If the spec changes user-facing behavior, commands, templates, guides, or workflow expectations, add the required documentation updates as tasks or acceptance criteria in this breakdown.
@@ -64,6 +66,7 @@ If documentation or test updates are not needed, omit them without placeholder t
 Verify completeness: does the full set of tasks cover the entire specification?
 Verify isolation: do any two tasks modify the same file? If yes, add a dependency between them.
 Verify atomicity: can each task be completed in a single agent pass? If a task feels too large, split it.
+Verify regeneration: does each task list the generated files its own change affects? If the plan ends with a separate "regenerate everything" task, move each regeneration into the task whose change requires it.
 
 ### Step 5: Place Tasks
 The tasks are already in the tracker with status `planned`, listed by `ai-team list tasks --state planned --spec <spec-or-cr-id>`.
@@ -71,7 +74,7 @@ They are outside version control: there is nothing to commit, and `/dev-loop` ig
 
 ### Step 6: Architect Preflight
 Run `ai-team list tasks --state planned --spec <spec-or-cr-id> --json`, then `ai-team show <task-id> --json` for each listed task, and collect each task's absolute `path`.
-The tracker is outside the repository and the Architect does not run commands, so it receives the paths in the prompt.
+The tracker is outside the repository, so the Planner passes the Architect the absolute task paths that `ai-team` reported in the prompt.
 
 **Spawn the Architect subagent** (tier: most capable) with this prompt:
 
