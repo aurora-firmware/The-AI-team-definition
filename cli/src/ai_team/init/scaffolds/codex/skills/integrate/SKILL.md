@@ -42,9 +42,9 @@ Read them through the paths the `ai-team` CLI reports — never from a copy insi
 5. If a task file is found, read it completely — focus on the **Description**, **Acceptance Criteria**, **Verification**, **Work Log**, and **Review** sections.
 6. If a bug file is found, read it completely — focus on the **Summary**, **Diagnosis Log**, **Fix Verification**, **Work Log**, and **Review** sections.
 7. Determine the source-branch verification command before checking out the source branch. Lookup order:
-   - The work item's `## Verification` or `## Fix Verification` section, if it contains concrete automated command(s).
+   - The work item's `## Verification` or `## Fix Verification` section, if it contains concrete automated command(s). A task whose Verification section holds the `Design review:` line has no automated command; its review was checked at Gate 3. Skip it and take the source-branch command from project guidance, the next entry, as for a work item without commands.
    - Target-project guidance such as the project `CLAUDE.md`, `{{project_dir}}/docs/coding_guidelines.md`, README, build configuration, or human-provided instructions.
-   - If no automated verification command can be determined, stop with `BLOCKED` and ask the human for the project verification command.
+   - If no automated verification command can be determined from the work item or from project guidance, stop with `BLOCKED` and ask the human for the project verification command.
    This is the command Step 4 runs on the source branch. It is scoped to the work item and must not be assumed to also cover the destination branch.
 8. Determine the destination-branch verification command — the check Step 6 runs after the merge to catch regressions outside the work item's own declared scope. Do not default this to the source-branch command from item 7; determine it separately:
    a. If the work item or project guidance explicitly defines a separate destination-branch or baseline check, use it.
@@ -91,6 +91,8 @@ While still on the source branch, run the discovered source-branch verification 
 <source verification command(s)>
 ```
 
+Each line of the set runs from the repository root in a fresh shell, independently of the other lines. A line that needs another directory changes into it on that line. The set is never run as one script.
+
 Capture stdout and stderr. Evaluate the result:
 
 - **All tests pass** → proceed to Step 5.
@@ -121,6 +123,8 @@ After the merge, on the destination branch, run the destination-branch verificat
 ```text
 <destination-branch verification command(s)>
 ```
+
+Run these with the same run context as Step 4: each line from the repository root in a fresh shell, independently of the other lines, never as one script.
 
 If Step 2 recorded a coverage-gap flag (no project baseline command was discoverable), state that explicitly in the report for this step, for example: "post-merge check used the task-scoped command only; no project-wide baseline command was discoverable — coverage outside the task's declared scope was not verified." Do not report post-merge success as equivalent to Step 4's result without that qualification. The coverage gap is a reporting requirement, not a hard stop — do not block integration solely because no baseline is documented.
 
