@@ -10,9 +10,11 @@ from pathlib import Path
 from ai_team.core.ids import (
     next_adr_id,
     next_bug_id,
+    OVERVIEW_ID,
     next_change_request_id,
     next_spec_id,
     next_task_id,
+    overview_exists,
 )
 from ai_team.core.locator import ProjectRoot
 
@@ -137,3 +139,46 @@ def test_next_change_request_id_ignores_non_matching_filenames(tmp_path):
     (search_dir / "notes.md").write_text("", encoding="utf-8")
 
     assert next_change_request_id((search_dir,)) == "CR-001"
+
+
+def test_overview_id_is_s_000():
+    assert OVERVIEW_ID == "S-000"
+
+
+def test_overview_exists_is_false_when_no_s_000_file_exists(tmp_path):
+    root = make_project_root(tmp_path)
+    (root.specs / "S-001-feature.md").write_text("", encoding="utf-8")
+
+    assert overview_exists(root) is False
+
+
+def test_overview_exists_detects_s_000_filename_in_specs(tmp_path):
+    root = make_project_root(tmp_path)
+    (root.specs / "S-000-system-overview.md").write_text("", encoding="utf-8")
+
+    assert overview_exists(root) is True
+
+
+def test_overview_exists_detects_s_000_filename_in_archive(tmp_path):
+    root = make_project_root(tmp_path)
+    (root.specs / "archive" / "S-000-old.md").write_text("", encoding="utf-8")
+
+    assert overview_exists(root) is True
+
+
+def test_overview_exists_detects_s_000_frontmatter_id_with_other_filename(tmp_path):
+    root = make_project_root(tmp_path)
+    (root.specs / "archive" / "overview.md").write_text(
+        "---\nid: S-000\ntitle: x\n---\n", encoding="utf-8"
+    )
+
+    assert overview_exists(root) is True
+
+
+def test_next_spec_id_returns_s_001_when_s_000_is_the_only_spec(tmp_path):
+    root = make_project_root(tmp_path)
+    (root.specs / "S-000-system-overview.md").write_text(
+        "---\nid: S-000\n---\n", encoding="utf-8"
+    )
+
+    assert next_spec_id(root) == "S-001"
