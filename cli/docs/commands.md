@@ -444,17 +444,18 @@ Create a new specification artifact from the bundled template.
 **Usage**:
 
 ```console
-$ ai-team spec new [OPTIONS] TITLE
+$ ai-team spec new [OPTIONS] [TITLE]
 ```
 
 **Arguments**:
 
-* `TITLE`: [required]
+* `[TITLE]`: Spec title. Optional with --overview.
 
 **Options**:
 
 * `--author TEXT`: [default: planner]
 * `--status [draft|review|approved|superseded]`: [default: draft]
+* `--overview`: Create the S-000 system overview from the system-overview template.
 * `--json`: Emit JSON output.
 * `--help`: Show this message and exit.
 
