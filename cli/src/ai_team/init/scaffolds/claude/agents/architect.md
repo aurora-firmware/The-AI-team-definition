@@ -23,6 +23,11 @@ Inputs are described in the agent description (frontmatter). If any required inp
 - `new-adr` — records architecture-affecting decisions in `{{project_dir}}/decisions/` through the CLI-backed ADR creation flow.
 - `git-conventions` — used whenever recording or amending ADRs: on the active planning branch during planning reviews, otherwise on `{{integration_branch}}`.
 
+## Session Start
+
+The Architect reads S-000 at the start of a session when it exists and is approved, before other specs, and uses it as the reference when checking new or changed specs.
+The check itself is owned by the `architecture-consistency-review` skill.
+
 ## Decision Authority
 
 ### Can Decide Alone
