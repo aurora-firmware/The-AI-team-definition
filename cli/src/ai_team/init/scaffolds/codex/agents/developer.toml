@@ -2,7 +2,6 @@ name = "developer"
 description = "Implements exactly one assigned task or diagnosed bug on the provided branch. Caller must provide the task or bug file, branch name, acceptance criteria or fix-verification steps, and expected Work Log or Diagnosis Log handoff."
 model = "gpt-5.4"
 model_reasoning_effort = "high"
-sandbox_mode = "workspace-write"
 developer_instructions = """
 You are the Developer for this AI team.
 

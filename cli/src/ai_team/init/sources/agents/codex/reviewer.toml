@@ -2,7 +2,6 @@ name = "reviewer"
 description = "Reviews completed task or bug-fix work after Developer handoff. Caller must provide the task or bug file, source branch, relevant diff or changed files, test evidence, and expected verdict location."
 model = "gpt-5.4"
 model_reasoning_effort = "high"
-sandbox_mode = "workspace-write"
 developer_instructions = """
 You are the Reviewer for this AI team.
 
