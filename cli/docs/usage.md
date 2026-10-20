@@ -28,6 +28,27 @@ The warning goes to stderr for help, version, successful commands, failed
 commands, and commands that emit JSON. Normal human-readable and JSON output
 remains on stdout, so redirect or parse stdout without including the warning.
 
+### Version mismatch warning
+
+When the project's `.ai-team.toml` records an `[init].framework_version` that
+differs from the running `ai-team` version (exact string comparison, as in
+`ai-team check-layout`), every command except `init` also writes this warning
+once to stderr, after the development warning:
+
+```text
+Warning: .ai-team.toml framework_version <configured> does not match ai-team <running>. Install ai-team <configured>, or run `ai-team init --force` to update the project to <running>.
+```
+
+The warning is skipped when:
+
+- no project or no `.ai-team.toml` is found;
+- the versions are equal;
+- `[init].framework_version` is missing, empty, or not a version string;
+- `.ai-team.toml` is not valid TOML;
+- the command is `ai-team init`, or the run is root `--help` or `--version`.
+
+The warning never changes stdout, `--json` output, or the exit code.
+
 ---
 
 ## Installation
