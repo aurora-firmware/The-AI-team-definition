@@ -9,11 +9,11 @@ from pathlib import Path
 
 from ai_team.core.ids import (
     OVERVIEW_ID,
+    is_overview_reference,
     next_adr_id,
     next_bug_id,
     next_change_request_id,
     next_spec_id,
-    is_overview_reference,
     next_task_id,
     overview_exists,
 )
