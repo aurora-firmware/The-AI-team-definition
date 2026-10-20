@@ -61,7 +61,8 @@ The role definition is the same in both systems, but the file format is differen
 - The agent body contains the nine canonical sections in Markdown.
 
 **Codex format** stores each agent as TOML in `.codex/agents/<role>.toml`:
-- Top-level TOML keys carry selector and runtime fields such as `name`, `description`, `developer_instructions`, and optional Codex-native settings like `model`, `model_reasoning_effort`, and `sandbox_mode`.
+- Top-level TOML keys carry selector and runtime fields such as `name`, `description`, `developer_instructions`, and optional Codex-native settings like `model` and `model_reasoning_effort`.
+- A Codex subagent takes its sandbox and approval settings from the parent session, not from a custom agent file. The roles that create files or commit — Architect, Planner, Developer, Reviewer, and Integrator — need a parent Codex session that allows writes.
 - The role contract that appears as Markdown sections in Claude is flattened into the `developer_instructions` string.
 
 Mapping rules:
