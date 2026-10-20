@@ -312,9 +312,9 @@ def test_usage_md_documents_codex_agents_scaffold():
 
 
 def test_usage_md_documents_codex_skills_scaffold():
-    """usage.md must document that --tools codex scaffolds .codex/skills/."""
-    assert ".codex/skills" in _content(), (
-        "usage.md must document that ai-team init --tools codex scaffolds .codex/skills/"
+    """usage.md must document that --tools codex scaffolds .agents/skills/."""
+    assert ".agents/skills" in _content(), (
+        "usage.md must document that ai-team init --tools codex scaffolds .agents/skills/"
     )
 
 
