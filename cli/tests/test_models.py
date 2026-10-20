@@ -722,3 +722,53 @@ status: resolved
     assert bug.title == "Legacy resolved bug"
     assert bug.severity == "medium"
     assert bug.status == "resolved"
+
+
+# ---------------------------------------------------------------------------
+# B-024: long frontmatter scalars are written on one line, without trailing
+# whitespace, instead of being folded at ruamel's default width of 80.
+# ---------------------------------------------------------------------------
+
+LONG_BUG_TITLE = (
+    "Frontmatter titles longer than the default YAML width must stay on one line "
+    "for grep and whitespace linters to read them whole"
+)
+
+
+def _frontmatter_lines(text: str) -> list[str]:
+    """Return the lines between the opening and closing ``---`` fences of *text*."""
+    lines = text.split("\n")
+    closing_index = lines.index("---", 1)
+    return lines[1:closing_index]
+
+
+def test_dump_frontmatter_keeps_long_title_on_one_line(tmp_path):
+    """A title longer than 80 characters is written on a single title: line."""
+    model = Bug(id="B-100", title=LONG_BUG_TITLE, severity="low", status="open")
+
+    dumped = dump_frontmatter(model, "# Body\n")
+
+    assert f"title: {LONG_BUG_TITLE}\n" in dumped
+
+
+def test_dump_frontmatter_leaves_no_frontmatter_line_ending_in_whitespace(tmp_path):
+    """No frontmatter line ends in a space, so editors and linters stay quiet."""
+    model = Bug(id="B-100", title=LONG_BUG_TITLE, severity="low", status="open")
+
+    dumped = dump_frontmatter(model, "# Body\n")
+
+    trailing = [line for line in _frontmatter_lines(dumped) if line != line.rstrip()]
+    assert trailing == []
+
+
+def test_dump_frontmatter_long_title_round_trips_and_is_stable(tmp_path):
+    """A long title parses back unchanged, and dumping the result again is identical."""
+    model = Bug(id="B-100", title=LONG_BUG_TITLE, severity="low", status="open")
+    first_dump = dump_frontmatter(model, "# Body\n")
+
+    roundtrip_path = write_file(tmp_path, "B-100-roundtrip.md", first_dump)
+    restored = parse_bug(roundtrip_path)
+    second_dump = dump_frontmatter(restored, "# Body\n")
+
+    assert restored.title == LONG_BUG_TITLE
+    assert second_dump == first_dump

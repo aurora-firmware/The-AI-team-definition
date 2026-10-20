@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import shutil
 import tomllib
 from pathlib import Path
@@ -126,6 +127,11 @@ def sync_init_scaffolds(cli_root: Path) -> None:
 
 
 def main() -> None:
+    # Parse first so --help and bad arguments never reach the destructive sync.
+    argparse.ArgumentParser(
+        prog=Path(__file__).name,
+        description="Regenerate bundled init scaffolds from package-owned sources.",
+    ).parse_args()
     cli_root = _cli_root_from_script(Path(__file__))
     sync_init_scaffolds(cli_root)
     print(f"Synchronized init scaffolds in {cli_root / 'src/ai_team/init/scaffolds'}")

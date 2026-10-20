@@ -103,7 +103,7 @@ def _resolve_tools(tools: str | None, no_interactive: bool) -> list[str]:
 def _next_steps() -> list[str]:
     return [
         "Run /brainstorm to explore the request and constraints.",
-        "Run /write-plan to break the spec into tasks.",
+        "Run /spec-breakdown to break the approved spec into tasks.",
         "Run /dev-loop to execute tasks through review and integration.",
     ]
 
@@ -131,7 +131,8 @@ def _ensure_tracker(target_root: Path, tracker_dir: str, dry_run: bool) -> None:
     )
 
     if dry_run:
-        typer.echo(f"WOULD CREATE: {tracker}")
+        if not tracker.exists():
+            typer.echo(f"WOULD CREATE: {tracker}")
         if needs_rule:
             typer.echo(f"WOULD UPDATE: {gitignore}")
         return
@@ -151,11 +152,22 @@ def _ensure_tracker(target_root: Path, tracker_dir: str, dry_run: bool) -> None:
 
 
 def _write_rendered(source: Path, destination: Path, settings: dict[str, str]) -> None:
-    """Copy *source* to *destination*, filling the packaged-source placeholders."""
+    """Copy *source* to *destination*, filling the packaged-source placeholders.
+
+    Reports ``OVERWROTE: <path>`` once the write succeeds when *destination*
+    already existed.
+    """
+    existed = destination.exists()
     destination.parent.mkdir(parents=True, exist_ok=True)
     text = render_placeholders(source.read_text(encoding="utf-8"), **settings)
     destination.write_text(text, encoding="utf-8")
     shutil.copymode(source, destination)
+    if existed:
+        _report_overwrite(destination)
+
+
+def _report_overwrite(destination: Path) -> None:
+    typer.echo(f"OVERWROTE: {destination}")
 
 
 def _copy_root_guidance_file(
@@ -168,6 +180,26 @@ def _copy_root_guidance_file(
     if destination.exists() and not force:
         return
     _write_rendered(source, destination, settings)
+
+
+def _root_guidance_action(
+    destination: Path,
+    force: bool,
+    create_root_guidance: bool,
+    no_interactive: bool,
+) -> str:
+    """Decide what ``init`` does with one root guidance file.
+
+    Returns ``"skip"``, ``"write"`` or ``"prompt"``. The real run and the dry
+    run both use this, so the dry run cannot disagree with the real run.
+    """
+    if destination.exists() and not force:
+        return "skip"
+    if create_root_guidance:
+        return "write"
+    if no_interactive:
+        return "skip"
+    return "prompt"
 
 
 def _handle_root_guidance(
@@ -185,21 +217,18 @@ def _handle_root_guidance(
     for filename in _ROOT_GUIDANCE_FILES:
         destination = target_root / filename
         source = sources_root / "root" / filename
-
-        # AC-5: never replace an existing file unless force is active
-        if destination.exists() and not force:
-            continue
+        action = _root_guidance_action(
+            destination, force, create_root_guidance, no_interactive
+        )
 
         if dry_run:
-            typer.echo(f"WOULD WRITE: {destination}")
-            continue
-
-        if no_interactive:
-            # AC-3: deterministic — only create when the flag is set
-            if create_root_guidance:
-                _copy_root_guidance_file(source, destination, force, settings)
-        else:
-            # AC-1 / AC-2: interactive — ask the user
+            if action == "write":
+                typer.echo(f"{_would_write_verb(destination, force)}: {destination}")
+            elif action == "prompt":
+                typer.echo(f"WOULD PROMPT: {destination}")
+        elif action == "write":
+            _copy_root_guidance_file(source, destination, force, settings)
+        elif action == "prompt":
             create = typer.confirm(
                 f"Create root {filename} from the starter template?",
                 default=True,
@@ -210,6 +239,10 @@ def _handle_root_guidance(
                 declined = True
 
     return declined
+
+
+def _would_write_verb(destination: Path, force: bool) -> str:
+    return "WOULD OVERWRITE" if destination.exists() and force else "WOULD WRITE"
 
 
 @app.callback()
@@ -294,10 +327,17 @@ def init_command(
             destination for destination in planned_destinations if destination.exists()
         ]
 
+        if collisions and not force:
+            typer.echo(
+                "Refusing to overwrite existing files without --force:\n"
+                + "\n".join(str(path) for path in collisions),
+                err=True,
+            )
+            raise typer.Exit(code=1)
+
         if dry_run:
             for destination in planned_destinations:
-                typer.echo(f"WOULD WRITE: {destination}")
-            # Also show root guidance would-write entries in dry-run
+                typer.echo(f"{_would_write_verb(destination, force)}: {destination}")
             _handle_root_guidance(
                 target_root,
                 sources_path,
@@ -308,16 +348,6 @@ def init_command(
                 settings=settings,
             )
             _ensure_tracker(target_root, tracker_dir, dry_run=True)
-
-        if collisions and not force:
-            typer.echo(
-                "Refusing to overwrite existing files without --force:\n"
-                + "\n".join(str(path) for path in collisions),
-                err=True,
-            )
-            raise typer.Exit(code=1)
-
-        if dry_run:
             return
 
         for source, destination in planned:
@@ -343,8 +373,11 @@ def init_command(
             "tools": selected_tools,
             "framework_version": importlib.metadata.version("ai-team"),
         }
+        marker_existed = marker.exists()
         marker.parent.mkdir(parents=True, exist_ok=True)
         marker.write_text(tomli_w.dumps(marker_data), encoding="utf-8")
+        if marker_existed:
+            _report_overwrite(marker)
         _ensure_tracker(target_root, tracker_dir, dry_run=False)
 
         # Handle root guidance files (outside the collision-checked scaffold set)

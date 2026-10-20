@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import subprocess
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -10,7 +10,7 @@ import typer
 from rich.markdown import Markdown
 
 from ai_team.commands._shared import hint_missing_overview, project_root
-from ai_team.core.fs import read_artifact
+from ai_team.core.fs import ArtifactKind, read_artifact
 from ai_team.core.locator import ProjectRoot
 from ai_team.core.models import parse_bug, parse_task
 from ai_team.core.tracker import iter_items
@@ -59,8 +59,9 @@ def _count(folder: Path) -> int:
     return len(_iter_markdown_files(folder))
 
 
-def _latest_work_log_line(task_path: Path) -> str:
-    _, body = read_artifact(task_path, "task")
+def _latest_work_log_session(path: Path, kind: ArtifactKind) -> tuple[str, str] | None:
+    """Return the last Work Log session heading and its first non-empty line."""
+    _, body = read_artifact(path, kind)
 
     lines = body.splitlines()
     start = None
@@ -74,21 +75,26 @@ def _latest_work_log_line(task_path: Path) -> str:
             break
 
     if start is None:
-        return "not recorded"
+        return None
 
     work_log = lines[start:end]
     heading_indexes = [
         idx for idx, line in enumerate(work_log) if line.startswith("### Session")
     ]
     if not heading_indexes:
-        return "not recorded"
+        return None
 
     last_heading = heading_indexes[-1]
     for line in work_log[last_heading + 1 :]:
         stripped = line.strip()
         if stripped:
-            return stripped
-    return "not recorded"
+            return work_log[last_heading].strip(), stripped
+    return None
+
+
+def _latest_work_log_line(task_path: Path) -> str:
+    session = _latest_work_log_session(task_path, "task")
+    return session[1] if session else "not recorded"
 
 
 def _blocking_reason(task_path: Path) -> str:
@@ -101,32 +107,36 @@ def _blocking_reason(task_path: Path) -> str:
     return _latest_work_log_line(task_path)
 
 
-def _latest_integration_result(root: ProjectRoot) -> str:
-    try:
-        completed = subprocess.run(
-            [
-                "git",
-                "-C",
-                str(root.repo),
-                "log",
-                "--all",
-                "--grep=merge\\|integration\\|verification\\|test",
-                "-n",
-                "1",
-                "--pretty=format:%s",
-            ],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-    except OSError, subprocess.CalledProcessError:
-        return "not found"
+_SESSION_HEADING = re.compile(r"^### Session (\d+) — (\d{4}-\d{2}-\d{2})\s*$")
+_ID_NUMBER = re.compile(r"(\d+)$")
 
-    value = completed.stdout.strip()
-    if not value:
+
+def _latest_integration_result(
+    tasks_by_status: dict[str, list[tuple[Path, object]]],
+    bugs_by_status: dict[str, list[tuple[Path, object]]],
+) -> str:
+    """Cite the newest Work Log session of a completed task or resolved bug."""
+    candidates: list[tuple[str, int, str, str, str]] = []
+    finished = [
+        (path, item, "task") for path, item in tasks_by_status.get("completed", [])
+    ] + [(path, item, "bug") for path, item in bugs_by_status.get("resolved", [])]
+    for path, item, kind in finished:
+        session = _latest_work_log_session(path, kind)
+        if session is None:
+            continue
+        heading_match = _SESSION_HEADING.match(session[0])
+        id_match = _ID_NUMBER.search(item.id)
+        if heading_match is None or id_match is None:
+            continue
+        number, date = heading_match.groups()
+        candidates.append(
+            (date, int(id_match.group(1)), item.id, f"Session {number}", session[1])
+        )
+
+    if not candidates:
         return "not found"
-    return value
+    date, _, item_id, session_label, line = max(candidates, key=lambda c: c[:2])
+    return f"{item_id} {session_label} ({date}): {line}"
 
 
 def _by_status(paths: list[Path], parser) -> dict[str, list[tuple[Path, object]]]:
@@ -202,7 +212,9 @@ def _payload(root: ProjectRoot) -> dict[str, object]:
             {"id": bug.id, "title": bug.title, "severity": bug.severity}
             for bug in critical_high_bugs
         ],
-        "latest_integration_result": _latest_integration_result(root),
+        "latest_integration_result": _latest_integration_result(
+            tasks_by_status, bugs_by_status
+        ),
     }
     return payload
 

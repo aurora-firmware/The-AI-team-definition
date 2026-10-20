@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 import tomllib
+from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 
@@ -100,6 +103,8 @@ def test_init_dry_run_lists_files_and_writes_nothing(tmp_path):
     assert f"WOULD CREATE: {target / '.ai-team' / 'tracker'}" in result.output
     assert str(target / ".claude" / "agents" / "planner.md") in result.output
     assert str(target / ".ai-team.toml") in result.output
+    assert str(target / "CLAUDE.md") not in result.output
+    assert str(target / "AGENTS.md") not in result.output
     assert not target.exists()
 
 
@@ -562,3 +567,309 @@ def test_init_configures_tracker_and_ignores_it_idempotently(tmp_path):
     lines = (target / ".gitignore").read_text(encoding="utf-8").splitlines()
     assert lines[0] == "node_modules/"
     assert lines.count("/.ai-team/") == 1
+
+
+# ── Root guidance contract and overwrite report (B-018) ─────────────────────
+
+
+def _repo_with_custom_root_guidance(tmp_path):
+    target = tmp_path / "repo"
+    target.mkdir()
+    for name in ("CLAUDE.md", "AGENTS.md"):
+        (target / name).write_text("custom\n", encoding="utf-8")
+    return target
+
+
+def _overwrote_lines(output):
+    return [line for line in output.splitlines() if line.startswith("OVERWROTE: ")]
+
+
+def _init(target, *flags, input=None):
+    from ai_team.cli import app
+
+    return CliRunner().invoke(
+        app, ["init", str(target), "--tools", "claude", *flags], input=input
+    )
+
+
+def test_interactive_force_overwrites_and_reports_root_guidance_on_yes(tmp_path):
+    target = _repo_with_custom_root_guidance(tmp_path)
+
+    result = _init(target, "--force", input="y\ny\n")
+
+    assert result.exit_code == 0
+    assert (target / "CLAUDE.md").read_text(encoding="utf-8") != "custom\n"
+    assert f"OVERWROTE: {target / 'CLAUDE.md'}" in result.output
+    assert f"OVERWROTE: {target / 'AGENTS.md'}" in result.output
+
+
+def test_interactive_force_keeps_and_does_not_report_root_guidance_on_no(tmp_path):
+    target = _repo_with_custom_root_guidance(tmp_path)
+
+    result = _init(target, "--force", input="n\nn\n")
+
+    assert result.exit_code == 0
+    assert (target / "CLAUDE.md").read_text(encoding="utf-8") == "custom\n"
+    assert f"OVERWROTE: {target / 'CLAUDE.md'}" not in result.output
+    assert f"OVERWROTE: {target / 'AGENTS.md'}" not in result.output
+
+
+def test_interactive_force_with_create_root_guidance_overwrites_without_prompt(
+    tmp_path,
+):
+    target = _repo_with_custom_root_guidance(tmp_path)
+
+    result = _init(target, "--force", "--create-root-guidance")
+
+    assert result.exit_code == 0
+    assert "Create root" not in result.output
+    assert (target / "CLAUDE.md").read_text(encoding="utf-8") != "custom\n"
+    assert f"OVERWROTE: {target / 'CLAUDE.md'}" in result.output
+    assert f"OVERWROTE: {target / 'AGENTS.md'}" in result.output
+
+
+def test_interactive_create_root_guidance_creates_missing_files_without_prompt(
+    tmp_path,
+):
+    target = tmp_path / "repo"
+
+    result = _init(target, "--create-root-guidance")
+
+    assert result.exit_code == 0
+    assert "Create root" not in result.output
+    assert (target / "CLAUDE.md").is_file()
+    assert (target / "AGENTS.md").is_file()
+
+
+def test_non_interactive_force_with_create_root_guidance_overwrites_and_reports(
+    tmp_path,
+):
+    target = _repo_with_custom_root_guidance(tmp_path)
+
+    result = _init(target, "--force", "--no-interactive", "--create-root-guidance")
+
+    assert result.exit_code == 0
+    assert (target / "CLAUDE.md").read_text(encoding="utf-8") != "custom\n"
+    assert f"OVERWROTE: {target / 'CLAUDE.md'}" in result.output
+    assert f"OVERWROTE: {target / 'AGENTS.md'}" in result.output
+
+
+def test_non_interactive_force_without_flag_leaves_root_guidance_untouched(tmp_path):
+    target = _repo_with_custom_root_guidance(tmp_path)
+
+    result = _init(target, "--force", "--no-interactive")
+
+    assert result.exit_code == 0
+    assert (target / "CLAUDE.md").read_text(encoding="utf-8") == "custom\n"
+    assert (target / "AGENTS.md").read_text(encoding="utf-8") == "custom\n"
+    assert f"OVERWROTE: {target / 'CLAUDE.md'}" not in result.output
+
+
+def test_create_root_guidance_without_force_leaves_existing_files_untouched(
+    tmp_path,
+):
+    target = _repo_with_custom_root_guidance(tmp_path)
+
+    result = _init(target, "--create-root-guidance")
+
+    assert result.exit_code == 0
+    assert (target / "CLAUDE.md").read_text(encoding="utf-8") == "custom\n"
+    assert _overwrote_lines(result.output) == []
+
+
+def test_fresh_init_reports_no_overwrites(tmp_path):
+    target = tmp_path / "repo"
+
+    result = _init(target, "--no-interactive", "--create-root-guidance")
+
+    assert result.exit_code == 0
+    assert _overwrote_lines(result.output) == []
+
+
+def test_force_rerun_reports_existing_files_but_not_newly_created_ones(tmp_path):
+    target = tmp_path / "repo"
+    _init(target, "--no-interactive", "--create-root-guidance")
+    (target / "AGENTS.md").unlink()
+
+    result = _init(target, "--force", "--no-interactive", "--create-root-guidance")
+
+    assert result.exit_code == 0
+    reported = _overwrote_lines(result.output)
+    assert f"OVERWROTE: {target / '.ai-team.toml'}" in reported
+    assert (
+        f"OVERWROTE: {target / '.claude' / 'skills' / 'tdd' / 'SKILL.md'}" in reported
+    )
+    assert f"OVERWROTE: {target / 'CLAUDE.md'}" in reported
+    assert f"OVERWROTE: {target / 'AGENTS.md'}" not in reported
+    assert result.output.index("OVERWROTE:") < result.output.index(
+        "Initialization complete."
+    )
+
+
+# ── Dry run mirrors the real run (B-021) ────────────────────────────────────
+
+
+def _would_lines(output, verb):
+    return {
+        line.removeprefix(f"{verb}: ")
+        for line in output.splitlines()
+        if line.startswith(f"{verb}: ")
+    }
+
+
+def _initialised_repo_with_custom_root_guidance(tmp_path):
+    target = tmp_path / "repo"
+    _init(target, "--no-interactive", "--create-root-guidance")
+    for name in ("CLAUDE.md", "AGENTS.md"):
+        (target / name).write_text("custom\n", encoding="utf-8")
+    return target
+
+
+def _root_paths(target):
+    return {str(target / "CLAUDE.md"), str(target / "AGENTS.md")}
+
+
+def _all_would_paths(output):
+    paths = set()
+    for verb in ("WOULD WRITE", "WOULD OVERWRITE", "WOULD PROMPT", "WOULD CREATE"):
+        paths |= _would_lines(output, verb)
+    return paths
+
+
+def test_dry_run_non_interactive_force_names_neither_tracker_nor_root_guidance(
+    tmp_path,
+):
+    target = _initialised_repo_with_custom_root_guidance(tmp_path)
+
+    result = _init(target, "--force", "--no-interactive", "--dry-run")
+
+    assert result.exit_code == 0
+    named = _all_would_paths(result.output)
+    assert str(target / ".ai-team" / "tracker") not in named
+    assert not named & _root_paths(target)
+
+
+def test_dry_run_creates_tracker_line_only_when_tracker_is_missing(tmp_path):
+    target = tmp_path / "repo"
+
+    result = _init(target, "--no-interactive", "--dry-run")
+
+    assert f"WOULD CREATE: {target / '.ai-team' / 'tracker'}" in result.output
+
+
+def test_dry_run_reports_gitignore_update_only_when_rule_is_missing(tmp_path):
+    target = _initialised_repo_with_custom_root_guidance(tmp_path)
+    gitignore = target / ".gitignore"
+
+    present = _init(target, "--force", "--no-interactive", "--dry-run")
+    gitignore.write_text("", encoding="utf-8")
+    missing = _init(target, "--force", "--no-interactive", "--dry-run")
+
+    assert str(gitignore) not in _would_lines(present.output, "WOULD UPDATE")
+    assert str(gitignore) in _would_lines(missing.output, "WOULD UPDATE")
+
+
+def test_dry_run_interactive_force_prompts_for_existing_and_missing_root_files(
+    tmp_path,
+):
+    target = _initialised_repo_with_custom_root_guidance(tmp_path)
+    (target / "AGENTS.md").unlink()
+
+    result = _init(target, "--force", "--dry-run")
+
+    assert result.exit_code == 0
+    assert _would_lines(result.output, "WOULD PROMPT") == _root_paths(target)
+    assert "Create root" not in result.output
+
+
+def test_dry_run_interactive_force_create_root_guidance_overwrites_without_prompt(
+    tmp_path,
+):
+    target = _initialised_repo_with_custom_root_guidance(tmp_path)
+
+    result = _init(target, "--force", "--create-root-guidance", "--dry-run")
+
+    assert _would_lines(result.output, "WOULD OVERWRITE") >= _root_paths(target)
+    assert _would_lines(result.output, "WOULD PROMPT") == set()
+
+
+def test_dry_run_non_interactive_force_create_root_guidance_distinguishes_new_files(
+    tmp_path,
+):
+    target = _initialised_repo_with_custom_root_guidance(tmp_path)
+    (target / "AGENTS.md").unlink()
+
+    result = _init(
+        target, "--force", "--no-interactive", "--create-root-guidance", "--dry-run"
+    )
+
+    assert str(target / "CLAUDE.md") in _would_lines(result.output, "WOULD OVERWRITE")
+    assert str(target / "AGENTS.md") in _would_lines(result.output, "WOULD WRITE")
+
+
+def test_dry_run_without_force_names_no_existing_root_file_in_either_mode(tmp_path):
+    target = tmp_path / "repo"
+    target.mkdir()
+    for name in ("CLAUDE.md", "AGENTS.md"):
+        (target / name).write_text("custom\n", encoding="utf-8")
+
+    interactive = _init(target, "--dry-run")
+    non_interactive = _init(target, "--no-interactive", "--dry-run")
+
+    assert not _all_would_paths(interactive.output) & _root_paths(target)
+    assert not _all_would_paths(non_interactive.output) & _root_paths(target)
+
+
+def test_dry_run_non_interactive_without_flag_names_no_missing_root_file(tmp_path):
+    target = tmp_path / "repo"
+
+    result = _init(target, "--no-interactive", "--dry-run")
+
+    assert not _all_would_paths(result.output) & _root_paths(target)
+
+
+def test_dry_run_with_collisions_and_no_force_prints_only_the_refusal(tmp_path):
+    target = _initialised_repo_with_custom_root_guidance(tmp_path)
+
+    result = _init(target, "--no-interactive", "--dry-run")
+
+    assert result.exit_code == 1
+    assert "WOULD" not in result.output
+
+
+@pytest.mark.parametrize(
+    "flags",
+    [
+        ("--force", "--no-interactive"),
+        ("--force", "--no-interactive", "--create-root-guidance"),
+        ("--force", "--create-root-guidance"),
+    ],
+)
+def test_dry_run_write_set_equals_paths_the_real_run_writes(tmp_path, flags):
+    target = _initialised_repo_with_custom_root_guidance(tmp_path)
+    (target / "AGENTS.md").unlink()
+    (target / ".gitignore").write_text("", encoding="utf-8")
+    copy = tmp_path / "copy"
+    shutil.copytree(target, copy)
+    files_before = {
+        path.relative_to(copy) for path in copy.rglob("*") if path.is_file()
+    }
+
+    dry = _init(target, *flags, "--dry-run")
+    real = _init(copy, *flags)
+
+    def relative(paths, root):
+        return {Path(path).relative_to(root) for path in paths}
+
+    dry_set = relative(
+        _would_lines(dry.output, "WOULD WRITE")
+        | _would_lines(dry.output, "WOULD OVERWRITE"),
+        target,
+    )
+    files_after = {path.relative_to(copy) for path in copy.rglob("*") if path.is_file()}
+    created = {
+        path for path in files_after - files_before if path.parts[0] != ".ai-team"
+    }
+    real_set = relative(_would_lines(real.output, "OVERWROTE"), copy) | created
+    real_set.discard(Path(".gitignore"))
+    assert dry_set == real_set

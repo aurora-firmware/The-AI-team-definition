@@ -278,44 +278,135 @@ stuck on reviewer approval
     ]
 
 
-def test_status_uses_latest_integration_commit_subject_when_available(
-    monkeypatch, tmp_path
-):
-    """Status reports latest matching integration commit subject."""
+def _git(tmp_path: Path, cmd: str) -> None:
+    import subprocess
+
+    subprocess.run(
+        cmd,
+        shell=True,
+        check=True,
+        cwd=tmp_path,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+
+def _init_repo(tmp_path: Path) -> None:
+    _git(tmp_path, "git init -b main")
+    _git(tmp_path, "git config user.name 'Test User'")
+    _git(tmp_path, "git config user.email 'test@example.com'")
+    _git(tmp_path, "git add .")
+    _git(tmp_path, "git commit -m 'chore(repo): initial fixture'")
+
+
+def _integration_result(monkeypatch, tmp_path: Path) -> str:
     from ai_team.cli import app
 
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["status", "--json"])
+    assert result.exit_code == 0
+    return json.loads(result.stdout)["latest_integration_result"]
+
+
+def _work_log(*sessions: tuple[int, str, str]) -> str:
+    entries = "\n\n".join(
+        f"### Session {number} — {date}\n{text}" for number, date, text in sessions
+    )
+    return f"## Work Log\n\n{entries}\n\n## Review\n"
+
+
+def test_status_ignores_matching_commit_on_unmerged_branch(monkeypatch, tmp_path):
     _write(
         tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001.md",
         _task("T-001", "Pending task", "pending"),
     )
+    _init_repo(tmp_path)
+    _git(tmp_path, "git checkout -b feature/x")
+    _git(tmp_path, "git commit --allow-empty -m 'wip: add test scaffolding'")
+    _git(tmp_path, "git checkout main")
 
-    def _run(cmd: str) -> None:
-        import subprocess
+    assert _integration_result(monkeypatch, tmp_path) == "not found"
 
-        subprocess.run(
-            cmd,
-            shell=True,
-            check=True,
-            cwd=tmp_path,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
+
+def test_status_ignores_spec_merge_commit_on_integration_branch(monkeypatch, tmp_path):
+    _write(
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001.md",
+        _task("T-001", "Pending task", "pending"),
+    )
+    _init_repo(tmp_path)
+    _git(
+        tmp_path,
+        "git commit --allow-empty -m 'chore(plan): merge S-007 system overview spec'",
+    )
+
+    assert _integration_result(monkeypatch, tmp_path) == "not found"
+
+
+def test_status_reports_latest_work_log_session_of_completed_items(
+    monkeypatch, tmp_path
+):
+    tracker = tmp_path / ".ai-team" / "tracker"
+    _write(
+        tracker / "tasks" / "T-001.md",
+        _task(
+            "T-001",
+            "Old task",
+            "completed",
+            body=_work_log((1, "2026-05-01", "Old verification output.")),
+        ),
+    )
+    _write(
+        tracker / "tasks" / "T-002.md",
+        _task(
+            "T-002",
+            "Pending with newer log",
+            "pending",
+            body=_work_log((1, "2026-06-30", "Not completed, must be ignored.")),
+        ),
+    )
+    _write(
+        tracker / "bugs" / "B-003.md",
+        BUG_TEMPLATE.format(
+            id="B-003", title="Fixed bug", severity="low", status="resolved"
+        ).replace(
+            "Body.",
+            _work_log(
+                (1, "2026-05-02", "First pass."),
+                (2, "2026-06-01", "pytest: 12 passed."),
+            ),
+        ),
+    )
+
+    assert _integration_result(monkeypatch, tmp_path) == (
+        "B-003 Session 2 (2026-06-01): pytest: 12 passed."
+    )
+
+
+def test_status_breaks_date_ties_with_highest_item_id(monkeypatch, tmp_path):
+    tracker = tmp_path / ".ai-team" / "tracker" / "tasks"
+    for number in (5, 12):
+        _write(
+            tracker / f"T-{number:03d}.md",
+            _task(
+                f"T-{number:03d}",
+                "Task",
+                "completed",
+                body=_work_log((1, "2026-06-01", f"Result {number}.")),
+            ),
         )
 
-    _run("git init")
-    _run("git config user.name 'Test User'")
-    _run("git config user.email 'test@example.com'")
-    _run("git add .")
-    _run("git commit -m 'chore(repo): initial fixture'")
-    _run(
-        "git commit --allow-empty -m 'chore(tasks): merge T-099 synthetic integration'"
+    assert _integration_result(monkeypatch, tmp_path) == (
+        "T-012 Session 1 (2026-06-01): Result 12."
     )
 
-    monkeypatch.chdir(tmp_path)
-    result = CliRunner().invoke(app, ["status", "--json"])
 
-    assert result.exit_code == 0
-    payload = json.loads(result.stdout)
-    assert payload["latest_integration_result"] == (
-        "chore(tasks): merge T-099 synthetic integration"
+def test_status_reports_not_found_when_completed_item_has_no_sessions(
+    monkeypatch, tmp_path
+):
+    _write(
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001.md",
+        _task("T-001", "Done task", "completed"),
     )
+
+    assert _integration_result(monkeypatch, tmp_path) == "not found"

@@ -306,6 +306,67 @@ def test_sync_script_copies_project_gitignore_ignoring_the_lock_sentinel(
     assert scaffold_text == ".ai-team.lock\n"
 
 
+# The generator never writes this tracked, empty placeholder at the scaffolds root.
+_UNGENERATED_SCAFFOLD_FILES = frozenset({".gitkeep"})
+_IGNORED_SCAFFOLD_PARTS = frozenset({"__pycache__", ".DS_Store"})
+
+
+def _scaffold_tree_bytes(root: Path) -> dict[str, bytes]:
+    return {
+        path.relative_to(root).as_posix(): path.read_bytes()
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+        and not _IGNORED_SCAFFOLD_PARTS.intersection(path.relative_to(root).parts)
+        and path.relative_to(root).as_posix() not in _UNGENERATED_SCAFFOLD_FILES
+    }
+
+
+def test_committed_scaffolds_match_fresh_sync_output(tmp_path: Path) -> None:
+    """B-025: every committed scaffold equals what the generator produces."""
+    cli_root = Path(__file__).resolve().parents[1]
+    init_dir = Path("src") / "ai_team" / "init"
+    committed_root = cli_root / init_dir / "scaffolds"
+
+    tmp_repo = tmp_path / "repo"
+    script_copy = tmp_repo / "cli" / "scripts" / "sync_init_scaffolds.py"
+    script_copy.parent.mkdir(parents=True)
+    shutil.copy2(_script_under_test(), script_copy)
+    shutil.copytree(
+        cli_root / init_dir / "sources", tmp_repo / "cli" / init_dir / "sources"
+    )
+
+    subprocess.run(
+        [sys.executable, "cli/scripts/sync_init_scaffolds.py"],
+        cwd=tmp_repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    generated = _scaffold_tree_bytes(tmp_repo / "cli" / init_dir / "scaffolds")
+    committed = _scaffold_tree_bytes(committed_root)
+
+    differences = [
+        f"missing from committed scaffolds: {p}"
+        for p in generated.keys() - committed.keys()
+    ]
+    differences += [
+        f"not produced by the generator: {p}"
+        for p in committed.keys() - generated.keys()
+    ]
+    differences += [
+        f"content differs: {p}"
+        for p in generated.keys() & committed.keys()
+        if generated[p] != committed[p]
+    ]
+
+    assert not differences, (
+        "Committed init scaffolds are stale; run "
+        "`python scripts/sync_init_scaffolds.py` from cli/ and commit the result.\n"
+        + "\n".join(sorted(differences))
+    )
+
+
 def test_package_owned_project_gitignore_source_ignores_the_lock_sentinel() -> None:
     """B-017: the real (non-fixture) sources/project/.gitignore ships the lock entry."""
     repo_root = Path(__file__).resolve().parents[1]
@@ -322,11 +383,9 @@ def test_package_owned_project_gitignore_source_ignores_the_lock_sentinel() -> N
     )
 
     source_text = source_gitignore.read_text(encoding="utf-8")
-    scaffold_text = scaffold_gitignore.read_text(encoding="utf-8")
 
     assert ".ai-team.lock" in source_text.splitlines()
     assert "docs/reports/" in source_text.splitlines()
-    assert scaffold_text == source_text
 
 
 def test_package_owned_skill_sources_include_body_and_required_metadata() -> None:
@@ -347,7 +406,6 @@ def test_package_owned_skill_sources_include_body_and_required_metadata() -> Non
 
     for skill_name in source_skills:
         skill_source_dir = sources_root / skill_name
-        skill_scaffold_path = scaffold_root / skill_name / "SKILL.md"
 
         body_files = list(skill_source_dir.glob("body.md"))
         metadata_files = list(skill_source_dir.glob("metadata.toml"))
@@ -356,18 +414,13 @@ def test_package_owned_skill_sources_include_body_and_required_metadata() -> Non
         assert len(metadata_files) == 1
 
         body = body_files[0].read_text(encoding="utf-8")
+        assert body.strip()
         metadata = tomllib.loads(metadata_files[0].read_text(encoding="utf-8"))
 
         assert isinstance(metadata.get("claude", {}).get("header"), str)
         assert metadata["claude"]["header"].strip()
         assert isinstance(metadata.get("codex", {}).get("header"), str)
         assert metadata["codex"]["header"].strip()
-
-        scaffold_text = skill_scaffold_path.read_text(encoding="utf-8")
-        scaffold_header, scaffold_body = scaffold_text.split("\n\n", maxsplit=1)
-
-        assert body == scaffold_body
-        assert metadata["claude"]["header"].strip() == scaffold_header.strip()
 
 
 def test_init_scaffolds_export_change_request_skill_and_project_directory() -> None:
@@ -487,6 +540,80 @@ def test_sync_script_does_not_modify_sources_directory(tmp_path: Path) -> None:
     assert sources_after == sources_before, (
         "Generator modified source files — sources must remain unchanged"
     )
+
+
+def _run_sync_script(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, "cli/scripts/sync_init_scaffolds.py", *args],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def _scaffolds_root(repo: Path) -> Path:
+    return repo / "cli" / "src" / "ai_team" / "init" / "scaffolds"
+
+
+def _snapshot_tree(root: Path) -> dict[str, str]:
+    return {
+        str(path.relative_to(root)): path.read_text(encoding="utf-8")
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
+
+
+def test_sync_script_long_help_prints_usage_and_leaves_scaffolds_untouched(
+    tmp_path: Path,
+) -> None:
+    repo = _setup_fake_repo(tmp_path)
+    scaffolds_before = _snapshot_tree(_scaffolds_root(repo))
+
+    result = _run_sync_script(repo, "--help")
+
+    assert result.returncode == 0, result.stderr
+    assert "usage:" in result.stdout
+    assert "Synchronized" not in result.stdout
+    assert _snapshot_tree(_scaffolds_root(repo)) == scaffolds_before
+
+
+def test_sync_script_short_help_prints_usage_and_leaves_scaffolds_untouched(
+    tmp_path: Path,
+) -> None:
+    repo = _setup_fake_repo(tmp_path)
+    scaffolds_before = _snapshot_tree(_scaffolds_root(repo))
+
+    result = _run_sync_script(repo, "-h")
+
+    assert result.returncode == 0, result.stderr
+    assert "usage:" in result.stdout
+    assert "Synchronized" not in result.stdout
+    assert _snapshot_tree(_scaffolds_root(repo)) == scaffolds_before
+
+
+def test_sync_script_rejects_unknown_argument_with_usage_and_leaves_scaffolds_untouched(
+    tmp_path: Path,
+) -> None:
+    repo = _setup_fake_repo(tmp_path)
+    scaffolds_before = _snapshot_tree(_scaffolds_root(repo))
+
+    result = _run_sync_script(repo, "--bogus")
+
+    assert result.returncode == 2
+    assert "usage:" in result.stderr
+    assert "--bogus" in result.stderr
+    assert _snapshot_tree(_scaffolds_root(repo)) == scaffolds_before
+
+
+def test_sync_script_without_arguments_generates_scaffolds(tmp_path: Path) -> None:
+    repo = _setup_fake_repo(tmp_path)
+
+    result = _run_sync_script(repo)
+
+    assert result.returncode == 0, result.stderr
+    assert "Synchronized init scaffolds" in result.stdout
+    assert _scaffolds_root(repo).is_dir()
 
 
 def test_package_owned_agent_sources_cover_each_exported_role_for_both_tools() -> None:

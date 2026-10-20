@@ -51,9 +51,12 @@ uv build
 pipx install --force dist/*.whl
 ```
 
-`sync_init_scaffolds.py` copies the current `.claude/agents/`, `.claude/skills/`,
-and project skeleton into the package so that `ai-team init` ships up-to-date
-scaffolds. Always run it before `uv build`.
+`sync_init_scaffolds.py` regenerates the bundled scaffolds in
+`cli/src/ai_team/init/scaffolds/` from the package-owned sources in
+`cli/src/ai_team/init/sources/` so that `ai-team init` ships up-to-date scaffolds.
+It never reads the repository's `.claude/` or `.codex/` folders, so edit the
+sources and re-run it rather than editing the generated output. Always run it
+before `uv build`.
 
 ### Verify the install
 
@@ -79,12 +82,12 @@ ai-team init [PATH] [OPTIONS]
 | Flag | Description |
 |---|---|
 | `--tools TEXT` | Comma-separated tool names to scaffold (e.g. `claude`, `codex`, `all`, `none`). |
-| `--dry-run` | Print what would be written without touching the filesystem. |
-| `--force` | Overwrite existing files. Without this flag the command refuses to overwrite. On a repository that already has `.ai-team.toml`, the configured `[project] dir`, `[tracker] dir`, `[git] integration_branch`, and any other tables are kept, so `--force` only refreshes the generated agents and skills. |
+| `--dry-run` | Print what the real run with the same flags would do, without touching the filesystem. Lines are `WOULD WRITE` (new file), `WOULD OVERWRITE` (existing file, with `--force`), `WOULD CREATE` (a missing tracker folder), `WOULD UPDATE` (a `.gitignore` missing the tracker rule) and `WOULD PROMPT` (a root `CLAUDE.md` or `AGENTS.md` the interactive run would ask about). Root guidance files the real run would skip are not listed, and existing files without `--force` give only the refusal. |
+| `--force` | Overwrite existing files. Without this flag the command refuses to overwrite. On a repository that already has `.ai-team.toml`, the configured `[project] dir`, `[tracker] dir`, `[git] integration_branch`, and any other tables are kept, so `--force` only refreshes the generated agents and skills. Every existing file that is replaced is reported as `OVERWROTE: <path>`. |
 | `--project-dir TEXT` | Artifact folder, at any depth (e.g. `docs/ai-team`). Defaults to the configured `[project] dir`, else `ai-team`. Must be relative and contain no `..`. |
 | `--integration-branch TEXT` | Branch that task, bug, and planning work integrates into. Defaults to the configured `[git] integration_branch`, else `dev-agent`. |
 | `--no-interactive` | Skip all prompts. Requires `--tools` to be provided explicitly. |
-| `--create-root-guidance` | When used with `--no-interactive`, create root `CLAUDE.md` and `AGENTS.md` from starter templates. Defaults to false (skipped). |
+| `--create-root-guidance` | Create root `CLAUDE.md` and `AGENTS.md` from starter templates without prompting, in interactive and non-interactive mode. Existing files are replaced only together with `--force`. Defaults to false. |
 
 ### What gets scaffolded
 
@@ -131,12 +134,22 @@ tell AI tools how to build, test, and run your project.
 
 - **Interactive mode** (default): the CLI prompts once per file. Answer `y` to
   create a starter template, or `n` to skip.
-- **`--no-interactive --create-root-guidance`**: creates both files without
-  prompting. Useful in CI or scripted setup flows.
+- **`--create-root-guidance`**: creates both files without prompting, in
+  interactive and non-interactive mode. Useful in CI or scripted setup flows.
 - **`--no-interactive` without `--create-root-guidance`**: skips both files and
   prints a reminder to add them manually.
 
-Existing root guidance files are never overwritten unless `--force` is also passed.
+Existing root guidance files are never overwritten unless `--force` is also passed:
+
+| Flags, file exists | Interactive | `--no-interactive` |
+|---|---|---|
+| none | left untouched | left untouched |
+| `--force` | prompts; overwritten on yes | left untouched |
+| `--force --create-root-guidance` | overwritten, no prompt | overwritten, no prompt |
+
+Every existing file that `init` replaces (root guidance, generated agents and
+skills, `.ai-team.toml`) is reported on stdout as `OVERWROTE: <absolute path>`.
+Newly created files and declined or skipped files are not reported.
 
 ### Example: preview then initialise
 
@@ -330,7 +343,9 @@ ai-team report --out /tmp/custom-report.md
 
 `ai-team status` shows counts of active specs, tasks by state, bugs by state,
 in-progress tasks, blocked tasks, critical/high bugs, and the latest
-integration result from git history.
+integration result. The integration result cites the newest Work Log session
+of a completed task or resolved bug (ID, session, date, and first line), or
+`not found` when no such session exists.
 
 `ai-team report` renders the same data into a markdown file using the bundled
 report template.
