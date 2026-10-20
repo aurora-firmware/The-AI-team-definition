@@ -49,7 +49,7 @@ Write each `Evidence:` entry as the claim, the command run, and the decisive out
 Use `not run` only with the reason, and never alongside a claim that the check passed.
 
 A claim that rests on someone else's earlier run (for example a Developer's Work Log test result a Reviewer is told not to repeat) is cited, not re-run: write `tests pass (per Work Log session N: <command> — <output>)`. A cited claim is labelled as cited and never presented as this role's own run.
-A claim about a document or approval is recorded as `<claim> — <artifact path, line or verdict> — <what it says>`; roles without a shell use this form.
+A claim about a document or approval is recorded as `<claim> — <artifact path, line or verdict> — <what it says>`; the form is used whenever the proof is an artifact read, not a command run.
 
 ## Output Format
 
