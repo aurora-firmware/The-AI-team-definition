@@ -9,6 +9,7 @@ from typing import Literal
 import typer
 from slugify import slugify
 
+from ai_team.commands._shared import hint_missing_overview
 from ai_team.core.fs import ArtifactExists, write_artifact
 from ai_team.core.ids import next_adr_id
 from ai_team.core.locator import find_project_root
@@ -47,6 +48,7 @@ def new_adr(
 ) -> None:
     """Create a new ADR artifact from the bundled template."""
     root = find_project_root(Path.cwd())
+    hint_missing_overview(root)
     adr_id = next_adr_id(root)
     slug = slugify(title)
     dest = root.decisions / f"{adr_id}-{slug}.md"

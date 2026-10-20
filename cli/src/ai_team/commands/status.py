@@ -9,7 +9,7 @@ from pathlib import Path
 import typer
 from rich.markdown import Markdown
 
-from ai_team.commands._shared import project_root
+from ai_team.commands._shared import hint_missing_overview, project_root
 from ai_team.core.fs import read_artifact
 from ai_team.core.locator import ProjectRoot
 from ai_team.core.models import parse_bug, parse_task
@@ -277,6 +277,7 @@ def default(
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     root = project_root()
+    hint_missing_overview(root)
     payload = _payload(root)
     if as_json:
         print_json(payload)

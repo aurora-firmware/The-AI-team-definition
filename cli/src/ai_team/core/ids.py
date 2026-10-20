@@ -19,6 +19,18 @@ _SPEC_FRONTMATTER_ID_PATTERN = re.compile(
     re.MULTILINE,
 )
 
+OVERVIEW_ID = "S-000"
+_OVERVIEW_FILENAME_PATTERN = re.compile(r"^S-000-.*\.md$")
+_OVERVIEW_REFERENCE_PATTERN = re.compile(rf"^{OVERVIEW_ID}(?:-[^/]+)?$")
+
+
+def is_overview_reference(reference: str) -> bool:
+    """Return True when *reference* names the S-000 overview spec.
+
+    Accepts the bare ID, an ID-with-slug, a spec filename, or a path ending in one.
+    """
+    return _OVERVIEW_REFERENCE_PATTERN.match(Path(reference).name) is not None
+
 
 def next_task_id(project_root: ProjectRoot) -> str:
     """Return the next task ID in T-NNN format across the tracker and its archive."""
@@ -55,6 +67,20 @@ def next_spec_id(project_root: ProjectRoot) -> str:
         _max_spec_frontmatter_id_number(directories=directories),
     )
     return f"S-{max_number + 1:03d}"
+
+
+def overview_exists(project_root: ProjectRoot) -> bool:
+    """Return True when an S-000 spec exists in specs/ or specs/archive/."""
+    directories = (project_root.specs, project_root.specs / "archive")
+    for directory in directories:
+        if not directory.exists():
+            continue
+        for path in directory.iterdir():
+            if not path.is_file():
+                continue
+            if _OVERVIEW_FILENAME_PATTERN.match(path.name):
+                return True
+    return _has_spec_frontmatter_id(directories=directories, spec_id=OVERVIEW_ID)
 
 
 def next_adr_id(project_root: ProjectRoot) -> str:
@@ -110,16 +136,40 @@ def _max_spec_frontmatter_id_number(directories: tuple[Path, ...]) -> int:
         for path in directory.iterdir():
             if not path.is_file():
                 continue
-            text = path.read_text(encoding="utf-8")
-            if not text.startswith("---"):
+            frontmatter = _read_frontmatter(path)
+            if frontmatter is None:
                 continue
-            rest = text[3:]
-            close_idx = rest.find("\n---")
-            if close_idx == -1:
-                continue
-            frontmatter = rest[:close_idx]
             match = _SPEC_FRONTMATTER_ID_PATTERN.search(frontmatter)
             if match is None:
                 continue
             max_number = max(max_number, int(match.group(1)))
     return max_number
+
+
+def _has_spec_frontmatter_id(directories: tuple[Path, ...], spec_id: str) -> bool:
+    """Return True when any file in the directories has the given frontmatter id."""
+    for directory in directories:
+        if not directory.exists():
+            continue
+        for path in directory.iterdir():
+            if not path.is_file():
+                continue
+            frontmatter = _read_frontmatter(path)
+            if frontmatter is None:
+                continue
+            match = _SPEC_FRONTMATTER_ID_PATTERN.search(frontmatter)
+            if match is not None and f"S-{match.group(1)}" == spec_id:
+                return True
+    return False
+
+
+def _read_frontmatter(path: Path) -> str | None:
+    """Return the frontmatter block text of a file, or None when absent."""
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---"):
+        return None
+    rest = text[3:]
+    close_idx = rest.find("\n---")
+    if close_idx == -1:
+        return None
+    return rest[:close_idx]

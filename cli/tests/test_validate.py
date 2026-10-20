@@ -635,3 +635,97 @@ def test_validate_still_reports_task_spec_missing_for_genuinely_missing_spec(
         finding["code"] == "task-spec-missing" and "missing-spec" in finding["message"]
         for finding in findings
     )
+
+
+def _validate_tasks_findings(monkeypatch, tmp_path, *, spec_value, spec_files=()):
+    from ai_team.cli import app
+
+    for name, spec_id, title in spec_files:
+        _write(tmp_path / "ai-team" / "specs" / name, _spec(spec_id, title))
+    extra = f'spec: "{spec_value}"\n' if spec_value else ""
+    _write(
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001-do-thing.md",
+        _task("T-001", "Do Thing", "pending", extra_frontmatter=extra),
+    )
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--tasks", "--json"])
+    return json.loads(result.stdout)
+
+
+OVERVIEW_SPEC_FILES = (("S-000-system-overview.md", "S-000", "System Overview"),)
+
+
+@pytest.mark.parametrize(
+    "reference",
+    ["S-000", "S-000-system-overview", "S-000-system-overview.md", "system-overview"],
+)
+def test_validate_reports_task_spec_overview_for_s000_reference(
+    monkeypatch, tmp_path, reference
+):
+    findings = _validate_tasks_findings(
+        monkeypatch,
+        tmp_path,
+        spec_value=reference,
+        spec_files=OVERVIEW_SPEC_FILES,
+    )
+
+    codes = [finding["code"] for finding in findings]
+    assert codes == ["task-spec-overview"]
+    assert "S-000" in findings[0]["message"]
+    assert "overview" in findings[0]["message"]
+
+
+def test_validate_reports_only_task_spec_overview_when_no_s000_file_exists(
+    monkeypatch, tmp_path
+):
+    findings = _validate_tasks_findings(monkeypatch, tmp_path, spec_value="S-000")
+
+    assert [finding["code"] for finding in findings] == ["task-spec-overview"]
+
+
+def test_validate_reports_no_task_spec_overview_for_feature_spec_cr_or_no_spec(
+    monkeypatch, tmp_path
+):
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "ai-team" / "specs" / "S-001-launch-plan.md",
+        _spec("S-001", "Launch Plan"),
+    )
+    cr_dir = tmp_path / ".ai-team" / "tracker" / "change-requests"
+    _write(cr_dir / "CR-001-tweak.md", _change_request("CR-001", "Tweak", "pending"))
+    for number, spec in (("1", "S-001"), ("2", "CR-001"), ("3", "")):
+        extra = f'spec: "{spec}"\n' if spec else ""
+        _write(
+            tmp_path / ".ai-team" / "tracker" / "tasks" / f"T-00{number}-do-thing.md",
+            _task(f"T-00{number}", "Do Thing", "pending", extra_frontmatter=extra),
+        )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--tasks", "--json"])
+
+    assert all(
+        finding["code"] != "task-spec-overview" for finding in json.loads(result.stdout)
+    )
+
+
+def test_validate_reports_no_task_spec_overview_when_tasks_not_selected(
+    monkeypatch, tmp_path
+):
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "ai-team" / "specs" / "S-000-system-overview.md",
+        _spec("S-000", "System Overview"),
+    )
+    _write(
+        tmp_path / ".ai-team" / "tracker" / "tasks" / "T-001-do-thing.md",
+        _task("T-001", "Do Thing", "pending", extra_frontmatter='spec: "S-000"\n'),
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["validate", "--specs", "--json"])
+
+    assert all(
+        finding["code"] != "task-spec-overview" for finding in json.loads(result.stdout)
+    )

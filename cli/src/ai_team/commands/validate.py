@@ -5,7 +5,7 @@ from __future__ import annotations
 import typer
 from rich.table import Table
 
-from ai_team.commands._shared import project_root
+from ai_team.commands._shared import hint_missing_overview, project_root
 from ai_team.core.validate import validate_project
 from ai_team.render import console, print_json
 
@@ -59,6 +59,7 @@ def default(
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     root = project_root()
+    hint_missing_overview(root)
     (
         selected_tasks,
         selected_bugs,

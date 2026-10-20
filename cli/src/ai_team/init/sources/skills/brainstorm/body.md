@@ -13,6 +13,8 @@ The goal is to arrive at a well-understood, agreed direction *before* writing th
 
 ### Step 0: Triage the Scope
 
+When `ai-team list specs` shows no `S-000`, suggest to the human starting with the system overview (`new-system-overview`) before writing a feature spec; the human decides. If the human declines, continue as before; the suggestion is not repeated in the same session.
+
 Read the request, then judge its size before spending any clarifying question.
 If it describes several independent subsystems — pieces that could be specified, built, and verified separately, such as "a billing system with invoicing, tax reporting, and a customer portal" — it is too large for one spec. An oversized spec needs constant amendment and stops being true.
 

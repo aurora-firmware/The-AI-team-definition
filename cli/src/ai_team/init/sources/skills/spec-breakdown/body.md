@@ -10,9 +10,12 @@ Gate 2 technical readiness is owned by the `spec-breakdown-review` skill.
 - **Project structure** — the existing codebase layout to determine file paths.
 - **Existing tasks** — current tasks from `ai-team list tasks --json`, to avoid conflicts or duplication.
 
+S-000 is the project overview, not a feature spec, so it is never an input: when the spec to break down is S-000, the skill stops with an explanation and creates no task. The input is a feature spec. The CLI also refuses `ai-team task new --spec S-000`.
+
 ## Procedure
 
 ### Step 0: Check Out the Planning Branch
+If the spec to break down is S-000, stop before any branch checkout and report that S-000 is the project overview and produces no tasks; the input is a feature spec, so name the feature specs (listed by `ai-team list specs`) as the input. Create no task: the CLI also refuses `ai-team task new --spec S-000`.
 The breakdown runs on the planning branch of the spec or change-request it decomposes (`plan/<id>-…`), never on `{{integration_branch}}`.
 If that branch exists, run the before-point Workspace Hygiene check from the `git-conventions` skill and check it out.
 If it does not exist — the approved spec is already on `{{integration_branch}}` — open one as described in **Opening a Planning Branch** in the `git-conventions` skill.
@@ -111,3 +114,4 @@ Until this step, the tasks stay `planned` and invisible to `/dev-loop`, and `{{i
 - **Criteria that do not match an EARS pattern** — if a criterion resists EARS, the task is probably not atomic.
 - **Forgetting verification commands** — every task must have a way to prove it is done. If you cannot write a verification command, the acceptance criteria are not specific enough.
 - **File conflicts** — two tasks creating the same file will cause merge conflicts. Restructure so one task creates the file and the other modifies it (with a dependency).
+- **Breaking down S-000** — S-000 is the project overview and produces no tasks. Stop and ask for a feature spec instead; `ai-team task new --spec S-000` is refused by the CLI as well.

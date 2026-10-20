@@ -3,7 +3,9 @@ from __future__ import annotations
 from importlib.resources import files
 from typing import Literal
 
-TemplateKind = Literal["task", "bug", "spec", "adr", "report", "change-request"]
+TemplateKind = Literal[
+    "task", "bug", "spec", "adr", "report", "change-request", "system-overview"
+]
 _SUPPORTED_KINDS: tuple[TemplateKind, ...] = (
     "task",
     "bug",
@@ -11,6 +13,7 @@ _SUPPORTED_KINDS: tuple[TemplateKind, ...] = (
     "adr",
     "report",
     "change-request",
+    "system-overview",
 )
 _TEMPLATE_FILES: dict[TemplateKind, str] = {
     "task": "task.md",
@@ -19,6 +22,7 @@ _TEMPLATE_FILES: dict[TemplateKind, str] = {
     "adr": "adr.md",
     "report": "progress-report.md",
     "change-request": "change-request.md",
+    "system-overview": "system-overview.md",
 }
 
 

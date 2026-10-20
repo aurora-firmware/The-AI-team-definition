@@ -13,7 +13,12 @@ from typing import Literal
 import typer
 from slugify import slugify
 
-from ai_team.commands._shared import append_work_log_entry, project_root, template_body
+from ai_team.commands._shared import (
+    append_work_log_entry,
+    hint_missing_overview,
+    project_root,
+    template_body,
+)
 from ai_team.core.fs import ArtifactExists, read_artifact, update_status
 from ai_team.core.ids import next_bug_id
 from ai_team.core.lock import LockTimeout, create_artifact_with_lock
@@ -72,6 +77,7 @@ def new_bug(
 ) -> None:
     """Create a new open bug in the tracker from the bundled template."""
     root = project_root()
+    hint_missing_overview(root)
 
     def build(bug_id: str) -> tuple[Path, Bug, str]:
         slug = slugify(title)

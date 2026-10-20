@@ -13,13 +13,19 @@ from typing import Literal
 import typer
 from slugify import slugify
 
-from ai_team.commands._shared import append_work_log_entry, project_root, template_body
+from ai_team.commands._shared import (
+    append_work_log_entry,
+    hint_missing_overview,
+    project_root,
+    template_body,
+)
 from ai_team.core.fs import ArtifactExists, read_artifact, update_status
 from ai_team.core.ids import next_task_id
 from ai_team.core.lock import LockTimeout, create_artifact_with_lock
 from ai_team.core.models import Task
 from ai_team.core.templates import load_template
 from ai_team.core.tracker import TASK_STATUSES, find_item
+from ai_team.core.validate import references_overview
 from ai_team.render import print_json
 
 NAME = "task"
@@ -88,6 +94,15 @@ def new_task(
 ) -> None:
     """Create a new task in the tracker from the bundled template."""
     root = project_root()
+    if spec is not None and references_overview(root, spec):
+        typer.echo(
+            f"Cannot create a task for '{spec}': S-000 is the project overview "
+            "and produces no tasks. Reference a feature spec with --spec instead.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+    hint_missing_overview(root)
 
     def build(task_id: str) -> tuple[Path, Task, str]:
         slug = slugify(title)

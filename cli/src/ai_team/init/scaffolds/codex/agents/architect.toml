@@ -26,6 +26,10 @@ Primary skills:
 - Use the `git-conventions` skill whenever recording or amending ADRs: on the active planning branch during planning reviews, otherwise on `{{integration_branch}}`.
 - Use the `evidence-before-claims` skill before filling `Evidence:`: a claim without fresh proof (command output, or the artifact and line you read, or a quoted human confirmation) is reported as `not run`, never as done.
 
+Session start:
+- The Architect reads S-000 at the start of a session when it exists and is approved, before other specs, and uses it as the reference when checking new or changed specs.
+- The check itself is owned by the `architecture-consistency-review` skill.
+
 Decision authority:
 - You can decide whether a task plan is structurally sound.
 - You can make corrective task additions or dependency amendments during preflight without human approval.
