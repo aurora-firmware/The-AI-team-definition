@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from ai_team.core.ids import is_overview_reference
 from ai_team.core.locator import ProjectRoot
 from ai_team.core.models import (
     FrontmatterError,
@@ -219,6 +220,14 @@ def spec_reference_aliases(root: ProjectRoot, reference: str) -> set[str]:
     return {reference, wanted}
 
 
+def _references_overview(root: ProjectRoot, reference: str) -> bool:
+    """Return True when *reference* names S-000, directly or through a spec alias."""
+    return any(
+        is_overview_reference(alias)
+        for alias in spec_reference_aliases(root, reference) | {reference}
+    )
+
+
 def _spec_index_entries(path: Path) -> set[str]:
     """Return every reference string that should resolve to the spec at *path*.
 
@@ -289,7 +298,19 @@ def validate_project(
             )
             _check_stateful_filename(findings, root, path, task.id)
             _check_status(findings, root, path, "Task", task.status, TASK_STATUSES)
-            if task.spec and not (
+            if task.spec and _references_overview(root, task.spec):
+                findings.append(
+                    _finding(
+                        path,
+                        root,
+                        "task-spec-overview",
+                        (
+                            f"Task spec reference '{task.spec}' names S-000, "
+                            "the project overview, which produces no tasks."
+                        ),
+                    )
+                )
+            elif task.spec and not (
                 _spec_reference_exists(task.spec, spec_slugs)
                 or task.spec in change_request_ids
             ):
