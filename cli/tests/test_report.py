@@ -187,3 +187,22 @@ Body.
     assert out_path.exists()
     content = out_path.read_text(encoding="utf-8")
     assert "B-001" in content
+
+
+def test_report_cites_work_log_as_integration_result_source(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """The report's integration source names the Work Log, not git history."""
+    from ai_team.cli import app
+
+    out_path = tmp_path / "status.md"
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["report", "--out", str(out_path)])
+
+    assert result.exit_code == 0
+    content = out_path.read_text(encoding="utf-8")
+    assert (
+        "- Source: latest Work Log session of completed tasks and resolved bugs"
+        in content
+    )
+    assert "git log" not in content

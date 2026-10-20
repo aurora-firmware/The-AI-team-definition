@@ -340,7 +340,9 @@ ai-team report --out /tmp/custom-report.md
 
 `ai-team status` shows counts of active specs, tasks by state, bugs by state,
 in-progress tasks, blocked tasks, critical/high bugs, and the latest
-integration result from git history.
+integration result. The integration result cites the newest Work Log session
+of a completed task or resolved bug (ID, session, date, and first line), or
+`not found` when no such session exists.
 
 `ai-team report` renders the same data into a markdown file using the bundled
 report template.
