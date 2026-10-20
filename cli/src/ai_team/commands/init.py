@@ -216,6 +216,10 @@ def _root_guidance_action(
     return "prompt"
 
 
+def _would_write_verb(destination: Path, force: bool) -> str:
+    return "WOULD OVERWRITE" if destination.exists() and force else "WOULD WRITE"
+
+
 def _handle_root_guidance(
     target_root: Path,
     sources_root: Path,
@@ -279,10 +283,6 @@ def _remove_legacy_codex_skills(target_root: Path, dry_run: bool) -> None:
 
     if not dry_run and not any(legacy_root.iterdir()):
         legacy_root.rmdir()
-
-
-def _would_write_verb(destination: Path, force: bool) -> str:
-    return "WOULD OVERWRITE" if destination.exists() and force else "WOULD WRITE"
 
 
 @app.callback()
