@@ -83,7 +83,7 @@ Tasks, bugs, and change-requests do not live in the project directory. They live
 
 ### Step 3: Export the Framework Files
 
-Run `ai-team init` to export the bundled agent definitions, skill definitions, and templates into your project:
+Run `ai-team init` to export the bundled agent and skill definitions into your project:
 
 ```bash
 ai-team init . --tools claude --no-interactive
@@ -93,7 +93,6 @@ This exports from the CLI package scaffold sources:
 
 - **Agent definitions** into `.claude/agents/`
 - **Skill definitions** into `.claude/skills/<name>/SKILL.md`
-- **Templates** as skill assets under `.claude/skills/*/assets/`
 - **Project state directories** under `ai-team/` (or the folder set by `--project-dir`)
 - **`.ai-team.toml`** configuration file
 
@@ -186,12 +185,12 @@ Keep `ai-process/guidelines/coding-standards.md` as the framework's general, lan
 
 Run these checks to confirm everything is in place:
 
-1. **Directory structure**: All folders exist with templates in place.
+1. **Directory structure**: All exported files and project folders exist. Artifact templates are bundled in the CLI and are not copied into the project.
    ```bash
-   ls .claude/skills/new-spec/assets/TEMPLATE-specification.md
-   ls .claude/skills/new-task/assets/TEMPLATE-task.md
-   ls .claude/skills/new-bug/assets/TEMPLATE-bug.md
-   ls .claude/skills/new-adr/assets/TEMPLATE-adr.md
+   ls .claude/agents/developer.md
+   ls .claude/skills/new-task/SKILL.md
+   ls -d ai-team/specs ai-team/decisions ai-team/docs
+   ls .ai-team.toml
    ```
 
 2. **Slash commands work**: Run `/status-report` — it should produce an empty report with zero counts.
@@ -239,7 +238,7 @@ There is no migration command: an agent migrates by hand with this procedure. Li
 
 1. **Start clean.** Check out `dev-agent` and run the Workspace Hygiene check from the `git-conventions` skill. No loop may be running.
 2. **Locate the tracker.** Make sure `.ai-team.toml` has a `[tracker]` section (add `dir = ".ai-team/tracker"` if it is missing), then run `ai-team tracker path`. If the tracker lies inside the repository, add an ignore rule for it to the root `.gitignore` (for the default, `/.ai-team/`).
-3. **Record the starting counts** of markdown files, excluding `.gitkeep` and `TEMPLATE-*` files, in each legacy folder.
+3. **Record the starting counts** of markdown files, excluding `.gitkeep` files and template files, in each legacy folder.
 4. **Copy the files** into the tracker, keeping their filenames:
    - `tasks/<state>/*.md` → `<tracker>/tasks/`
    - `bugs/<state>/*.md` → `<tracker>/bugs/`
