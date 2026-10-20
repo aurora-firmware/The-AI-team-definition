@@ -40,7 +40,7 @@ If any task criterion or bug-fix criterion is not met, skip Stage 2 and set the 
 
 **Stage 2 Checklist:**
 - **Correctness**: Logic handles expected inputs and edge cases correctly.
-- **Tests**: Tests exist, cover both success and failure paths, and are independent (no shared mutable state).
+- **Tests**: Tests exist, cover both success and failure paths, and are independent (no shared mutable state). For a design-review task, the equivalent is the Work Log design-review record (see Design-Review Tasks); it replaces the tests.
 - **Security**: No hardcoded secrets, all external input is validated, database queries are parameterized.
 - **Readability**: Names are descriptive, functions are focused, no dead code or commented-out blocks.
 - **Performance**: No unnecessary loops, blocking calls, or resource leaks.
@@ -51,6 +51,16 @@ For bug fixes, also check:
 - A regression test exists that fails before the fix and passes after it.
 - No unrelated refactoring, cleanup, or feature code is bundled into the fix.
 - The Diagnosis Log fix contract (isolated fault, planned fix, planned verification) matches what was actually implemented.
+
+### Design-Review Tasks
+
+This section applies when the task's Verification section holds the line `Design review:`. Detect the line, not the first line of the section: the task template's Verification comment may precede it. Such a task has no tests; the Developer's evidence is a Work Log design-review record.
+
+Check, in Stage 1:
+- **The planning choice.** The diff changes only prose that no test pins. A change to code, CLI output, or a rule a test can observe is at least **Important**: the task needed a test.
+- **The record.** The Work Log names the documents checked, each conflict found and how it was fixed, and the result. Verify the claimed consistency against the listed references: every reference in the Verification section. Read S-000 at review time, when the task lists it, not at session start.
+
+A missing record, or one that omits a listed reference, is at least **Important**, as missing red/green evidence is.
 
 ### Severity
 
@@ -131,6 +141,7 @@ Next owner: active loop for Architect consultation.
 - Claims in the Work Log were checked against the diff, not accepted.
 - The reviewed range runs from the recorded base commit to the branch head.
 - Every Minor finding and unverifiable claim is recorded where the loop and Gate 5 can find it.
+- For design-review tasks, the planning choice and the Work Log design-review record were checked against every listed reference.
 - The reviewer checked the actual code, not just the test results.
 - No personal style preferences were enforced — only project standards from the coding guidelines.
 
