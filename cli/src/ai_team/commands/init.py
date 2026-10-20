@@ -100,11 +100,24 @@ def _resolve_tools(tools: str | None, no_interactive: bool) -> list[str]:
     return _parse_tools(raw)
 
 
-def _next_steps() -> list[str]:
+def _skill_invocation(skill: str, tools: list[str]) -> str:
+    """Return how to invoke ``skill`` in the configured tools.
+
+    Claude Code runs a skill as ``/name``; Codex has no per-skill slash command
+    and runs it as ``$name``. With no tool configured, keep the ``/name`` form.
+    """
+    if tools == ["codex"]:
+        return f"${skill}"
+    if "claude" in tools and "codex" in tools:
+        return f"/{skill} (Claude Code) or ${skill} (Codex)"
+    return f"/{skill}"
+
+
+def _next_steps(tools: list[str]) -> list[str]:
     return [
-        "Run /brainstorm to explore the request and constraints.",
-        "Run /spec-breakdown to break the approved spec into tasks.",
-        "Run /dev-loop to execute tasks through review and integration.",
+        f"Run {_skill_invocation('brainstorm', tools)} to explore the request and constraints.",
+        f"Run {_skill_invocation('spec-breakdown', tools)} to break the approved spec into tasks.",
+        f"Run {_skill_invocation('dev-loop', tools)} to execute tasks through review and integration.",
     ]
 
 
@@ -393,7 +406,7 @@ def init_command(
 
     typer.echo("Initialization complete.")
     typer.echo("Next steps:")
-    for line in _next_steps():
+    for line in _next_steps(selected_tools):
         typer.echo(f"- {line}")
 
     if declined:
