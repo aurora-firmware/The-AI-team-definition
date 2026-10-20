@@ -135,7 +135,7 @@ CI lint job regenerates commands.md and fails on any difference (S-010)
 **Documentation tooling dependency**
 - **What must exist:** `typer-cli`, which provides `utils docs`.
 - **Where it lives:** the `dev` dependency group of `cli/pyproject.toml`.
-- **Constraints:** installed by `uv sync` in `cli/`, as the CI jobs do.
+- **Constraints:** installed by `uv sync` in `cli/`, as the `lint` and `test` jobs do.
 - **Missing-value behaviour:** `gen_docs.sh` fails, and the CI drift check fails with it.
 
 **Generated-file header** — **Contract** (`cli/scripts/gen_docs.sh:47-51`): `commands.md` starts with an HTML comment stating that it is a generated file that must not be edited by hand, and that it is regenerated with `bash cli/scripts/gen_docs.sh`.
