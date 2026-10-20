@@ -205,7 +205,7 @@ def _render_report(
         ),
         (
             "- Source:",
-            "- Source: git log --all --grep=merge|integration|verification|test -n 1",
+            "- Source: latest Work Log session of completed tasks and resolved bugs",
         ),
         ("- Date:", f"- Date: {report_date}"),
         (
