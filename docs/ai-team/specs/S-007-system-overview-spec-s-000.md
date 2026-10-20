@@ -94,7 +94,7 @@ A spec that needs something S-000 does not cover is a signal either to amend S-0
 
 1. **Creation.** The CLI creates S-000 on explicit request, from its own template, in the specs folder with ID `S-000` and the usual frontmatter. It refuses when an S-000 already exists, including in the spec archive. Normal spec creation is unchanged and still starts at S-001.
 2. **No tasks.** Spec breakdown refuses S-000 and says why. The CLI refuses to create a task whose source spec is S-000, and `validate` reports any task that names S-000 as its source spec.
-3. **Session start.** When S-000 exists and is approved, the Planner and the Architect read it at the start of a session before reading other specs. The Developer, Reviewer and Integrator do not read it at session start; they work from their own agent descriptions and the task or bug they are given. The Planner and Architect agent descriptions say so.
+3. **Session start.** When S-000 exists and is approved, the Planner and the Architect read it at the start of a session before reading other specs. The Developer, Reviewer and Integrator do not read it at session start; they work from their own agent descriptions and the task or bug they are given. A design-review task may name S-000 as a reference in its Verification section; the Developer and Reviewer then read it when they run or check that review, not at session start. The Planner and Architect agent descriptions say so.
 4. **Planner.** For a project with no specs, the Planner proposes writing S-000 first. For a project that already has specs, S-000 stays optional and the Planner does not require it.
 5. **Missing-S-000 hints.** When no S-000 exists (in the specs folder or its archive), the CLI prints a one-line hint, pointing to the way to create it, from `validate`, from every command that creates an artifact (`spec new`, `task new`, `bug new`, `adr new`, `change-request new`) and from the report commands. The hint is always on and not configurable. It is advisory: it never changes the exit code, never blocks the command, and goes to the error stream so that `--json` output on the standard stream stays valid. Creating S-000 itself does not print the hint.
 6. **Skill suggestions.** The `using-ai-team` skill and the `brainstorm` skill tell the agent, when S-000 does not exist, to suggest to the human starting with the system overview before writing a feature spec. The human may decline, in which case the work continues as before and the agent does not repeat the suggestion in the same session.
@@ -124,8 +124,6 @@ In a project that already has specs, code or decisions, the agent can use `new-s
 
 ## Amendment Log
 
-<!-- Optional. Use when an approved spec is amended after tasks are in flight.
 | Date | What changed | Why | Affected tasks |
 |------|-------------|-----|----------------|
-| YYYY-MM-DD | Description of change | Reason for amendment | T-XXX, T-YYY |
--->
+| 2026-10-20 | Requirement 3: a design-review task may name S-000 as a reference; the Developer and Reviewer read it when they run or check that review, not at session start. Driven by CR-003 §2 and Architecture Consistency Review finding F2. | CR-003 introduces design-review verification against the source spec, accepted ADRs and S-000, which the session-start rule for Developer and Reviewer did not allow for. | None in flight |
