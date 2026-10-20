@@ -11,6 +11,7 @@ from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
 from slugify import slugify
 
+from ai_team.commands._shared import hint_missing_overview
 from ai_team.core.fs import ArtifactExists
 from ai_team.core.ids import OVERVIEW_ID, next_spec_id, overview_exists
 from ai_team.core.locator import find_project_root
@@ -70,6 +71,8 @@ def new_spec(
         title = DEFAULT_OVERVIEW_TITLE
     spec_title = title
     root = find_project_root(Path.cwd())
+    if not overview:
+        hint_missing_overview(root)
 
     def allocate_id() -> str:
         if not overview:

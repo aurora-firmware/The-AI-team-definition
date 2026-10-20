@@ -167,3 +167,91 @@ def test_hint_missing_overview_does_not_raise_for_undecodable_spec_file(
     hint_missing_overview(find_project_root(project))
 
     assert capsys.readouterr().out == ""
+
+
+def test_spec_new_prints_hint_to_stderr_and_stdout_is_only_the_path(project):
+    from ai_team.cli import app
+
+    result = CliRunner().invoke(app, ["spec", "new", "Billing"])
+
+    assert result.exit_code == 0
+    assert OVERVIEW_HINT in result.stderr
+    assert OVERVIEW_HINT not in result.stdout
+    assert result.stdout.strip().endswith("S-001-billing.md")
+
+
+def test_spec_new_json_stdout_stays_clean_when_hint_is_printed(project):
+    from ai_team.cli import app
+
+    result = CliRunner().invoke(app, ["spec", "new", "Billing", "--json"])
+
+    assert result.exit_code == 0
+    assert OVERVIEW_HINT in result.stderr
+    assert set(json.loads(result.stdout)) == {"id", "path"}
+
+
+def test_spec_new_overview_prints_no_hint(project):
+    from ai_team.cli import app
+
+    result = CliRunner().invoke(app, ["spec", "new", "--overview"])
+
+    assert result.exit_code == 0
+    assert OVERVIEW_HINT not in result.stderr
+
+
+def test_spec_new_prints_no_hint_when_s_000_exists(project):
+    from ai_team.cli import app
+
+    _add_overview(project)
+
+    result = CliRunner().invoke(app, ["spec", "new", "Billing"])
+
+    assert result.exit_code == 0
+    assert OVERVIEW_HINT not in result.stderr
+
+
+def test_adr_new_prints_hint_to_stderr_and_stdout_is_only_the_path(project):
+    from ai_team.cli import app
+
+    (project / "ai-team" / "decisions").mkdir()
+
+    result = CliRunner().invoke(app, ["adr", "new", "Use queues"])
+
+    assert result.exit_code == 0
+    assert OVERVIEW_HINT in result.stderr
+    assert OVERVIEW_HINT not in result.stdout
+    assert result.stdout.strip().endswith("use-queues.md")
+
+
+def test_adr_new_prints_no_hint_when_s_000_exists(project):
+    from ai_team.cli import app
+
+    (project / "ai-team" / "decisions").mkdir()
+    _add_overview(project)
+
+    result = CliRunner().invoke(app, ["adr", "new", "Use queues"])
+
+    assert result.exit_code == 0
+    assert OVERVIEW_HINT not in result.stderr
+
+
+def test_status_prints_hint_to_stderr_and_keeps_json_stdout_clean(project):
+    from ai_team.cli import app
+
+    result = CliRunner().invoke(app, ["status", "--json"])
+
+    assert result.exit_code == 0
+    assert OVERVIEW_HINT in result.stderr
+    assert OVERVIEW_HINT not in result.stdout
+    assert "counts" in json.loads(result.stdout)
+
+
+def test_status_prints_no_hint_when_s_000_exists(project):
+    from ai_team.cli import app
+
+    _add_overview(project)
+
+    result = CliRunner().invoke(app, ["status", "--json"])
+
+    assert result.exit_code == 0
+    assert OVERVIEW_HINT not in result.stderr
