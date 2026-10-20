@@ -27,7 +27,7 @@ def _init(target: Path, *extra: str):
 def _generated_text(target: Path) -> str:
     files = [
         path
-        for folder in (".claude", ".codex", "docs")
+        for folder in (".claude", ".codex", ".agents", "docs")
         for path in (target / folder).rglob("*")
         if path.is_file()
     ]

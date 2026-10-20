@@ -18,6 +18,7 @@ from ai_team.core.layout import (
     check_level_4,
     resolve_layout,
 )
+from ai_team.core.tool_paths import TOOL_EXPORT_PATHS
 
 
 def _write_marker(
@@ -38,9 +39,13 @@ def _write_marker(
 
 def _create_current_scaffold(repo: Path, tools: tuple[str, ...]) -> None:
     scaffold_root = resources.files("ai_team.init").joinpath("scaffolds")
-    for source_name, destination_name in (("project", "ai-team"),) + tuple(
-        (tool, f".{tool}") for tool in tools
-    ):
+    exports = [("project", "ai-team")]
+    for tool in tools:
+        exports.extend(
+            (f"{tool}/{subfolder}", destination)
+            for subfolder, destination in TOOL_EXPORT_PATHS[tool]
+        )
+    for source_name, destination_name in exports:
         source = scaffold_root.joinpath(source_name)
         for entry in source.rglob("*"):
             if entry.is_dir():
@@ -168,6 +173,26 @@ def test_level_1_reports_every_missing_current_scaffold_directory_and_allows_ext
     }
     assert all(finding.level == 1 for finding in findings)
     assert all(finding.problem and finding.suggested_fix for finding in findings)
+
+
+def test_level_1_reports_missing_agents_skills_for_codex(tmp_path: Path) -> None:
+    _write_marker(tmp_path, tools=("codex",))
+    _create_current_scaffold(tmp_path, ("codex",))
+    shutil.rmtree(tmp_path / ".agents" / "skills")
+    contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
+
+    findings = check_level_1(contract)
+
+    assert ".agents/skills" in {finding.path for finding in findings}
+
+
+def test_level_1_does_not_require_bare_tool_roots(tmp_path: Path) -> None:
+    _write_marker(tmp_path, tools=("claude", "codex"))
+    _create_current_scaffold(tmp_path, ("claude", "codex"))
+    contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
+
+    assert check_level_1(contract) == []
+    assert not (tmp_path / ".codex" / "skills").exists()
 
 
 @pytest.mark.parametrize(
@@ -550,3 +575,19 @@ def test_check_layout_returns_ordered_findings_without_modifying_repository(
         for finding in findings
     )
     assert _snapshot(tmp_path) == before
+
+
+def test_level_1_reports_nothing_for_a_freshly_initialised_all_tools_project(
+    tmp_path: Path,
+) -> None:
+    from typer.testing import CliRunner
+
+    from ai_team.cli import app
+
+    result = CliRunner().invoke(
+        app, ["init", str(tmp_path), "--tools", "all", "--no-interactive"]
+    )
+    contract, _ = resolve_layout(tmp_path, current_version=None)
+
+    assert result.exit_code == 0
+    assert check_level_1(contract) == []

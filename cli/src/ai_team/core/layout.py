@@ -14,6 +14,7 @@ from typing import Literal
 
 from ai_team.core.config import is_valid_project_dir
 from ai_team.core.locator import DEFAULT_PROJECT_DIR, ProjectRoot
+from ai_team.core.tool_paths import TOOL_EXPORT_PATHS
 from ai_team.core.tracker import (
     MIGRATION_GUIDE,
     is_inside,
@@ -236,12 +237,15 @@ def _expected_directories(contract: LayoutContract) -> list[Path]:
         for relative in _resource_directories(scaffold_root.joinpath("project"))
     )
     for tool in contract.tools:
-        tool_root = contract.repo / f".{tool}"
-        expected.append(tool_root)
-        expected.extend(
-            tool_root / relative
-            for relative in _resource_directories(scaffold_root.joinpath(tool))
-        )
+        for scaffold_subfolder, destination in TOOL_EXPORT_PATHS[tool]:
+            destination_root = contract.repo / destination
+            expected.append(destination_root)
+            expected.extend(
+                destination_root / relative
+                for relative in _resource_directories(
+                    scaffold_root.joinpath(tool, scaffold_subfolder)
+                )
+            )
     return expected
 
 
