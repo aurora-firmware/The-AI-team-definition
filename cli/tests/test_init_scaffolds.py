@@ -542,6 +542,80 @@ def test_sync_script_does_not_modify_sources_directory(tmp_path: Path) -> None:
     )
 
 
+def _run_sync_script(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, "cli/scripts/sync_init_scaffolds.py", *args],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def _scaffolds_root(repo: Path) -> Path:
+    return repo / "cli" / "src" / "ai_team" / "init" / "scaffolds"
+
+
+def _snapshot_tree(root: Path) -> dict[str, str]:
+    return {
+        str(path.relative_to(root)): path.read_text(encoding="utf-8")
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
+
+
+def test_sync_script_long_help_prints_usage_and_leaves_scaffolds_untouched(
+    tmp_path: Path,
+) -> None:
+    repo = _setup_fake_repo(tmp_path)
+    scaffolds_before = _snapshot_tree(_scaffolds_root(repo))
+
+    result = _run_sync_script(repo, "--help")
+
+    assert result.returncode == 0, result.stderr
+    assert "usage:" in result.stdout
+    assert "Synchronized" not in result.stdout
+    assert _snapshot_tree(_scaffolds_root(repo)) == scaffolds_before
+
+
+def test_sync_script_short_help_prints_usage_and_leaves_scaffolds_untouched(
+    tmp_path: Path,
+) -> None:
+    repo = _setup_fake_repo(tmp_path)
+    scaffolds_before = _snapshot_tree(_scaffolds_root(repo))
+
+    result = _run_sync_script(repo, "-h")
+
+    assert result.returncode == 0, result.stderr
+    assert "usage:" in result.stdout
+    assert "Synchronized" not in result.stdout
+    assert _snapshot_tree(_scaffolds_root(repo)) == scaffolds_before
+
+
+def test_sync_script_rejects_unknown_argument_with_usage_and_leaves_scaffolds_untouched(
+    tmp_path: Path,
+) -> None:
+    repo = _setup_fake_repo(tmp_path)
+    scaffolds_before = _snapshot_tree(_scaffolds_root(repo))
+
+    result = _run_sync_script(repo, "--bogus")
+
+    assert result.returncode == 2
+    assert "usage:" in result.stderr
+    assert "--bogus" in result.stderr
+    assert _snapshot_tree(_scaffolds_root(repo)) == scaffolds_before
+
+
+def test_sync_script_without_arguments_generates_scaffolds(tmp_path: Path) -> None:
+    repo = _setup_fake_repo(tmp_path)
+
+    result = _run_sync_script(repo)
+
+    assert result.returncode == 0, result.stderr
+    assert "Synchronized init scaffolds" in result.stdout
+    assert _scaffolds_root(repo).is_dir()
+
+
 def test_package_owned_agent_sources_cover_each_exported_role_for_both_tools() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     sources_root = repo_root / "src" / "ai_team" / "init" / "sources" / "agents"
