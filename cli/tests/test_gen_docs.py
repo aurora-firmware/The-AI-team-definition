@@ -26,6 +26,18 @@ GEN_DOCS_SCRIPT = CLI_DIR / "scripts" / "gen_docs.sh"
 COMMANDS_MD = CLI_DIR / "docs" / "commands.md"
 
 
+def generate_docs_to(
+    output: Path, cwd: Path = REPO_ROOT
+) -> subprocess.CompletedProcess:
+    """Run gen_docs.sh writing to ``output`` so tracked files stay untouched."""
+    return subprocess.run(
+        ["bash", str(GEN_DOCS_SCRIPT), "--output", str(output)],
+        capture_output=True,
+        text=True,
+        cwd=str(cwd),
+    )
+
+
 # ---------------------------------------------------------------------------
 # AC-1: typer-cli in the dev dependency group
 # ---------------------------------------------------------------------------
@@ -67,20 +79,59 @@ def test_gen_docs_script_exists():
 
 
 def test_gen_docs_script_produces_commands_md(tmp_path):
-    """Running gen_docs.sh creates cli/docs/commands.md with non-empty content."""
-    result = subprocess.run(
-        ["bash", str(GEN_DOCS_SCRIPT)],
-        capture_output=True,
-        text=True,
-        cwd=str(REPO_ROOT),
-    )
+    """Running gen_docs.sh --output creates the target file with non-empty content."""
+    output = tmp_path / "commands.md"
+    result = generate_docs_to(output)
     assert result.returncode == 0, (
         f"gen_docs.sh exited with code {result.returncode}.\n"
         f"stdout: {result.stdout}\nstderr: {result.stderr}"
     )
-    assert COMMANDS_MD.is_file(), "cli/docs/commands.md was not created by gen_docs.sh"
-    content = COMMANDS_MD.read_text(encoding="utf-8")
-    assert len(content) > 100, "commands.md is unexpectedly short or empty"
+    assert output.is_file(), "gen_docs.sh --output did not create the target file"
+    assert len(output.read_text(encoding="utf-8")) > 100, (
+        "generated commands.md is unexpectedly short or empty"
+    )
+
+
+def test_committed_commands_md_matches_generated_output(tmp_path):
+    """The committed commands.md must equal freshly generated output."""
+    output = tmp_path / "commands.md"
+    result = generate_docs_to(output)
+    assert result.returncode == 0, f"gen_docs.sh failed: {result.stderr}"
+    assert COMMANDS_MD.read_bytes() == output.read_bytes(), (
+        "cli/docs/commands.md is stale. "
+        "Regenerate it with: bash cli/scripts/gen_docs.sh"
+    )
+
+
+def test_gen_docs_default_output_path_is_committed_commands_md():
+    """Without arguments the script still targets cli/docs/commands.md."""
+    script = GEN_DOCS_SCRIPT.read_text(encoding="utf-8")
+    assert 'OUTPUT="${REPO_ROOT}/cli/docs/commands.md"' in script
+
+
+def test_gen_docs_resolves_relative_output_against_caller_cwd(tmp_path):
+    """A relative --output lands under the caller's cwd, not the script's."""
+    result = subprocess.run(
+        ["bash", str(GEN_DOCS_SCRIPT), "--output", "relative.md"],
+        capture_output=True,
+        text=True,
+        cwd=str(tmp_path),
+    )
+    assert result.returncode == 0, f"gen_docs.sh failed: {result.stderr}"
+    assert (tmp_path / "relative.md").is_file()
+
+
+@pytest.mark.parametrize("arguments", [["--bogus"], ["--output"]])
+def test_gen_docs_rejects_invalid_arguments(arguments):
+    """Unknown arguments or a missing --output value fail with a clear error."""
+    result = subprocess.run(
+        ["bash", str(GEN_DOCS_SCRIPT), *arguments],
+        capture_output=True,
+        text=True,
+        cwd=str(REPO_ROOT),
+    )
+    assert result.returncode != 0
+    assert "usage" in result.stderr.lower()
 
 
 # ---------------------------------------------------------------------------
@@ -104,16 +155,12 @@ def test_commands_md_contains_global_flags():
     assert "--help" in content, "commands.md must document the --help flag"
 
 
-def test_generated_commands_md_contains_check_layout_command():
+def test_generated_commands_md_contains_check_layout_command(tmp_path):
     """Regenerated command docs must include the shipped check-layout command."""
-    result = subprocess.run(
-        ["bash", str(GEN_DOCS_SCRIPT)],
-        capture_output=True,
-        text=True,
-        cwd=str(REPO_ROOT),
-    )
+    output = tmp_path / "commands.md"
+    result = generate_docs_to(output)
     assert result.returncode == 0, f"gen_docs.sh failed: {result.stderr}"
-    content = COMMANDS_MD.read_text(encoding="utf-8")
+    content = output.read_text(encoding="utf-8")
     assert "## `ai-team check-layout`" in content
     assert "Check the repository layout and report actionable findings." in content
 
@@ -149,29 +196,16 @@ def test_commands_md_header_names_regeneration_command():
 # ---------------------------------------------------------------------------
 
 
-def test_gen_docs_is_idempotent():
-    """Running gen_docs.sh twice produces byte-identical commands.md."""
-    # First run.
-    result1 = subprocess.run(
-        ["bash", str(GEN_DOCS_SCRIPT)],
-        capture_output=True,
-        text=True,
-        cwd=str(REPO_ROOT),
-    )
+def test_gen_docs_is_idempotent(tmp_path):
+    """Running gen_docs.sh twice produces byte-identical output."""
+    first = tmp_path / "first.md"
+    second = tmp_path / "second.md"
+    result1 = generate_docs_to(first)
     assert result1.returncode == 0, f"First gen_docs.sh run failed: {result1.stderr}"
-    content_after_first = COMMANDS_MD.read_bytes()
-
-    # Second run.
-    result2 = subprocess.run(
-        ["bash", str(GEN_DOCS_SCRIPT)],
-        capture_output=True,
-        text=True,
-        cwd=str(REPO_ROOT),
-    )
+    result2 = generate_docs_to(second)
     assert result2.returncode == 0, f"Second gen_docs.sh run failed: {result2.stderr}"
-    content_after_second = COMMANDS_MD.read_bytes()
 
-    assert content_after_first == content_after_second, (
-        "commands.md changed between two consecutive gen_docs.sh runs "
+    assert first.read_bytes() == second.read_bytes(), (
+        "generated output changed between two consecutive gen_docs.sh runs "
         "with no code change"
     )
