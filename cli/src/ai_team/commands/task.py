@@ -15,7 +15,7 @@ from slugify import slugify
 
 from ai_team.commands._shared import append_work_log_entry, project_root, template_body
 from ai_team.core.fs import ArtifactExists, read_artifact, update_status
-from ai_team.core.ids import next_task_id
+from ai_team.core.ids import is_overview_reference, next_task_id
 from ai_team.core.lock import LockTimeout, create_artifact_with_lock
 from ai_team.core.models import Task
 from ai_team.core.templates import load_template
@@ -87,6 +87,14 @@ def new_task(
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     """Create a new task in the tracker from the bundled template."""
+    if spec is not None and is_overview_reference(spec):
+        typer.echo(
+            f"Cannot create a task for '{spec}': S-000 is the project overview "
+            "and produces no tasks. Reference a feature spec with --spec instead.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
     root = project_root()
 
     def build(task_id: str) -> tuple[Path, Task, str]:

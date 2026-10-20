@@ -9,6 +9,7 @@ from pathlib import Path
 
 from ai_team.core.ids import (
     OVERVIEW_ID,
+    is_overview_reference,
     next_adr_id,
     next_bug_id,
     next_change_request_id,
@@ -182,3 +183,15 @@ def test_next_spec_id_returns_s_001_when_s_000_is_the_only_spec(tmp_path):
     )
 
     assert next_spec_id(root) == "S-001"
+
+
+def test_is_overview_reference_true_for_overview_id_slug_filename_and_path():
+    assert is_overview_reference("S-000")
+    assert is_overview_reference("S-000-system-overview")
+    assert is_overview_reference("S-000-system-overview.md")
+    assert is_overview_reference("docs/ai-team/specs/S-000-system-overview.md")
+
+
+def test_is_overview_reference_false_for_other_references():
+    for reference in ("S-001", "S-0001", "S-000x", "", "CR-000", "T-000"):
+        assert not is_overview_reference(reference), reference
