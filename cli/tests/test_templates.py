@@ -102,3 +102,76 @@ def test_system_overview_template_shows_one_component_example_with_all_fields() 
 
     for label in ("Name", "Responsibility", "Boundary", "Works with"):
         assert f"- **{label}:**" in content
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+NEW_SPEC_SKILL = REPO_ROOT / "cli/src/ai_team/init/sources/skills/new-spec/body.md"
+AUTHORING_GUIDE = REPO_ROOT / "guides/spec-authoring-guide.md"
+REMOVED_TERMS = ("System Diagram", "Responsibility Separation")
+
+
+def _guide_feature_spec_part() -> str:
+    text = AUTHORING_GUIDE.read_text(encoding="utf-8")
+    start = text.index("## The content boundary")
+    end = text.index("## The system overview spec (S-000)")
+    after_s000 = text.index("## How to write measurable success criteria")
+    return text[start:end] + text[after_s000:]
+
+
+@pytest.mark.parametrize("heading", ["System Diagram", "Responsibility Separation"])
+def test_spec_template_omits_system_wide_architecture_heading(heading: str) -> None:
+    assert heading not in _headings(load_template("spec"), "### ")
+
+
+def test_spec_template_keeps_design_principles_and_interfaces_headings() -> None:
+    content = load_template("spec")
+
+    assert "Design Principles" in _headings(content, "### ")
+    assert "Interfaces" in _headings(content, "## ")
+    assert "Components" not in _headings(content, "## ")
+
+
+def test_spec_template_says_purpose_names_the_s000_component() -> None:
+    content = load_template("spec")
+
+    assert "system-wide structure lives in S-000" in content
+    assert "Purpose names the S-000 component" in content
+
+
+def test_new_spec_skill_describes_interfaces_and_not_removed_sections() -> None:
+    content = NEW_SPEC_SKILL.read_text(encoding="utf-8")
+
+    assert "### Interfaces" in content
+    assert "**Interfaces are described for this spec's own component" in content
+    for term in REMOVED_TERMS:
+        assert term not in content
+    assert "### Components" not in content
+    assert "**Components are described" not in content
+
+
+def test_authoring_guide_feature_spec_part_drops_removed_sections() -> None:
+    content = _guide_feature_spec_part()
+
+    for term in REMOVED_TERMS:
+        assert term not in content
+    assert "### Components" not in content
+    assert "## Components" not in content
+    assert "**Components are described" not in content
+    assert "### Interfaces" in content
+    assert "## Interfaces" in content
+
+
+def test_authoring_guide_content_boundary_points_to_s000_for_decomposition() -> None:
+    text = AUTHORING_GUIDE.read_text(encoding="utf-8")
+    boundary = text[text.index("## The content boundary") :]
+    boundary = boundary[: boundary.index("\n## How to write each section")]
+
+    assert "S-000" in boundary
+
+
+def test_authoring_guide_implementations_table_lists_system_overview_surfaces() -> None:
+    text = AUTHORING_GUIDE.read_text(encoding="utf-8")
+    table = text[text.index("## Implementations of this guide") :]
+
+    assert "cli/src/ai_team/templates/system-overview.md" in table
+    assert "cli/src/ai_team/init/sources/skills/new-system-overview/body.md" in table
