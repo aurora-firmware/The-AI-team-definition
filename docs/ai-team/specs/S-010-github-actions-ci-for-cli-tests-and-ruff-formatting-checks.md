@@ -1,6 +1,6 @@
 ---
 title: GitHub Actions CI for CLI tests and Ruff formatting checks
-version: '0.1'
+version: '0.2'
 status: approved  # draft | review | approved | superseded
 created: '2026-05-14'
 author: planner
@@ -11,18 +11,19 @@ id: S-010
 
 ## Purpose
 
-The `ai-team` CLI under `cli/` has a pytest suite but nothing runs it automatically,
-and the project has no formatter or linter configured at all. Defects and style
-drift are only caught when a human or agent remembers to run tests locally.
+The `ai-team` CLI under `cli/` has a pytest suite, a generated command reference and
+a Ruff configuration, but none of them is checked unless a human or agent remembers to
+run them locally, and releases would otherwise be built by hand.
 
-This specification adds a GitHub Actions continuous-integration workflow that runs
-the CLI test suite and enforces formatting/lint checks on every pull request and on
-every push to `main`. It also adopts Ruff as the project's formatter and linter,
-since none exists today.
+This specification defines the GitHub Actions continuous-integration workflow
+(`.github/workflows/ci.yml`) that runs the CLI test suite, enforces Ruff formatting and
+lint checks, and checks that the generated command reference is current on every pull
+request and every push to `main`, and that builds and publishes a GitHub Release when
+a version tag is pushed. Ruff is the project's formatter and linter.
 
-Expected outcome: every pull request and every `main` push gets an automated,
-check-only signal covering (1) `pytest` correctness and (2) Ruff format + lint
-compliance for `cli/`, executed on the project's registered self-hosted runner.
+Expected outcome: every pull request and every `main` push gets independent `lint` and
+`test` checks, executed on the project's self-hosted runner; a version tag that passes
+both produces a GitHub Release carrying the built packages and the command reference.
 
 ## Exclusions
 
@@ -31,97 +32,106 @@ What this specification explicitly does NOT cover:
 - **Markdown linting.** The repository is mostly markdown (skills, agents,
   `ai-process/`, guides), but linting that content is out of scope — it needs its
   own linter selection and rule-set decision.
-- **Generated-docs consistency check.** Verifying that `cli/scripts/gen_docs.sh`
-  output is current is not part of this workflow; it can be added later as an extra
-  job.
-- **Auto-format-and-commit-back.** CI is strictly check-only. It never mutates a
-  branch — on a violation it fails the job and the developer fixes and re-pushes.
-- **CI on `dev-agent` or task/bug branches.** Triggers are limited to
-  `pull_request` and `push` to `main`. The `integrate`-skill workflow that merges
+- **Auto-format-and-commit-back.** CI never commits or pushes to any branch. On a
+  violation it fails the job and the developer fixes and re-pushes.
+- **CI on `dev-agent` or task/bug branches.** Triggers are limited to pull requests,
+  pushes to `main`, and version tags. The `integrate`-skill workflow that merges
   task/bug branches into `dev-agent` is unchanged and gains no CI gate here.
 - **Changes to the `integrate` skill or any agent/skill definition.** This is
-  additive infrastructure only.
+  infrastructure only.
+- **Publishing to a package index.** A release attaches its files to the GitHub
+  Release only.
 
 ## Architecture
 
 ### Design Principles
 
-- **Check-only.** CI observes and reports; it never writes to the repository.
-- **Independent signals.** Test failures and lint failures are reported separately
-  so one never masks the other.
-- **Self-contained runner setup.** The workflow provisions its own `uv` and Python
-  toolchain rather than assuming the self-hosted runner has them — the runner is
-  shared infrastructure and currently only known to do container image builds.
+- **No writes to the repository.** CI observes and reports. The only thing it
+  publishes is a GitHub Release for a version tag; it never commits or pushes.
+- **Independent signals.** Test failures and lint failures are reported as separate
+  checks so one never masks the other.
+- **Self-contained runner setup.** Each job runs in a container image that provides
+  `uv` and Python 3.14, so nothing is assumed about the shared self-hosted runner
+  beyond Docker support and network access to pull that image.
 - **Single source of truth for tooling config.** Ruff configuration lives in
   `cli/pyproject.toml`; the workflow invokes Ruff with no inline rule overrides.
-- **Start green.** The existing `cli/` code is brought into Ruff compliance in the
-  same change set, so the first CI run on a check-only policy is not red.
+- **Releases are gated.** The release job runs only for a version tag and only after
+  `lint` and `test` pass.
 
 ### System Diagram
 
 ```
-                     trigger: pull_request | push to main
+        trigger: pull_request | push to main | push of a version tag
                                    │
                                    ▼
-                  .github/workflows/ci.yml  (runs-on: self-hosted)
+             .github/workflows/ci.yml  (self-hosted docker runner,
+                                        uv + Python 3.14 container)
                                    │
               ┌────────────────────┴────────────────────┐
               ▼                                         ▼
         job: lint                                  job: test
-   checkout                                   checkout
-   astral-sh/setup-uv (uv + Python 3.14)       astral-sh/setup-uv (uv + Python 3.14)
-   uv sync (in cli/)                           uv sync (in cli/)
-   ruff format --check .                       uv run pytest
-   ruff check .
-              │                                         │
-              ▼                                         ▼
-     pass/fail status check               pass/fail status check
+   checkout, uv sync (cli/)                   checkout, uv sync (cli/)
+   ruff format --check, ruff check            uv run pytest
+   regenerate commands.md, fail on diff
               └────────────────────┬────────────────────┘
-                                   ▼
-                   PR / commit shows two independent checks
+                                   ▼ (version tags only, both passed)
+                             job: release
+   full-history checkout, version from tag, uv build,
+   regenerate commands.md, publish GitHub Release
 ```
 
 ### Responsibility Separation
 
 | Component | Responsibility | Notes |
 |---|---|---|
-| `.github/workflows/ci.yml` | Defines triggers and the `lint` + `test` jobs | The only workflow file added |
-| `lint` job | Runs `ruff format --check` and `ruff check` over `cli/` | Fails on any formatting or lint violation |
-| `test` job | Runs `uv run pytest` for the `ai-team` CLI | Fails on any test failure |
-| `cli/pyproject.toml` | Declares Ruff as a dev dependency and holds `[tool.ruff]` config | Single source of truth for lint/format rules |
-| One-time formatting pass | Brings existing `cli/` code into Ruff compliance | Committed with the workflow so CI starts green |
+| `.github/workflows/ci.yml` | Defines the triggers and the `lint`, `test` and `release` jobs | The only workflow file |
+| `lint` job | Ruff format check, Ruff lint, and the generated-docs drift check over `cli/` | Fails on any violation or drift |
+| `test` job | Runs the CLI test suite | Fails on any test failure |
+| `release` job | Builds and publishes a GitHub Release for a version tag | Needs `lint` and `test`; the only job with write permission |
+| `cli/pyproject.toml` | Declares Ruff as a dev dependency and holds the Ruff configuration | Single source of truth for lint/format rules |
 
 ## Components
 
 ### Component 1: CI workflow file
 
-**Purpose:** A single `.github/workflows/ci.yml` defining two independent
-`self-hosted` jobs — `lint` and `test`.
-**Estimated size:** Small — one YAML file, ~50–70 lines.
+**Purpose:** `.github/workflows/ci.yml`, defining the `lint`, `test` and `release`
+jobs.
+**Estimated size:** Small — one YAML file (delivered).
 **Interfaces:**
-- Consumes: `pull_request` events and `push` events on `main`; the registered
-  self-hosted runner; `astral-sh/setup-uv` action; the `cli/` project (`pyproject.toml`,
-  `uv.lock`, tests, source).
-- Exposes: two GitHub status checks (`lint`, `test`) on PRs and `main` commits.
-- Each job: `actions/checkout` → `astral-sh/setup-uv` (pinned, configured for Python
-  3.14) → `uv sync` within `cli/` → the job's check command(s).
+- **Triggers** (`ci.yml:3-10`): every pull request; pushes to `main`; pushes of tags
+  of the form `MAJOR.MINOR.PATCH` or `MAJOR.MINOR.PATCH-<suffix>`.
+- **Runner** (`ci.yml:17-18`): each job runs on a self-hosted runner labelled
+  `self-hosted` and `docker`, inside the `ghcr.io/astral-sh/uv:python3.14-trixie-slim`
+  container. The runner therefore needs network access to pull that image and the
+  packages the jobs install; it has it today.
+- **Each job** installs git in the container, checks out the repository with
+  `actions/checkout@v6`, and runs `uv sync` in `cli/` before its own steps. `lint`
+  and `test` use the action's default shallow checkout, so no test may depend on git
+  history beyond the checked-out commit; only `release` fetches full history
+  (`ci.yml:67-69`). Builds outside a tag use a placeholder package version
+  (`ci.yml:12-13`).
+- **`lint`** (`ci.yml:16-41`): `uv run ruff format --check .` and `uv run ruff check .`
+  in `cli/`, then regenerates `cli/docs/commands.md` with `cli/scripts/gen_docs.sh`
+  and fails, naming the fix, when it differs from the committed file (S-008).
+- **`test`** (`ci.yml:43-55`): `uv run pytest` in `cli/`.
+- **`release`** (`ci.yml:57-96`): runs only for a tag and after `lint` and `test`
+  pass, with `contents: write` permission. It maps the tag to a PEP 440 version (a
+  `-` suffix becomes a `+` local version), builds the wheel and source distribution
+  with `uv build`, regenerates `commands.md`, and publishes a GitHub Release named
+  after the tag, with generated release notes and the wheel, source distribution and
+  `commands.md` attached. It commits nothing.
+- **Exposes:** `lint` and `test` status checks on pull requests and `main` commits.
 
-### Component 2: Ruff tooling adoption
+### Component 2: Ruff tooling
 
-**Purpose:** Introduce Ruff as the project's formatter and linter and bring the
-existing codebase into compliance.
-**Estimated size:** Small-to-medium — a dependency addition plus a `[tool.ruff]`
-config block, then a mechanical reformat whose diff size depends on how far current
-code drifts from Ruff defaults.
-**Interfaces:**
-- Adds `ruff` to `[dependency-groups] dev` in `cli/pyproject.toml`.
-- Adds a `[tool.ruff]` section: `target-version` aligned with `requires-python`
-  (Python 3.14), a line length, and an explicit lint rule selection (start from
-  Ruff's default `E`/`F` plus a small, agreed set; exact rules are an
-  implementation detail to be pinned during the task, `[TODO]`).
-- A one-time `ruff format` + `ruff check --fix` pass over `cli/`, committed
-  alongside the workflow so `ruff format --check` / `ruff check` pass on the first
-  CI run.
+**Purpose:** Ruff is the project's formatter and linter, and `cli/` complies with it.
+**Estimated size:** Small (delivered).
+**Interfaces** (`cli/pyproject.toml:47-60`):
+- `ruff` is in the `dev` dependency group.
+- Ruff targets Python 3.14, matching `requires-python`, with a line length of 88.
+- The lint rule selection is `E`, `F` and `I` (pycodestyle errors, Pyflakes, import
+  sorting), with `E501` (line too long) ignored, so line length is left to the
+  formatter.
 
 ## Workflow
 
@@ -130,100 +140,59 @@ Developer pushes a branch and opens a PR (or a commit lands on main)
   ↓
 GitHub dispatches ci.yml to the self-hosted runner
   ↓
-lint job and test job each: checkout → setup-uv → uv sync
+lint and test jobs each: container → checkout → uv sync
   ↓
-lint: ruff format --check + ruff check        test: uv run pytest
+lint: ruff format --check + ruff check + commands.md drift check
+test: uv run pytest
   ↓
 Each job reports an independent pass/fail status check
   ↓
 On failure: developer fixes locally and re-pushes (CI never auto-fixes)
-On success: both checks green — human Gate / integrate proceeds as before
+On success: both checks green — human review proceeds as before
+
+★ Human pushes a version tag
+  ↓
+lint and test run as above; on success release builds and publishes the GitHub Release
 ```
 
 ## Configuration
 
-```yaml
-# .github/workflows/ci.yml  (shape — exact pinned action versions resolved in the task)
-name: CI
+**Self-hosted runner**
+- **What must exist:** a runner registered for the repository with the `self-hosted`
+  and `docker` labels.
+- **Where it lives:** the repository's GitHub Actions runner settings.
+- **Constraints:** must run job containers and reach `ghcr.io` and the package mirrors
+  the jobs install from.
+- **Missing-value behaviour:** jobs stay queued and no check reports.
 
-on:
-  pull_request:
-  push:
-    branches: [main]
-
-jobs:
-  lint:
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5      # provisions uv; installs Python 3.14
-        with:
-          python-version: "3.14"
-      - name: Install dependencies
-        run: uv sync
-        working-directory: cli
-      - name: Ruff format check
-        run: uv run ruff format --check .
-        working-directory: cli
-      - name: Ruff lint
-        run: uv run ruff check .
-        working-directory: cli
-
-  test:
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-        with:
-          python-version: "3.14"
-      - name: Install dependencies
-        run: uv sync
-        working-directory: cli
-      - name: Run tests
-        run: uv run pytest
-        working-directory: cli
-```
-
-```toml
-# cli/pyproject.toml additions (shape)
-
-[dependency-groups]
-dev = [
-    "pytest>=8",
-    "typer-cli>=0.24.0",
-    "ruff>=0.6",            # exact floor pinned in the task
-]
-
-[tool.ruff]
-target-version = "py314"
-line-length = 88            # confirm during implementation
-
-[tool.ruff.lint]
-select = ["E", "F"]         # [TODO] confirm the full rule selection
-```
+**Release permission**
+- **What must exist:** `contents: write` for the release job only.
+- **Where it lives:** the job's `permissions` in the workflow file.
+- **Constraints:** no other job is granted write permission.
+- **Missing-value behaviour:** publishing the Release fails; nothing else is affected.
 
 ## Implementation Order
 
-| Phase | What | Depends On |
-|---|---|---|
-| 1 | Add Ruff to `cli/pyproject.toml` dev deps + `[tool.ruff]` config block; run the one-time `ruff format` + `ruff check --fix` pass over `cli/` and commit the result | Nothing |
-| 2 | Add `.github/workflows/ci.yml` with the `lint` and `test` jobs | Phase 1 (so `lint` is green on first run) |
-| 3 | Verify on a real pull request that both `lint` and `test` checks appear, run on the self-hosted runner, and pass | Phase 2 |
+All phases are delivered: Ruff adoption with the one-time formatting pass, the
+workflow with `lint` and `test`, and verification on a real pull request. The
+generated-docs drift check and the `release` job were added to the workflow later
+(see the Amendment Log). Later changes follow the amendment flow.
 
 ## Open Questions
 
-- `[TODO]` Exact Ruff lint rule selection beyond the `E`/`F` defaults — pin during
-  Phase 1 so the one-time fix pass and CI agree.
-- `[TODO]` Pinned versions for `astral-sh/setup-uv` and `actions/checkout` — resolve
-  to current major versions during Phase 2.
-- `[TODO]` Confirm the self-hosted runner has outbound network access for
-  `setup-uv` to fetch `uv` and Python 3.14; if it is air-gapped, Phase 2 needs an
-  alternative provisioning step.
+None. The three questions left open at approval are answered from the repository
+(CR-003):
+
+- **Ruff rule selection:** `E`, `F`, `I`, ignoring `E501` (`cli/pyproject.toml:58-60`).
+- **Pinned action versions:** `actions/checkout@v6`; `uv` comes from the
+  `ghcr.io/astral-sh/uv:python3.14-trixie-slim` container instead of
+  `astral-sh/setup-uv` (`.github/workflows/ci.yml:18,22`).
+- **Runner network access:** the runner pulls the container image from `ghcr.io` and
+  installs git with `apt-get` in every job (`.github/workflows/ci.yml:18,21`), so it
+  has outbound network access.
 
 ## Amendment Log
 
-<!-- Optional. Use when an approved spec is amended after tasks are in flight.
 | Date | What changed | Why | Affected tasks |
 |------|-------------|-----|----------------|
-| YYYY-MM-DD | Description of change | Reason for amendment | T-XXX, T-YYY |
--->
+| 2026-10-20 | Moved out of `specs/archive/` as S-010 (was a duplicate `S-001`). The workflow contract now matches `.github/workflows/ci.yml`: version-tag triggers; jobs in the `uv` Python 3.14 container on the self-hosted docker runner; `actions/checkout@v6`; the `commands.md` drift check in `lint` (the exclusion of that check is removed); the `release` job (`contents: write`, publishes a GitHub Release, commits nothing); shallow checkout for `lint` and `test`. Ruff selection pinned to `E`, `F`, `I` ignoring `E501`. Resolved the three open questions from `cli/pyproject.toml` and `.github/workflows/ci.yml`; the embedded YAML and TOML became prose. Driven by CR-003 §10 and Architecture Consistency Review finding F5. | The spec was still `approved` in the archive and the only written contract for CI, but its exclusions, triggers and runner setup no longer matched the workflow. | None in flight |
