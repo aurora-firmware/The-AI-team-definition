@@ -1,6 +1,7 @@
 # agents configuration
 .codex
 .claude
+.agents
 .pi
 .ai-team.toml
 

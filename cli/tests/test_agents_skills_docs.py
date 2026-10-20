@@ -28,3 +28,16 @@ def test_readme_lists_agents_folder_beside_claude_and_codex() -> None:
 @pytest.mark.parametrize("doc_path", [CUSTOMIZATION_GUIDE, SETUP_GUIDE, README])
 def test_doc_does_not_name_legacy_codex_skills_folder(doc_path: Path) -> None:
     assert ".codex/skills" not in doc_path.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    "relative_path",
+    [
+        ".gitignore",
+        "CLAUDE.md",
+        "AGENTS.md",
+        "ai-process/architecture/system-overview.md",
+    ],
+)
+def test_repo_guidance_names_agents_folder(relative_path: str) -> None:
+    assert ".agents" in (REPO_ROOT / relative_path).read_text(encoding="utf-8")
