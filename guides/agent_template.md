@@ -78,7 +78,7 @@ Mapping rules:
 ---
 name: agent-name
 description: Role-specific description that tells the caller exactly when to use this agent and what inputs to provide. Use for [specific workflow point]. Caller must provide [artifact/path/branch/context].
-tools: Read, Glob, Grep
+tools: Read, Glob, Grep, Bash
 model: claude-sonnet-4-6
 skills: skill-one skill-two
 ---
@@ -199,10 +199,12 @@ Start with the narrowest viable tool set. Broader access is harder to reason abo
 
 | Role shape | Tool frontmatter |
 |---|---|
-| Read-only research / structural review | `Read, Glob, Grep` |
+| Read-only research / structural review | `Read, Glob, Grep, Bash` |
 | Read plus git / test inspection | `Read, Glob, Grep, Bash` |
-| Writes verdicts or planning documents | `Read, Glob, Grep, Write, Edit` |
+| Writes verdicts or planning documents | `Read, Glob, Grep, Write, Edit, Bash` |
 | Writes source and test code | `Read, Glob, Grep, Write, Edit, Bash` |
+
+Every role that uses tracker skills requires `Bash` to invoke the `ai-team` CLI. `Folder Scope` defines its permitted writes.
 
 If a role has broad tools for platform reasons, restate path restrictions in `Folder Scope` and `Quality Bar`.
 
