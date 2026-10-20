@@ -413,3 +413,30 @@ def test_usage_md_documents_check_layout_exit_behavior_and_no_repair():
     assert "does not repair" in lower or "never repairs" in lower, (
         "usage.md must state that check-layout does not repair repositories"
     )
+
+
+def test_usage_md_documents_spec_new_overview():
+    """usage.md must document the spec new --overview option."""
+    assert "ai-team spec new --overview" in _content()
+
+
+def test_usage_md_documents_missing_overview_hint():
+    """usage.md must describe the advisory, stderr-only missing-S-000 hint and its commands."""
+    content = _content()
+    lower = content.lower()
+    assert "no system overview" in lower, (
+        "usage.md must describe the missing-S-000 hint"
+    )
+    assert "stderr" in lower, "usage.md must say the hint is written to stderr"
+    assert "advisory" in lower, "usage.md must say the hint is advisory"
+    for command in ("validate", "report", "status"):
+        assert f"`{command}`" in content, (
+            f"usage.md must name {command} as showing the hint"
+        )
+
+
+def test_usage_md_documents_task_new_s000_refusal():
+    """usage.md must state that task new --spec S-000 is refused."""
+    content = _content()
+    assert "task new" in content and "--spec S-000" in content
+    assert "refused" in _lower()
