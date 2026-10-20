@@ -106,7 +106,7 @@ If a clear baseline test command is documented, run it.
 
 Select the highest-priority task whose dependencies are all satisfied:
 1. **Priority order:** critical → high → medium → low (read from task frontmatter `priority` field)
-2. **Dependency check:** for each candidate task, open the file at the `path` reported by `ai-team show T-NNN --json` and read the task IDs listed under its `## Dependencies` section (lines of the form `- `T-NNN` — reason`). Confirm each of those tasks has status `completed` (`ai-team list tasks --state completed`). A `- None` entry means the task has no dependencies.
+2. **Dependency check:** for each candidate task, open the file at the `path` reported by `ai-team show T-NNN --json` and read the task IDs listed under its `## Dependencies` section (lines of the form ``- `T-NNN` — reason``). Confirm each of those tasks has status `completed` (`ai-team list tasks --state completed`). A `- None` entry means the task has no dependencies.
 3. **Tiebreak:** oldest `created` date first
 
 If no task has all dependencies satisfied, stop and report which tasks are waiting and what they are waiting for.

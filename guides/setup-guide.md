@@ -132,7 +132,7 @@ Start your `CLAUDE.md` with this structure and customize the first section:
 
 ## How to Work Here
 
-- Use TEMPLATE files when creating new documents.
+- Use the `ai-team` commands (for example `ai-team task new`) to create tracker artifacts.
 - All documents use Markdown with YAML frontmatter.
 - Tasks, bugs, and change-requests live in the local tracker (`ai-team tracker path`), outside git. Change their state only through `ai-team task|bug|change-request` commands; never move or commit their files.
 - Architecture decisions require ADRs in `ai-team/decisions/`.
