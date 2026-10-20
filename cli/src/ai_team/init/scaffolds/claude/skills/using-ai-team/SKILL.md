@@ -24,6 +24,7 @@ Before the first action of a request — including a clarifying question, a code
 | Situation | Skill to invoke first |
 |---|---|
 | A feature request or problem needs a design before anything is built | `brainstorm`, then `new-spec` |
+| The project has no S-000, or is being adopted into the ai-team process | `new-system-overview` |
 | A small change does not warrant a full spec | `change-request` |
 | A spec, ADR, or change-request was created or changed | `architecture-consistency-review` |
 | An approved spec needs a task breakdown | `spec-breakdown`, then `spec-breakdown-review` |
