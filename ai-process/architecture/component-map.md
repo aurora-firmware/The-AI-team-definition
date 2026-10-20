@@ -12,8 +12,8 @@ This document maps the ai-process roles, procedures, processes, and gates to the
 
 | Role | Purpose | Procedures Used | Receives From | Hands Off To | Implementation |
 |---|---|---|---|---|---|
-| Planner | Creates specifications with the human, then decomposes approved specifications into executable tasks | Brainstorm; Spec Breakdown | Human | Human (approval), Local tracker (`planned` → `pending` tasks), Architect (Gate 2; Architecture Consistency Review for created/changed specs and change-requests) | `.claude/agents/planner.md` |
-| Architect | Owns structural review: Gate 2 preflight, architectural consistency, escalation analysis, and ADR decisions | Spec Breakdown Review; Architecture Consistency Review; Escalation Review; New ADR | Planner (Gate 2; Architecture Consistency Review for created/changed specs and change-requests), Any blocked role | Planner (revision requests, consistency findings), Requesting role (directives), Human (escalation), Decision Log | `.claude/agents/architect.md` |
+| Planner | Creates specifications with the human, then decomposes approved specifications into executable tasks; reads S-000 (the system overview) at session start | New System Overview; Brainstorm; Spec Breakdown | Human | Human (approval), Local tracker (`planned` → `pending` tasks), Architect (Gate 2; Architecture Consistency Review for created/changed specs and change-requests) | `.claude/agents/planner.md` |
+| Architect | Owns structural review: Gate 2 preflight, architectural consistency, escalation analysis, and ADR decisions; reads S-000 (the system overview) at session start, checking specs against it | Spec Breakdown Review; Architecture Consistency Review; Escalation Review; New ADR | Planner (Gate 2; Architecture Consistency Review for created/changed specs and change-requests), Any blocked role | Planner (revision requests, consistency findings), Requesting role (directives), Human (escalation), Decision Log | `.claude/agents/architect.md` |
 | Developer | Implements tasks and fixes bugs; diagnoses bugs before changing production code | TDD; Debug | Development Loop or Bug-Fix Loop | Reviewer | `.claude/agents/developer.md` |
 | Reviewer | Reviews task acceptance, bug diagnosis, targeted fixes, verification evidence, and code quality | Code Review | Developer (via Development Loop or Bug-Fix Loop) | Development Loop or Bug-Fix Loop (verdict in task or bug file) | `.claude/agents/reviewer.md` |
 | Integrator | Resolves merge conflicts; supports task and bug integration into target branches and human-controlled final merge | Integrate; Merge Conflicts | Development Loop or Bug-Fix Loop (integration), Human (manual merges), Integrate (conflicts) | `dev-agent`, preserved task branch, or `main` branch | `.claude/agents/integrator.md` |
@@ -22,6 +22,7 @@ This document maps the ai-process roles, procedures, processes, and gates to the
 
 | Procedure | Purpose | Used By | Implementation |
 |---|---|---|---|
+| New System Overview | Create the S-000 system overview that later specs are checked against; never broken down into tasks | Planner | `.claude/skills/new-system-overview/SKILL.md` |
 | Brainstorm | Explore the request, alternatives, constraints, and prior decisions before writing a specification | Planner | `.claude/skills/brainstorm/SKILL.md` |
 | Change Request (intake) | Capture smaller desired changes and possible spec amendments without the full brainstorm-to-spec flow; produces tasks and amendments as needed | Planner, Human | `ai-team change-request new`; template at `cli/src/ai_team/templates/change-request.md`; artifacts stored in the local tracker |
 | Spec Breakdown | Decompose an approved specification into atomic tasks with dependencies, acceptance criteria, and verification | Planner | `.claude/skills/spec-breakdown/SKILL.md` |
@@ -81,6 +82,7 @@ Action skills that create or report on project artifacts invoke `ai-team` CLI co
 | Skill | CLI Command(s) | Purpose |
 |---|---|---|
 | `new-spec` | `ai-team spec new` | Create a new specification document |
+| `new-system-overview` | `ai-team spec new --overview` | Create the S-000 system overview specification |
 | `new-task` | `ai-team task new` | Create a new task in the local tracker |
 | `new-bug` | `ai-team bug new` | Create a new bug report in the local tracker |
 | `new-adr` | `ai-team adr new` | Create a new architecture decision record in `ai-team/decisions/` |

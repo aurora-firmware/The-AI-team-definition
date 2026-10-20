@@ -63,6 +63,19 @@ Feature Request (human)          Change Request (human)
 
 ## Phase Details
 
+### 0. System Overview (S-000)
+
+**Role:** Planner.
+**Procedure:** `new-system-overview`.
+**Input:** The project's purpose, architecture, and constraints, as described by the human.
+**Output:** The system overview specification, S-000, in `ai-team/specs/`.
+
+For a new project the Planner proposes `new-system-overview` before brainstorming the first feature, so every later spec is written against a shared description of the system.
+The step is optional for projects that already have specs; the human may add S-000 at any time.
+It is also the entry point for brownfield adoption: a project with existing code uses S-000 to record the system as it stands before new features are specified.
+
+S-000 describes the system as a whole and is never broken down into tasks. Feature specs carry the work; S-000 is the reference they are checked against.
+
 ### 1. Brainstorm
 
 **Role:** Planner (creative mode).
