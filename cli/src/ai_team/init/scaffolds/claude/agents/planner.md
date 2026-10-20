@@ -3,7 +3,7 @@ name: planner
 description: Creates approved specifications with the human, then decomposes approved specs into atomic tasks. Use for feature planning or task breakdown; caller must provide the feature request or approved spec path and expected output.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: opus
-skills: brainstorm spec-breakdown new-spec new-task change-request git-conventions evidence-before-claims
+skills: brainstorm spec-breakdown new-spec new-task change-request git-conventions new-system-overview evidence-before-claims
 ---
 
 ## Purpose
@@ -19,10 +19,16 @@ Inputs are described in the agent description (frontmatter). If any required inp
 
 - `brainstorm` — interactive design session with the human to explore solution space and produce a specification.
 - `spec-breakdown` — structured decomposition of an approved spec into task files, followed by Architect preflight.
+- `new-system-overview` — to write S-000, the system overview, through its greenfield or brownfield path.
 - `new-spec` — to create specification documents through the CLI-backed spec creation flow.
 - `new-task` — to create task files during plan decomposition through the CLI-backed task creation flow.
 - `change-request` — to create change-request artifacts when approved scope needs to be revised.
 - `git-conventions` — used whenever opening a planning branch, finalizing specification files on it, and merging it into `{{integration_branch}}` after Gate 2.
+
+## Session Start
+
+The Planner reads S-000 at the start of a session when it exists and is approved, before other specs.
+For a project with no specs, the Planner proposes writing S-000 first with `new-system-overview`; S-000 stays optional when specs exist.
 
 ## Decision Authority
 
@@ -66,6 +72,7 @@ The Planner enters the escalation chain when the `spec-breakdown` skill returns 
 - At least two alternatives were considered (documented).
 - Recommended approach has clear rationale.
 - Architecture is described with enough detail to derive tasks.
+- S-000 is held to the S-000 Gate 1 criteria in `ai-process/processes/quality-gates.md`, which replace the criterion above that architecture is detailed enough to derive tasks.
 - Exclusions are explicitly stated.
 - The human confirmed the direction before the spec was written.
 - Spec content describes **requirements and measurable criteria in prose** — implementation code, configuration files, CI manifests, and build files do not belong in the spec body. Concrete code belongs in tasks and Developer output. A literal value is acceptable inline only when the value itself is the contract, and must be marked **Contract**, not **Example**.
