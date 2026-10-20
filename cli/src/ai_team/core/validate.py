@@ -220,7 +220,7 @@ def spec_reference_aliases(root: ProjectRoot, reference: str) -> set[str]:
     return {reference, wanted}
 
 
-def _references_overview(root: ProjectRoot, reference: str) -> bool:
+def references_overview(root: ProjectRoot, reference: str) -> bool:
     """Return True when *reference* names S-000, directly or through a spec alias."""
     return any(
         is_overview_reference(alias)
@@ -298,7 +298,7 @@ def validate_project(
             )
             _check_stateful_filename(findings, root, path, task.id)
             _check_status(findings, root, path, "Task", task.status, TASK_STATUSES)
-            if task.spec and _references_overview(root, task.spec):
+            if task.spec and references_overview(root, task.spec):
                 findings.append(
                     _finding(
                         path,
