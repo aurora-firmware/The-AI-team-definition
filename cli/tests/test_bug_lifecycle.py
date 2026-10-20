@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from ai_team.core.fs import read_artifact
+from ai_team.core.fs import read_artifact, update_status
 from ai_team.core.models import parse_bug
 
 BUG_TEMPLATE = """\
@@ -131,3 +131,36 @@ def test_bug_lifecycle_command_reports_not_found_and_names_tracker_folder(
     assert result.exit_code != 0
     assert "not found" in result.stderr.lower()
     assert ".ai-team/tracker/bugs" in result.stderr
+
+
+WRAPPED_TITLE_BUG = (
+    "---\n"
+    'id: "B-008"\n'
+    "title: Frontmatter titles longer than the default YAML width must stay on one \n"
+    "  line for grep and whitespace linters to read them whole\n"
+    "severity: low\n"
+    "status: open\n"
+    "created: 2026-05-10\n"
+    "---\n"
+    "\n"
+    "## Summary\n"
+    "\n"
+    "Bug body.\n"
+)
+
+
+def test_update_status_rewrites_wrapped_frontmatter_title_on_one_line(tmp_path):
+    """A status change rewrites a previously wrapped title as one line with no trailing space."""
+    path = tmp_path / "B-008-wrapped-title.md"
+    path.write_text(WRAPPED_TITLE_BUG, encoding="utf-8")
+
+    update_status(path, "in-progress")
+
+    rewritten = path.read_text(encoding="utf-8")
+    title_line = rewritten.split("\n")[2]
+    assert title_line == (
+        "title: Frontmatter titles longer than the default YAML width must stay on one "
+        "line for grep and whitespace linters to read them whole"
+    )
+    assert parse_bug(path).status == "in-progress"
+    assert all(line == line.rstrip() for line in rewritten.split("\n")[:8])
