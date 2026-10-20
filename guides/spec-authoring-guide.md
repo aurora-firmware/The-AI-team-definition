@@ -155,6 +155,22 @@ A phase is not a task. The `spec-breakdown` skill produces the actual tasks from
 
 **Recipe:** leave the table empty when the spec is first written. Add rows only after Gate 1 approval, when scope changes while tasks are in flight. Each row: date, what changed, why, affected tasks.
 
+## The system overview spec (S-000)
+
+S-000 is the canonical project-overview spec: one document that says what the project is, who it serves, and which components make it up. It is written in plain language for a reader who has never seen the project. It has seven sections, in this order:
+
+1. **Purpose** — one short paragraph: what the project is and the outcome it exists to deliver.
+2. **Users** — who uses the system, one line per kind of user, naming what each needs from it.
+3. **Pain points** — the concrete problems those users have today that the project removes.
+4. **Use cases** — the main things a user does with the system, each as one short scenario from the user's point of view.
+5. **Solution overview** — how the system addresses the pain points, in a few paragraphs, without naming technologies.
+6. **Components** — the parts the system is divided into. Each component entry gives its name, its owned responsibility (what it is for), its boundary (what it is not responsible for), and the other components it works with.
+7. **Project exclusions** — what the project deliberately does not do, each with a one-line reason.
+
+S-000 contains no technology choices, interface definitions, configuration, implementation order, or per-component status. Those belong in feature specs, ADRs, and the tracker.
+
+**Boundary rule:** S-000 owns the decomposition — which components exist and what each is for. A spec owns the contract of one component or feature. A spec's Purpose names the S-000 component it covers.
+
 ## How to write measurable success criteria
 
 A criterion is **measurable** when an outside party can run a check (a command, an observation, a metric query) and get an unambiguous pass or fail. The Reviewer must be able to run this check.
