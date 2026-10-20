@@ -19,19 +19,35 @@ Failed because: [the specific reason — test output, scope mismatch, contradict
 Question: [specific guidance needed to continue within the approved specification]"""
 
 
+PLANNER_REQUIRED_SKILLS = frozenset(
+    {
+        "brainstorm",
+        "spec-breakdown",
+        "new-spec",
+        "new-task",
+        "change-request",
+        "git-conventions",
+    }
+)
+
+
 def _agent_texts(role: str) -> tuple[str, str]:
     source = (CLAUDE_SOURCE_ROOT / f"{role}.md").read_text(encoding="utf-8")
     scaffold = (CLAUDE_SCAFFOLD_ROOT / f"{role}.md").read_text(encoding="utf-8")
     return source, scaffold
 
 
+def _frontmatter_skills(text: str) -> set[str]:
+    """Return the skill names on the frontmatter `skills:` line, in any order."""
+    skills_lines = [line for line in text.splitlines() if line.startswith("skills:")]
+    assert len(skills_lines) == 1, "expected exactly one `skills:` frontmatter line"
+    return set(skills_lines[0].removeprefix("skills:").split())
+
+
 def test_planner_keeps_change_request_in_skill_surfaces() -> None:
     """AC-1: planner lists change-request in frontmatter and the skill summary."""
     for text in _agent_texts("planner"):
-        assert (
-            "skills: brainstorm spec-breakdown new-spec new-task change-request git-conventions"
-            in text
-        )
+        assert PLANNER_REQUIRED_SKILLS <= _frontmatter_skills(text)
         assert "- `change-request`" in text
 
 
