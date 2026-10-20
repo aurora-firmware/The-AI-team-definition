@@ -131,7 +131,8 @@ def _ensure_tracker(target_root: Path, tracker_dir: str, dry_run: bool) -> None:
     )
 
     if dry_run:
-        typer.echo(f"WOULD CREATE: {tracker}")
+        if not tracker.exists():
+            typer.echo(f"WOULD CREATE: {tracker}")
         if needs_rule:
             typer.echo(f"WOULD UPDATE: {gitignore}")
         return
@@ -181,6 +182,26 @@ def _copy_root_guidance_file(
     _write_rendered(source, destination, settings)
 
 
+def _root_guidance_action(
+    destination: Path,
+    force: bool,
+    create_root_guidance: bool,
+    no_interactive: bool,
+) -> str:
+    """Decide what ``init`` does with one root guidance file.
+
+    Returns ``"skip"``, ``"write"`` or ``"prompt"``. The real run and the dry
+    run both use this, so the dry run cannot disagree with the real run.
+    """
+    if destination.exists() and not force:
+        return "skip"
+    if create_root_guidance:
+        return "write"
+    if no_interactive:
+        return "skip"
+    return "prompt"
+
+
 def _handle_root_guidance(
     target_root: Path,
     sources_root: Path,
@@ -196,20 +217,18 @@ def _handle_root_guidance(
     for filename in _ROOT_GUIDANCE_FILES:
         destination = target_root / filename
         source = sources_root / "root" / filename
-
-        # AC-5: never replace an existing file unless force is active
-        if destination.exists() and not force:
-            continue
+        action = _root_guidance_action(
+            destination, force, create_root_guidance, no_interactive
+        )
 
         if dry_run:
-            typer.echo(f"WOULD WRITE: {destination}")
-            continue
-
-        if create_root_guidance:
-            # The flag answers the prompt in both modes
+            if action == "write":
+                typer.echo(f"{_would_write_verb(destination, force)}: {destination}")
+            elif action == "prompt":
+                typer.echo(f"WOULD PROMPT: {destination}")
+        elif action == "write":
             _copy_root_guidance_file(source, destination, force, settings)
-        elif not no_interactive:
-            # AC-1 / AC-2: interactive — ask the user
+        elif action == "prompt":
             create = typer.confirm(
                 f"Create root {filename} from the starter template?",
                 default=True,
@@ -220,6 +239,10 @@ def _handle_root_guidance(
                 declined = True
 
     return declined
+
+
+def _would_write_verb(destination: Path, force: bool) -> str:
+    return "WOULD OVERWRITE" if destination.exists() and force else "WOULD WRITE"
 
 
 @app.callback()
@@ -304,10 +327,17 @@ def init_command(
             destination for destination in planned_destinations if destination.exists()
         ]
 
+        if collisions and not force:
+            typer.echo(
+                "Refusing to overwrite existing files without --force:\n"
+                + "\n".join(str(path) for path in collisions),
+                err=True,
+            )
+            raise typer.Exit(code=1)
+
         if dry_run:
             for destination in planned_destinations:
-                typer.echo(f"WOULD WRITE: {destination}")
-            # Also show root guidance would-write entries in dry-run
+                typer.echo(f"{_would_write_verb(destination, force)}: {destination}")
             _handle_root_guidance(
                 target_root,
                 sources_path,
@@ -318,16 +348,6 @@ def init_command(
                 settings=settings,
             )
             _ensure_tracker(target_root, tracker_dir, dry_run=True)
-
-        if collisions and not force:
-            typer.echo(
-                "Refusing to overwrite existing files without --force:\n"
-                + "\n".join(str(path) for path in collisions),
-                err=True,
-            )
-            raise typer.Exit(code=1)
-
-        if dry_run:
             return
 
         for source, destination in planned:

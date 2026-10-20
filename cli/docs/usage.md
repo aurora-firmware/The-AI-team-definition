@@ -79,7 +79,7 @@ ai-team init [PATH] [OPTIONS]
 | Flag | Description |
 |---|---|
 | `--tools TEXT` | Comma-separated tool names to scaffold (e.g. `claude`, `codex`, `all`, `none`). |
-| `--dry-run` | Print what would be written without touching the filesystem. |
+| `--dry-run` | Print what the real run with the same flags would do, without touching the filesystem. Lines are `WOULD WRITE` (new file), `WOULD OVERWRITE` (existing file, with `--force`), `WOULD CREATE` (a missing tracker folder), `WOULD UPDATE` (a `.gitignore` missing the tracker rule) and `WOULD PROMPT` (a root `CLAUDE.md` or `AGENTS.md` the interactive run would ask about). Root guidance files the real run would skip are not listed, and existing files without `--force` give only the refusal. |
 | `--force` | Overwrite existing files. Without this flag the command refuses to overwrite. On a repository that already has `.ai-team.toml`, the configured `[project] dir`, `[tracker] dir`, `[git] integration_branch`, and any other tables are kept, so `--force` only refreshes the generated agents and skills. Every existing file that is replaced is reported as `OVERWROTE: <path>`. |
 | `--project-dir TEXT` | Artifact folder, at any depth (e.g. `docs/ai-team`). Defaults to the configured `[project] dir`, else `ai-team`. Must be relative and contain no `..`. |
 | `--integration-branch TEXT` | Branch that task, bug, and planning work integrates into. Defaults to the configured `[git] integration_branch`, else `dev-agent`. |
