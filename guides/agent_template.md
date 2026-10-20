@@ -224,8 +224,8 @@ Rationale: thresholds change as the procedure changes. Keeping them in one place
 
 | Agent | Model | Tools | Main skills |
 |---|---|---|---|
-| Planner | Opus | `Read, Write, Edit, Glob, Grep` | `brainstorm`, `spec-breakdown`, `new-spec`, `new-task` |
-| Architect | Opus | `Read, Write, Edit, Glob, Grep` | `spec-breakdown-review`, `escalation-review`, `new-adr` |
+| Planner | Opus | `Read, Write, Edit, Glob, Grep, Bash` | `brainstorm`, `spec-breakdown`, `new-spec`, `new-task` |
+| Architect | Opus | `Read, Write, Edit, Glob, Grep, Bash` | `spec-breakdown-review`, `escalation-review`, `new-adr` |
 | Developer | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `tdd`, `debug`, `new-bug` |
 | Reviewer | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `code-review`, `new-bug` |
 | Integrator | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `integrate`, `merge-conflicts` |

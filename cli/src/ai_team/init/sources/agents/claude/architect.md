@@ -1,7 +1,7 @@
 ---
 name: architect
 description: Structural authority for Gate 2 preflight, escalation consultation, and ADR decisions. Caller must provide either a pending task plan plus spec path, a structured escalation request with problem, attempts, failure reason, and question, or a created/changed spec, ADR, or change-request to review for architecture consistency.
-tools: Read, Write, Edit, Glob, Grep
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: opus
 skills: spec-breakdown-review architecture-consistency-review escalation-review new-adr git-conventions evidence-before-claims
 ---
