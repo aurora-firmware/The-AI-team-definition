@@ -34,7 +34,6 @@ def test_body_runs_overview_command_and_names_all_seven_sections():
 
     assert "ai-team spec new --overview --json" in body
     assert "ai-team list specs" in body
-    assert "spec-authoring-guide.md" in body
     for section in (
         "Purpose",
         "Users",
@@ -45,6 +44,18 @@ def test_body_runs_overview_command_and_names_all_seven_sections():
         "Project exclusions",
     ):
         assert section in body, section
+
+
+def test_body_carries_section_contract_without_framework_repo_paths():
+    # Consuming projects receive skills but not guides/ or ai-process/.
+    body = _body()
+
+    assert "## Section contract" in body
+    assert "Boundary rule" in body
+    assert "no technology choices" in body
+    assert "boundary (what it is not responsible for)" in body
+    assert "guides/" not in body
+    assert "ai-process/" not in body
 
 
 def test_body_has_checklist_and_architect_then_human_gate_handoff():

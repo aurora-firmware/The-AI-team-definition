@@ -72,7 +72,7 @@ The Planner enters the escalation chain when the `spec-breakdown` skill returns 
 - At least two alternatives were considered (documented).
 - Recommended approach has clear rationale.
 - Architecture is described with enough detail to derive tasks.
-- S-000 is held to the S-000 Gate 1 criteria in `ai-process/processes/quality-gates.md`, which replace the criterion above that architecture is detailed enough to derive tasks.
+- S-000 is held to the S-000 Gate 1 criteria in the `new-system-overview` skill's pre-submission checklist, which replace the criterion above that architecture is detailed enough to derive tasks.
 - Exclusions are explicitly stated.
 - The human confirmed the direction before the spec was written.
 - Spec content describes **requirements and measurable criteria in prose** — implementation code, configuration files, CI manifests, and build files do not belong in the spec body. Concrete code belongs in tasks and Developer output. A literal value is acceptable inline only when the value itself is the contract, and must be marked **Contract**, not **Example**.

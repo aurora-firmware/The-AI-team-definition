@@ -14,7 +14,8 @@ says what the project is, who it serves, and which components make it up.
 Write for a reader who has never seen the project. Do not include technology
 choices, interface definitions, configuration, implementation order, or
 per-component status. Those belong in feature specs, ADRs, and the tracker.
-See the Spec Authoring Guide, section "The system overview spec (S-000)".
+Boundary rule: S-000 owns the decomposition — which components exist and
+what each is for. A spec owns the contract of one component or feature.
 -->
 
 ## Purpose

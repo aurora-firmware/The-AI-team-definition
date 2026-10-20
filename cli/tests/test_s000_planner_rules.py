@@ -75,7 +75,9 @@ def test_planner_quality_bar_holds_s000_to_gate_1_criteria_replacing_task_deriva
     text = _flat(path)
 
     assert "S-000 Gate 1 criteria" in text
-    assert "ai-process/processes/quality-gates.md" in text
+    assert "new-system-overview" in text
+    assert "pre-submission checklist" in text
+    assert "ai-process/" not in text
     assert "replace" in text
 
 

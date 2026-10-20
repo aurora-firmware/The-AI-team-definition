@@ -9,7 +9,21 @@ allowed-tools: Read, Write, Bash
 
 Create the S-000 system overview spec with `ai-team spec new --overview --json`, then fill its seven sections by interviewing the human. S-000 says what the project is, who it serves, and which components make it up. It is written in plain language for a reader who has never seen the project.
 
-The section contract is owned by `guides/spec-authoring-guide.md` (section "The system overview spec (S-000)"). Read it before drafting and follow it; do not restate it here.
+## Section contract
+
+S-000 has seven sections, in this order:
+
+1. **Purpose** — one short paragraph: what the project is and the outcome it exists to deliver.
+2. **Users** — who uses the system, one line per kind of user, naming what each needs from it.
+3. **Pain points** — the concrete problems those users have today that the project removes.
+4. **Use cases** — the main things a user does with the system, each as one short scenario from the user's point of view.
+5. **Solution overview** — how the system addresses the pain points, in a few paragraphs, without naming technologies.
+6. **Components** — the parts the system is divided into. Each component entry gives its name, its owned responsibility (what it is for), its boundary (what it is not responsible for), and the other components it works with.
+7. **Project exclusions** — what the project deliberately does not do, each with a one-line reason.
+
+S-000 contains no technology choices, interface definitions, configuration, implementation order, or per-component status. Those belong in feature specs, ADRs, and the tracker.
+
+**Boundary rule:** S-000 owns the decomposition — which components exist and what each is for. A spec owns the contract of one component or feature. A spec's Purpose names the S-000 component it covers.
 
 ## Input Requirements
 
@@ -26,7 +40,7 @@ The section contract is owned by `guides/spec-authoring-guide.md` (section "The 
 
 3. Run `ai-team spec new --overview --json` and parse the response for `id` (S-000) and `path`.
 
-4. Fill the seven sections in the order the content contract gives: Purpose, Users, Pain points, Use cases, Solution overview, Components, Project exclusions.
+4. Fill the seven sections in the order the **Section contract** (above) gives: Purpose, Users, Pain points, Use cases, Solution overview, Components, Project exclusions.
    Interview the human for:
    - the purpose of the project and the outcome it delivers;
    - who the users are and what each needs;

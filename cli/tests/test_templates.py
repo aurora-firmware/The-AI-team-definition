@@ -175,3 +175,11 @@ def test_authoring_guide_implementations_table_lists_system_overview_surfaces() 
 
     assert "cli/src/ai_team/templates/system-overview.md" in table
     assert "cli/src/ai_team/init/sources/skills/new-system-overview/body.md" in table
+
+
+def test_system_overview_template_points_at_nothing_outside_the_project() -> None:
+    # Consuming projects receive templates but not guides/ or ai-process/.
+    content = load_template("system-overview")
+
+    assert "Spec Authoring Guide" not in content
+    assert "Boundary rule" in content
