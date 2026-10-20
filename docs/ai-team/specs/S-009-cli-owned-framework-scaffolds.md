@@ -1,0 +1,313 @@
+---
+title: CLI-owned framework scaffolds
+version: '0.2'
+status: approved  # draft | review | approved | superseded
+created: '2026-05-14'
+author: planner
+id: S-009
+---
+
+# CLI-owned framework scaffolds
+
+## Purpose
+
+The framework once had several product copies of its agent and skill definitions: the
+repository-root `.claude/` and `.codex/` folders, and the bundled init scaffolds inside
+the `ai-team` CLI package, plus an `ai-process/` snapshot that `ai-team init` could
+export. Copies drift, and the process layer must stay the authoritative documentation
+in this repository.
+
+This specification makes the CLI package the only product source of truth for exported
+framework definitions. A maintainer edits package-owned sources, a generator produces
+the bundled Claude and Codex scaffolds from them, and `ai-team init` writes those
+scaffolds into a consuming project, filling in the project's settings. Repository-root
+tool folders are ordinary local configuration for working on this repository, and
+`ai-process/` is never exported.
+
+The expected outcome: every agent, skill and skill supporting file a consuming project
+receives comes from `cli/src/ai_team/init/sources/`, Claude and Codex skills share one
+body text, and the committed scaffolds always equal a fresh generation from the sources.
+
+## Exclusions
+
+What this specification explicitly does NOT cover:
+
+- **Exporting `ai-process/` by any route.** `init` does not copy it, and there is no
+  `ai-team export ai-process` command.
+- **Generating agents from a structured schema.** Claude and Codex agent definitions
+  remain separate package-owned assets. A future spec may define a richer canonical
+  model for generating agents.
+- **Changing workflow semantics.** The AI-team process, gates, role responsibilities,
+  escalation chain, and work-item lifecycle are owned elsewhere and are unchanged here.
+- **Making repository-root `.claude/`, `.codex/` or `.agents/` generated.** Those
+  folders remain local configuration for this repository. They are not symlinked,
+  generated, or read as product sources.
+- **Filling placeholders when the scaffolds are generated.** `{{project_dir}}` and
+  `{{integration_branch}}` take values from the `init` flags or `.ai-team.toml`, which
+  are not known at generation time. Only `init` fills them in (CR-003).
+- **Exporting arbitrary files from a skill source directory.** Only `body.md`,
+  `metadata.toml` and the `assets/`, `references/` and `scripts/` folders are used;
+  any other file in a source skill directory is not exported (CR-003).
+- **The export paths and the layout check.** The per-tool destination folders are
+  owned by S-003 (level 1 of the layout check) and the tracker by S-006. This spec
+  refers to them rather than restating them.
+
+## Architecture
+
+### Design Principles
+
+1. **CLI package owns exported framework assets.** Anything `ai-team init` writes into a
+   consuming project comes from package-owned data under `cli/src/ai_team/init/`.
+2. **Root tool folders are local configuration.** Repository-root `.claude/`, `.codex/`
+   and `.agents/` are for developing this repository with those tools, not for shipping
+   the framework, and no source or generator reads them.
+3. **Shared skill text, tool-specific headers.** Claude and Codex skills share one
+   procedural body text per skill. Tool-specific frontmatter or header text comes from
+   package-owned metadata, so the body cannot drift between tools.
+4. **Generated output is reproducible.** The committed scaffolds must equal a fresh run
+   of the generator over the committed sources; a source change and its regenerated
+   output are committed together.
+5. **Project settings are filled in at init time.** Generated scaffolds keep their
+   placeholders; `init` is the only step that knows the project's settings.
+6. **No process duplication.** `ai-process/` remains the specification layer in this
+   repository and is not bundled into the CLI init scaffolds.
+7. **Documentation follows ownership.** README, guides, CLI docs, and architecture docs
+   describe the package-owned scaffolding model and name the generator, not root tool
+   folders, as the way exported definitions change.
+
+### System Diagram
+
+```
+Repository root (development workspace)
+  .claude/ .codex/ .agents/  local tool config only, never read by the generator
+  ai-process/                authoritative process specification, not exported
+  cli/
+    scripts/sync_init_scaffolds.py   generator
+    src/ai_team/init/
+      sources/                       maintainers edit here
+        skills/<name>/body.md, metadata.toml, [assets/ references/ scripts/]
+        agents/claude/   agents/codex/
+        project/         project guidance files and .gitignore
+        root/            root CLAUDE.md / AGENTS.md templates
+      scaffolds/                     generated, committed, read by init
+        project/   claude/{agents,skills}/   codex/{agents,skills}/
+
+ai-team init --tools <tools>
+  renders placeholders while copying package scaffolds
+  writes the project directory, the tool export paths (S-003 level 1),
+  the tracker folder (S-006) and .ai-team.toml
+  never writes ai-process/
+```
+
+### Responsibility Separation
+
+| Component | Responsibility | Notes |
+|---|---|---|
+| `cli/src/ai_team/init/sources/` | Canonical package-owned source assets for exported framework definitions. | Shared skill bodies, skill metadata, skill supporting folders, tool-specific agents, project and root guidance templates. |
+| Scaffold generator | Produces the bundled scaffolds from the sources. | `cli/scripts/sync_init_scaffolds.py`; copies, never renders placeholders. |
+| `cli/src/ai_team/init/scaffolds/` | Generated package data consumed by `ai-team init`. | Contains `project/`, `claude/`, and `codex/`; never contains `ai-process/`. Do not edit by hand. |
+| `ai-team init` | Writes the selected tool scaffolds and the project skeleton into a target repository, filling in the project's settings. | Export paths per S-003 level 1; tracker per S-006. |
+| Tests | Enforce that the scaffolds match a fresh generation, that Claude and Codex bodies match, that supporting folders reach both exports, and the `init` contract. | Prevent drift and CLI contract regression. |
+| Documentation | Explains the source-of-truth boundary and the generator. | README, setup and skill-authoring guides, `cli/docs/`. |
+
+## Components
+
+### Component 1: Package-Owned Scaffold Sources
+
+**Purpose:** Hold every exported framework asset inside the CLI package so the CLI owns
+what it ships.
+**Estimated size:** Medium (delivered).
+**Interfaces:** Provides skill bodies, skill metadata and skill supporting folders to the
+generator; tool-specific agents and the project skeleton files to the generator; root
+guidance templates to `init`. The source tree must not read from repository-root
+`.claude/`, `.codex/`, `.agents/`, or `ai-process/`.
+
+Ownership rules:
+
+- shared skill body text is stored once per skill;
+- Claude-specific and Codex-specific skill header text are stored as metadata, not
+  duplicated in the body;
+- a skill may carry `assets/`, `references/` and `scripts/` folders next to its body and
+  metadata (CR-003);
+- Claude and Codex agent definitions are package-owned assets;
+- source text may name the project's settings only through the `{{project_dir}}` and
+  `{{integration_branch}}` placeholders.
+
+### Component 2: Skill Scaffold Generation
+
+**Purpose:** Generate the bundled Claude and Codex scaffolds from the package-owned sources.
+**Estimated size:** Medium (delivered); small for the CR-003 supporting-folder change.
+**Interfaces:** Consumes `cli/src/ai_team/init/sources/`; writes
+`cli/src/ai_team/init/scaffolds/`. Run by maintainers before committing a source change
+and before building the package.
+
+Required behaviour:
+
+- Each skill becomes one `SKILL.md` per tool: that tool's header from the metadata,
+  followed by the shared body text unchanged. A skill missing its body or either tool's
+  header stops the generator with an error.
+- Generated Claude and Codex skill files carry identical body text; they differ only in
+  the tool header.
+- A source skill's `assets/`, `references/` and `scripts/` folders, when present, are
+  copied into both the Claude and the Codex export of that skill, next to its generated
+  `SKILL.md`, byte for byte (CR-003). No other file in a source skill directory besides
+  `body.md` and `metadata.toml` is exported.
+- Agent definitions are copied per tool as real files, never symlinks.
+- The project skeleton holds the `specs/`, `decisions/` and `docs/` folders, each kept
+  with an empty placeholder file, plus the project guidance files and `.gitignore` from
+  the sources. It holds no task, bug or change-request folders; those work items live
+  in the tracker (S-006).
+- The generator copies every file without filling in placeholders.
+- Each run replaces the generated output completely, so a removed source leaves no
+  stale scaffold, and it never modifies the sources. Argument parsing (`--help`, an
+  unknown argument) never reaches the regeneration.
+
+### Component 3: Init Command Contract
+
+**Purpose:** Keep `ai-team init` as the way to scaffold consuming repositories from the
+package scaffolds.
+**Estimated size:** Small to medium (delivered); small for the CR-003 binary-copy change.
+**Interfaces:** `ai-team init`, its command docs, and tests.
+
+Required behaviour:
+
+- `--tools claude`, `--tools codex`, `--tools claude,codex`, `--tools all`, and
+  `--tools none` select which package tool scaffolds are written.
+- Each selected tool's agents and skills are written to that tool's export paths as
+  listed in S-003's level 1 table, as real files and directories, not symlinks. Skill
+  supporting folders are written with their skill.
+- The project skeleton is written to the configured project directory (`[project] dir`,
+  `--project-dir`, default `ai-team`). The tracker folder and its ignore rule follow
+  S-006.
+- **Placeholder rendering (CR-003).** Every scaffold file `init` writes — generated
+  skills, skill supporting files, agents and project guidance — has `{{project_dir}}`
+  and `{{integration_branch}}` replaced with the values from the `init` flags or
+  `.ai-team.toml`, with the defaults `ai-team` and `dev-agent`.
+- **Binary files (CR-003).** A scaffold file that does not decode as UTF-8 is copied
+  byte for byte, without filling in placeholders, instead of failing.
+- `.ai-team.toml` records the `[project] dir`, `[tracker] dir`,
+  `[git] integration_branch`, and `[init]` tools and framework version. On a repository
+  that already has `.ai-team.toml`, the configured project directory and integration
+  branch are kept unless the matching `init` flag (`--project-dir`,
+  `--integration-branch`) is given, the configured tracker folder is always kept
+  (`[tracker] dir` has no `init` flag), and every other setting the user added is
+  preserved.
+- Existing destination files are not overwritten without `--force`; `--dry-run` reports
+  what would be written without writing.
+- `init` never writes `ai-process/`, accepts no `--include-ai-process` option, and asks
+  no question about it.
+
+### Component 4: Documentation
+
+**Purpose:** Keep the product/source boundary consistent everywhere it is described.
+**Estimated size:** Small.
+**Interfaces:** README, `guides/setup-guide.md`, `guides/skill_template.md`, `cli/docs/`,
+and `ai-process/` architecture docs.
+
+Documentation must state:
+
+- `ai-process/` is the authoritative process specification in this repository and is
+  not exported by `ai-team init`.
+- CLI package scaffold sources are the product source for exported agents and skills,
+  and the generator is how the bundled scaffolds change.
+- Repository-root tool folders are local configuration for this repository, not the
+  product source.
+- For skill authors (`guides/skill_template.md`): which files of a source skill
+  directory are exported, that supporting folders reach both tool exports, and that
+  placeholders in them are filled in by `init`, except in files that are not UTF-8
+  text (CR-003).
+
+## Workflow
+
+### Maintainer Asset Flow
+
+```
+Edit a package-owned source asset
+  ↓
+Run the scaffold generator
+  ↓
+Generated scaffolds update under cli/src/ai_team/init/scaffolds/
+  ↓
+Run the tests (scaffolds match a fresh generation; shared bodies; init behaviour)
+  ↓
+Commit the source change, the generated output, and test/doc updates together
+```
+
+### Consumer Init Flow
+
+```
+ai-team init . --tools claude,codex --no-interactive
+  ↓
+Writes the project skeleton to the configured project directory
+  ↓
+Writes each selected tool's agents and skills to its S-003 export paths,
+filling in placeholders (non-UTF-8 files copied byte for byte)
+  ↓
+Writes or refreshes .ai-team.toml, keeping existing settings
+  ↓
+Creates the tracker folder and its ignore rule (S-006)
+  ↓
+Never writes ai-process/
+```
+
+## Configuration
+
+**Scaffold placeholders**
+- **What must exist:** the `{{project_dir}}` and `{{integration_branch}}` placeholders
+  are the only way a source asset names the project's settings.
+- **Where it lives:** in the package-owned source files; values come from the `init`
+  flags or `.ai-team.toml`.
+- **Constraints:** the generator leaves them unchanged; `init` fills them in every UTF-8
+  scaffold file it writes.
+- **Missing-value behaviour:** with no flag and no configured value, `init` uses
+  `ai-team` and `dev-agent`.
+
+**Skill metadata**
+- **What must exist:** a metadata file per source skill with a non-empty header for
+  each supported tool.
+- **Where it lives:** `metadata.toml` beside the skill's `body.md`.
+- **Constraints:** must not require reading repository-root tool folders.
+- **Missing-value behaviour:** the generator stops with an error naming the file.
+
+## Alternatives Considered
+
+### Direct Package Copies
+
+Keep separate Claude and Codex scaffold files directly under the CLI package and copy
+them as-is. This is simpler, but it permits the shared skill body text to drift between
+tool formats unless every change is manually duplicated or heavily tested.
+
+### Shared Skill Body With Generated Tool Scaffolds
+
+Store each skill body once and generate Claude/Codex skill files with tool-specific
+metadata. This is the chosen direction because it removes the meaningful duplication
+while keeping implementation scope manageable.
+
+### Fully Structured Framework Model
+
+Model agents and skills as structured data and generate every tool artifact from that
+schema. This is cleaner long-term but too broad for this change; it would require a new
+schema, migration rules, and broader review of all agent definitions.
+
+### Rendering Placeholders in the Generator (CR-003)
+
+Fill in placeholders when the scaffolds are generated. Rejected: the project directory
+and integration branch are only known when `init` runs in a consuming project.
+
+## Implementation Order
+
+The original phases (package-owned sources, the generator, bundled scaffolds without
+`ai-process/`, the `init` contract, tests, and documentation) are delivered. The CR-003
+amendment adds:
+
+| Phase | What | Depends On |
+|---|---|---|
+| 1 | The generator copies skill supporting folders into both exports, with a fixture-skill test. | Nothing |
+| 2 | `init` copies non-UTF-8 scaffold files byte for byte, with a test. | Nothing |
+| 3 | `guides/skill_template.md` states the export and placeholder rules. | Phases 1-2 |
+
+## Amendment Log
+
+| Date | What changed | Why | Affected tasks |
+|------|-------------|-----|----------------|
+| 2026-10-20 | Moved out of `specs/archive/` as S-009 (was a duplicate `S-001`) and retitled from "CLI-owned framework scaffolds and remove ai-process init export". Removed the completed `ai-process/` export removal as a work item, keeping "never exports `ai-process/`" as an invariant. Component 2 now copies skill `assets/`, `references/` and `scripts/` folders into both exports byte for byte, and the generator never fills placeholders; Component 3 states placeholder rendering by `init` and byte-for-byte copy of non-UTF-8 files. The project skeleton no longer has lifecycle folders (S-006); export paths now refer to S-003's level 1 table instead of naming `.codex/skills/`; the `.ai-team.toml` contract includes `[tracker] dir` and `[git] integration_branch`; the TOML example became prose. Driven by CR-003 §7 and §10 and Architecture Consistency Review finding F3. | The spec was still `approved` in the archive and the only written contract for the generator, but described a lifecycle skeleton and `.codex/skills/` export that S-006 and CR-002 replaced, and the generator silently dropped skill supporting folders (report #20). | None in flight |

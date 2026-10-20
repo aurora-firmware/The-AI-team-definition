@@ -118,8 +118,12 @@ ai-team init -> guidance templates -> project/root guidance -> dev-loop
 
 **Purpose:** Ensure task breakdown explicitly considers documentation changes and test coverage as implementation work derived from the spec.
 Amendment 2026-10-19: each task also names the interfaces it consumes and produces, and carries no placeholder text (see the Amendment Log).
+Amendment 2026-10-20 (CR-003):
+- **Verification mode per task.** Spec breakdown decides, for each task, whether it is verified by a **test** or by a **design review**. A task that changes code, CLI output, or a rule a test can observe gets a test, and the test file is in Files to Touch. A task that changes only prose (guides, process docs, skill wording that no test pins) gets a design review: a consistency check of the changed text against the source spec, accepted ADRs and the system overview (S-000) when it exists. The Verification section of a design-review task names the review and lists every reference it checks, including S-000 when it exists, instead of a test command. The Developer records the review in the Work Log (documents checked, each conflict found and fixed, result), and the Reviewer checks that record and the planning choice.
+- **Regeneration inside each task.** A task regenerates the scaffolds and docs its own change affects and lists the generated files in Files to Touch; a plan never ends with a separate "regenerate everything" task. A task that changes a command's arguments, options or help text lists the project's generated command reference (in this repository, `cli/docs/commands.md`) in Files to Touch; the command that regenerates it is the consuming project's own, named in its guidance, and the skills do not hardcode it.
+- **Verification run context.** Each Verification line runs from the repository root in a fresh shell, independently of the other lines; a line that needs another directory changes into it on that line. The task template, `new-task` and the integration step that runs the verification command set follow this rule.
 **Estimated size:** Small.
-**Interfaces:** `spec-breakdown`, `new-task`, task template guidance, spec authoring guide references.
+**Interfaces:** `spec-breakdown`, `new-task`, `tdd` (design-review tasks), `integrate`, task template guidance, spec authoring guide references.
 
 ### Component 2: Change Request Document Type
 
@@ -131,6 +135,7 @@ Amendment 2026-10-19: each task also names the interfaces it consumes and produc
 
 **Purpose:** Make `spec-breakdown-review` feedback focus on technical task-plan criteria.
 Amendment 2026-10-19: the technical criteria include type and name consistency of the interfaces tasks consume and produce (see the Amendment Log).
+Amendment 2026-10-20 (CR-003): Gate 2 accepts a named design review, with its listed references, as the verification of a task that changes only prose; a task that changes behaviour a test can observe still needs a test (see Component 1).
 **Estimated size:** Small.
 **Interfaces:** `spec-breakdown-review` skill, quality gates, workflow overview, Architect role guidance.
 
@@ -249,3 +254,4 @@ Tests fail or command is missing/ambiguous -> escalate to human
 | Date | What changed | Why | Affected tasks |
 |------|-------------|-----|----------------|
 | 2026-10-19 | Task template gains an `Interfaces: Consumes / Produces` block; `new-task` bans placeholder text in a task; Gate 2 adds a type and name consistency check across tasks. Driven by issue #31 (superpowers comparison report items 2.1 and 2.2). | Gate 2 checked dependencies and file conflicts but could not catch one task defining `clearLayers()` while another calls `clearFullLayers()`, and nothing stopped placeholder vagueness reaching a task file. | None in flight |
+| 2026-10-20 | Component 1: each task's verification mode is chosen during breakdown (test, or a design review whose Verification section lists the source spec, accepted ADRs and S-000 when it exists); each task regenerates the scaffolds and docs its change affects and lists `cli/docs/commands.md` when it changes a command's arguments, options or help; Verification lines run from the repository root in a fresh shell, one line at a time. Component 3: Gate 2 accepts a named design review for a prose-only task. Driven by CR-003 (report #8, #10, #12) and its Architecture Consistency Review findings F2 and F6. | A documentation-only task had no TDD path, so the Developer added an undeclared test that broke CI; a Verification block failed when run as one script; command-option tasks omitted `commands.md` and a final regeneration task found nothing to do; Gate 2 required a test or command for every task. | None in flight |
