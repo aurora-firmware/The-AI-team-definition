@@ -4,6 +4,7 @@ version: "0.1"
 status: approved
 created: 2026-05-14
 author: planner
+id: S-008
 ---
 
 # ai-team CLI Documentation

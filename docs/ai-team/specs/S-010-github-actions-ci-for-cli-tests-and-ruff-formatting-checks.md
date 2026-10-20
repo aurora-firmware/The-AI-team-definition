@@ -4,7 +4,7 @@ version: '0.1'
 status: approved  # draft | review | approved | superseded
 created: '2026-05-14'
 author: planner
-id: S-001
+id: S-010
 ---
 
 # GitHub Actions CI for CLI tests and Ruff formatting checks
