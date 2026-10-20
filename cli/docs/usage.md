@@ -261,6 +261,28 @@ ai-team spec new "Billing reconciliation" --author "planner" --status draft
 ai-team adr new "Use PostgreSQL for ledger storage" --status proposed
 ```
 
+### System overview (S-000)
+
+S-000 is the project's system overview. Create it once with:
+
+```bash
+ai-team spec new --overview
+```
+
+The title is optional with `--overview`; the spec is created from the
+system-overview template. Agents can do the same through the
+`new-system-overview` skill.
+
+When a project has no S-000, `validate`, `report`, `status` and the `new`
+commands (`task new`, `bug new`, `change-request new`, `spec new`, `adr new`) print an
+advisory hint to stderr: "this project has no system overview (S-000)". The
+hint is always on, never changes stdout or exit codes, and disappears once
+S-000 exists.
+
+S-000 describes the system and produces no tasks, so
+`ai-team task new --spec S-000` is refused with exit code 1. Reference a
+feature spec instead.
+
 ### File a change request
 
 Change requests capture proposed changes before they are planned as tasks.
