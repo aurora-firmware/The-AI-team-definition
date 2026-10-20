@@ -27,7 +27,9 @@ This checklist is used by the Reviewer role during the two-stage code review pro
 - [ ] Tests exist for the new or modified code.
 - [ ] Tests cover both success and failure paths.
 - [ ] Tests are independent (no shared mutable state).
+- [ ] New tests do not depend on an environment CI does not provide (local git history beyond the checkout depth, network access, locally installed tool versions).
 - [ ] The Work Log records local test evidence or explains why a local test run was not possible. Gate 4 owns authoritative pre-merge and post-merge test execution.
+- [ ] For a design-review task, the Work Log design-review record is present and covers every listed reference.
 
 ### Security
 - [ ] No hardcoded credentials or secrets.
