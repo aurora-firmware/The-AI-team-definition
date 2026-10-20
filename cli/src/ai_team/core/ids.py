@@ -21,6 +21,15 @@ _SPEC_FRONTMATTER_ID_PATTERN = re.compile(
 
 OVERVIEW_ID = "S-000"
 _OVERVIEW_FILENAME_PATTERN = re.compile(r"^S-000-.*\.md$")
+_OVERVIEW_REFERENCE_PATTERN = re.compile(rf"^{OVERVIEW_ID}(?:-[^/]+)?$")
+
+
+def is_overview_reference(reference: str) -> bool:
+    """Return True when *reference* names the S-000 overview spec.
+
+    Accepts the bare ID, an ID-with-slug, a spec filename, or a path ending in one.
+    """
+    return _OVERVIEW_REFERENCE_PATTERN.match(Path(reference).name) is not None
 
 
 def next_task_id(project_root: ProjectRoot) -> str:
