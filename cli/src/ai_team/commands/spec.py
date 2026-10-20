@@ -12,7 +12,7 @@ from ruamel.yaml.comments import CommentedMap
 from slugify import slugify
 
 from ai_team.core.fs import ArtifactExists
-from ai_team.core.ids import next_spec_id
+from ai_team.core.ids import OVERVIEW_ID, next_spec_id, overview_exists
 from ai_team.core.locator import find_project_root
 from ai_team.core.lock import LockTimeout, create_artifact_with_lock
 from ai_team.core.models import Spec
@@ -23,6 +23,7 @@ NAME = "spec"
 app = typer.Typer(help="Create and manage specification artifacts.")
 
 SpecStatus = Literal["draft", "review", "approved", "superseded"]
+DEFAULT_OVERVIEW_TITLE = "System Overview"
 
 
 def _template_parts(template: str) -> tuple[CommentedMap, str]:
@@ -49,23 +50,46 @@ def _template_parts(template: str) -> tuple[CommentedMap, str]:
 
 @app.command("new")
 def new_spec(
-    title: str,
+    title: str | None = typer.Argument(
+        None, help="Spec title. Optional with --overview."
+    ),
     author: str = typer.Option("planner", "--author"),
     status: SpecStatus = typer.Option("draft", "--status"),
+    overview: bool = typer.Option(
+        False,
+        "--overview",
+        help="Create the S-000 system overview from the system-overview template.",
+    ),
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     """Create a new specification artifact from the bundled template."""
+    if title is None:
+        if not overview:
+            typer.echo("Missing argument 'TITLE'.", err=True)
+            raise typer.Exit(code=2)
+        title = DEFAULT_OVERVIEW_TITLE
+    spec_title = title
     root = find_project_root(Path.cwd())
 
+    def allocate_id() -> str:
+        if not overview:
+            return next_spec_id(root)
+        if overview_exists(root):
+            raise ArtifactExists(
+                f"{OVERVIEW_ID} already exists in specs/ or specs/archive/; "
+                "refusing to create a second system overview."
+            )
+        return OVERVIEW_ID
+
     def build(spec_id: str) -> tuple[Path, Spec, str]:
-        slug = slugify(title)
+        slug = slugify(spec_title)
         dest = root.specs / f"{spec_id}-{slug}.md"
 
-        template = load_template("spec")
+        template = load_template("system-overview" if overview else "spec")
         source_map, body = _template_parts(template)
 
         model = Spec(
-            title=title,
+            title=spec_title,
             version="0.1",
             status=status,
             created=date.today().isoformat(),
@@ -74,13 +98,13 @@ def new_spec(
             _source_map=source_map,
         )
 
-        body = body.replace("# [Specification Title]", f"# {title}", 1)
+        body = body.replace("# [Specification Title]", f"# {spec_title}", 1)
         return dest, model, body
 
     try:
         spec_id, dest = create_artifact_with_lock(
             root.project_dir,
-            allocate_id=lambda: next_spec_id(root),
+            allocate_id=allocate_id,
             build=build,
         )
     except ArtifactExists as exc:

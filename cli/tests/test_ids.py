@@ -8,9 +8,9 @@ Cycle 1 scope:
 from pathlib import Path
 
 from ai_team.core.ids import (
+    OVERVIEW_ID,
     next_adr_id,
     next_bug_id,
-    OVERVIEW_ID,
     next_change_request_id,
     next_spec_id,
     next_task_id,

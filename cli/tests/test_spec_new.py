@@ -219,6 +219,7 @@ def test_spec_new_allocates_distinct_ids_for_two_concurrent_callers(
                 title=title,
                 author="planner",
                 status="draft",
+                overview=False,
                 as_json=False,
             )
         except BaseException as exc:  # noqa: BLE001 - surfaced via `errors`
@@ -245,3 +246,104 @@ def test_spec_new_allocates_distinct_ids_for_two_concurrent_callers(
     assert len(files) == 2
     ids = {parse_spec(path).id for path in files}
     assert len(ids) == 2, f"expected two distinct spec ids, got files: {files}"
+
+
+def _specs_dir(tmp_path: Path) -> Path:
+    specs = tmp_path / "ai-team" / "specs"
+    _mkdir(specs)
+    return specs
+
+
+def test_spec_new_overview_creates_s_000_from_system_overview_template(
+    monkeypatch, tmp_path
+):
+    from ai_team.cli import app
+
+    specs = _specs_dir(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["spec", "new", "--overview", "Acme Overview"])
+
+    expected = specs / "S-000-acme-overview.md"
+    assert result.exit_code == 0
+    assert result.stdout.strip() == str(expected)
+    content = expected.read_text(encoding="utf-8")
+    assert "id: S-000" in content
+    assert "# Acme Overview" in content
+    assert "# [Specification Title]" not in content
+    assert "system overview spec (S-000)" in content
+
+
+def test_spec_new_overview_json_emits_id_and_path(monkeypatch, tmp_path):
+    from ai_team.cli import app
+
+    specs = _specs_dir(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["spec", "new", "--overview", "--json"])
+
+    assert result.exit_code == 0
+    assert json.loads(result.stdout) == {
+        "id": "S-000",
+        "path": str(specs / "S-000-system-overview.md"),
+    }
+
+
+def test_spec_new_overview_defaults_title_to_system_overview(monkeypatch, tmp_path):
+    from ai_team.cli import app
+
+    specs = _specs_dir(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["spec", "new", "--overview"])
+
+    assert result.exit_code == 0
+    spec = parse_spec(specs / "S-000-system-overview.md")
+    assert spec.title == "System Overview"
+
+
+def test_spec_new_overview_refuses_when_s_000_exists_in_specs(monkeypatch, tmp_path):
+    from ai_team.cli import app
+
+    specs = _specs_dir(tmp_path)
+    (specs / "S-000-existing.md").write_text("", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["spec", "new", "--overview"])
+
+    assert result.exit_code == 1
+    assert "S-000" in result.stderr
+    assert sorted(p.name for p in specs.glob("*.md")) == ["S-000-existing.md"]
+
+
+def test_spec_new_overview_refuses_when_s_000_exists_in_archive(monkeypatch, tmp_path):
+    from ai_team.cli import app
+
+    specs = _specs_dir(tmp_path)
+    _mkdir(specs / "archive")
+    (specs / "archive" / "old.md").write_text("---\nid: S-000\n---\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["spec", "new", "--overview"])
+
+    assert result.exit_code == 1
+    assert "S-000" in result.stderr
+    assert list(specs.glob("*.md")) == []
+
+
+def test_spec_new_without_title_and_without_overview_fails(monkeypatch, tmp_path):
+    from ai_team.cli import app
+
+    specs = _specs_dir(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["spec", "new"])
+
+    assert result.exit_code != 0
+    assert list(specs.glob("*.md")) == []
+
+
+def test_spec_new_allocates_s_001_when_s_000_is_the_only_spec(monkeypatch, tmp_path):
+    from ai_team.cli import app
+
+    specs = _specs_dir(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    CliRunner().invoke(app, ["spec", "new", "--overview"])
+    result = CliRunner().invoke(app, ["spec", "new", "Feature"])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == str(specs / "S-001-feature.md")
