@@ -16,13 +16,16 @@ The `ai-team init` command exports these files from the CLI package scaffold sou
 |---|---|
 | **Agent definitions** | `.claude/agents/` — roles are universal |
 | **Skill definitions** | `.claude/skills/` — procedures are language-agnostic |
-| **All templates** | `TEMPLATE-*.md` files in `.claude/skills/*/assets/` |
 | **Action skills** | Action skills in `.claude/skills/` (`disable-model-invocation: true` only for human-only actions that no other skill invokes) |
 | **Codex agents** | `.codex/agents/*.toml` (only when `--tools codex` is passed) |
 
 The `ai-process/` specification documents (process docs, guidelines, architecture docs) are **not** exported. They live in the AI team definition meta-repository and serve as the authoritative spec for the rules that agents and skills implement. Your project does not need them; the agent and skill files already embed the rules they need to execute.
 
 ## What to Customize
+
+Artifact templates (for example task, bug, spec, and ADR templates) are bundled in the `ai-team` CLI and rendered by commands such as `ai-team task new`. They are not copied into your project and there is no project-level override, so changing a template means changing `cli/src/ai_team/templates/` in the framework.
+
+Exported skill files in `.claude/skills/` (and `.codex/skills/`) may be edited for your project, but `ai-team init --force` overwrites them.
 
 ### Must Customize
 

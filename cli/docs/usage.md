@@ -51,9 +51,12 @@ uv build
 pipx install --force dist/*.whl
 ```
 
-`sync_init_scaffolds.py` copies the current `.claude/agents/`, `.claude/skills/`,
-and project skeleton into the package so that `ai-team init` ships up-to-date
-scaffolds. Always run it before `uv build`.
+`sync_init_scaffolds.py` regenerates the bundled scaffolds in
+`cli/src/ai_team/init/scaffolds/` from the package-owned sources in
+`cli/src/ai_team/init/sources/` so that `ai-team init` ships up-to-date scaffolds.
+It never reads the repository's `.claude/` or `.codex/` folders, so edit the
+sources and re-run it rather than editing the generated output. Always run it
+before `uv build`.
 
 ### Verify the install
 
