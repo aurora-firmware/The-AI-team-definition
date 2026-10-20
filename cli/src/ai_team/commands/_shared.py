@@ -9,8 +9,15 @@ from pathlib import Path
 import typer
 
 from ai_team.core.fs import read_artifact, write_artifact
+from ai_team.core.ids import overview_exists
 from ai_team.core.locator import ProjectRoot, find_project_root
 from ai_team.core.tracker import legacy_warning, legacy_work_item_dirs
+
+OVERVIEW_HINT = (
+    "Hint: this project has no system overview (S-000). "
+    "Create one with `ai-team spec new --overview`, "
+    "or ask your agent to use the new-system-overview skill."
+)
 
 
 def project_root() -> ProjectRoot:
@@ -20,6 +27,18 @@ def project_root() -> ProjectRoot:
     if legacy:
         typer.echo(legacy_warning(legacy), err=True)
     return root
+
+
+def hint_missing_overview(root: ProjectRoot) -> None:
+    """Write the advisory missing-S-000 hint to stderr; stdout and exit codes are untouched."""
+    try:
+        has_overview = overview_exists(root)
+    except OSError, ValueError:
+        # The hint is advisory: an unreadable specs folder or file (including
+        # undecodable text, a ValueError) must never block the command.
+        return
+    if not has_overview:
+        typer.echo(OVERVIEW_HINT, err=True)
 
 
 def template_body(template: str, label: str) -> str:

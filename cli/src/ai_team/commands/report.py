@@ -8,7 +8,7 @@ from typing import Any
 
 import typer
 
-from ai_team.commands._shared import project_root
+from ai_team.commands._shared import hint_missing_overview, project_root
 from ai_team.commands.status import _payload
 from ai_team.core.models import parse_adr, parse_bug, parse_spec, parse_task
 from ai_team.core.templates import load_template
@@ -245,6 +245,7 @@ def default(
 ) -> None:
     """Write the bundled progress-report template to disk."""
     root = project_root()
+    hint_missing_overview(root)
     report_date = date.today().isoformat()
     payload: dict[str, Any] = _payload(root)
 
