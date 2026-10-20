@@ -13,7 +13,7 @@ from typing import Literal
 import typer
 from slugify import slugify
 
-from ai_team.commands._shared import project_root, template_body
+from ai_team.commands._shared import hint_missing_overview, project_root, template_body
 from ai_team.core.fs import ArtifactExists, read_artifact, update_status
 from ai_team.core.ids import next_change_request_id
 from ai_team.core.lock import LockTimeout, create_artifact_with_lock
@@ -35,6 +35,7 @@ def new_change_request(
 ) -> None:
     """Create a new change-request in the tracker from the bundled template."""
     root = project_root()
+    hint_missing_overview(root)
 
     def build(cr_id: str) -> tuple[Path, ChangeRequest, str]:
         slug = slugify(title)
