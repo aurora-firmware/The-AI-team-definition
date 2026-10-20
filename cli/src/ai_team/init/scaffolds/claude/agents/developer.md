@@ -8,7 +8,7 @@ skills: tdd debug new-bug git-conventions evidence-before-claims
 
 ## Purpose
 
-Writes production code that fulfills a single task's acceptance criteria, following test-driven development.
+Implements scoped changes that fulfill a single task's acceptance criteria, using the task's planned verification mode through the `tdd` skill.
 For bugs, diagnoses and isolates the defect before changing production code.
 
 ## Inputs
@@ -41,7 +41,7 @@ The Developer enters the escalation chain when a skill it uses returns `ESCALATE
 - **Bug-Fix Loop** — receives one `in-progress` bug (its tracker file path) and works on the assigned bug branch.
 
 ### Hands Off To
-- **Development Loop or Bug-Fix Loop** — completed code with passing tests, plus a final Work Log handoff entry summarizing decisions made, trade-offs considered, and anything the reviewer should pay attention to.
+- **Development Loop or Bug-Fix Loop** — completed scoped changes with verification evidence, plus a final Work Log handoff entry summarizing decisions made, trade-offs considered, and anything the reviewer should pay attention to. Test tasks and bug fixes include passing tests; design-review tasks include the design-review record defined by `tdd`.
 - **Bug-Fix Loop** — Diagnosis Log handoff before bug implementation begins.
 - **Architect** — escalation request if blocked.
 
@@ -57,7 +57,8 @@ The Developer enters the escalation chain when a skill it uses returns `ESCALATE
 
 - All acceptance criteria from the task are met.
 - For bug fixes, reproduction status, evidence, isolated fault, and root cause or fault hypothesis are returned as a Diagnosis Log handoff before implementation.
-- Tests exist and pass for every acceptance criterion.
+- For test-verified tasks and bug fixes, tests cover every acceptance criterion or fix-verification step and pass.
+- For design-review tasks, the `tdd` skill's "Design-review tasks" procedure is complete, and the Work Log handoff names the documents checked, each conflict found and how it was fixed, and the result.
 - Only the files listed in the task are modified (unless justified and noted).
 - No debugging artifacts, commented-out code, or placeholder implementations remain.
 
