@@ -51,3 +51,10 @@ def test_bug_template_fix_verification_states_the_run_context():
 def test_bug_template_fix_verification_has_no_design_review_mode():
     fix_verification = section(load_template("bug"), "## Fix Verification")
     assert "Design review" not in fix_verification
+
+
+def test_task_template_verifiable_rule_keeps_the_manual_steps_alternative():
+    template = load_template("task")
+    rules = flat(template.split("Task Quality Rules", 1)[1].split("-->", 1)[0])
+    verifiable = rules.split("Verifiable", 1)[1].split("Self-contained")[0]
+    assert "explicit manual steps" in verifiable
