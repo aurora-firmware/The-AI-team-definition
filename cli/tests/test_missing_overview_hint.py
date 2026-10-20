@@ -113,3 +113,57 @@ def test_hint_is_printed_even_when_config_file_is_present(project):
     result = CliRunner().invoke(app, ["validate", "--json"])
 
     assert OVERVIEW_HINT in result.stderr
+
+
+def _raise(error: Exception):
+    def _fail(_root):
+        raise error
+
+    return _fail
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        PermissionError("denied"),
+        OSError("io"),
+        UnicodeDecodeError("utf-8", b"\xff", 0, 1, "bad"),
+    ],
+)
+def test_hint_missing_overview_swallows_existence_check_errors(
+    project, capsys, monkeypatch, error
+):
+    monkeypatch.setattr("ai_team.commands._shared.overview_exists", _raise(error))
+
+    hint_missing_overview(find_project_root(project))
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_validate_keeps_stdout_and_exit_code_when_existence_check_raises(
+    project, monkeypatch
+):
+    from ai_team.cli import app
+
+    baseline = CliRunner().invoke(app, ["validate", "--json"])
+    monkeypatch.setattr(
+        "ai_team.commands._shared.overview_exists", _raise(PermissionError("denied"))
+    )
+
+    result = CliRunner().invoke(app, ["validate", "--json"])
+
+    assert result.exit_code == baseline.exit_code == 0
+    assert result.stdout == baseline.stdout
+    assert OVERVIEW_HINT not in result.stderr
+
+
+def test_hint_missing_overview_does_not_raise_for_undecodable_spec_file(
+    project, capsys
+):
+    (project / "ai-team" / "specs" / "S-009-binary.md").write_bytes(b"---\n\xff\xfe")
+
+    hint_missing_overview(find_project_root(project))
+
+    assert capsys.readouterr().out == ""

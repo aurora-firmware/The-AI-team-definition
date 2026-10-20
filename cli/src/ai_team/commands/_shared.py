@@ -31,7 +31,13 @@ def project_root() -> ProjectRoot:
 
 def hint_missing_overview(root: ProjectRoot) -> None:
     """Write the advisory missing-S-000 hint to stderr; stdout and exit codes are untouched."""
-    if not overview_exists(root):
+    try:
+        has_overview = overview_exists(root)
+    except OSError, ValueError:
+        # The hint is advisory: an unreadable specs folder or file (including
+        # undecodable text, a ValueError) must never block the command.
+        return
+    if not has_overview:
         typer.echo(OVERVIEW_HINT, err=True)
 
 
