@@ -181,6 +181,8 @@ Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 
 If the verdict lists `⚠️ Cannot verify from diff` items, resolve each one before integration, using what the loop knows (other completed work items' Work Logs, the approved spec, the repository). Append the resolution under the verdict. If an item cannot be confirmed, treat the verdict as FAIL for that item and go to **On FAIL**.
 
+Apply the same handling to a deferred Minor finding. If the loop's own checks show that a finding the Reviewer listed under `#### Deferred Minor findings` is a real failure, for example it breaks CI or contradicts the task, treat the verdict as FAIL for that item and go to **On FAIL**. This is the same handling as an unconfirmable `⚠️ Cannot verify from diff` item. When promoting a finding, append ` — resolved: promoted to FAIL` to that entry's line in the verdict's `#### Deferred Minor findings` list, so the Gate 5 roll-up shows it as resolved rather than still deferred.
+
 Before invoking integration, confirm that the task file holds both the Developer Work Log entry
 and the Review Verdict recorded in Steps 5 and 6. The `integrate` skill verifies that the latest
 verdict in the task file is PASS before it merges.
