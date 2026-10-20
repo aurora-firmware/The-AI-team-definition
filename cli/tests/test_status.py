@@ -401,6 +401,31 @@ def test_status_breaks_date_ties_with_highest_item_id(monkeypatch, tmp_path):
     )
 
 
+def test_status_breaks_same_number_ties_between_task_and_bug_by_item_id(
+    monkeypatch, tmp_path
+):
+    tracker = tmp_path / ".ai-team" / "tracker"
+    _write(
+        tracker / "tasks" / "T-012.md",
+        _task(
+            "T-012",
+            "Task",
+            "completed",
+            body=_work_log((1, "2026-06-01", "Task result.")),
+        ),
+    )
+    _write(
+        tracker / "bugs" / "B-012.md",
+        BUG_TEMPLATE.format(
+            id="B-012", title="Bug", severity="low", status="resolved"
+        ).replace("Body.", _work_log((1, "2026-06-01", "Bug result."))),
+    )
+
+    assert _integration_result(monkeypatch, tmp_path) == (
+        "T-012 Session 1 (2026-06-01): Task result."
+    )
+
+
 def test_status_reports_not_found_when_completed_item_has_no_sessions(
     monkeypatch, tmp_path
 ):

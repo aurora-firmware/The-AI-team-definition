@@ -135,7 +135,7 @@ def _latest_integration_result(
 
     if not candidates:
         return "not found"
-    date, _, item_id, session_label, line = max(candidates, key=lambda c: c[:2])
+    date, _, item_id, session_label, line = max(candidates, key=lambda c: c[:3])
     return f"{item_id} {session_label} ({date}): {line}"
 
 
