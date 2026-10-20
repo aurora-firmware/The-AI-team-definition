@@ -24,7 +24,7 @@ Write so all three can do their job from the spec alone, without guessing what y
 
 > A specification describes requirements, contracts, and measurable criteria in prose. It does not embed implementation code, configuration files, or build manifests.
 
-**Belongs in the spec:** the problem, the outcome, the constraints, the components and their responsibilities, the interface contracts between them, the success criteria, the exclusions.
+**Belongs in the spec:** the problem, the outcome, the constraints, the interface contracts of the component or feature it covers (the decomposition into components lives in S-000), the success criteria, the exclusions.
 
 **Does not belong in the spec:** function signatures, class layouts, full YAML/TOML/JSON config files, complete CI manifests, executable code that *is* the implementation, file-by-file task lists.
 
@@ -38,7 +38,7 @@ The spec template follows this structure. The recipes below tell you how to writ
 
 ### Purpose
 
-**Recipe:** Three to four sentences.
+**Recipe:** Three to four sentences, naming the S-000 component the spec covers.
 1. The problem (what is broken or missing today).
 2. Why it matters now (the constraint or trigger that forced the spec).
 3. The outcome (what is observably true when the work is done).
@@ -63,7 +63,7 @@ Almost every spec has at least one exclusion. "No exclusions apply" should be ra
 
 ### Architecture — Design Principles
 
-**Recipe:** principles are **constraints on the design space**, not implementation choices. State each as a property the design must satisfy.
+**Recipe:** scoped to this spec, principles are **constraints on the design space**, not implementation choices. State each as a property the design must satisfy.
 
 **Strong:**
 > - Validation must run in under three minutes on the median PR so reviewers are not blocked.
@@ -72,34 +72,15 @@ Almost every spec has at least one exclusion. "No exclusions apply" should be ra
 
 **Weak:** "Use GitHub Actions." (Picks the implementation; better as a constraint: "must integrate with the project's existing PR review surface.")
 
-### Architecture — System Diagram
+### Interfaces
 
-**Recipe:** ASCII boxes and arrows. Components labelled. One screen wide. Show the data flow, not the call graph.
-
-**Strong:**
-```
-┌─────────┐    PR event    ┌──────────────┐    test result    ┌──────────────┐
-│ GitHub  ├───────────────▶│  CI Runner   ├──────────────────▶│ PR check API │
-└─────────┘                └──────────────┘                   └──────────────┘
-```
-
-**Weak:** A class diagram of internal CI runner classes. (Belongs in a design doc or code review, not a spec.)
-
-### Architecture — Responsibility Separation
-
-**Recipe:** a table. One row per component. Columns: component, responsibility, interface notes (what it exposes / consumes).
-
-Avoid method signatures and attribute lists. Stay at the interface level.
-
-### Components
-
-**Recipe:** one short block per component, three lines max:
+**Recipe:** cover the component or feature of this spec only; system-wide structure lives in S-000. Three lines max:
 
 - **Purpose:** one sentence — what it does.
 - **Estimated size:** a complexity hint (small / medium / large, or a rough effort estimate).
 - **Interfaces:** what it exposes and what it consumes, named at the interface level.
 
-Do not list functions. Do not list fields.
+Do not list functions. Do not list fields. Do not describe other components; point to S-000 instead.
 
 ### Workflow
 
@@ -209,25 +190,11 @@ full test and lint suite, and the merge button is disabled until the check passe
 - The pipeline must reject unknown configuration keys instead of silently ignoring them.
 - The test command must be discovered from project documentation, not hard-coded.
 
-### System Diagram
-[ASCII diagram of PR → CI runner → check API]
-
-### Responsibility Separation
-| Component | Responsibility | Notes |
-|---|---|---|
-| CI runner | Execute project test + lint commands on a fresh checkout | Reads commands from project docs |
-| PR check publisher | Translate runner result into a PR check status | Uses project's existing check surface |
-
-## Components
+## Interfaces
 ### CI Runner
 Purpose: Run the project's full test and lint suite on a PR's HEAD commit.
 Estimated size: medium.
 Interfaces: consumes PR events; emits a runner result with pass/fail + log URL.
-
-### PR Check Publisher
-Purpose: Post the runner result back to the PR as a status check.
-Estimated size: small.
-Interfaces: consumes runner results; calls the project's check status API.
 
 ## Workflow
 PR opened or updated → CI runner triggers → results posted as PR check →
@@ -247,7 +214,7 @@ PR opened or updated → CI runner triggers → results posted as PR check →
 | 3 | Pipeline results visible in the project status dashboard. | Phase 1 |
 ```
 
-This is ~40 lines, has no implementation code, no YAML, no function names — and it is sufficient for the Planner to derive tasks for the runner, the check publisher, and the merge-block configuration.
+This is ~40 lines, has no implementation code, no YAML, no function names — and it is sufficient for the Planner to derive tasks for the runner and the merge-block configuration.
 
 ## Pre-submission checklist
 
@@ -258,7 +225,7 @@ Before declaring the spec ready for Gate 1, the author confirms each of these:
 - [ ] **Each design principle is a constraint, not an implementation choice.**
 - [ ] **No implementation artefacts.** No full config files, no CI manifests, no function-by-function decompositions. Where a literal value is the contract, it is labelled **Contract**.
 - [ ] **Every requirement is measurable.** An outside reader can describe how to verify it.
-- [ ] **Components are described at the interface level.** No method signatures, no attribute lists.
+- [ ] **Interfaces are described for this spec's own component or feature**, at the interface level. No method signatures, no attribute lists.
 - [ ] **Implementation Order has coarse phases**, not tasks.
 - [ ] **Amendment Log is empty** (until amendments arrive after Gate 1).
 
@@ -274,5 +241,7 @@ The recipes above are embedded into the CLI sources that fire when `/new-spec` i
 | Section-by-section authoring instructions used by `/new-spec` | `cli/src/ai_team/init/sources/skills/new-spec/body.md` |
 | Spec-writing handoff in interactive brainstorm | `cli/src/ai_team/init/sources/skills/brainstorm/body.md` |
 | Planner role's spec quality bar | `cli/src/ai_team/init/sources/agents/claude/planner.md` |
+| System overview (S-000) document shape | `cli/src/ai_team/templates/system-overview.md` |
+| Authoring instructions used by `new-system-overview` | `cli/src/ai_team/init/sources/skills/new-system-overview/body.md` |
 
-After changing this guide, mirror the relevant content into the four files above and regenerate scaffolds with `cli/scripts/sync_init_scaffolds.py`.
+After changing this guide, mirror the relevant content into the files above and regenerate scaffolds with `cli/scripts/sync_init_scaffolds.py`.

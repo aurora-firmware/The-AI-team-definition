@@ -77,7 +77,7 @@ Use these recipes to fill each section of `cli/src/ai_team/templates/spec.md`.
 
 ### Purpose
 
-Three to four sentences:
+Three to four sentences, naming the S-000 component the spec covers:
 1. The problem (what is broken or missing today).
 2. Why it matters now (the constraint or trigger that forced the spec).
 3. The outcome (what is observably true when the work is done).
@@ -93,22 +93,16 @@ Almost every spec has at least one. `"no exclusions apply"` should be rare and s
 
 ### Architecture — Design Principles
 
-Each principle is a **constraint on the design space**, not an implementation choice. State it as a property the design must satisfy.
+Scoped to this spec. Each principle is a **constraint on the design space**, not an implementation choice. State it as a property the design must satisfy.
 
 Good: "Validation must run in under three minutes on the median PR."
 Bad: "Use GitHub Actions." (That picks the implementation; reframe as a constraint, e.g. "must integrate with the project's existing PR review surface.")
 
-### Architecture — System Diagram
+### Interfaces
 
-ASCII boxes and arrows, one screen wide, components labelled. Show data flow, not the call graph. Class diagrams of internal classes do not belong here.
+Cover the component or feature of this spec only. System-wide structure lives in S-000; the Purpose names the S-000 component the spec covers.
 
-### Architecture — Responsibility Separation
-
-A table. One row per component. Columns: component, responsibility, interface notes (what it exposes and consumes). Stay at the interface level — no method signatures or attribute lists.
-
-### Components
-
-One short block per component, three lines max:
+Three lines max:
 - **Purpose:** one sentence — what it does.
 - **Estimated size:** small / medium / large, or rough effort.
 - **Interfaces:** exposed and consumed, named at the interface level.
@@ -159,7 +153,7 @@ Before returning the created spec, confirm every item:
 - [ ] **Each design principle is a constraint, not an implementation choice.**
 - [ ] **No implementation artefacts.** No full config files, no CI manifests, no function-by-function decompositions. Any literal-value-as-contract block is labelled **Contract**.
 - [ ] **Every requirement is measurable.** An outside reader can describe how to verify it.
-- [ ] **Components are described at the interface level.** No method signatures, no attribute lists.
+- [ ] **Interfaces are described for this spec's own component or feature**, at the interface level. No method signatures, no attribute lists.
 - [ ] **Implementation Order has coarse phases**, not tasks.
 - [ ] **Amendment Log is empty** (until amendments arrive after Gate 1).
 

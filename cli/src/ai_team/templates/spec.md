@@ -19,7 +19,8 @@ content contract this template implements.
 
 ## Purpose
 
-<!-- Recipe (3–4 sentences):
+<!-- Recipe (3–4 sentences). The Purpose names the S-000 component the spec covers;
+  system-wide structure lives in S-000.
   1. The problem (what is broken or missing today).
   2. Why it matters now (the trigger or constraint that forced this spec).
   3. The outcome (what is observably true when the work is done).
@@ -47,48 +48,22 @@ What this specification explicitly does NOT cover:
 
 ### Design Principles
 
-<!-- Each principle is a constraint on the design space — a property the design
-  must satisfy. Not an implementation choice.
+<!-- Scoped to this spec. Each principle is a constraint on the design space — a
+  property the design must satisfy. Not an implementation choice.
   Good: "Validation must run in under three minutes on the median PR."
   Bad:  "Use GitHub Actions." -->
 
 State the guiding principles for this design.
 
-### System Diagram
+## Interfaces
 
-<!-- ASCII boxes and arrows. One screen wide. Components labelled. Show data
-  flow, not the call graph. Class diagrams of internal classes do not belong
-  here. -->
-
-```
-[ASCII diagram showing components and their relationships]
-```
-
-### Responsibility Separation
-
-<!-- One row per component. Stay at the interface level — no method signatures
-  or attribute lists. -->
-
-| Component | Responsibility | Notes |
-|---|---|---|
-| Component A | What it does | Additional context |
-| Component B | What it does | Additional context |
-
-## Components
-
-<!-- One short block per component, three lines max:
+<!-- Describe the component or feature this spec covers, and only that one.
+  System-wide structure lives in S-000, the system overview; the Purpose names
+  the S-000 component this spec covers. Do not describe other components here.
   - Purpose: one sentence — what it does.
   - Estimated size: small / medium / large, or rough effort.
   - Interfaces: exposed and consumed, named at the interface level.
   No function lists. No field lists. -->
-
-### Component 1: [Name]
-
-**Purpose:** One-line description.
-**Estimated size:** Rough complexity estimate.
-**Interfaces:** What it exposes and consumes.
-
-### Component 2: [Name]
 
 **Purpose:** One-line description.
 **Estimated size:** Rough complexity estimate.
