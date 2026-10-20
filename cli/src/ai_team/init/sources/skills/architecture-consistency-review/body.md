@@ -25,6 +25,8 @@ In completion mode the review confirms that each approved spec is still true of 
 - **Step 3** checks each assertion against the evidence: a requirement the work did not deliver, behavior the work added that the spec does not describe, or an interface that now differs. Record each drift with the spec statement and the evidence that contradicts it.
 - **Routing** is unchanged: the Planner amends the approved spec on a planning branch and records the change in its Amendment Log; the Architect amends or supersedes ADRs; a drift that needs a decision beyond an amendment escalates.
 
+S-000 is never a touched spec in completion mode, because it has no tasks or Work Logs to reconcile against.
+
 A `PASS` means every touched spec is still true. Gate 5 accepts a `PASS`, or a `FAIL` whose routed amendments have all been applied.
 
 ## Input Requirements
@@ -49,6 +51,12 @@ Read every accepted ADR in `{{project_dir}}/decisions/` and every approved spec 
 ### Step 3: Check for Contradiction
 
 For each binding artifact, decide whether the changed artifact contradicts it — asserts a different decision for the same concern, removes a guarantee another artifact relies on, or restates a rule with different content. Record each contradiction with the specific artifact, the conflicting statements, and which one is now intended to be authoritative.
+
+### Step 3b: Check Against S-000
+
+When an approved S-000 exists, also confirm that a new or changed spec stays within S-000's purpose and respects each component's boundary and responsibility. Report a violation as drift and route it as Step 4 says. When a spec needs something S-000 does not cover, report it as either an S-000 amendment or a spec cut back to scope, naming which.
+
+When the changed artifact is S-000 itself, review it for internal consistency and plain-language content instead of checking it against other specs.
 
 ### Step 4: Report Findings and Route Corrections
 
