@@ -46,3 +46,31 @@ def test_step_2_item_7_skips_design_review_line_and_uses_project_guidance():
         assert "Gate 3" in step, name
         assert "Skip it" in step, name
         assert "from project guidance" in step, name
+
+
+def test_step_5_shows_merge_command_with_second_m_argument_for_trailers():
+    for name, path in COPIES.items():
+        step = section(path, "### Step 5:", "### Step 6:")
+        assert (
+            'git merge --no-ff <source-branch> -m "chore(<kind>): merge '
+            '<work-item-id> <short-description>" -m "<trailer lines>"'
+        ) in step, name
+        assert "commit conventions require trailers" in step, name
+
+
+def test_step_5_states_git_merge_does_not_read_message_from_stdin():
+    for name, path in COPIES.items():
+        step = section(path, "### Step 5:", "### Step 6:")
+        assert "does not read a message from stdin" in step, name
+        assert "`-F -` fails" in step, name
+
+
+def test_step_5_keeps_single_m_merge_command_valid_without_required_trailers():
+    for name, path in COPIES.items():
+        step = section(path, "### Step 5:", "### Step 6:")
+        single = (
+            'git merge --no-ff <source-branch> -m "chore(<kind>): merge '
+            '<work-item-id> <short-description>"\n'
+        )
+        assert single in step, name
+        assert "Without required trailers" in step, name

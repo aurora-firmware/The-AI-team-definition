@@ -109,6 +109,12 @@ Capture stdout and stderr. Evaluate the result:
    ```bash
    git merge --no-ff <source-branch> -m "chore(<kind>): merge <work-item-id> <short-description>"
    ```
+   When the project's commit conventions require trailers, add a second `-m` argument carrying the trailer lines:
+   ```bash
+   git merge --no-ff <source-branch> -m "chore(<kind>): merge <work-item-id> <short-description>" -m "<trailer lines>"
+   ```
+   - Without required trailers, the single-`-m` form above stays valid.
+   - `git merge` does not read a message from stdin, so `-F -` fails; pass trailers with the second `-m`.
    - Use `tasks` for task branches and `bugs` for bug branches.
    - Derive `<short-description>` from the work item title or the branch name slug.
 3. If the merge produces conflicts:
