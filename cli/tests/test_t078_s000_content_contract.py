@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-import subprocess
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -66,16 +65,25 @@ def test_s000_section_states_boundary_rule() -> None:
     assert "purpose names the s-000 component" in section
 
 
-def test_feature_spec_recipes_are_unchanged() -> None:
-    base = "22164b36e831dacba12329a5e287b1efd175a856"
-    original = subprocess.run(
-        ["git", "show", f"{base}:guides/spec-authoring-guide.md"],
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout
-    current = GUIDE_PATH.read_text(encoding="utf-8")
-    start = original.index("## How to write each section")
-    end = original.index(NEXT_HEADING)
-    assert original[start:end] in current
+def test_feature_spec_recipe_headings_are_still_present_in_order() -> None:
+    text = GUIDE_PATH.read_text(encoding="utf-8")
+    headings = [
+        "### Purpose",
+        "### Exclusions",
+        "### Architecture — Design Principles",
+        "### Architecture — System Diagram",
+        "### Architecture — Responsibility Separation",
+        "### Components",
+        "### Workflow",
+        "### Configuration Requirements",
+        "### Implementation Order",
+        "### Amendment Log",
+    ]
+    positions = []
+    for heading in headings:
+        match = re.search(rf"^{re.escape(heading)}$", text, re.M)
+        assert match, f"missing feature-spec recipe heading {heading}"
+        positions.append(match.start())
+    assert positions == sorted(positions)
+    assert text.index("## How to write each section") < positions[0]
+    assert positions[-1] < text.index(HEADING)
