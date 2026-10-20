@@ -87,7 +87,7 @@ What this specification explicitly does NOT cover:
 | `.github/workflows/ci.yml` | Defines the triggers and the `lint`, `test` and `release` jobs | The only workflow file |
 | `lint` job | Ruff format check, Ruff lint, and the generated-docs drift check over `cli/` | Fails on any violation or drift |
 | `test` job | Runs the CLI test suite | Fails on any test failure |
-| `release` job | Builds and publishes a GitHub Release for a version tag | Needs `lint` and `test`; the only job with write permission |
+| `release` job | Builds and publishes a GitHub Release for a version tag | Needs `lint` and `test`; the only job the workflow grants write permission |
 | `cli/pyproject.toml` | Declares Ruff as a dev dependency and holds the Ruff configuration | Single source of truth for lint/format rules |
 
 ## Components
@@ -104,8 +104,9 @@ jobs.
   `self-hosted` and `docker`, inside the `ghcr.io/astral-sh/uv:python3.14-trixie-slim`
   container. The runner therefore needs network access to pull that image and the
   packages the jobs install; it has it today.
-- **Each job** installs git in the container, checks out the repository with
-  `actions/checkout@v6`, and runs `uv sync` in `cli/` before its own steps. `lint`
+- **Each job** installs git in the container and checks out the repository with
+  `actions/checkout@v6`; `lint` and `test` then run `uv sync` in `cli/` before their
+  own steps, while `release` builds with `uv build` without a separate sync. `lint`
   and `test` use the action's default shallow checkout, so no test may depend on git
   history beyond the checked-out commit; only `release` fetches full history
   (`ci.yml:67-69`). Builds outside a tag use a placeholder package version
@@ -168,7 +169,7 @@ lint and test run as above; on success release builds and publishes the GitHub R
 **Release permission**
 - **What must exist:** `contents: write` for the release job only.
 - **Where it lives:** the job's `permissions` in the workflow file.
-- **Constraints:** no other job is granted write permission.
+- **Constraints:** the release job is the only job the workflow grants write permission.
 - **Missing-value behaviour:** publishing the Release fails; nothing else is affected.
 
 ## Implementation Order

@@ -187,8 +187,11 @@ Required behaviour:
   byte for byte, without filling in placeholders, instead of failing.
 - `.ai-team.toml` records the `[project] dir`, `[tracker] dir`,
   `[git] integration_branch`, and `[init]` tools and framework version. On a repository
-  that already has `.ai-team.toml`, the configured project directory, tracker folder and
-  integration branch are kept, and every other setting the user added is preserved.
+  that already has `.ai-team.toml`, the configured project directory and integration
+  branch are kept unless the matching `init` flag (`--project-dir`,
+  `--integration-branch`) is given, the configured tracker folder is always kept
+  (`[tracker] dir` has no `init` flag), and every other setting the user added is
+  preserved.
 - Existing destination files are not overwritten without `--force`; `--dry-run` reports
   what would be written without writing.
 - `init` never writes `ai-process/`, accepts no `--include-ai-process` option, and asks
