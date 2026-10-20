@@ -151,11 +151,22 @@ def _ensure_tracker(target_root: Path, tracker_dir: str, dry_run: bool) -> None:
 
 
 def _write_rendered(source: Path, destination: Path, settings: dict[str, str]) -> None:
-    """Copy *source* to *destination*, filling the packaged-source placeholders."""
+    """Copy *source* to *destination*, filling the packaged-source placeholders.
+
+    Reports ``OVERWROTE: <path>`` once the write succeeds when *destination*
+    already existed.
+    """
+    existed = destination.exists()
     destination.parent.mkdir(parents=True, exist_ok=True)
     text = render_placeholders(source.read_text(encoding="utf-8"), **settings)
     destination.write_text(text, encoding="utf-8")
     shutil.copymode(source, destination)
+    if existed:
+        _report_overwrite(destination)
+
+
+def _report_overwrite(destination: Path) -> None:
+    typer.echo(f"OVERWROTE: {destination}")
 
 
 def _copy_root_guidance_file(
@@ -194,11 +205,10 @@ def _handle_root_guidance(
             typer.echo(f"WOULD WRITE: {destination}")
             continue
 
-        if no_interactive:
-            # AC-3: deterministic — only create when the flag is set
-            if create_root_guidance:
-                _copy_root_guidance_file(source, destination, force, settings)
-        else:
+        if create_root_guidance:
+            # The flag answers the prompt in both modes
+            _copy_root_guidance_file(source, destination, force, settings)
+        elif not no_interactive:
             # AC-1 / AC-2: interactive — ask the user
             create = typer.confirm(
                 f"Create root {filename} from the starter template?",
@@ -343,8 +353,11 @@ def init_command(
             "tools": selected_tools,
             "framework_version": importlib.metadata.version("ai-team"),
         }
+        marker_existed = marker.exists()
         marker.parent.mkdir(parents=True, exist_ok=True)
         marker.write_text(tomli_w.dumps(marker_data), encoding="utf-8")
+        if marker_existed:
+            _report_overwrite(marker)
         _ensure_tracker(target_root, tracker_dir, dry_run=False)
 
         # Handle root guidance files (outside the collision-checked scaffold set)

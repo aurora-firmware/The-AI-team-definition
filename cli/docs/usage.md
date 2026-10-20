@@ -80,11 +80,11 @@ ai-team init [PATH] [OPTIONS]
 |---|---|
 | `--tools TEXT` | Comma-separated tool names to scaffold (e.g. `claude`, `codex`, `all`, `none`). |
 | `--dry-run` | Print what would be written without touching the filesystem. |
-| `--force` | Overwrite existing files. Without this flag the command refuses to overwrite. On a repository that already has `.ai-team.toml`, the configured `[project] dir`, `[tracker] dir`, `[git] integration_branch`, and any other tables are kept, so `--force` only refreshes the generated agents and skills. |
+| `--force` | Overwrite existing files. Without this flag the command refuses to overwrite. On a repository that already has `.ai-team.toml`, the configured `[project] dir`, `[tracker] dir`, `[git] integration_branch`, and any other tables are kept, so `--force` only refreshes the generated agents and skills. Every existing file that is replaced is reported as `OVERWROTE: <path>`. |
 | `--project-dir TEXT` | Artifact folder, at any depth (e.g. `docs/ai-team`). Defaults to the configured `[project] dir`, else `ai-team`. Must be relative and contain no `..`. |
 | `--integration-branch TEXT` | Branch that task, bug, and planning work integrates into. Defaults to the configured `[git] integration_branch`, else `dev-agent`. |
 | `--no-interactive` | Skip all prompts. Requires `--tools` to be provided explicitly. |
-| `--create-root-guidance` | When used with `--no-interactive`, create root `CLAUDE.md` and `AGENTS.md` from starter templates. Defaults to false (skipped). |
+| `--create-root-guidance` | Create root `CLAUDE.md` and `AGENTS.md` from starter templates without prompting, in interactive and non-interactive mode. Existing files are replaced only together with `--force`. Defaults to false. |
 
 ### What gets scaffolded
 
@@ -131,12 +131,22 @@ tell AI tools how to build, test, and run your project.
 
 - **Interactive mode** (default): the CLI prompts once per file. Answer `y` to
   create a starter template, or `n` to skip.
-- **`--no-interactive --create-root-guidance`**: creates both files without
-  prompting. Useful in CI or scripted setup flows.
+- **`--create-root-guidance`**: creates both files without prompting, in
+  interactive and non-interactive mode. Useful in CI or scripted setup flows.
 - **`--no-interactive` without `--create-root-guidance`**: skips both files and
   prints a reminder to add them manually.
 
-Existing root guidance files are never overwritten unless `--force` is also passed.
+Existing root guidance files are never overwritten unless `--force` is also passed:
+
+| Flags, file exists | Interactive | `--no-interactive` |
+|---|---|---|
+| none | left untouched | left untouched |
+| `--force` | prompts; overwritten on yes | left untouched |
+| `--force --create-root-guidance` | overwritten, no prompt | overwritten, no prompt |
+
+Every existing file that `init` replaces (root guidance, generated agents and
+skills, `.ai-team.toml`) is reported on stdout as `OVERWROTE: <absolute path>`.
+Newly created files and declined or skipped files are not reported.
 
 ### Example: preview then initialise
 
