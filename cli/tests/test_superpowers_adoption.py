@@ -299,7 +299,7 @@ def test_evidence_rule_allows_cited_and_artifact_proof():
     body = skill("evidence-before-claims")
     assert "per Work Log session N" in body
     assert (
-        "roles without a shell"
+        "whenever the proof is an artifact read, not a command run"
         in body.split("### Step 3", 1)[1].split("## Output Format", 1)[0]
     )
     for role in ("reviewer", "architect", "planner"):

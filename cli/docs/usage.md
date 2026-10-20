@@ -74,10 +74,10 @@ pipx install --force dist/*.whl
 
 `sync_init_scaffolds.py` regenerates the bundled scaffolds in
 `cli/src/ai_team/init/scaffolds/` from the package-owned sources in
-`cli/src/ai_team/init/sources/` so that `ai-team init` ships up-to-date scaffolds.
-It never reads the repository's `.claude/`, `.codex/`, or `.agents/` folders, so edit the
-sources and re-run it rather than editing the generated output. Always run it
-before `uv build`.
+`cli/src/ai_team/init/sources/` so that `ai-team init` ships up-to-date
+scaffolds. It never reads the repository's `.claude/`, `.codex/`, or `.agents/`
+folders, so edit the sources and re-run it rather than editing the generated
+output. Always run it before `uv build`.
 
 ### Verify the install
 
@@ -379,7 +379,10 @@ ai-team report --out /tmp/custom-report.md
 in-progress tasks, blocked tasks, critical/high bugs, and the latest
 integration result. The integration result cites the newest Work Log session
 of a completed task or resolved bug (ID, session, date, and first line), or
-`not found` when no such session exists.
+`not found` when no such session exists. The integration result is read only
+from Work Log headings of the exact form `### Session N — YYYY-MM-DD` (an em
+dash, with `N` a session number); a completed task or resolved bug whose
+sessions use any other heading form reports `not found`.
 
 `ai-team report` renders the same data into a markdown file using the bundled
 report template.
@@ -574,9 +577,9 @@ uv run pytest tests/test_task_new.py -v
 ### How to maintain scaffold sources
 
 The scaffold files shipped inside the package are **package-owned copies** —
-they are not read from the repository's `.claude/`, `.codex/`, or `.agents/` trees at
-runtime. This means any change to the canonical agent or skill definitions
-must be reflected in the bundled snapshots before the next release.
+they are not read from the repository's `.claude/`, `.codex/`, or `.agents/`
+trees at runtime. This means any change to the canonical agent or skill
+definitions must be reflected in the bundled snapshots before the next release.
 
 The generator script `scripts/sync_init_scaffolds.py` keeps the snapshots
 in sync. It reads from:

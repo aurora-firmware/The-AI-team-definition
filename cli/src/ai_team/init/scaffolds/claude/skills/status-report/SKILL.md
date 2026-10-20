@@ -50,7 +50,9 @@ Record the latest integration-test result or state that no integration evidence 
 ### Step 4a: Roll Up Deferred Minor Findings
 
 Scan the `### Review Verdict` sections of completed tasks and resolved bugs for `#### Deferred Minor findings` lists. Collect every entry with its work item ID and location.
-A roll-up nobody reads is a silent discard, so present the entries to the human at Gate 5 and ask for a decision on each: fix now (file a bug or task), accept, or defer with a reason. Do not drop entries because they look small.
+Classify entries ending in the literal ` — resolved: promoted to FAIL` marker as resolved for deferred-Minor triage. Retain their work item ID, location, finding and marker in resolved/promoted history; keep entries without that marker in the unresolved list. Preserve every collected entry in one of these two lists.
+Promotion resolves the deferred-Minor triage item, not the failure itself. Read the latest Review Verdict and Work Log for the promoted finding's outcome and cite that evidence in its history entry. If they do not establish a passing fix, state that the outcome is unverified or still failing, as the evidence indicates; the marker alone is never proof of a passing fix.
+A roll-up nobody reads is a silent discard, so present both lists to the human at Gate 5 and ask for a decision only on each unresolved finding: fix now (file a bug or task), accept, or defer with a reason. Do not drop entries because they look small.
 
 ### Step 4b: Check Spec-Truth Reconciliation
 
@@ -88,7 +90,11 @@ Use `ai-team status` output as the inline summary, then always append the Step 4
 [list of critical and high severity open bugs]
 
 ### Deferred Minor Findings
-[work item ID, location, finding — or "none"]
+Unresolved:
+[work item ID, location, finding, fix/accept/defer decision needed — or "none"]
+
+Resolved/promoted history:
+[work item ID, location, finding with ` — resolved: promoted to FAIL` marker, outcome with latest Review Verdict and Work Log evidence — or "none"]
 ```
 
 If there are blocked tasks, critical/high bugs, or spec-truth reconciliation has not passed, add a `Recommended Actions` section suggesting next steps.
@@ -119,7 +125,9 @@ Tell the human the file path. Commit it only if the human asks and the project t
 - Counts exclude templates and `.gitkeep`.
 - Critical and high severity bugs are explicitly listed.
 - Blocked tasks include the blocking reason when one is recorded.
-- Every deferred Minor finding in the scanned Review Verdicts is listed.
+- Every deferred Minor finding in the scanned Review Verdicts is retained in either the unresolved list or resolved/promoted history, with its work item ID and location.
+- Entries ending in ` — resolved: promoted to FAIL` retain that marker in resolved/promoted history; fix/accept/defer decisions are requested only for unresolved findings.
+- A promoted finding's outcome cites the latest Review Verdict and Work Log; promotion alone never establishes a passing fix.
 - When the queue is empty, the state of spec-truth reconciliation is stated.
 - The latest integration evidence is recorded or explicitly marked as not found.
 - The report gives the human enough context for Gate 5 final merge sign-off.

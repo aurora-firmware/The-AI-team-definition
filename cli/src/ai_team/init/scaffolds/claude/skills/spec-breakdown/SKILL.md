@@ -53,7 +53,9 @@ Then fill in the task body so it satisfies:
 - **Acceptance criteria**: Author every criterion using one of the five EARS patterns documented in the task template (`cli/src/ai_team/templates/task.md`) (Ubiquitous, Event-driven, Unwanted-behaviour, State-driven, Optional).
 - **Dependencies**: List of task IDs that must complete first.
 - **Files to touch**: Exact file paths that will be created or modified.
-- **Verification command**: Shell command that proves the task is done. If the task changes a shared or public interface (an API, schema, shared library function, or contract consumed by code outside the task's own module), `## Verification` must include the project's documented baseline/full-suite command in addition to any module-scoped command — a module-scoped command alone is not sufficient for such tasks.
+- **Verification mode**: the Planner decides per task whether it is verified by a **test** or a **design review**. A task that changes code, CLI output, or a rule a test can observe gets a **test**, and its test file is in Files to Touch. A task that changes only prose (guides, process docs, skill wording no test pins) gets a **design review**, recorded with the `Design review:` Verification form defined by `new-task`, listing the source spec, the accepted ADRs, and S-000 when it exists. Anything a test can observe gets a test. If the task changes a shared or public interface (an API, schema, shared library function, or contract consumed by code outside the task's own module), `## Verification` must include the project's documented baseline/full-suite command in addition to any module-scoped command — a module-scoped command alone is not sufficient for such tasks.
+- **Regeneration**: a task regenerates the generated files (scaffolds, docs) its own change affects and lists them in Files to Touch. A plan never ends with a separate "regenerate everything" task.
+- **Command reference**: a task that changes a command's arguments, options or help text lists the project's generated command reference, named in its guidance, in Files to Touch. The command that regenerates it is the project's own, named in its guidance.
 
 During task writing, consider documentation updates as implementation work derived from the approved spec, not as a prerequisite before creating tasks.
 If the spec changes user-facing behavior, commands, templates, guides, or workflow expectations, add the required documentation updates as tasks or acceptance criteria in this breakdown.
@@ -64,6 +66,7 @@ If documentation or test updates are not needed, omit them without placeholder t
 Verify completeness: does the full set of tasks cover the entire specification?
 Verify isolation: do any two tasks modify the same file? If yes, add a dependency between them.
 Verify atomicity: can each task be completed in a single agent pass? If a task feels too large, split it.
+Verify regeneration: does each task list the generated files its own change affects? If the plan ends with a separate "regenerate everything" task, move each regeneration into the task whose change requires it.
 
 ### Step 5: Place Tasks
 The tasks are already in the tracker with status `planned`, listed by `ai-team list tasks --state planned --spec <spec-or-cr-id>`.
@@ -71,7 +74,7 @@ They are outside version control: there is nothing to commit, and `/dev-loop` ig
 
 ### Step 6: Architect Preflight
 Run `ai-team list tasks --state planned --spec <spec-or-cr-id> --json`, then `ai-team show <task-id> --json` for each listed task, and collect each task's absolute `path`.
-The tracker is outside the repository and the Architect does not run commands, so it receives the paths in the prompt.
+The tracker is outside the repository, so the Planner passes the Architect the absolute task paths that `ai-team` reported in the prompt.
 
 **Spawn the Architect subagent** (tier: most capable) with this prompt:
 
@@ -108,7 +111,7 @@ Until this step, the tasks stay `planned` and invisible to `/dev-loop`, and `{{i
 
 - Every task is **atomic** — one clear outcome.
 - Every task is **one-shottable** — completable in a single agent session without running out of context. Rules of thumb: touches at most 3–4 files, has at most 5 acceptance criteria, and the description fits in ~20 lines. If a task exceeds any of these, split it.
-- Every task is **verifiable** — has a test or command that proves it works.
+- Every task is **verifiable** — has a test or command that proves it works, or, for a prose-only task, a named design review.
 - Every task is **self-contained** — the description provides enough context to start.
 - Every AC uses one of the five EARS patterns.
 - No two tasks modify the same file without an explicit dependency between them.
@@ -119,6 +122,6 @@ Until this step, the tasks stay `planned` and invisible to `/dev-loop`, and `{{i
 - **Tasks too large** — if a task description is longer than ~20 lines, it probably needs splitting.
 - **Missing dependencies** — trace the data flow: if Task B reads a file that Task A creates, Task B depends on Task A.
 - **Criteria that do not match an EARS pattern** — if a criterion resists EARS, the task is probably not atomic.
-- **Forgetting verification commands** — every task must have a way to prove it is done. If you cannot write a verification command, the acceptance criteria are not specific enough.
+- **Forgetting verification commands** — every task must have a way to prove it is done: a test or command, or a named design review for a prose-only task. If you can name neither, the acceptance criteria are not specific enough.
 - **File conflicts** — two tasks creating the same file will cause merge conflicts. Restructure so one task creates the file and the other modifies it (with a dependency).
 - **Breaking down S-000** — S-000 is the project overview and produces no tasks. Stop and ask for a feature spec instead; `ai-team task new --spec S-000` is refused by the CLI as well.

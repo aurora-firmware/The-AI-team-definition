@@ -106,7 +106,7 @@ If a clear baseline test command is documented, run it.
 
 Select the highest-priority task whose dependencies are all satisfied:
 1. **Priority order:** critical → high → medium → low (read from task frontmatter `priority` field)
-2. **Dependency check:** for each candidate task, open the file at the `path` reported by `ai-team show T-NNN --json` and read the task IDs listed under its `## Dependencies` section (lines of the form `- `T-NNN` — reason`). Confirm each of those tasks has status `completed` (`ai-team list tasks --state completed`). A `- None` entry means the task has no dependencies.
+2. **Dependency check:** for each candidate task, open the file at the `path` reported by `ai-team show T-NNN --json` and read the task IDs listed under its `## Dependencies` section (lines of the form ``- `T-NNN` — reason``). Confirm each of those tasks has status `completed` (`ai-team list tasks --state completed`). A `- None` entry means the task has no dependencies.
 3. **Tiebreak:** oldest `created` date first
 
 If no task has all dependencies satisfied, stop and report which tasks are waiting and what they are waiting for.
@@ -124,7 +124,7 @@ Read the task file at the path reported by `ai-team show T-NNN --json`, and chec
 **Spawn the Developer subagent** (tier: standard, or cheap for a mechanical task) with this prompt:
 
 > "Pick up the task from the task file `<task-path>` and implement it using the tdd skill.
-> You are on branch `task/T-NNN-...`. Commit after each red→green→refactor cycle.
+> You are on branch `task/T-NNN-...`. Follow the task's declared verification mode using the tdd skill. For test tasks, commit after each red→green→refactor cycle. For design-review tasks, commit the reviewed changes and include the design-review record in your Work Log handoff.
 > The task file is in the local tracker, outside version control: do not edit it, and never add it to a commit.
 > Return a Work Log handoff entry at session end. The entry's heading is `### Session N — YYYY-MM-DD`; the body is free prose covering what was done, what was tried and rejected, and what remains. The loop will append it to the task file.
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
@@ -172,6 +172,8 @@ Extract the verdict: **PASS**, **FAIL**, or **ESCALATE**.
 #### On PASS
 
 If the verdict lists `⚠️ Cannot verify from diff` items, resolve each one before integration, using what the loop knows (other completed work items' Work Logs, the approved spec, the repository). Append the resolution under the verdict. If an item cannot be confirmed, treat the verdict as FAIL for that item and go to **On FAIL**.
+
+Apply the same handling to a deferred Minor finding. If the loop's own checks show that a finding the Reviewer listed under `#### Deferred Minor findings` is a real failure, for example it breaks CI or contradicts the task, treat the verdict as FAIL for that item and go to **On FAIL**. This is the same handling as an unconfirmable `⚠️ Cannot verify from diff` item. When promoting a finding, append ` — resolved: promoted to FAIL` to that entry's line in the verdict's `#### Deferred Minor findings` list, so the Gate 5 roll-up shows it as resolved rather than still deferred.
 
 Before invoking integration, confirm that the task file holds both the Developer Work Log entry
 and the Review Verdict recorded in Steps 5 and 6. The `integrate` skill verifies that the latest

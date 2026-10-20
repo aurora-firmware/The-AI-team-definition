@@ -61,7 +61,8 @@ The role definition is the same in both systems, but the file format is differen
 - The agent body contains the nine canonical sections in Markdown.
 
 **Codex format** stores each agent as TOML in `.codex/agents/<role>.toml`:
-- Top-level TOML keys carry selector and runtime fields such as `name`, `description`, `developer_instructions`, and optional Codex-native settings like `model`, `model_reasoning_effort`, and `sandbox_mode`.
+- Top-level TOML keys carry selector and runtime fields such as `name`, `description`, `developer_instructions`, and optional Codex-native settings like `model` and `model_reasoning_effort`.
+- A Codex subagent takes its sandbox and approval settings from the parent session, not from a custom agent file. The roles that create files or commit — Architect, Planner, Developer, Reviewer, and Integrator — need a parent Codex session that allows writes.
 - The role contract that appears as Markdown sections in Claude is flattened into the `developer_instructions` string.
 
 Mapping rules:
@@ -77,7 +78,7 @@ Mapping rules:
 ---
 name: agent-name
 description: Role-specific description that tells the caller exactly when to use this agent and what inputs to provide. Use for [specific workflow point]. Caller must provide [artifact/path/branch/context].
-tools: Read, Glob, Grep
+tools: Read, Glob, Grep, Bash
 model: claude-sonnet-4-6
 skills: skill-one skill-two
 ---
@@ -198,10 +199,12 @@ Start with the narrowest viable tool set. Broader access is harder to reason abo
 
 | Role shape | Tool frontmatter |
 |---|---|
-| Read-only research / structural review | `Read, Glob, Grep` |
+| Read-only research / structural review | `Read, Glob, Grep, Bash` |
 | Read plus git / test inspection | `Read, Glob, Grep, Bash` |
-| Writes verdicts or planning documents | `Read, Glob, Grep, Write, Edit` |
+| Writes verdicts or planning documents | `Read, Glob, Grep, Write, Edit, Bash` |
 | Writes source and test code | `Read, Glob, Grep, Write, Edit, Bash` |
+
+Every role that uses tracker skills requires `Bash` to invoke the `ai-team` CLI. `Folder Scope` defines its permitted writes.
 
 If a role has broad tools for platform reasons, restate path restrictions in `Folder Scope` and `Quality Bar`.
 
@@ -224,8 +227,8 @@ Rationale: thresholds change as the procedure changes. Keeping them in one place
 
 | Agent | Model | Tools | Main skills |
 |---|---|---|---|
-| Planner | Opus | `Read, Write, Edit, Glob, Grep` | `brainstorm`, `spec-breakdown`, `new-spec`, `new-task` |
-| Architect | Opus | `Read, Write, Edit, Glob, Grep` | `spec-breakdown-review`, `escalation-review`, `new-adr` |
+| Planner | Opus | `Read, Write, Edit, Glob, Grep, Bash` | `brainstorm`, `spec-breakdown`, `new-spec`, `new-task` |
+| Architect | Opus | `Read, Write, Edit, Glob, Grep, Bash` | `spec-breakdown-review`, `escalation-review`, `new-adr` |
 | Developer | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `tdd`, `debug`, `new-bug` |
 | Reviewer | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `code-review`, `new-bug` |
 | Integrator | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `integrate`, `merge-conflicts` |

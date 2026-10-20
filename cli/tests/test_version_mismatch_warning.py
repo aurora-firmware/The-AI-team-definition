@@ -114,8 +114,13 @@ def test_no_warning_for_init_with_mismatched_marker(
 ):
     make_project(tmp_path, marker_with_version(CONFIGURED_VERSION))
 
-    result = run(monkeypatch, tmp_path, ["init", "--help"])
+    result = run(
+        monkeypatch,
+        tmp_path,
+        ["init", "--force", "--no-interactive", "--tools", "claude"],
+    )
 
+    assert result.exit_code == 0
     assert "does not match" not in result.stderr
 
 

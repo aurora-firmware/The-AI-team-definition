@@ -9,7 +9,7 @@ allowed-tools: Read, Grep, Glob, Write, Edit, Bash, Skill(git-conventions)
 ## Input Requirements
 
 - **Task or bug file** — with acceptance criteria or fix-verification steps.
-- **Project test setup** — test framework, directory structure, how to run tests.
+- **Project test setup** — for test tasks: test framework, directory structure, how to run tests. A design-review task (see Design-review tasks) needs no test setup; it needs the references its Verification section lists.
 - **Target-project coding guidance** — the project `CLAUDE.md`, `{{project_dir}}/docs/coding_guidelines.md`, README, build configuration, and any human-provided instructions (the framework-level coding standards are carried by the invoking role's definition).
 
 Task and bug files live in the local tracker, outside version control; the active loop passes their path.
@@ -74,6 +74,18 @@ Use a free-prose body that summarizes what was done, what was tried and rejected
 The session number increments monotonically across all sessions on the same task or bug.
 Return this entry to the active loop. The loop appends it to the task or bug file in the tracker.
 
+## Design-review tasks
+
+This section applies when the task's Verification section holds the line `Design review:`. The task template's Verification comment may precede that line, so detect the line, not the first line of the section.
+For such a task, work through the steps below in place of the red/green cycle (Steps 2-6) and write no test:
+
+1. Read every reference the Verification section lists: the source spec, the accepted ADRs, and S-000 when it is listed. Read S-000 now, when running the review, not at session start.
+2. Check the changed text against each reference and fix every conflict in the changed text, within Files to Touch.
+3. Commit as in Step 7. Record in the Work Log handoff (Step 9) the documents checked, each conflict found and how it was fixed, and the result.
+4. If the change turns out to alter behaviour a test can observe, or needs a file outside Files to Touch, or a conflict can only be resolved by changing a reference document, escalate under the Escalation section below instead of adding an undeclared test.
+
+Steps 0, 7 and 9 still apply.
+
 ## Escalation
 
 Return `ESCALATE` under any of these conditions. All cases use the same structured four-field request; the active loop forwards it to the Architect via the `escalation-review` skill. Do not resume the TDD cycle until the Architect responds.
@@ -95,14 +107,15 @@ Question: [specific guidance needed to continue within the approved specificatio
 
 ## Output Format
 
-- **Test files** — one or more test files covering all acceptance criteria.
+- **Test files** — for test tasks, one or more test files covering all acceptance criteria.
 - **Implementation files** — production code that passes all tests.
-- **Verification** — the task's verification command runs successfully.
+- **Design-review record** — for design-review tasks, the Work Log handoff names the documents checked, each conflict found and how it was fixed, and the result; no test file is produced.
+- **Verification** — the task's verification command runs successfully, or for a design-review task the review is complete.
 - **Work Log handoff** — the complete `### Session N — YYYY-MM-DD` entry for the active loop to record.
 
 ## Quality Criteria
 
-- Every acceptance criterion has at least one test.
+- For test tasks, every acceptance criterion has at least one test. For design-review tasks, every listed reference was read and checked, and the design-review record is in the Work Log handoff.
 - Tests cover both success and failure paths.
 - Tests are independent (no shared mutable state) and deterministic (same result every run, no flakiness).
 - Test names describe the expected behavior, not the implementation (e.g., `test_returns_empty_list_when_no_items` not `test_get_items`).

@@ -108,6 +108,8 @@ Because the human shaped the spec throughout the dialogue, Gate 1 approval shoul
 
 During breakdown the Planner explicitly considers whether the spec changes require documentation updates or test coverage updates. When they do, those updates are planned as implementation tasks or acceptance criteria — not as prerequisites before task creation. If documentation and test updates are not needed, the Planner omits them without creating placeholder tasks.
 
+The Planner also chooses each task's verification mode: a test, or, for a prose-only task, a design review against the source spec, the accepted ADRs, and S-000 when it exists. Each task regenerates the generated files its own change affects and lists them in Files to Touch, so a plan has no trailing "regenerate everything" task.
+
 Before task breakdown starts, the input artifact must be ready for execution: an approved spec must already be free of human-answerable `[TODO]` markers, and an accepted change-request must already be TODO-free, human-approved, and reconciled against Architect consistency findings that do not change the approved intent. If a consistency finding would alter the approved change-request's intended scope, the process stops for a human decision instead of letting the Planner reinterpret the request.
 
 After the Planner writes the task files, the Architect automatically reviews the task plan at Gate 2. Gate 2 focuses on technical task-plan readiness — dependencies, file conflict risks, architectural consistency with existing decision records, atomicity, and verifiability. It does not reopen product or spec approval questions already settled at Gate 1.
@@ -153,9 +155,9 @@ Before claiming the first task, the loop discovers the project's documented base
 #### Developer details
 
 **Role:** Developer.
-**Procedure:** Test-driven implementation and debugging.
+**Procedure:** Test-driven implementation and debugging; for a design-review task, a design review of the changed text against the listed references.
 **Input:** An `in-progress` task file in the tracker.
-**Output:** Working code with passing tests on the task branch, plus a Work Log entry returned to the development loop for the task file.
+**Output:** Working code with passing tests on the task branch (for a design-review task, a recorded design review in the Work Log in place of passing tests), plus a Work Log entry returned to the development loop for the task file.
 
 #### Reviewer details
 

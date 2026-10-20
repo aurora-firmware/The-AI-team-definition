@@ -18,6 +18,8 @@ PROJECT_LEAF_DIRS = (
 
 TOOLS = ("claude", "codex")
 
+SKILL_SUPPORTING_FOLDERS = ("assets", "references", "scripts")
+
 
 def _cli_root_from_script(script_path: Path) -> Path:
     # script lives at <repo>/cli/scripts/sync_init_scaffolds.py
@@ -70,6 +72,18 @@ def _load_skill_metadata(path: Path) -> dict[str, str]:
     return headers
 
 
+def _copy_skill_supporting_folders(skill_dir: Path, skill_output_dir: Path) -> None:
+    # Copied verbatim: supporting files are never placeholder-filled.
+    for folder_name in SKILL_SUPPORTING_FOLDERS:
+        source_folder = skill_dir / folder_name
+        if source_folder.is_dir():
+            shutil.copytree(
+                source_folder,
+                skill_output_dir / folder_name,
+                ignore=shutil.ignore_patterns("__pycache__", ".DS_Store"),
+            )
+
+
 def _replace_generated_skills(source_root: Path, destination_root: Path) -> None:
     destination_root.mkdir(parents=True, exist_ok=True)
     for tool in TOOLS:
@@ -103,6 +117,7 @@ def _replace_generated_skills(source_root: Path, destination_root: Path) -> None
             skill_output_dir.mkdir(parents=True, exist_ok=True)
             skill_output = headers[tool] + "\n\n" + body
             (skill_output_dir / "SKILL.md").write_text(skill_output, encoding="utf-8")
+            _copy_skill_supporting_folders(skill_dir, skill_output_dir)
 
 
 def sync_init_scaffolds(cli_root: Path) -> None:

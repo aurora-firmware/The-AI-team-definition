@@ -70,6 +70,12 @@ skill-name/
 
 Only create `assets/`, `references/`, or `scripts/` when the skill needs them. Do not add `README.md`, quick references, or changelogs — the `SKILL.md` is the single entry point.
 
+### Export Rules for Skills in This Repository
+
+Of a source skill directory under `cli/src/ai_team/init/sources/skills/<name>/`, only `body.md`, `metadata.toml` and the `assets/`, `references/` and `scripts/` folders are exported. Any other file in that directory stays in the source tree.
+
+The supporting folders reach both the Claude and the Codex export, next to `SKILL.md`. The generator copies them byte for byte. When `ai-team init` writes them into a project, it fills in `{{project_dir}}` and `{{integration_branch}}`. Files that are not UTF-8 text are copied byte for byte, without placeholder filling.
+
 ## Canonical Section Order
 
 For **procedure skills**:
@@ -285,7 +291,7 @@ Skills must not reference content outside `.claude/`. If a cross-cutting rule (e
 
 Keep `SKILL.md` focused on the core workflow. Move detail out when it is conditional, large, or only needed for some variants:
 
-- Put reusable templates in `assets/` (see `new-task/assets/TEMPLATE-task.md`).
+- Put reusable templates in `assets/` (for example, a `TEMPLATE-report.md` that the skill copies and fills in).
 - Put domain references, schemas, examples, or long policies in `references/`.
 - Put deterministic or fragile operations in `scripts/`.
 

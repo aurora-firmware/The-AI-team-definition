@@ -44,13 +44,26 @@ When invoked directly by a human and required fields are missing, ask for the mi
 7. Verify the drafted task (or placeholders that will be completed) can satisfy the Task Quality Rules below.
 8. Confirm creation using the CLI response values (`id` and `path`).
 
+## Verification Modes
+
+A task is verified by a **test** or by a **design review**. `spec-breakdown` chooses the mode; `new-task` records the choice in the task's Verification section.
+
+- **Test task** — the task changes code, CLI output, or a rule that a test can observe. Its Verification holds the command(s), and the test file is listed in Files to Touch.
+- **Design-review task** — the task changes only prose (guides, process docs, skill wording that no test pins). In place of a command block, its Verification section holds the line `Design review:` followed by one bullet per reference the changed text must agree with: the source spec, each accepted ADR it must agree with, and the system overview S-000 when it exists. It holds no test command.
+  Other skills detect a design-review task by this `Design review:` line.
+
+### Verification run context
+
+Each Verification line runs from the repository root in a fresh shell, independently of the other lines.
+A line that needs another directory changes into it on that same line, for example `cd <dir> && <command>`.
+
 ## Task Quality Rules
 
 Every task file produced by this skill must be:
 
 - **Atomic** — one clear outcome. If the task delivers two independent outcomes, split it into two tasks.
 - **One-shottable** — completable in a single agent session without running out of context. Rules of thumb: touches at most **3–4 files**, has at most **5 acceptance criteria**, and the Description fits in roughly **20 lines**. If a draft task exceeds any of these, split it or narrow the scope.
-- **Verifiable** — has a concrete `Verification` command that proves the task is done. If no automated command is possible, the Verification section states the exact manual steps.
+- **Verifiable** — has a concrete `Verification` command that proves the task is done. A task that changes only prose is verified by a design review instead (see **Verification Modes**). If neither is possible, the Verification section states the exact manual steps.
 - **Self-contained** — the Description provides enough context for an agent to start without asking follow-up questions. Any prior decisions, files, or conventions the task depends on are named explicitly.
 - **EARS-compliant acceptance criteria** — every AC matches one of the five EARS patterns documented in the template (Ubiquitous, Event-driven, Unwanted-behaviour, State-driven, Optional). An AC that resists EARS usually means the task is not atomic.
 - **Dependency-honest** — if the task reads or modifies something that another pending task creates, list that other task ID under `Dependencies`.
@@ -64,7 +77,7 @@ Rules that govern the *set of tasks* (no two tasks modifying the same file witho
 - **Task is really two tasks** — reads like "Implement X AND migrate Y". Split.
 - **Description is a ticket title, not enough to start** — agent has to open the spec or ask questions. Expand.
 - **Acceptance criteria are aspirational, not testable** — "Works well under load" is not an AC. Name the measurable behaviour.
-- **No verification command** — if the task has no way to prove it's done, its acceptance criteria are not specific enough.
+- **No verification command** — if the task has no way to prove it's done, its acceptance criteria are not specific enough. A prose-only task takes the design-review alternative (a `Design review:` line with its reference bullets) instead of a command.
 - **Placeholder survives** — "add error handling" or "similar to T-004" reads like a plan but is not one. Name the handling or repeat the content.
 - **Mismatched interface names** — the task consumes `clearFullLayers()` while its dependency produces `clearLayers()`. Copy names from the producing task.
 - **Hidden dependency** — the task reads a file a sibling task creates but no dependency is listed. The `spec-breakdown` Gate 2 preflight will catch this, but it's cheaper to catch here.

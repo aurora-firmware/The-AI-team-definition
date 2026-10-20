@@ -40,7 +40,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 - File conflict risks are identified and resolved through dependencies or task changes.
 - Interfaces are consistent across tasks: every type, function, or file a task consumes is produced by a task it depends on (or already exists), under the same name and signature.
 - Task plan is architecturally consistent with existing decisions.
-- Tasks are atomic, independently verifiable, and ready for implementation.
+- Tasks are atomic, independently verifiable, and ready for implementation. Verification is a test or, for a task that changes only prose, a named design review that lists its references (the source spec, accepted ADRs, and S-000 when it exists); a task that changes behaviour a test can observe has a test.
 - No task contains placeholder text (`TBD`, `TODO`, "implement later", "add appropriate error handling", "similar to Task N", or a reference to something no task defines).
 
 **On failure:** Architect returns a correction request to the Planner. The Planner revises the task plan and resubmits it to Gate 2.
@@ -71,6 +71,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 - Code follows the coding standards: `ai-process/guidelines/coding-standards.md` (general) and `ai-team/docs/coding_guidelines.md` (project-specific tech-stack rules, if present).
 - Relevant tests exist for the changed behavior.
 - The Developer's Work Log records local test evidence or explains why a local test run was not possible.
+- For a design-review task, the Work Log records the design review — documents checked, each conflict found and fixed, and the result — in place of test evidence, and the Reviewer checks the planning choice.
 - No security vulnerabilities introduced.
 - No performance regressions.
 - Code is readable and maintainable.
