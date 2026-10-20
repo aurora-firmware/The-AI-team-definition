@@ -435,6 +435,10 @@ def dump_frontmatter(model: Task | Bug | Spec | Adr | ChangeRequest, body: str) 
     # Serialise to a YAML string.
     yaml = YAML(typ="rt")
     yaml.default_flow_style = False
+    # ruamel folds scalars at 80 columns by default, which wraps long titles and
+    # leaves trailing spaces in tracker files; a very large width keeps each
+    # scalar on one line.
+    yaml.width = 4096
     stream = io.StringIO()
     yaml.dump(cm, stream)
     yaml_text = stream.getvalue()
