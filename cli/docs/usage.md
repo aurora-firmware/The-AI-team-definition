@@ -28,6 +28,27 @@ The warning goes to stderr for help, version, successful commands, failed
 commands, and commands that emit JSON. Normal human-readable and JSON output
 remains on stdout, so redirect or parse stdout without including the warning.
 
+### Version mismatch warning
+
+When the project's `.ai-team.toml` records an `[init].framework_version` that
+differs from the running `ai-team` version (exact string comparison, as in
+`ai-team check-layout`), every command except `init` also writes this warning
+once to stderr, after the development warning:
+
+```text
+Warning: .ai-team.toml framework_version <configured> does not match ai-team <running>. Install ai-team <configured>, or run `ai-team init --force` to update the project to <running>.
+```
+
+The warning is skipped when:
+
+- no project or no `.ai-team.toml` is found;
+- the versions are equal;
+- `[init].framework_version` is missing, empty, or not a version string;
+- `.ai-team.toml` is not valid TOML;
+- the command is `ai-team init`, or the run is root `--help` or `--version`.
+
+The warning never changes stdout, `--json` output, or the exit code.
+
 ---
 
 ## Installation
@@ -54,7 +75,7 @@ pipx install --force dist/*.whl
 `sync_init_scaffolds.py` regenerates the bundled scaffolds in
 `cli/src/ai_team/init/scaffolds/` from the package-owned sources in
 `cli/src/ai_team/init/sources/` so that `ai-team init` ships up-to-date scaffolds.
-It never reads the repository's `.claude/` or `.codex/` folders, so edit the
+It never reads the repository's `.claude/`, `.codex/`, or `.agents/` folders, so edit the
 sources and re-run it rather than editing the generated output. Always run it
 before `uv build`.
 
@@ -115,8 +136,21 @@ Running `ai-team init . --tools codex` additionally writes:
 ```
 .codex/
   agents/   ← Codex-format .toml agent definitions
+.agents/
   skills/   ← Codex-format SKILL.md skill definitions
 ```
+
+Codex skills live in `.agents/skills/`, not `.codex/skills/`. Codex needs a
+release that reads `.agents/skills/`.
+
+Earlier versions wrote Codex skills to `.codex/skills/<name>/`. `ai-team init
+--force` removes those legacy copies of framework skills and prints
+`REMOVED: <folder>` for each one; any other folder under `.codex/skills/` is
+kept and reported as `LEFT IN PLACE: <folder>`. `ai-team check-layout` reports
+leftover legacy copies as a finding.
+
+The next steps printed by `init` name each skill as `/name` for Claude Code and
+`$name` for Codex.
 
 Use `--tools all` (or `--tools claude,codex`) to scaffold both tool sets at once.
 
@@ -509,7 +543,7 @@ The `ai_team` package lives in `cli/src/ai_team/` and is structured as:
 | `ai_team.core.validate` | Artifact metadata validation logic. |
 | `ai_team.templates/` | Bundled Markdown artifact templates (task, bug, spec, adr, report). |
 | `ai_team.init/` | Scaffold data for `ai-team init`. |
-| `ai_team.init.scaffolds/` | Package-owned snapshots: project skeleton, `.claude/` agents and skills, and `.codex/` agents and skills. |
+| `ai_team.init.scaffolds/` | Package-owned snapshots: project skeleton, `.claude/` agents and skills, and `.codex/` agents and `.agents/` skills. |
 | `ai_team.render` | Rich console and JSON output helpers. |
 
 ### How to add a new command
@@ -540,7 +574,7 @@ uv run pytest tests/test_task_new.py -v
 ### How to maintain scaffold sources
 
 The scaffold files shipped inside the package are **package-owned copies** —
-they are not read from the repository's `.claude/` or `.codex/` trees at
+they are not read from the repository's `.claude/`, `.codex/`, or `.agents/` trees at
 runtime. This means any change to the canonical agent or skill definitions
 must be reflected in the bundled snapshots before the next release.
 
@@ -550,12 +584,12 @@ in sync. It reads from:
 - `cli/src/ai_team/init/sources/agents/` — source agent definitions for
   each tool (`.claude/agents/`, `.codex/agents/`)
 - `cli/src/ai_team/init/sources/skills/` — source skill definitions for
-  each tool (`.claude/skills/`, `.codex/skills/`)
+  each tool (`.claude/skills/`, `.agents/skills/`)
 
 and writes the processed output into:
 
 - `cli/src/ai_team/init/scaffolds/claude/` — `.claude/` snapshot (agents and skills)
-- `cli/src/ai_team/init/scaffolds/codex/` — `.codex/` snapshot (agents and skills)
+- `cli/src/ai_team/init/scaffolds/codex/` — Codex snapshot (`.codex/agents/` and `.agents/skills/`)
 - `cli/src/ai_team/init/scaffolds/project/` — project skeleton
 
 Run `sync_init_scaffolds.py` whenever the canonical agent or skill files
@@ -570,7 +604,7 @@ intentionally excluded from the scaffold — only the implementation layer
 
 Before building, refresh the bundled scaffold snapshots so `ai-team init` ships
 the latest `.claude/agents/`, `.claude/skills/`, `.codex/agents/`, and
-`.codex/skills/`:
+`.agents/skills/`:
 
 ```bash
 cd cli

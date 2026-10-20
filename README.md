@@ -15,7 +15,7 @@ Those rules are then **implemented** by four things, all packaged inside the `ai
 - the **root guidance templates** — starter `CLAUDE.md` and `AGENTS.md` files for project-specific commands and conventions (authored under `cli/src/ai_team/init/sources/root/`);
 - the **`ai-team` CLI** (`cli/`) — the tooling that supports the skills by managing project artifacts and bootstrapping the framework into new repositories.
 
-When a project runs `ai-team init`, the CLI writes the project skeleton, the exported agents and skills, `.ai-team.toml`, and optionally starter root guidance into that project's repository. The `.claude/` and `.codex/` folders are **per-project local configuration** — they are not part of this meta-project's deliverable and, in this repository, are git-ignored and used only when running agents *inside this repo*.
+When a project runs `ai-team init`, the CLI writes the project skeleton, the exported agents and skills, `.ai-team.toml`, and optionally starter root guidance into that project's repository. The `.claude/`, `.codex/`, and `.agents/` folders are **per-project local configuration** — they are not part of this meta-project's deliverable and, in this repository, are git-ignored and used only when running agents *inside this repo*.
 
 Think of it as a constitution for an AI development team.
 The ai-process is the law; the agents, skills, and CLI are the institutions that carry it out.
@@ -125,9 +125,9 @@ The framework ships agent and skill definitions for two tools:
 - **Claude Code** — Markdown agents and skills.
 - **OpenAI Codex** — TOML agents plus the same Markdown skills.
 
-Both variants are authored once under `cli/src/ai_team/init/sources/` and exported by `ai-team init` into the target project's `.claude/` (for Claude Code) and/or `.codex/` (for Codex) directory, selected with `--tools claude`, `--tools codex`, or `--tools all`.
+Both variants are authored once under `cli/src/ai_team/init/sources/` and exported by `ai-team init` into the target project's `.claude/` (for Claude Code) and/or `.codex/` and `.agents/` (for Codex) directories, selected with `--tools claude`, `--tools codex`, or `--tools all`.
 
-This repository may also contain `.claude/` and `.codex/` folders at its root — those are **local agent configuration for this repository only**, are git-ignored, and are **not** part of the framework deliverable. They mirror what `ai-team init` would write into a target project, but the CLI and the bundled scaffolds never read from them at runtime.
+This repository may also contain `.claude/`, `.codex/`, and `.agents/` folders at its root — those are **local agent configuration for this repository only**, are git-ignored, and are **not** part of the framework deliverable. They mirror what `ai-team init` would write into a target project, but the CLI and the bundled scaffolds never read from them at runtime.
 
 ## Using This Framework in Your Project
 
@@ -160,7 +160,7 @@ From the target repository root:
 ai-team init . --tools all --no-interactive --create-root-guidance
 ```
 
-This creates the managed `ai-team/` folders, copies the bundled agents and skills into the target project's `.claude/` and/or `.codex/` directories, writes `.ai-team.toml`, and optionally creates starter root `CLAUDE.md` and `AGENTS.md` files.
+This creates the managed `ai-team/` folders, copies the bundled agents and skills into the target project's `.claude/`, `.codex/`, and/or `.agents/` directories, writes `.ai-team.toml`, and optionally creates starter root `CLAUDE.md` and `AGENTS.md` files.
 The `ai-process/` specification documents are not exported; they live in this meta-repository only and serve as the authoritative spec for the rules the agents and skills implement.
 
 Use `--dry-run` to preview files before writing. Use `--force` only when you intentionally want existing files overwritten. In non-interactive setup, omit `--create-root-guidance` if you do not want starter root guidance files.
@@ -240,7 +240,7 @@ See `guides/setup-guide.md` for the complete file list, CLAUDE.md starter templa
                          and skill sources live under cli/src/ai_team/init/sources/)
 ```
 
-> Not shown above: `.claude/` and `.codex/` may exist at the repo root as **local-only, git-ignored** agent configuration used when running agents inside this meta-repo. They are not part of the framework deliverable.
+> Not shown above: `.claude/`, `.codex/`, and `.agents/` may exist at the repo root as **local-only, git-ignored** agent configuration used when running agents inside this meta-repo. They are not part of the framework deliverable.
 
 ## Contributing to This Project
 

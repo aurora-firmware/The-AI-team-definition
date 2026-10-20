@@ -14,6 +14,7 @@ from typing import Literal
 
 from ai_team.core.config import is_valid_project_dir
 from ai_team.core.locator import DEFAULT_PROJECT_DIR, ProjectRoot
+from ai_team.core.tool_paths import TOOL_EXPORT_PATHS, framework_skill_names
 from ai_team.core.tracker import (
     MIGRATION_GUIDE,
     is_inside,
@@ -236,12 +237,15 @@ def _expected_directories(contract: LayoutContract) -> list[Path]:
         for relative in _resource_directories(scaffold_root.joinpath("project"))
     )
     for tool in contract.tools:
-        tool_root = contract.repo / f".{tool}"
-        expected.append(tool_root)
-        expected.extend(
-            tool_root / relative
-            for relative in _resource_directories(scaffold_root.joinpath(tool))
-        )
+        for scaffold_subfolder, destination in TOOL_EXPORT_PATHS[tool]:
+            destination_root = contract.repo / destination
+            expected.append(destination_root)
+            expected.extend(
+                destination_root / relative
+                for relative in _resource_directories(
+                    scaffold_root.joinpath(tool, scaffold_subfolder)
+                )
+            )
     return expected
 
 
@@ -283,10 +287,28 @@ def _tracker_findings(contract: LayoutContract) -> list[LayoutFinding]:
     return findings
 
 
+def _legacy_codex_skill_findings(contract: LayoutContract) -> list[LayoutFinding]:
+    """Report framework skill copies left in .codex/skills after the move to .agents/skills."""
+
+    if "codex" not in contract.tools:
+        return []
+    return [
+        _finding(
+            1,
+            f".codex/skills/{name}",
+            f"Legacy Codex skill folder '.codex/skills/{name}' duplicates the framework skill exported to '.agents/skills/{name}'.",
+            "Rerun 'ai-team init --force' to remove the legacy copy.",
+        )
+        for name in framework_skill_names("codex")
+        if (contract.repo / ".codex" / "skills" / name).is_dir()
+    ]
+
+
 def check_level_1(contract: LayoutContract) -> list[LayoutFinding]:
     """Report missing directories, tracker ignore problems, and legacy folders."""
 
     findings = _tracker_findings(contract)
+    findings.extend(_legacy_codex_skill_findings(contract))
     for path in _expected_directories(contract):
         if not path.is_dir():
             display_path = path.relative_to(contract.repo).as_posix()

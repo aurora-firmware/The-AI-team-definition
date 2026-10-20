@@ -20,6 +20,7 @@ from ai_team.core.config import (
     render_placeholders,
 )
 from ai_team.core.locator import DEFAULT_PROJECT_DIR
+from ai_team.core.tool_paths import TOOL_EXPORT_PATHS, framework_skill_names
 from ai_team.core.tracker import DEFAULT_TRACKER_DIR, resolve_tracker_dir
 
 NAME = "init"
@@ -100,11 +101,24 @@ def _resolve_tools(tools: str | None, no_interactive: bool) -> list[str]:
     return _parse_tools(raw)
 
 
-def _next_steps() -> list[str]:
+def _skill_invocation(skill: str, tools: list[str]) -> str:
+    """Return how to invoke ``skill`` in the configured tools.
+
+    Claude Code runs a skill as ``/name``; Codex has no per-skill slash command
+    and runs it as ``$name``. With no tool configured, keep the ``/name`` form.
+    """
+    if tools == ["codex"]:
+        return f"${skill}"
+    if "claude" in tools and "codex" in tools:
+        return f"/{skill} (Claude Code) or ${skill} (Codex)"
+    return f"/{skill}"
+
+
+def _next_steps(tools: list[str]) -> list[str]:
     return [
-        "Run /brainstorm to explore the request and constraints.",
-        "Run /spec-breakdown to break the approved spec into tasks.",
-        "Run /dev-loop to execute tasks through review and integration.",
+        f"Run {_skill_invocation('brainstorm', tools)} to explore the request and constraints.",
+        f"Run {_skill_invocation('spec-breakdown', tools)} to break the approved spec into tasks.",
+        f"Run {_skill_invocation('dev-loop', tools)} to execute tasks through review and integration.",
     ]
 
 
@@ -241,6 +255,32 @@ def _handle_root_guidance(
     return declined
 
 
+def _remove_legacy_codex_skills(target_root: Path, dry_run: bool) -> None:
+    """Remove framework skill copies left in ``.codex/skills`` by older releases.
+
+    Codex lists same-named skills from ``.codex/skills`` and ``.agents/skills``
+    side by side, so the old framework copies would show every skill twice.
+    Folders the framework does not own are left alone, and the legacy root is
+    removed only once it is empty. With *dry_run* nothing changes.
+    """
+    legacy_root = target_root / ".codex" / "skills"
+    if not legacy_root.is_dir():
+        return
+
+    framework_names = set(framework_skill_names("codex"))
+    for folder in sorted(path for path in legacy_root.iterdir() if path.is_dir()):
+        if folder.name not in framework_names:
+            typer.echo(f"LEFT IN PLACE: {folder}")
+        elif dry_run:
+            typer.echo(f"WOULD REMOVE: {folder}")
+        else:
+            shutil.rmtree(folder)
+            typer.echo(f"REMOVED: {folder}")
+
+    if not dry_run and not any(legacy_root.iterdir()):
+        legacy_root.rmdir()
+
+
 def _would_write_verb(destination: Path, force: bool) -> str:
     return "WOULD OVERWRITE" if destination.exists() and force else "WOULD WRITE"
 
@@ -311,15 +351,14 @@ def init_command(
             _plan_copies(scaffolds_path / "project", target_root / project_dir)
         )
 
-        if "claude" in selected_tools:
-            planned.extend(
-                _plan_copies(scaffolds_path / "claude", target_root / ".claude")
-            )
-
-        if "codex" in selected_tools:
-            planned.extend(
-                _plan_copies(scaffolds_path / "codex", target_root / ".codex")
-            )
+        for tool in selected_tools:
+            for scaffold_subfolder, destination in TOOL_EXPORT_PATHS[tool]:
+                planned.extend(
+                    _plan_copies(
+                        scaffolds_path / tool / scaffold_subfolder,
+                        target_root / destination,
+                    )
+                )
 
         marker = target_root / ".ai-team.toml"
         planned_destinations = [destination for _, destination in planned] + [marker]
@@ -338,6 +377,8 @@ def init_command(
         if dry_run:
             for destination in planned_destinations:
                 typer.echo(f"{_would_write_verb(destination, force)}: {destination}")
+            if force and "codex" in selected_tools:
+                _remove_legacy_codex_skills(target_root, dry_run=True)
             _handle_root_guidance(
                 target_root,
                 sources_path,
@@ -352,6 +393,8 @@ def init_command(
 
         for source, destination in planned:
             _write_rendered(source, destination, settings)
+        if force and "codex" in selected_tools:
+            _remove_legacy_codex_skills(target_root, dry_run=False)
 
         # Keep every setting the user already configured; only the values this
         # command owns (project, tracker, git, init) are refreshed.
@@ -393,7 +436,7 @@ def init_command(
 
     typer.echo("Initialization complete.")
     typer.echo("Next steps:")
-    for line in _next_steps():
+    for line in _next_steps(selected_tools):
         typer.echo(f"- {line}")
 
     if declined:
