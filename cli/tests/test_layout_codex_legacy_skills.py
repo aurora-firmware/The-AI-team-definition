@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ai_team.core.layout import LayoutFinding, check_level_1, resolve_layout
+from ai_team.core.layout import (
+    LayoutFinding,
+    check_layout,
+    check_level_1,
+    resolve_layout,
+)
 from ai_team.core.tool_paths import framework_skill_names
 
 
@@ -72,3 +77,44 @@ def test_legacy_findings_leave_repository_unchanged(tmp_path: Path) -> None:
 
     assert _legacy_findings(tmp_path)
     assert _snapshot(tmp_path) == before
+
+
+def _expected_finding(name: str) -> LayoutFinding:
+    return LayoutFinding(
+        1,
+        f".codex/skills/{name}",
+        f"Legacy Codex skill folder '.codex/skills/{name}' duplicates the framework skill exported to '.agents/skills/{name}'.",
+        "Rerun 'ai-team init --force' to remove the legacy copy.",
+    )
+
+
+def test_reports_one_finding_per_framework_folder_in_path_order_ignoring_user_folder(
+    tmp_path: Path,
+) -> None:
+    first, second = sorted(framework_skill_names("codex"))[:2]
+    _write_marker(tmp_path, ("codex",))
+    skills = tmp_path / ".codex" / "skills"
+    for name in (second, "my-own-skill", first):
+        (skills / name).mkdir(parents=True)
+
+    assert _legacy_findings(tmp_path) == [
+        _expected_finding(first),
+        _expected_finding(second),
+    ]
+
+
+def test_check_layout_includes_legacy_finding_in_sorted_full_result(
+    tmp_path: Path,
+) -> None:
+    name = framework_skill_names("codex")[0]
+    _write_marker(tmp_path, ("codex",))
+    (tmp_path / ".codex" / "skills" / name).mkdir(parents=True)
+
+    findings = check_layout(tmp_path, current_version="1.2.3")
+
+    assert _expected_finding(name) in findings
+    assert len(findings) > 1
+    assert findings == sorted(
+        findings,
+        key=lambda f: (f.level, f.path, f.problem, f.suggested_fix),
+    )

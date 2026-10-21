@@ -4,8 +4,28 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 CLI = Path(__file__).resolve().parents[1]
-BODY = CLI / "src" / "ai_team" / "init" / "sources" / "skills" / "tdd" / "body.md"
+INIT = CLI / "src" / "ai_team" / "init"
+BODY = INIT / "sources" / "skills" / "tdd" / "body.md"
+COPIES = [
+    BODY,
+    INIT / "scaffolds" / "claude" / "skills" / "tdd" / "SKILL.md",
+    INIT / "scaffolds" / "codex" / "skills" / "tdd" / "SKILL.md",
+]
+DESIGN_REVIEW_RECORD = (
+    "**Design-review record** — for design-review tasks, the Work Log handoff "
+    "names the documents checked, each conflict found and how it was fixed, "
+    "and the result; no test file is produced."
+)
+TEST_ONLY_BULLET_STARTS = (
+    "- For test tasks, tests cover both success and failure paths.",
+    "- For test tasks, tests are independent",
+    "- For test tasks, test names describe",
+    "- For test tasks, the implementation is minimal",
+    "- For test tasks, all tests pass when run together.",
+)
 
 
 def body() -> str:
@@ -14,6 +34,12 @@ def body() -> str:
 
 def flat(text: str) -> str:
     return " ".join(text.split())
+
+
+def section_of(text: str, heading: str) -> str:
+    start = text.index(heading)
+    end = text.find("\n## ", start + 1)
+    return text[start : end if end != -1 else len(text)]
 
 
 def section() -> str:
@@ -58,13 +84,27 @@ def test_section_escalates_instead_of_adding_an_undeclared_test():
     assert "undeclared test" in text
 
 
-def test_input_output_and_quality_sections_distinguish_design_review_tasks():
+def test_input_and_quality_sections_distinguish_design_review_tasks():
     text = body()
-    for heading in ("## Input Requirements", "## Output Format", "## Quality Criteria"):
-        start = text.index(heading)
-        end = text.find("\n## ", start + 1)
-        part = flat(text[start : end if end != -1 else len(text)])
-        assert "design-review" in part.lower(), heading
+    for heading in ("## Input Requirements", "## Quality Criteria"):
+        assert "design-review" in flat(section_of(text, heading)).lower(), heading
     assert "For test tasks, every acceptance criterion has at least one test" in flat(
         text
     )
+
+
+@pytest.mark.parametrize("path", COPIES, ids=lambda p: p.parent.parent.parent.name)
+def test_output_format_pins_design_review_record_and_test_task_qualifiers(path):
+    output = flat(section_of(path.read_text(encoding="utf-8"), "## Output Format"))
+    assert DESIGN_REVIEW_RECORD in output
+    assert "**Test files** — for test tasks, one or more" in output
+    assert "**Implementation files** — for test tasks, production code" in output
+
+
+@pytest.mark.parametrize("path", COPIES, ids=lambda p: p.parent.parent.parent.name)
+def test_quality_criteria_scope_test_bullets_to_test_tasks(path):
+    quality = section_of(path.read_text(encoding="utf-8"), "## Quality Criteria")
+    bullets = {flat(line) for line in quality.splitlines() if line.startswith("- ")}
+    for start in TEST_ONLY_BULLET_STARTS:
+        matching = [b for b in bullets if b.startswith(start)]
+        assert len(matching) == 1, start

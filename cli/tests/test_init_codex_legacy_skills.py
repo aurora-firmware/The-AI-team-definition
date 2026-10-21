@@ -111,3 +111,44 @@ def test_force_without_codex_never_touches_legacy_folders(tmp_path):
     assert legacy.is_dir()
     assert "REMOVED:" not in result.output
     assert "LEFT IN PLACE:" not in result.output
+
+
+def test_force_unlinks_framework_named_symlink_and_keeps_its_target(tmp_path):
+    target = tmp_path / "elsewhere" / _framework_skill()
+    target.mkdir(parents=True)
+    (target / "SKILL.md").write_text("mine", encoding="utf-8")
+    link = tmp_path / ".codex" / "skills" / _framework_skill()
+    link.parent.mkdir(parents=True)
+    link.symlink_to(target, target_is_directory=True)
+
+    result = _init(tmp_path, "--force")
+
+    assert result.exit_code == 0
+    assert not link.is_symlink()
+    assert (target / "SKILL.md").read_text(encoding="utf-8") == "mine"
+    assert f"REMOVED: {link}" in result.output
+    assert (tmp_path / ".ai-team.toml").exists()
+
+
+def test_force_removes_legacy_framework_skill_when_tools_are_claude_and_codex(
+    tmp_path,
+):
+    legacy = _make_legacy_skill(tmp_path, _framework_skill())
+
+    result = _init(tmp_path, "--force", tools="claude,codex")
+
+    assert result.exit_code == 0
+    assert not legacy.exists()
+    assert f"REMOVED: {legacy}" in result.output
+
+
+def test_force_keeps_legacy_skills_folder_when_stray_file_remains(tmp_path):
+    legacy = _make_legacy_skill(tmp_path, _framework_skill())
+    stray = tmp_path / ".codex" / "skills" / "notes.txt"
+    stray.write_text("keep", encoding="utf-8")
+
+    result = _init(tmp_path, "--force")
+
+    assert result.exit_code == 0
+    assert not legacy.exists()
+    assert stray.read_text(encoding="utf-8") == "keep"

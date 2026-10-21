@@ -286,7 +286,10 @@ def _remove_legacy_codex_skills(target_root: Path, dry_run: bool) -> None:
         elif dry_run:
             typer.echo(f"WOULD REMOVE: {folder}")
         else:
-            shutil.rmtree(folder)
+            if folder.is_symlink():
+                folder.unlink()
+            else:
+                shutil.rmtree(folder)
             typer.echo(f"REMOVED: {folder}")
 
     if not dry_run and not any(legacy_root.iterdir()):

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 CLI = Path(__file__).resolve().parents[1]
@@ -41,5 +42,9 @@ def test_on_pass_names_promotion_as_the_same_handling_as_cannot_verify():
 def test_on_pass_appends_resolved_marker_to_the_promoted_deferred_entry():
     for name, path in COPIES.items():
         section = on_pass_section(path)
-        assert "`#### Deferred Minor findings`" in section, name
-        assert "` — resolved: promoted to FAIL`" in section, name
+        marker = "` — resolved: promoted to FAIL`"
+        sentences = re.split(r"(?<=\.)\s+", section)
+        marker_sentences = [s for s in sentences if marker in s]
+        assert len(marker_sentences) == 1, name
+        assert "append" in marker_sentences[0], name
+        assert "`#### Deferred Minor findings`" in marker_sentences[0], name

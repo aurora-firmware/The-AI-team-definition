@@ -222,6 +222,19 @@ def test_usage_md_explains_how_to_regenerate_commands_md():
     )
 
 
+def test_usage_md_documents_gen_docs_output_option():
+    """usage.md must document gen_docs.sh --output and the default target."""
+    content = _content()
+    assert "bash cli/scripts/gen_docs.sh [--output <path>]" in content, (
+        "usage.md must show the gen_docs.sh --output usage form"
+    )
+    section = content[content.index("### How to regenerate `commands.md`") :]
+    assert "cli/docs/commands.md" in section and "working directory" in section, (
+        "usage.md must state the default target and that a relative --output "
+        "path resolves against the caller's working directory"
+    )
+
+
 # ---------------------------------------------------------------------------
 # AC-4: link to commands.md
 # ---------------------------------------------------------------------------

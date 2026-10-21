@@ -40,7 +40,7 @@ A skill that works for Opus may need more detail for Haiku. If a skill will be i
 Skills fall into three categories. The shape of the `SKILL.md` differs slightly per category.
 
 - **Procedures** — analytical, multi-step work. Have a numbered `Procedure`, `Escalation` section, `Quality Criteria`, and `Common Pitfalls`. Examples: `tdd`, `code-review`, `integrate`, `debug`, `merge-conflicts`, `spec-breakdown-review`, `escalation-review`, `brainstorm`, `spec-breakdown`.
-- **Orchestrators** — autonomous loops that spawn subagents and drive workflows. Have a numbered `Procedure` with explicit `**Spawn the <Role> subagent**` blocks, `Cycle Counter Reset`, `Commit Conventions`, `Hard Stops`, and `What This Skill Does NOT Do`. Usually carry `disable-model-invocation: true`. Examples: `dev-loop`, `bug-loop`.
+- **Orchestrators** — autonomous loops that spawn subagents and drive workflows. Have a numbered `Procedure` with explicit `**Spawn the <Role> subagent**` blocks, `Cycle Counter Reset`, `Commit Conventions`, `Hard Stops`, and `What This Skill Does NOT Do`. Stay model-invocable so a human can delegate a loop to an agent; the `using-ai-team` rule forbids starting one unasked. Examples: `dev-loop`, `bug-loop`.
 - **Actions** — simple document-creation or single-purpose operations. Short numbered list, usually no escalation section. Human-only actions may carry `disable-model-invocation: true`; actions invoked by another skill must remain model-invocable. Examples: `new-spec`, `new-task`, `new-bug`, `new-adr`, `status-report`, `git-conventions`.
 
 ## The Separation Rule
@@ -202,11 +202,10 @@ Example from `dev-loop/SKILL.md`:
 
 ### Frontmatter
 
-Orchestrators typically declare `Agent` in `allowed-tools` (to spawn subagents) and `disable-model-invocation: true` (they are human-triggered, not auto-selected).
+Orchestrators declare `Agent` in `allowed-tools` (to spawn subagents). They stay model-invocable so a human can delegate a loop to an agent, for example to keep the main session clean; the `using-ai-team` rule that a loop starts only when the human asks is the guard against starting one unasked. End the description with a sentence limiting use to an explicit human request.
 
 ```yaml
 allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate), Skill(git-conventions)
-disable-model-invocation: true
 ```
 
 ### Phase-2 human escalation
@@ -248,7 +247,7 @@ description: Use this when needed.     # no specifics
 - Use for skills invoked as slash commands with positional arguments. Document the argument shape tersely in frontmatter and fully in `## Input Requirements`.
 
 `disable-model-invocation`:
-- Set to `true` for orchestrators and actions that should only run on explicit human invocation, not via auto-selection.
+- Set to `true` for human-only actions such as `status-report`. Do not set it on orchestrators: they stay model-invocable so a human can delegate a loop to an agent, and the `using-ai-team` rule forbids starting one unasked.
 - Do not set it to `true` on a skill referenced through another skill's `Skill(<name>)` declaration. The target must remain model-invocable for that in-process call to work.
 
 ### Codex frontmatter parity (ADR-001)
@@ -501,7 +500,7 @@ Before treating a skill as ready:
 - [ ] `name` ≤64 chars, lowercase-hyphen only, no reserved words.
 - [ ] `description` ≤1024 chars, third person, names *what* and *when*.
 - [ ] `allowed-tools` lists every tool and every in-process `Skill()` invoked.
-- [ ] `disable-model-invocation: true` set only if human-triggered and not targeted by another skill's `Skill()` declaration.
+- [ ] `disable-model-invocation: true` set only on human-only actions (never on orchestrators) and not targeted by another skill's `Skill()` declaration.
 
 **Content**
 - [ ] `SKILL.md` body under 500 lines.
