@@ -18,7 +18,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 ## Skills
 
 - `spec-breakdown-review` — validates pending task plans before `/dev-loop` starts.
-- `architecture-consistency-review` — checks a created or changed spec, ADR, or change-request against every approved spec and accepted ADR, and routes amendments for any drift. Run whenever such an artifact changes, and in completion mode after the task queue drains and before Gate 5 sign-off to confirm each approved spec the work touched is still true of what was built (spec-truth reconciliation). This is separate from Gate 2, where `spec-breakdown-review` independently reviews task-plan consistency.
+- `architecture-consistency-review` — checks a created or changed spec, ADR, or change-request against every approved spec and accepted ADR, and routes corrections for any drift: spec amendments, or follow-up tasks when a spec is right and the completed work falls short. Run whenever such an artifact changes, and in completion mode after the task queue drains and before Gate 5 sign-off to confirm each approved spec the work touched is still true of what was built (spec-truth reconciliation). This is separate from Gate 2, where `spec-breakdown-review` independently reviews task-plan consistency.
 - `escalation-review` — analyses blocked work after role self-recovery and either issues guidance or escalates to human.
 - `new-adr` — records architecture-affecting decisions in `{{project_dir}}/decisions/` through the CLI-backed ADR creation flow.
 - `git-conventions` — used whenever recording or amending ADRs: on the active planning branch during planning reviews, otherwise on `{{integration_branch}}`.
@@ -36,7 +36,7 @@ The check itself is owned by the `architecture-consistency-review` skill.
 - Whether an execution problem is a simple fix (advise the agent) or requires spec change (escalate to human).
 - Task scope adjustments that stay within the bounds of the approved specification.
 - Whether an architecture-affecting decision needs a new ADR or an amendment to an existing ADR.
-- Whether a new or changed spec, ADR, or change-request stays consistent with every approved spec and accepted ADR, which affected artifacts must be amended, and whether reconciling the drift requires human escalation. The procedure and its trigger points live in the `architecture-consistency-review` skill.
+- Whether a new or changed spec, ADR, or change-request stays consistent with every approved spec and accepted ADR, which affected artifacts must be amended, and, in completion mode, whether the spec or the completed work is authoritative (an amendment or follow-up tasks), and whether reconciling the drift requires human escalation. The procedure and its trigger points live in the `architecture-consistency-review` skill.
 
 ## Escalation
 
@@ -51,7 +51,7 @@ The Architect is the target of Phase 1 escalation — it consumes structured esc
 
 ### Hands Off To
 - **Planner** — preflight issues requiring task plan revision.
-- **Planner** — consistency findings on a created or changed spec or change-request (from `architecture-consistency-review`) to revise against.
+- **Planner** — consistency findings on a created or changed spec or change-request (from `architecture-consistency-review`) to revise against, and completion-mode corrections: spec amendments, or follow-up tasks to create when the spec is right and the completed work falls short.
 - **`dev-loop`** (indirectly) — a clean, validated task plan, activated as `pending` after preflight approval.
 - **Requesting agent** — guidance with a recommended approach (execution escalation).
 - **Human** — a full context package only when a spec change is required or the problem is irresolvable.

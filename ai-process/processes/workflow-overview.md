@@ -255,7 +255,7 @@ The typical cycle after regressions: development loop stops → bugs filed → h
 | State | Owner | Entry condition | Exit condition |
 |---|---|---|---|
 | `planned` | Planner | Task is created during spec breakdown, on behalf of a planning branch | The planning branch merges after Gate 2 (`pending`) or its spec or change-request is abandoned (`cancelled`) |
-| `pending` | Planner | The planning branch merged after Gate 2 | Development loop selects it |
+| `pending` | Planner | The planning branch merged after Gate 2, or the task is a follow-up routed by spec-truth reconciliation, which is exempt from Gate 2 (ADR-002) | Development loop selects it |
 | `in-progress` | Development loop | Task is claimed and a task branch is created | Reviewer passes, task is blocked, or task is abandoned |
 | task branch | Developer | Developer receives assignment | Developer submits for review |
 | review pending | Reviewer | Developer reports completion | PASS, FAIL, or ESCALATE verdict |
@@ -292,7 +292,7 @@ The bug-fix loop records Developer Diagnosis Log and Work Log handoffs in that f
 | Gate | Controls transition | Evaluator | Output |
 |---|---|---|---|
 | Gate 1: Specification Approval | Feature request → TODO-free approved spec | Human | Approved specification |
-| Gate 2: Task Plan Preflight | Task plan draft (from approved spec **or** accepted change-request) → implementation-ready task queue | Architect | Approved task queue or correction request |
+| Gate 2: Task Plan Preflight | Task plan draft (from approved spec **or** accepted change-request) → implementation-ready task queue; follow-up tasks from spec-truth reconciliation are exempt (ADR-002) | Architect | Approved task queue or correction request |
 | Gate 3: Code Review | Developer-complete task → integration-ready branch | Reviewer | PASS, FAIL, or ESCALATE |
 | Gate 4: Integration Tests | Reviewed branch → completed task or bug | Integration procedure | Merged/completed or regression report |
 | Gate 5: Final Merge Sign-off | Completed queue → production merge | Human | Approval to merge `dev-agent` to `main` |
@@ -319,7 +319,7 @@ Full rules and commit format: `ai-process/guidelines/git-conventions.md`.
 - The integration procedure is also the standard path for merging bug branches into their target branch.
 - Tasks, bugs, and change-requests live in the local tracker, outside version control; no branch holds lifecycle state and no lifecycle change creates a commit.
 - Branches blocked at review stay open on their task branch until the blocker is resolved.
-- Spec and change-request work never lands on `dev-agent` before its task plan passes Gate 2.
+- Spec and change-request work never lands on `dev-agent` before its task plan passes Gate 2. The one exception is a follow-up task routed by spec-truth reconciliation, which the reconciliation re-run checks instead (ADR-002).
 - Every orchestrating procedure applies the Workspace Hygiene check from the git conventions before it starts, before every branch switch, after every merge, and before it ends. No procedure leaves untracked files or uncommitted changes behind.
 
 ## Escalation

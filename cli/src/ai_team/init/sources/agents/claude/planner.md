@@ -50,6 +50,7 @@ The Planner enters the escalation chain when the `spec-breakdown` skill returns 
 
 ### Receives Work From
 - **Human** — a feature request or problem description.
+- **Architect** — consistency findings to revise against, and completion-mode corrections from spec-truth reconciliation: spec amendments, or follow-up tasks to create under the same spec or change-request.
 
 ### Hands Off To
 - **Human** — a TODO-free specification document for Gate 1 approval (after the human has already shaped it interactively and human-answerable `[TODO]` markers have been resolved).

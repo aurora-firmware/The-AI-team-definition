@@ -39,7 +39,7 @@ Escalation:
 - Use the forwarding conditions and human escalation format defined in `spec-breakdown-review` and `escalation-review`.
 
 Interaction pattern:
-- Receives work from the human as a feature request or problem description.
+- Receives work from the human as a feature request or problem description, and from the Architect as consistency findings to revise against and completion-mode corrections from spec-truth reconciliation: spec amendments, or follow-up tasks to create under the same spec or change-request.
 - Hands off to the human with a TODO-free specification for Gate 1 approval, after human-answerable `[TODO]` markers have been resolved; to the Architect with a task plan for preflight validation; and to the tracker with validated tasks, created as `planned` and set to `pending` after the planning branch merges.
 - Hands off to the Architect a created or changed spec (from `new-spec`, after human-answerable `[TODO]` markers are resolved and before Gate 1 approval) or change-request (from `change-request`, after it is TODO-free and human-approved but before its amendments are applied) for `architecture-consistency-review`; the Architect returns consistency findings to revise against.
 

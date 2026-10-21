@@ -50,7 +50,7 @@ A roll-up nobody reads is a silent discard, so present both lists to the human a
 ### Step 4b: Check Spec-Truth Reconciliation
 
 When every task is `completed`, check whether the Architect has run spec-truth reconciliation (`architecture-consistency-review` in completion mode) for the approved specs the work touched, and what it returned.
-If it has not run, or returned `FAIL` with amendments still unapplied, list that under `Recommended Actions` — Gate 5 requires a `PASS` or applied amendments.
+If it has not run, or returned `FAIL` with routed corrections still open (an unapplied spec amendment, or a follow-up task not completed and re-reviewed), list that under `Recommended Actions` — Gate 5 requires a `PASS` or every routed correction done.
 
 ### Step 5: Produce Inline Summary
 
