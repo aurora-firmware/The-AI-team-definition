@@ -406,6 +406,32 @@ def test_invalid_artifact_encoding_is_blocked_and_guidance_check_continues(
     )
 
 
+def test_missing_project_directory_still_checks_tracker_artifacts(
+    tmp_path: Path,
+) -> None:
+    _write_marker(tmp_path)
+    task = tmp_path / ".ai-team/tracker/tasks/T-001-invalid-status.md"
+    task.parent.mkdir(parents=True)
+    task.write_text(
+        "---\nid: T-001\ntitle: Invalid status\nstatus: bogus\npriority: low\n"
+        "assigned-role: unassigned\ncreated: '2026-10-21'\n---\n\n# Invalid status\n",
+        encoding="utf-8",
+    )
+
+    contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
+    findings = check_level_2(contract)
+
+    assert any(
+        finding.path == "ai-team" and "blocked" in finding.problem.lower()
+        for finding in findings
+    )
+    assert any(
+        finding.path.endswith("T-001-invalid-status.md")
+        and "status 'bogus'" in finding.problem
+        for finding in findings
+    )
+
+
 @pytest.mark.parametrize(
     ("tools", "required", "not_required"),
     [

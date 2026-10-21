@@ -237,14 +237,33 @@ def test_adr_002_records_the_reconciliation_decision():
     assert "architecture-consistency-review" in text
 
 
-def test_consistency_review_gains_a_completion_trigger_with_the_same_routing():
+def test_consistency_review_gains_a_completion_trigger_that_routes_by_authoritative_side():
     body = skill("architecture-consistency-review")
 
     assert "## Completion Mode" in body
     assert "spec-truth reconciliation" in body
     assert "Work Logs" in body and "deferred-Minor" in body
-    assert "Routing** is unchanged" in body
+    assert (
+        "Routing** first decides, for each drift, which side is authoritative" in body
+    )
     assert "the Planner amends the approved spec" in body
+    assert "the Planner creates follow-up tasks with `new-task`" in body
+    assert "Never amend a spec to match work that fell short" in body
+    assert (
+        "**The authoritative side is unclear**, or both sides need to change → escalate to the human"
+        in body
+    )
+    assert "Follow-up tasks are created `pending` and are exempt from Gate 2" in body
+    assert "The Planner chooses each follow-up task's verification mode" in body
+    assert "escalate to the human instead of routing another round" in body
+    assert (
+        "A completion-mode amendment of a stale spec is a `FAIL` routed to the Planner"
+        in body
+    )
+    assert (
+        "or a follow-up task routed by spec-truth reconciliation, which is exempt"
+        in skill("using-ai-team")
+    )
 
 
 def test_gate_5_requires_the_reconciliation_result():
@@ -254,7 +273,10 @@ def test_gate_5_requires_the_reconciliation_result():
     gate_5 = gates.split("## Gate 5", 1)[1]
 
     assert "spec-truth reconciliation" in gate_5
-    assert "returned `PASS`, or every amendment it routed has been applied" in gate_5
+    assert "returned `PASS`, or every correction it routed is done" in gate_5
+    assert "each follow-up task completed with a re-run that returns `PASS`" in gate_5
+    gate_2 = gates.split("## Gate 2", 1)[1].split("## Gate 3", 1)[0]
+    assert "Follow-up tasks routed by spec-truth reconciliation are exempt" in gate_2
     assert "ADR-002" in gates
 
 

@@ -69,7 +69,7 @@ CLI invocation
   |
   +--> check-layout
          |
-         +--> level 1: expected directories
+         +--> level 1: expected directories + tracker placement
          +--> level 2: artifact names + frontmatter
          +--> level 3: configured root guidance
          +--> level 4: scaffold/CLI version match
@@ -134,7 +134,8 @@ User invokes ai-team check-layout
   ↓
 Resolve repository root, .ai-team.toml, selected tools, and installed version
   ↓
-Check level 1: all expected project and selected-tool directories exist
+Check level 1: all expected project and selected-tool directories exist, and
+  the tracker and legacy work-item folders are where S-006 expects them
   ↓
 Check level 2: all managed artifact files have valid names and frontmatter
   ↓
@@ -152,9 +153,9 @@ not be completed rather than raising an unhandled exception.
 
 ### Validation Contracts
 
-1. **Level 1 — expected directories.** The repository must contain the
-   configured project directory and every lifecycle directory in the current
-   CLI project scaffold. For each tool named in `.ai-team.toml`, its current
+1. **Level 1 — expected directories and tracker placement.** The repository must contain the
+   configured project directory and every directory in the current CLI project
+   scaffold. For each tool named in `.ai-team.toml`, its current
    agent and skill scaffold directories must also exist, at the export paths
    below. Extra directories are permitted and are not findings.
 
@@ -167,12 +168,24 @@ not be completed rather than raising an unhandled exception.
    name is a framework-owned skill is a finding; the suggested fix is to rerun
    `ai-team init --force`. Legacy folders for skills the framework does not own
    are not findings.
-2. **Level 2 — artifact names and frontmatter.** Every managed artifact file in
-   specs, tasks, bugs, change requests, and decisions must match the filename
-   convention for its artifact type and must have syntactically valid,
-   type-appropriate required frontmatter. Lifecycle directory and frontmatter
-   status mismatches are findings. Scaffold placeholders such as `.gitkeep` and
-   non-artifact documentation are ignored.
+
+   Tasks, bugs, and change requests live in the local tracker (S-006), not in
+   the project directory. Two tracker conditions are level 1 findings: a
+   tracker folder inside the repository that git does not ignore, and a legacy
+   `tasks/`, `bugs/`, `change-requests/`, or `archive/` folder in the project
+   directory that still holds a markdown file at any depth, other than
+   `.gitkeep` or a `TEMPLATE-*.md` file. The suggested fix for a legacy folder
+   names the documented migration procedure.
+2. **Level 2 — artifact names and frontmatter.** Every managed artifact file
+   must match the filename convention for its artifact type and must have
+   syntactically valid, type-appropriate required frontmatter. Managed
+   artifacts are specs and decisions in the project directory, and tasks, bugs,
+   and change requests in the local tracker. For tasks, bugs, and change
+   requests, a frontmatter `status` outside the allowed values for their type
+   is a finding. For specs and decisions, `status` is a required field and is
+   only checked for presence. The `status` field is the only lifecycle state
+   (S-006), so no folder is compared with it. Scaffold
+   placeholders such as `.gitkeep` and non-artifact documentation are ignored.
 3. **Level 3 — root guidance.** A configured `claude` tool requires root
    `CLAUDE.md`; a configured `codex` tool requires root `AGENTS.md`; configuring
    both requires both files. Each relevant file must contain non-placeholder
@@ -241,3 +254,4 @@ project. Those marker cases remain level 4 findings.
 | Date | What changed | Why | Affected tasks |
 |------|-------------|-----|----------------|
 | 2026-10-20 | Added the version mismatch warning (Component 5, warning text contract, workflow, configuration). Level 1 now names per-tool export paths: Codex skills move from `.codex/skills/` to `.agents/skills/`, and a legacy framework-owned `.codex/skills/<name>/` folder is a finding. Driven by CR-002. | Only `check-layout` compared `framework_version`, so stale scaffolds and an older CLI gave wrong results without a warning (report #1, #7). Codex discovers repository skills in `.agents/skills/` and is deprecating `.codex/skills/`. | None in flight |
+| 2026-10-21 | Level 1 no longer requires lifecycle directories; it requires every project scaffold directory and reports an unignored in-repository tracker and legacy work-item folders that still hold a markdown file other than `.gitkeep` or `TEMPLATE-*.md`. Level 2 validates tasks, bugs, and change requests in the local tracker, checks their `status` against the allowed values (specs and decisions get a presence check only), and drops the folder-versus-status mismatch. | S-006 moved work items to the local tracker and made `status` the only lifecycle state; the levels still described lifecycle folders. The Architect raised this during the CR-003 completion review. Level 1 and the status rules document behaviour already implemented. The consistency review of this amendment found that level 2 stopped all checks when the project directory was missing, which broke the existing rule that independent checks continue. `check-layout` now blocks only the spec and decision checks in that case and keeps checking tracker artifacts. | None in flight |
