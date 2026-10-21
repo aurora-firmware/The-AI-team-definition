@@ -102,7 +102,7 @@ Question: [specific guidance needed to continue within the approved specificatio
 ## Output Format
 
 - **Test files** — for test tasks, one or more test files covering all acceptance criteria.
-- **Implementation files** — production code that passes all tests.
+- **Implementation files** — for test tasks, production code that passes all tests.
 - **Design-review record** — for design-review tasks, the Work Log handoff names the documents checked, each conflict found and how it was fixed, and the result; no test file is produced.
 - **Verification** — the task's verification command runs successfully, or for a design-review task the review is complete.
 - **Work Log handoff** — the complete `### Session N — YYYY-MM-DD` entry for the active loop to record.
@@ -110,11 +110,11 @@ Question: [specific guidance needed to continue within the approved specificatio
 ## Quality Criteria
 
 - For test tasks, every acceptance criterion has at least one test. For design-review tasks, every listed reference was read and checked, and the design-review record is in the Work Log handoff.
-- Tests cover both success and failure paths.
-- Tests are independent (no shared mutable state) and deterministic (same result every run, no flakiness).
-- Test names describe the expected behavior, not the implementation (e.g., `test_returns_empty_list_when_no_items` not `test_get_items`).
-- The implementation is minimal — no code exists that is not required by a test.
-- All tests pass when run together.
+- For test tasks, tests cover both success and failure paths.
+- For test tasks, tests are independent (no shared mutable state) and deterministic (same result every run, no flakiness).
+- For test tasks, test names describe the expected behavior, not the implementation (e.g., `test_returns_empty_list_when_no_items` not `test_get_items`).
+- For test tasks, the implementation is minimal — no code exists that is not required by a test.
+- For test tasks, all tests pass when run together.
 - Each completed TDD cycle is committed on the assigned implementation branch using the `git-conventions` skill.
 - The Work Log handoff contains one entry for the current session boundary.
 
