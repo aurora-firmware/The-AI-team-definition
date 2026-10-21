@@ -128,3 +128,26 @@ def test_force_unlinks_framework_named_symlink_and_keeps_its_target(tmp_path):
     assert (target / "SKILL.md").read_text(encoding="utf-8") == "mine"
     assert f"REMOVED: {link}" in result.output
     assert (tmp_path / ".ai-team.toml").exists()
+
+
+def test_force_removes_legacy_framework_skill_when_tools_are_claude_and_codex(
+    tmp_path,
+):
+    legacy = _make_legacy_skill(tmp_path, _framework_skill())
+
+    result = _init(tmp_path, "--force", tools="claude,codex")
+
+    assert result.exit_code == 0
+    assert not legacy.exists()
+    assert f"REMOVED: {legacy}" in result.output
+
+
+def test_force_keeps_legacy_skills_folder_when_stray_file_remains(tmp_path):
+    _make_legacy_skill(tmp_path, _framework_skill())
+    stray = tmp_path / ".codex" / "skills" / "notes.txt"
+    stray.write_text("keep", encoding="utf-8")
+
+    result = _init(tmp_path, "--force")
+
+    assert result.exit_code == 0
+    assert stray.read_text(encoding="utf-8") == "keep"
