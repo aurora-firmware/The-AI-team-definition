@@ -348,30 +348,25 @@ def _artifact_suggested_fix(finding: ArtifactFinding) -> str:
 
 
 def check_level_2(contract: LayoutContract) -> list[LayoutFinding]:
-    """Report managed artifact naming, frontmatter, and lifecycle violations."""
+    """Report managed artifact naming, frontmatter, and status violations."""
 
-    if not contract.project_dir.is_dir():
-        display_path = contract.project_dir.relative_to(contract.repo).as_posix()
-        return [
+    display_path = contract.project_dir.relative_to(contract.repo).as_posix()
+    root = ProjectRoot._from_repo_and_project_dir_name(contract.repo, display_path)
+    findings: list[LayoutFinding] = []
+    # Tasks, bugs, and change-requests live in the tracker, so they are
+    # checked even when the project directory is missing.
+    scopes = [{"tasks": True}, {"bugs": True}, {"change_requests": True}]
+    if contract.project_dir.is_dir():
+        scopes += [{"specs": True}, {"adrs": True}]
+    else:
+        findings.append(
             _finding(
                 2,
                 display_path,
-                f"Artifact checks are blocked because project directory '{display_path}' is missing or is not a directory.",
+                f"Spec and decision checks are blocked because project directory '{display_path}' is missing or is not a directory.",
                 "Restore the configured project directory, then rerun the layout check.",
             )
-        ]
-
-    root = ProjectRoot._from_repo_and_project_dir_name(
-        contract.repo, contract.project_dir.relative_to(contract.repo).as_posix()
-    )
-    findings: list[LayoutFinding] = []
-    scopes = (
-        {"specs": True},
-        {"tasks": True},
-        {"bugs": True},
-        {"change_requests": True},
-        {"adrs": True},
-    )
+        )
     for scope in scopes:
         try:
             artifact_findings = validate_project(root, **scope)
