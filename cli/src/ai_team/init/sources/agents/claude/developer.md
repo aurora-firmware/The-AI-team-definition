@@ -98,7 +98,7 @@ For naming conventions, function patterns, and dependency policies specific to t
 
 ## Output Format
 
-Apply the `evidence-before-claims` skill before filling `Evidence:`: a claim without a fresh command and its actual output is reported as `not run`, never as done.
+Apply the `evidence-before-claims` skill before filling `Evidence:`: a claim without fresh proof (command output, or for a document claim such as a design-review result, the artifact and line you read) is reported as `not run`, never as done.
 
 Always return:
 
@@ -112,7 +112,7 @@ Artifacts:
 - <source files, test files, and log handoff entries created/updated>
 
 Evidence:
-- <each claim, the command that proves it, and its actual output (exit code, pass and fail counts), or "not run" with reason>
+- <each claim and its proof: the command and its actual output (exit code, pass and fail counts), or for a document claim the artifact path and the line that confirms it, or "not run" with reason>
 
 Obstacles Encountered:
 - <setup issue, repro limitation, workaround, special command flag, dependency/import issue, environment quirk, or "none">
