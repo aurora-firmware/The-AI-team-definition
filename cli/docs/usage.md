@@ -639,3 +639,19 @@ bash cli/scripts/gen_docs.sh
 
 Run this from the repository root. The script calls `typer ai_team.cli utils docs`
 via `uv run` and prepends the generated-file header.
+
+The full usage form is:
+
+```bash
+bash cli/scripts/gen_docs.sh [--output <path>]
+```
+
+Without `--output`, the script writes the tracked `cli/docs/commands.md`. Pass
+`--output <path>` to write the generated docs elsewhere, for example to compare
+them against the tracked file without modifying it:
+
+```bash
+bash cli/scripts/gen_docs.sh --output /tmp/commands.md
+```
+
+A relative `<path>` resolves against the caller's working directory.
