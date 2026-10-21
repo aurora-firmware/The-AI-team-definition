@@ -41,11 +41,13 @@ def test_step_2_item_7_skips_design_review_line_and_uses_project_guidance():
         step = section(
             path, "7. Determine the source-branch", "8. Determine the destination"
         )
-        assert "`Design review:`" in step, name
-        assert "no automated command" in step, name
-        assert "Gate 3" in step, name
-        assert "Skip it" in step, name
-        assert "from project guidance" in step, name
+        bullets = [line for line in step.splitlines() if "`Design review:`" in line]
+        assert len(bullets) == 1, name
+        bullet = bullets[0]
+        assert "no automated command" in bullet, name
+        assert "Gate 3" in bullet, name
+        assert "Skip it" in bullet, name
+        assert "from project guidance" in bullet, name
 
 
 def test_step_5_shows_merge_command_with_second_m_argument_for_trailers():

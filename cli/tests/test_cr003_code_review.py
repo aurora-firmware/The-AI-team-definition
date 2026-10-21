@@ -39,7 +39,10 @@ def test_severity_directs_reviewer_to_compare_new_tests_against_ci_configuration
     for name, path in COPIES.items():
         section = severity_section(path)
         assert "CI configuration" in section, name
-        assert "compare" in section and "new tests" in section, name
+        assert (
+            "When the project has CI configuration, compare the new tests against it."
+            in section
+        ), name
 
 
 def test_severity_names_no_ci_provider_or_file_path():

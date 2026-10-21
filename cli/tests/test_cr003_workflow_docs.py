@@ -55,8 +55,12 @@ def test_breakdown_states_no_trailing_regenerate_everything_task() -> None:
 
 def test_developer_details_name_recorded_design_review_as_output() -> None:
     details = _developer_details()
-    assert details.count("design review") >= 2
-    assert "Work Log" in details
+    output_lines = [
+        line for line in details.splitlines() if line.startswith("**Output:**")
+    ]
+    assert len(output_lines) == 1
+    assert "design review" in output_lines[0]
+    assert "Work Log" in output_lines[0]
 
 
 def test_component_map_tdd_row_mentions_design_review_record() -> None:
