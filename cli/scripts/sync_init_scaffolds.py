@@ -20,6 +20,8 @@ TOOLS = ("claude", "codex")
 
 SKILL_SUPPORTING_FOLDERS = ("assets", "references", "scripts")
 
+COPY_IGNORE_PATTERNS = ("__pycache__", ".DS_Store")
+
 
 def _cli_root_from_script(script_path: Path) -> Path:
     # script lives at <repo>/cli/scripts/sync_init_scaffolds.py
@@ -36,7 +38,7 @@ def _replace_tree(source: Path, destination: Path) -> None:
     shutil.copytree(
         source,
         destination,
-        ignore=shutil.ignore_patterns("__pycache__", ".DS_Store"),
+        ignore=shutil.ignore_patterns(*COPY_IGNORE_PATTERNS),
     )
 
 
@@ -80,7 +82,7 @@ def _copy_skill_supporting_folders(skill_dir: Path, skill_output_dir: Path) -> N
             shutil.copytree(
                 source_folder,
                 skill_output_dir / folder_name,
-                ignore=shutil.ignore_patterns("__pycache__", ".DS_Store"),
+                ignore=shutil.ignore_patterns(*COPY_IGNORE_PATTERNS),
             )
 
 

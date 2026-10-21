@@ -164,3 +164,35 @@ def test_copies_only_the_supporting_folders_that_exist(tmp_path: Path) -> None:
         "SKILL.md",
         "references",
     ]
+
+
+def test_defines_copy_ignore_patterns_once_with_pycache_and_ds_store() -> None:
+    patterns = _load_sync_module().COPY_IGNORE_PATTERNS
+
+    assert patterns == ("__pycache__", ".DS_Store")
+
+
+def test_excludes_every_shared_ignore_pattern_from_supporting_folder_and_replaced_tree(
+    tmp_path: Path,
+) -> None:
+    module = _load_sync_module()
+    source_root = tmp_path / "sources"
+    skill_dir = _make_skill(source_root)
+    _add_supporting_folders(skill_dir)
+    agents_dir = tmp_path / "agents"
+    agents_dir.mkdir()
+    (agents_dir / "agent.md").write_text("agent\n", encoding="utf-8")
+    for name in module.COPY_IGNORE_PATTERNS:
+        (skill_dir / "scripts" / name).write_bytes(b"\x00")
+        (agents_dir / name).write_bytes(b"\x00")
+    destination_root = tmp_path / "scaffolds"
+    replaced_tree = tmp_path / "replaced"
+
+    module._replace_generated_skills(source_root, destination_root)
+    module._replace_tree(agents_dir, replaced_tree)
+
+    exported_scripts = destination_root / "claude" / "skills" / "demo" / "scripts"
+    for name in module.COPY_IGNORE_PATTERNS:
+        assert not (exported_scripts / name).exists()
+        assert not (replaced_tree / name).exists()
+    assert (replaced_tree / "agent.md").is_file()
