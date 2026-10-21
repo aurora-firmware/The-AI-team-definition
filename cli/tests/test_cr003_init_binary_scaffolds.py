@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import stat
 from pathlib import Path
+
+import pytest
 
 from ai_team.commands.init import _write_rendered
 
@@ -43,3 +46,56 @@ def test_replaces_both_placeholders_in_utf8_file(tmp_path: Path) -> None:
         destination.read_text(encoding="utf-8")
         == "dir=custom-dir branch=develop café\n"
     )
+
+
+def test_replaces_existing_destination_bytes_for_non_utf8_source(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "image.png"
+    source.write_bytes(PNG_LIKE_BYTES)
+    destination = tmp_path / "existing.png"
+    destination.write_bytes(b"old contents")
+
+    _write_rendered(source, destination, SETTINGS)
+
+    assert destination.read_bytes() == PNG_LIKE_BYTES
+
+
+def test_applies_source_mode_to_existing_non_utf8_destination(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "image.png"
+    source.write_bytes(PNG_LIKE_BYTES)
+    source.chmod(0o751)
+    destination = tmp_path / "existing.png"
+    destination.write_bytes(b"old contents")
+    destination.chmod(0o600)
+
+    _write_rendered(source, destination, SETTINGS)
+
+    assert stat.S_IMODE(destination.stat().st_mode) == 0o751
+
+
+def test_reports_overwrite_for_existing_non_utf8_destination(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    source = tmp_path / "image.png"
+    source.write_bytes(PNG_LIKE_BYTES)
+    destination = tmp_path / "existing.png"
+    destination.write_bytes(b"old contents")
+
+    _write_rendered(source, destination, SETTINGS)
+
+    assert f"OVERWROTE: {destination}" in capsys.readouterr().out
+
+
+def test_does_not_report_overwrite_for_new_non_utf8_destination(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    source = tmp_path / "image.png"
+    source.write_bytes(PNG_LIKE_BYTES)
+    destination = tmp_path / "new.png"
+
+    _write_rendered(source, destination, SETTINGS)
+
+    assert "OVERWROTE" not in capsys.readouterr().out
