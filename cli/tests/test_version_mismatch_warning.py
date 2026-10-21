@@ -82,9 +82,19 @@ def test_no_warning_when_no_marker_exists(monkeypatch, tmp_path, running_version
 
 
 def test_no_warning_when_no_project_is_found(monkeypatch, tmp_path, running_version):
-    result = run(monkeypatch, tmp_path, ["--help"])
+    import ai_team.cli
 
-    assert result.exit_code == 0
+    monkeypatch.delenv("AI_TEAM_ROOT", raising=False)
+    resolved_layouts = []
+    monkeypatch.setattr(
+        ai_team.cli,
+        "resolve_layout",
+        lambda *args, **kwargs: resolved_layouts.append(args),
+    )
+
+    result = run(monkeypatch, tmp_path, ["list", "tasks"])
+
+    assert resolved_layouts == []
     assert "does not match" not in result.stderr
 
 
