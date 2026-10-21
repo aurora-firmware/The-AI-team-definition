@@ -39,7 +39,9 @@ from Gate 2, because the finding and the approved spec already fix their scope; 
 their check. The Planner still chooses each follow-up task's verification mode by the
 spec-breakdown rule: a test for any change a test can observe, a design review only for a
 prose-only change. When it is unclear which side is authoritative, or
-both need to change, the Architect escalates to the human to decide.
+both need to change, the Architect escalates to the human to decide. It also escalates when a
+re-run still finds drift on a finding whose follow-up tasks are completed, rather than routing
+another round of tasks that skip Gate 2.
 
 It reuses `architecture-consistency-review` rather than adding a skill: same binding set, same
 findings block, same escalation procedure. The routing adds the follow-up-task and
@@ -95,4 +97,5 @@ on the human noticing deviations that no artifact records.
   criterion accepts completed follow-up tasks with a passing re-run. A drift whose authoritative
   side is unclear, or where both sides must change, escalates to the human. Follow-up tasks
   are exempt from Gate 2, and the Planner chooses their verification mode by the
-  spec-breakdown rule.
+  spec-breakdown rule. A drift that persists after its follow-up tasks escalates to the human,
+  so follow-up rounds cannot repeat without a human decision.

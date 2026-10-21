@@ -255,6 +255,15 @@ def test_consistency_review_gains_a_completion_trigger_that_routes_by_authoritat
     )
     assert "Follow-up tasks are created `pending` and are exempt from Gate 2" in body
     assert "The Planner chooses each follow-up task's verification mode" in body
+    assert "escalate to the human instead of routing another round" in body
+    assert (
+        "A completion-mode amendment of a stale spec is a `FAIL` routed to the Planner"
+        in body
+    )
+    assert (
+        "or a follow-up task routed by spec-truth reconciliation, which is exempt"
+        in skill("using-ai-team")
+    )
 
 
 def test_gate_5_requires_the_reconciliation_result():

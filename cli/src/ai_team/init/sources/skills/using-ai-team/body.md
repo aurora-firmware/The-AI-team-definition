@@ -39,7 +39,7 @@ When `ai-team list specs` shows no `S-000`, suggest to the human starting with t
 
 The skill chain is gated. Before starting a stage, confirm the artifact it needs exists:
 
-1. Implementing a task needs a task that passed Gate 2 (`pending` or `in-progress` in the tracker), which needs an approved spec or an approved change-request.
+1. Implementing a task needs a task that passed Gate 2, or a follow-up task routed by spec-truth reconciliation, which is exempt (ADR-002). Either one is `pending` or `in-progress` in the tracker and needs an approved spec or an approved change-request.
 2. Fixing a bug needs a bug file with a Diagnosis Log, produced by `debug`.
 3. Task breakdown needs a spec that is approved and free of human-answerable `[TODO]` markers.
 4. Integration needs a Reviewer PASS recorded in the task or bug file.

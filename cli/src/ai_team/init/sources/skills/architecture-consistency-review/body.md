@@ -25,7 +25,7 @@ In completion mode the review confirms that each approved spec is still true of 
 - **Step 3** checks each assertion against the evidence: a requirement the work did not deliver, behavior the work added that the spec does not describe, or an interface that now differs. Record each drift with the spec statement and the evidence that contradicts it.
 - **Routing** first decides, for each drift, which side is authoritative: the spec or the completed work.
   - **The spec is stale** (the work is right) → the Planner amends the approved spec on a planning branch and records the change in its Amendment Log.
-  - **The work falls short** (the spec is right) → the Planner creates follow-up tasks with `new-task` under the same spec or change-request. Each task names the finding and the spec statement it must satisfy. The Planner chooses each follow-up task's verification mode by the spec-breakdown rule (a test for any change a test can observe; a design review only for a prose-only change) and fills every section without placeholder text, as `new-task` requires. Follow-up tasks are created `pending` and are exempt from Gate 2: their scope is fixed by the finding and the approved spec. After the development loop completes them, the Architect re-runs completion mode for that spec. Never amend a spec to match work that fell short.
+  - **The work falls short** (the spec is right) → the Planner creates follow-up tasks with `new-task` under the same spec or change-request. Each task names the finding and the spec statement it must satisfy. The Planner chooses each follow-up task's verification mode by the spec-breakdown rule (a test for any change a test can observe; a design review only for a prose-only change) and fills every section without placeholder text, as `new-task` requires. Follow-up tasks are created `pending` and are exempt from Gate 2: their scope is fixed by the finding and the approved spec. After the development loop completes them, the Architect re-runs completion mode for that spec. If the re-run still finds drift on a finding that already had follow-up tasks, escalate to the human instead of routing another round. Never amend a spec to match work that fell short.
   - **The authoritative side is unclear**, or both sides need to change → escalate to the human.
   - The Architect amends or supersedes ADRs, as for any other trigger.
 
@@ -71,7 +71,7 @@ This review **reports** contradictions as findings to the owning role — it doe
 - **An ADR is the affected side** → the Architect amends or supersedes the ADR; use `new-adr` to record a superseding decision.
 - **A finding can be resolved procedurally without changing the approved change-request intent** → route the correction to the owning role and continue; Planner-owned amendments stay anchored to the approved change-request.
 - **A finding would change the approved change-request intent** → stop and ask the Human to revise, reject, or reaffirm the CR before any downstream artifact is amended.
-- **Reconciling the drift requires changing an approved spec beyond an in-flight amendment** → escalate to the human through the Planner per the escalation procedure.
+- **Reconciling the drift requires changing an approved spec beyond an in-flight amendment** → escalate to the human through the Planner per the escalation procedure. In completion mode, amending a stale spec to match the completed work is the routed Planner amendment above, not an escalation.
 
 The Architect reports findings and routing; the Architect never edits specs directly. Draft revision and approved-spec amendment are both the Planner's.
 
@@ -79,9 +79,9 @@ The Architect reports findings and routing; the Architect never edits specs dire
 
 - No contradiction → `PASS`: the change is consistent with the binding set.
 - Contradictions with a clear owner and routing → `FAIL` with the named corrections.
-- A contradiction that requires changing an approved spec → `ESCALATE`.
+- A contradiction that requires changing an approved spec beyond an in-flight amendment → `ESCALATE`. A completion-mode amendment of a stale spec is a `FAIL` routed to the Planner.
 - A contradiction that would change approved change-request intent → `ESCALATE` to the Human so the CR can be revised, rejected, or reaffirmed.
-- In completion mode, a drift where it is unclear whether the spec or the completed work is authoritative, or where both need to change → `ESCALATE` to the Human to decide.
+- In completion mode, a drift where it is unclear whether the spec or the completed work is authoritative, where both need to change, or that a re-run still finds after its follow-up tasks completed → `ESCALATE` to the Human to decide.
 
 ## Output Format
 
@@ -112,7 +112,7 @@ Next owner:
 - Corrections are routed to the owning role (Planner for specs, Architect for ADRs); the Architect never edits specs directly.
 - In completion mode, each drift states whether the spec or the completed work is authoritative before it is routed.
 - An approved change-request remains the authoritative intent for Planner-owned consistency fixes until the Human changes that intent.
-- Escalation is used only when reconciling the drift requires changing an approved specification, would change approved change-request intent, or, in completion mode, needs the Human to decide which side is authoritative.
+- Escalation is used only when reconciling the drift requires changing an approved specification beyond an in-flight amendment (a completion-mode amendment of a stale spec is a routed `FAIL`), would change approved change-request intent, or, in completion mode, needs the Human to decide which side is authoritative or persists after its follow-up tasks.
 
 ## Common Pitfalls
 

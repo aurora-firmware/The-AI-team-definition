@@ -221,11 +221,13 @@ The command runs four ordered validation levels:
    directories for each configured tool. Extra directories are allowed. Also
    reports a tracker folder that lies inside the repository but is not ignored
    by git, and legacy `tasks/`, `bugs/`, `change-requests/`, or `archive/`
-   folders in the project directory that still hold files.
+   folders in the project directory that still hold a markdown file other than
+   `.gitkeep` or `TEMPLATE-*.md`.
 2. **Level 2 — artifact names and frontmatter.** Checks managed specs and
    decisions in the project directory, and tasks, bugs, and change requests in
-   the tracker, for the expected filename, required frontmatter, and an allowed
-   `status` value.
+   the tracker, for the expected filename and required frontmatter. Tasks, bugs,
+   and change requests must have an allowed `status` value; specs and decisions
+   must have a `status` field.
 3. **Level 3 — root guidance.** Checks `CLAUDE.md` for configured Claude tools
    and `AGENTS.md` for configured Codex tools. Each required file must contain
    non-placeholder `Build and Install`, `Test`, `Run`, `Lint and Format`, and

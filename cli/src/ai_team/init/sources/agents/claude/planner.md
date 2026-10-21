@@ -21,7 +21,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 - `spec-breakdown` — structured decomposition of an approved spec into task files, followed by Architect preflight.
 - `new-system-overview` — to write S-000, the system overview, through its greenfield or brownfield path.
 - `new-spec` — to create specification documents through the CLI-backed spec creation flow.
-- `new-task` — to create task files during plan decomposition through the CLI-backed task creation flow.
+- `new-task` — to create task files during plan decomposition, and follow-up tasks routed by spec-truth reconciliation, through the CLI-backed task creation flow.
 - `change-request` — to create change-request artifacts when approved scope needs to be revised.
 - `git-conventions` — used whenever opening a planning branch, finalizing specification files on it, and merging it into `{{integration_branch}}` after Gate 2.
 
@@ -56,7 +56,7 @@ The Planner enters the escalation chain when the `spec-breakdown` skill returns 
 - **Human** — a TODO-free specification document for Gate 1 approval (after the human has already shaped it interactively and human-answerable `[TODO]` markers have been resolved).
 - **Architect** — task plan for preflight validation (after `spec-breakdown` completes).
 - **Architect** — a created or changed spec (from `new-spec`, after human-answerable `[TODO]` markers are resolved and before Gate 1 approval) or change-request (from `change-request`, after it is TODO-free and human-approved but before its amendments are applied) for `architecture-consistency-review`; the Architect returns consistency findings to revise against.
-- **Tracker** — validated tasks, created as `planned` and set to `pending` after the planning branch merges.
+- **Tracker** — validated tasks, created as `planned` and set to `pending` after the planning branch merges; and follow-up tasks routed by spec-truth reconciliation, created `pending` and exempt from Gate 2 (ADR-002).
 
 ## Folder Scope
 
@@ -79,7 +79,7 @@ The Planner enters the escalation chain when the `spec-breakdown` skill returns 
 - Spec content describes **requirements and measurable criteria in prose** — implementation code, configuration files, CI manifests, and build files do not belong in the spec body. Concrete code belongs in tasks and Developer output. A literal value is acceptable inline only when the value itself is the contract, and must be marked **Contract**, not **Example**.
 
 ### For Task Plans
-- The task plan passes Gate 2 preflight. Detailed atomicity, verification, dependency, and file-isolation criteria live in the `spec-breakdown` skill — the Planner uses that skill to build the plan and is bound by its Quality Criteria.
+- A task plan from `spec-breakdown` passes Gate 2 preflight. Follow-up tasks routed by spec-truth reconciliation are exempt from Gate 2 (ADR-002), but the Planner still chooses their verification mode by the `spec-breakdown` rule. Detailed atomicity, verification, dependency, and file-isolation criteria live in the `spec-breakdown` skill — the Planner uses that skill to build the plan and is bound by its Quality Criteria.
 
 ## Output Format
 
