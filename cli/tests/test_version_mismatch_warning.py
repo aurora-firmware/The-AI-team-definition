@@ -5,6 +5,8 @@ import json
 import pytest
 from typer.testing import CliRunner
 
+from ai_team.core.locator import ProjectRootNotFound
+
 RUNNING_VERSION = "2.0.0"
 CONFIGURED_VERSION = "1.0.0"
 MISMATCH_WARNING = (
@@ -94,6 +96,8 @@ def test_no_warning_when_no_project_is_found(monkeypatch, tmp_path, running_vers
 
     result = run(monkeypatch, tmp_path, ["list", "tasks"])
 
+    assert result.exit_code == 1
+    assert isinstance(result.exception, ProjectRootNotFound)
     assert resolved_layouts == []
     assert "does not match" not in result.stderr
 

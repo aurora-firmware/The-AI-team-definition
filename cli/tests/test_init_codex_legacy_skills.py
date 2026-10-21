@@ -143,11 +143,12 @@ def test_force_removes_legacy_framework_skill_when_tools_are_claude_and_codex(
 
 
 def test_force_keeps_legacy_skills_folder_when_stray_file_remains(tmp_path):
-    _make_legacy_skill(tmp_path, _framework_skill())
+    legacy = _make_legacy_skill(tmp_path, _framework_skill())
     stray = tmp_path / ".codex" / "skills" / "notes.txt"
     stray.write_text("keep", encoding="utf-8")
 
     result = _init(tmp_path, "--force")
 
     assert result.exit_code == 0
+    assert not legacy.exists()
     assert stray.read_text(encoding="utf-8") == "keep"
