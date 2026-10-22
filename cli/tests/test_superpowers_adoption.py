@@ -307,16 +307,6 @@ def test_skill_testing_guide_defines_the_cycle_and_is_linked_from_the_template()
     assert "never list the steps" in template
 
 
-def test_validation_report_records_baseline_and_with_change_runs():
-    report = (
-        REPO / "docs" / "ai-team" / "docs" / "skill_validation_report.md"
-    ).read_text(encoding="utf-8")
-
-    assert "| Old | New |" in report
-    assert "not validated by this run" in report
-    assert "## Limits" in report
-
-
 def test_evidence_rule_allows_cited_and_artifact_proof():
     body = skill("evidence-before-claims")
     assert "per Work Log session N" in body

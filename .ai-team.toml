@@ -6,7 +6,7 @@ tools = [
     "claude",
     "codex",
 ]
-framework_version = "0.14.0"
+framework_version = "0.15.0"
 
 [tracker]
 dir = ".ai-team/tracker"
