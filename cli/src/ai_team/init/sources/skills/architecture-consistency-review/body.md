@@ -28,7 +28,7 @@ In completion mode the review confirms that each approved spec is still true of 
   - **The work falls short** (the spec is right) → the Planner creates follow-up tasks with `new-task` under the same spec or change-request. Each task names the finding and the spec statement it must satisfy. The Planner chooses each follow-up task's verification mode by the spec-breakdown rule (a test for any change a test can observe; a design review only for a prose-only change) and fills every section without placeholder text, as `new-task` requires. Follow-up tasks are created `pending` and are exempt from Gate 2: their scope is fixed by the finding and the approved spec. After the development loop completes them, the Architect re-runs completion mode for that spec. If the re-run still finds drift on a finding that already had follow-up tasks, escalate to the human instead of routing another round. Never amend a spec to match work that fell short.
   - **The authoritative side is unclear**, or both sides need to change → escalate to the human.
   - The Architect amends or supersedes ADRs, as for any other trigger.
-- **Record** — the verdict is recorded durably as one dated line, `- **YYYY-MM-DD:** spec-truth reconciliation — PASS|FAIL, <one-line summary>`, in the reconciled spec's Amendment Log, or in the change-request file for change-request work. The Architect returns the line as `Reconciliation record:`; the Planner records it, since the Architect never edits specs.
+- **Record** — the verdict is recorded durably as one Amendment Log row in the reconciled spec, `| YYYY-MM-DD | spec-truth reconciliation — PASS or FAIL | <one-line summary> | none |`, or as the same line in the change-request file for change-request work. A reconciliation row changes no scope and does not bump `version`. The Architect returns the line as `Reconciliation record:`; the Planner records it, since the Architect never edits specs.
 
 S-000 is never a touched spec in completion mode, because it has no tasks or Work Logs to reconcile against.
 
@@ -102,7 +102,7 @@ Next owner:
 - Planner | Architect | Human | none
 
 Reconciliation record:
-- <completion mode only: the dated Amendment Log or change-request line>
+- <completion mode only: the Amendment Log row or change-request line>
 ```
 
 `BLOCKED` is returned when the changed artifact was not provided. When `Result` is `ESCALATE`, append an Escalation Request block and then a Phase 2 Human Escalation Report using the template defined in the `escalation-review` skill.

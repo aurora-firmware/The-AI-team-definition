@@ -55,7 +55,7 @@ replace it with placeholders if needed.
 In your target repository, run `ai-team init` to export the bundled agent and skill definitions and create the project folders:
 
 ```bash
-ai-team init . --tools claude --no-interactive
+ai-team init . --tools claude --no-interactive --create-root-guidance
 ```
 
 This exports from the CLI package scaffold sources:
@@ -75,7 +75,7 @@ The `ai-process/` specification documents are not exported. They live in the AI 
 
 Create a `CLAUDE.md` and `AGENTS.md` in your project root. The test instructions in these files are especially important: `dev-loop` starts baseline command discovery from root project guidance, then follows clear references to project-local docs such as `ai-team/docs/coding_guidelines.md`, README files, build configuration, or other documented test instructions. If no automated baseline command is documented, or the available guidance is ambiguous, `dev-loop` will ask the human for the intended command or for explicit confirmation that no automated baseline test is available before claiming a task.
 
-`ai-team init` can scaffold starter versions of both root guidance files when they are missing. Run `ai-team init . --tools claude` interactively and answer the prompts, or pass `--create-root-guidance` to create them without prompting (in either mode). Existing root guidance files are never overwritten unless `--force` is also set: `--force` alone prompts in interactive mode and leaves them untouched with `--no-interactive`, while `--force --create-root-guidance` overwrites them without prompting. Every existing file that `init` replaces is reported as `OVERWROTE: <path>`; newly created files are not.
+The Step 2 command already created starter versions of both root guidance files (`--create-root-guidance`) if they were missing. Request them on that first `init` run: on an initialized project a plain re-run refuses, and only `--force --create-root-guidance` adds them later. Existing root guidance files are never overwritten unless `--force` is also set: `--force` alone prompts in interactive mode and leaves them untouched with `--no-interactive`, while `--force --create-root-guidance` overwrites them without prompting. Every existing file that `init` replaces is reported as `OVERWROTE: <path>`; newly created files are not.
 
 The starter `CLAUDE.md` and `AGENTS.md` follow the root guidance template in the CLI package (`cli/src/ai_team/init/sources/root/CLAUDE.md`). `ai-team check-layout` requires these `##` sections in each file: `Build and Install`, `Test`, `Run`, `Lint and Format`, and `Key Conventions`. If you write the files by hand, use the same headings and fill in your project's commands and conventions.
 

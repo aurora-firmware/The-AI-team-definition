@@ -2,7 +2,7 @@
 name: new-system-overview
 description: Create the S-000 system overview spec, for a new project or when adopting an existing one into the ai-team process
 argument-hint: "[optional: project name]"
-allowed-tools: Read, Write, Bash
+allowed-tools: Read, Write, Bash, Skill(git-conventions)
 ---
 
 # New System Overview

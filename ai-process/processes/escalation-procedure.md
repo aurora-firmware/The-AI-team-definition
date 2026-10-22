@@ -34,7 +34,7 @@ These retries happen **before** entering the escalation chain.
 |-------|------------------------|
 | Developer | Three consecutive failed attempts to make tests pass |
 | Reviewer | One review cycle for ESCALATE-worthy issues — if the code has fundamental design problems that no amount of Developer fixes can address, issue ESCALATE immediately rather than FAIL. For ordinary quality issues, issue FAIL; the Development Loop allows up to three total review cycles before forcing escalation |
-| Integrator | One bisect cycle — if the root cause spans multiple tasks, escalate immediately |
+| Integrator | One merge attempt — if a post-merge regression cannot be attributed to the source branch just merged, escalate immediately |
 
 Once the role exceeds its threshold, it stops retrying and enters Phase 2.
 
@@ -78,7 +78,7 @@ A role enters the escalation chain when it **cannot complete its assigned task**
 
 - **Developer:** Tests fail repeatedly (3 attempts). Requirements are ambiguous or untestable. Conflicting constraints make the task impossible as specified.
 - **Reviewer:** Code has fundamental design issues that cannot be fixed without changing the specification.
-- **Integrator:** Merge conflicts that cannot be resolved without understanding both sides' intent. Integration tests fail and bisect points to multiple interacting causes.
+- **Integrator:** Merge conflicts that cannot be resolved without understanding both sides' intent. Integration tests fail and the regression cannot be attributed to the source branch just merged.
 
 ## Rules
 

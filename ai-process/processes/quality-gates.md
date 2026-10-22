@@ -78,8 +78,8 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 ### Bug Fix Criteria
 For bug fixes, the Reviewer also verifies:
-- The complete diagnosis→fix evidence chain is present: the recorded Diagnosis Log entry (the fix contract) records reproduction status, captured evidence, isolated fault, and root cause or fault hypothesis; the fix addresses that isolated cause; and the Fix Verification steps from the bug report confirm the defect is resolved.
-- The Diagnosis Log records reproduction status, captured evidence, isolated fault, and root cause or fault hypothesis.
+- The complete diagnosis→fix evidence chain is present: the recorded Diagnosis Log entry (the fix contract) records reproduction status, captured evidence, isolated fault, root cause or fault hypothesis, and planned verification; the fix addresses that isolated cause; and the Fix Verification steps from the bug report confirm the defect is resolved.
+- The Diagnosis Log records reproduction status, captured evidence, isolated fault, root cause or fault hypothesis, and planned verification.
 - The fix targets the isolated cause rather than masking the symptom downstream.
 - A regression test exists when the defect can be tested automatically, or the Work Log explains why only manual verification is possible.
 - The Fix Verification steps from the bug report were run or a clear reason is recorded.
@@ -115,7 +115,7 @@ Before the development loop claims its first task it discovers the documented ba
 - The latest spec-truth reconciliation returned `PASS`, or every correction it routed is done: each spec amendment applied, and each follow-up task completed with a re-run that returns `PASS` (see [Architecture Consistency Review](#architecture-consistency-review)).
 - The status summary lists completed tasks, unresolved bugs by severity, and latest integration-test result.
 
-**Before sign-off:** The Architect runs spec-truth reconciliation (ADR-002) — `architecture-consistency-review` in completion mode — for every approved spec the completed work touched. This completion review does not include S-000, which has no tasks or Work Logs. The Architect returns each completion-mode verdict as a dated line, which the Planner records in the reconciled spec's Amendment Log (or in the change-request file for change-request work), as defined in the `architecture-consistency-review` skill.
+**Before sign-off:** The Architect runs spec-truth reconciliation (ADR-002) — `architecture-consistency-review` in completion mode — for every approved spec the completed work touched. This completion review does not include S-000, which has no tasks or Work Logs. The Architect returns each completion-mode verdict as a dated Amendment Log row, which the Planner records in the reconciled spec's Amendment Log (or in the change-request file for change-request work), as defined in the `architecture-consistency-review` skill.
 
 **On failure:** Human provides feedback. New tasks are created to address issues.
 

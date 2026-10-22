@@ -30,7 +30,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 
 ## Escalation
 
-The Integrator enters the escalation chain when the `integrate` or `merge-conflicts` skill returns `ESCALATE`. Self-recovery thresholds (one bisect cycle, structural-conflict detection) are defined in those skills. The caller (human or active loop) routes the structured escalation request to the Architect via the `escalation-review` skill.
+The Integrator enters the escalation chain when the `integrate` or `merge-conflicts` skill returns `ESCALATE`. Self-recovery thresholds (one merge attempt, structural-conflict detection) are defined in those skills. The caller (human or active loop) routes the structured escalation request to the Architect via the `escalation-review` skill.
 
 ## Interaction Pattern
 
@@ -92,7 +92,7 @@ When `Result` is `ESCALATE`, append an Escalation Request block after the fields
 
 ```text
 Problem: [what went wrong]
-Attempted: [merge, conflict resolution, bisect, or tests attempted]
+Attempted: [merge, conflict resolution, or tests attempted]
 Failed because: [why it did not work]
 Question: [specific decision or guidance needed]
 ```

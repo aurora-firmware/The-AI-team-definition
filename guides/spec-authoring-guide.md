@@ -138,7 +138,7 @@ A phase is not a task. The `spec-breakdown` skill produces the actual tasks from
 
 ### Amendment Log
 
-**Recipe:** leave the table empty when the spec is first written. Add rows only after Gate 1 approval, when scope changes while tasks are in flight. Each row: date, what changed, why, affected tasks. Each amendment bumps the spec's minor `version` (for example `0.1` → `0.2`).
+**Recipe:** leave the table empty when the spec is first written. Add rows only after Gate 1 approval, when scope changes while tasks are in flight. Each row: date, what changed, why, affected tasks. Each amendment bumps the spec's minor `version` (for example `0.1` → `0.2`). A spec-truth reconciliation row records a verdict, changes no scope, and does not bump `version`.
 
 ## The system overview spec (S-000)
 
@@ -209,6 +209,10 @@ PR opened or updated → CI runner triggers → results posted as PR check →
   If not found, the runner must fail with an actionable error.
 - **Trigger event filter.** Must be configurable to PR-opened, PR-updated, and rerun-on-request.
 - **Network policy.** During validation, network access must be limited to the project's dependency mirror.
+
+## Success Criteria
+1. Every PR targeting `main` shows a check that passed or failed within five minutes of opening.
+2. A PR with a failing test cannot be merged.
 
 ## Implementation Order
 | Phase | What | Depends on |

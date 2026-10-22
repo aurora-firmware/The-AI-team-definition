@@ -165,5 +165,5 @@ If you have an existing codebase:
 3. Write or update `CLAUDE.md` so agents can find project commands, coding guidance, and repository layout.
 4. Create `ai-team/docs/coding_guidelines.md` for stack-specific conventions if those rules are not already documented elsewhere.
 5. Migrate existing issues/tasks by creating a task for each open item with `ai-team task new` (they land in the local tracker).
-6. Write the S-000 system overview spec for the current system state (`ai-team spec new --overview` or the `new-system-overview` skill) — this becomes the baseline.
+6. Write the S-000 system overview spec — what the project is for and how it divides into components (`ai-team spec new --overview` or the `new-system-overview` skill).
 7. Create an ADR in `ai-team/decisions/` documenting the decision to adopt this framework.

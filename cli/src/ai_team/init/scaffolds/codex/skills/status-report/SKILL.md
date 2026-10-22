@@ -73,9 +73,10 @@ Use `ai-team status` output as the inline summary, then always append the Step 4
 - In progress: N
 - Completed: N
 - Blocked: N
-- Cancelled: N
+- Cancelled tasks: N
 - Open bugs: N (X critical/high)
 - Bugs in progress: N
+- Resolved bugs: N
 - ADRs: N
 - Latest integration result: [result or not found]
 

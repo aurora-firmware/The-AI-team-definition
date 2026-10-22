@@ -2,7 +2,7 @@
 name: new-spec
 description: Create a new specification document via the ai-team CLI. Use when a feature design is ready to be written up as a spec.
 argument-hint: "[optional: specification title]"
-allowed-tools: Read, Write, Bash
+allowed-tools: Read, Write, Bash, Skill(git-conventions)
 ---
 
 # New Spec
@@ -133,7 +133,7 @@ Coarse phases (typically two to five). Each phase delivers an observable outcome
 
 ### Amendment Log
 
-Leave empty when the spec is first written. Add rows only after Gate 1 approval when scope changes while tasks are in flight. Each amendment bumps the minor `version` (for example `0.1` → `0.2`).
+Leave empty when the spec is first written. Add rows only after Gate 1 approval when scope changes while tasks are in flight. Each amendment bumps the minor `version` (for example `0.1` → `0.2`). The one exception is a spec-truth reconciliation row from `architecture-consistency-review`, which records a verdict, changes no scope, and does not bump `version`.
 
 ---
 
@@ -158,6 +158,7 @@ Before returning the created spec, confirm every item:
 - [ ] **No implementation artefacts.** No full config files, no CI manifests, no function-by-function decompositions. Any literal-value-as-contract block is labelled **Contract**.
 - [ ] **Every requirement is measurable.** An outside reader can describe how to verify it.
 - [ ] **Interfaces are described for this spec's own component or feature**, at the interface level. No method signatures, no attribute lists.
+- [ ] **Success Criteria are listed**, each one measurable.
 - [ ] **Implementation Order has coarse phases**, not tasks.
 - [ ] **Amendment Log is empty** (until amendments arrive after Gate 1).
 

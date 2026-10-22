@@ -627,8 +627,9 @@ uv build
 ```
 
 The wheel and source distribution land in `cli/dist/`. To publish a release,
-push a version tag with no `v` prefix (`1.2.3`, or `1.2.3-label` for a
-pre-release):
+push a version tag with no `v` prefix (`1.2.3`, or `1.2.3-label`, which CI
+builds as the PEP 440 local version `1.2.3+label`; the GitHub Release is not
+marked as a pre-release):
 
 ```bash
 git tag 1.2.3
