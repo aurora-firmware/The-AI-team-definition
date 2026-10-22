@@ -55,7 +55,7 @@ Use these checks when reviewing a bug fix:
 - [ ] The bug file contains a Diagnosis Log entry before the fix Work Log entry.
 - [ ] Reproduction status is explicit: confirmed, intermittent, or not yet reproduced.
 - [ ] Relevant logs, stack traces, failing assertions, or command output are recorded or summarized.
-- [ ] The isolated fault and root cause or fault hypothesis are documented.
+- [ ] The isolated fault, root cause or fault hypothesis, and planned verification are documented.
 - [ ] The fix is scoped to the isolated cause and does not add unrelated behavior.
 - [ ] A regression test covers the defect when practical; if not, the Work Log explains why.
 - [ ] The Fix Verification steps were run, or the Work Log explains why they could not be run.
