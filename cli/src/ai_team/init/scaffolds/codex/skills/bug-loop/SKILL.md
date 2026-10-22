@@ -2,7 +2,7 @@
 name: bug-loop
 description: Fully autonomous bug-fix loop. Picks open bugs one at a time, creates a dedicated branch from the correct base, drives each through diagnosis-first Developer → Reviewer cycles until the reviewer passes, then moves to the next bug. Stops only when the queue is empty or a bug cannot be resolved after full escalation. Use only when the human asks to run the bug-fix loop.
 argument-hint: "[bug-id ...] — optional space-separated bug IDs (e.g., B-001 B-003). If omitted, processes all open bugs."
-allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate), Skill(git-conventions)
+allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate), Skill(new-bug), Skill(git-conventions)
 ---
 
 # Bug Loop
@@ -121,6 +121,7 @@ Stay on the bug branch — no switch and no commit. That recorded entry is the f
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 Wait for the Developer to complete before continuing.
+If the Developer returns `ESCALATE`, go directly to **On ESCALATE**.
 If the Developer does not return a Work Log handoff entry, stop with `BLOCKED` and report the missing handoff.
 
 Record the Work Log handoff: append the Developer's entry under `## Work Log` in the bug file. No switch and no commit.
@@ -143,7 +144,7 @@ Rewrite it before every review cycle so it covers the whole range, including com
 > "Review the bug fix described in the bug file `<bug-path>` using the code-review skill.
 > The Developer has completed their work on branch `bug/B-NNN-...`.
 > The review range and its diff are in the review package `<package-path>`; read that one file instead of deriving the diff yourself.
-> Verify the Diagnosis Log records reproduction status, evidence captured, isolated fault, and root cause or fault hypothesis.
+> Verify the Diagnosis Log records reproduction status, evidence captured, isolated fault, root cause or fault hypothesis, and planned verification.
 > Verify the fix addresses the isolated cause and passes the Fix Verification steps in the bug file.
 > Verify a regression test exists when practical, or that the Work Log explains why only manual verification was possible.
 > Append your verdict to the bug file under `### Review Verdict — YYYY-MM-DD`. The bug file is outside version control: do not commit it.
@@ -198,9 +199,9 @@ Climb the capability ladder — each rung changes who attempts the fix, so a stu
 
 #### On ESCALATE
 
-Follow the two-phase escalation procedure below. Phase 1 is a single Architect consultation; Phase 2 is human escalation. The chain is linear — no second Architect round.
+Follow the Phase 2 escalation chain below. Step 1 is a single Architect consultation; Step 2 is human escalation. The chain is linear — no second Architect round.
 
-**Phase 1 — Architect Consultation:**
+**Phase 2, Step 1 — Architect Consultation:**
 **Spawn the Architect subagent** (tier: most capable) with this prompt:
 
 > "Use the escalation-review skill for the bug in `<bug-path>`.
@@ -210,16 +211,16 @@ Follow the two-phase escalation procedure below. Phase 1 is a single Architect c
 > Question: <specific guidance needed to continue within the bug report and approved specification>
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
 
-If the Architect resolves the issue, go back to **Step 5** with the Architect's guidance.
+If the Architect resolves the issue, go back to **Step 4** with the Architect's guidance when the escalation was raised during diagnosis, or to **Step 5** otherwise.
 
 If the Architect adjudicates that specific findings of the last FAIL verdict should be **parked** rather than fixed — the bug meets its criteria without them — the loop makes each parked finding a durable artifact before continuing; a ledger line in the chat is not one:
 - file it as a new bug with the `new-bug` skill, naming this bug and the finding, or
 - record it under a `### Recorded deviation — YYYY-MM-DD` heading in the bug file with the Architect's rationale.
 
 Then spawn the Reviewer again (Step 6). Its prompt stays neutral; the recorded deviation is in the bug file, where the Reviewer reads it. Parked findings never count toward the cycle cap and are never deleted with the workspace.
-If the Architect cannot resolve it, proceed to Phase 2.
+If the Architect cannot resolve it, proceed to Step 2.
 
-**Phase 2 — Human Escalation:**
+**Phase 2, Step 2 — Human Escalation:**
 1. Leave the bug `in-progress` — there is no `blocked` status for bugs. Append a dated `Escalated to human` entry to the bug's Work Log so the escalation is visible in the bug file.
 2. Stop the loop entirely.
 3. Produce the report using the Phase 2 Human Escalation Report template defined in the `escalation-review` skill. Fill every section (Work item, Original request, Self-recovery attempts, Architect analysis, Why human input is required, Decision needed).

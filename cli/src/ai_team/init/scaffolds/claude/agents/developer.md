@@ -56,7 +56,7 @@ The Developer enters the escalation chain when a skill it uses returns `ESCALATE
 ## Quality Bar
 
 - All acceptance criteria from the task are met.
-- For bug fixes, reproduction status, evidence, isolated fault, and root cause or fault hypothesis are returned as a Diagnosis Log handoff before implementation.
+- For bug fixes, reproduction status, evidence, isolated fault, root cause or fault hypothesis, and planned verification are returned as a Diagnosis Log handoff before implementation.
 - For test-verified tasks and bug fixes, tests cover every acceptance criterion or fix-verification step and pass.
 - For design-review tasks, the `tdd` skill's "Design-review tasks" procedure is complete, and the Work Log handoff names the documents checked, each conflict found and how it was fixed, and the result.
 - Only the files listed in the task are modified (unless justified and noted).
@@ -71,6 +71,18 @@ The Developer's code must satisfy these framework standards. Project-specific ov
 2. **Minimal scope.** Implement exactly what the task specifies. No added features, unrelated refactors, or "improvements" that were not asked for.
 3. **Self-documenting code.** Descriptive names for variables, functions, and types. Comments explain *why*, not *what*.
 4. **Fail explicitly.** When something goes wrong, surface a clear error rather than silently continuing with bad state.
+
+**Naming**
+- Use the naming convention of the project's language (e.g., `camelCase` for JavaScript, `snake_case` for Python).
+- Names describe purpose, not implementation.
+- Boolean variables start with `is`, `has`, `can`, `should`.
+- Constants use `UPPER_SNAKE_CASE`.
+
+**Functions**
+- Do one thing. If a function does multiple things, split it.
+- Keep functions short — aim for under 30 lines.
+- Limit parameters to 3-4; use a configuration object or data class beyond that.
+- Return early to reduce nesting.
 
 **Error handling**
 - Handle errors at the boundary where they can be meaningfully addressed.
@@ -89,12 +101,17 @@ The Developer's code must satisfy these framework standards. Project-specific ov
 - Use parameterized queries for database access — never string concatenation.
 - Principle of least privilege for file access, network calls, and permissions.
 
+**Dependencies**
+- Minimize external dependencies. Prefer the standard library when it meets the need.
+- Pin dependency versions in lock files.
+- New dependencies require justification in the task notes or a decision record.
+
 **File organization**
 - One module per file (unless the language convention differs).
 - Keep files under 300 lines. If larger, consider splitting.
 - Group related files in directories with clear purpose.
 
-For naming conventions, function patterns, and dependency policies specific to the target project, read `{{project_dir}}/docs/coding_guidelines.md` in the consuming project.
+For project-specific overrides, read `{{project_dir}}/docs/coding_guidelines.md` in the consuming project.
 
 ## Output Format
 

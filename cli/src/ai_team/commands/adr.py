@@ -55,6 +55,7 @@ def new_adr(
 
     template = load_template("adr")
     body = _template_body(template)
+    body = body.replace("# ADR-000: [Decision Title]", f"# {adr_id}: {title}", 1)
     model = Adr(
         id=adr_id,
         title=title,

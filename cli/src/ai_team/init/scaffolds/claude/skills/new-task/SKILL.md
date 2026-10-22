@@ -1,6 +1,6 @@
 ---
 name: new-task
-description: Create a new task via the ai-team CLI
+description: Create a new task via the ai-team CLI. Use when a task file must be created, such as during spec breakdown or for a follow-up task.
 argument-hint: "[optional: task title]"
 allowed-tools: Read, Write, Bash
 ---

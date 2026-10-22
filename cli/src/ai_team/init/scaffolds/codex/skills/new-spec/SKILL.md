@@ -1,8 +1,8 @@
 ---
 name: new-spec
-description: Create a new specification document via the ai-team CLI
+description: Create a new specification document via the ai-team CLI. Use when a feature design is ready to be written up as a spec.
 argument-hint: "[optional: specification title]"
-allowed-tools: Read, Write, Bash
+allowed-tools: Read, Write, Bash, Skill(git-conventions)
 ---
 
 # New Spec
@@ -14,7 +14,7 @@ Create a new specification document using `ai-team spec new --json`, then fill i
 Provide these values directly when possible:
 - `title` — required
 - `description` — required (free-form prose: problem, approach, exclusions, constraints; used to fill body sections in step 4 — NOT passed to the CLI)
-- `author` — optional; defaults to `AI Agent`
+- `author` — optional; defaults to `planner`
 - `status` — optional; defaults to `draft`
 
 When invoked by another skill, the caller should provide every required field in the invocation text and this skill must use them without asking follow-up questions.
@@ -73,7 +73,7 @@ If you find yourself pasting a near-complete file into the spec, you are writing
 
 ## Section recipes
 
-Use these recipes to fill each section of `cli/src/ai_team/templates/spec.md`.
+Use these recipes to fill each section of the spec file the CLI created.
 
 ### Purpose
 
@@ -123,13 +123,17 @@ For each setting, four bullets:
 
 Do not paste a real configuration file. The Developer writes the file against project conventions; this section tells them what the file must guarantee.
 
+### Success Criteria
+
+A numbered list of criteria that together show the spec is satisfied. Each one is measurable; see **Measurable success criteria** below.
+
 ### Implementation Order
 
 Coarse phases (typically two to five). Each phase delivers an observable outcome. State each phase's dependency on the previous ones. A phase is NOT a task — `spec-breakdown` produces the actual tasks from these phases.
 
 ### Amendment Log
 
-Leave empty when the spec is first written. Add rows only after Gate 1 approval when scope changes while tasks are in flight.
+Leave empty when the spec is first written. Add rows only after Gate 1 approval when scope changes while tasks are in flight. Each amendment bumps the minor `version` (for example `0.1` → `0.2`). The one exception is a spec-truth reconciliation row from `architecture-consistency-review`, which records a verdict, changes no scope, and does not bump `version`.
 
 ---
 
@@ -154,6 +158,7 @@ Before returning the created spec, confirm every item:
 - [ ] **No implementation artefacts.** No full config files, no CI manifests, no function-by-function decompositions. Any literal-value-as-contract block is labelled **Contract**.
 - [ ] **Every requirement is measurable.** An outside reader can describe how to verify it.
 - [ ] **Interfaces are described for this spec's own component or feature**, at the interface level. No method signatures, no attribute lists.
+- [ ] **Success Criteria are listed**, each one measurable.
 - [ ] **Implementation Order has coarse phases**, not tasks.
 - [ ] **Amendment Log is empty** (until amendments arrive after Gate 1).
 

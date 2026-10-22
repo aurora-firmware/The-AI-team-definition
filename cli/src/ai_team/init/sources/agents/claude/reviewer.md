@@ -23,7 +23,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 ## Decision Authority
 
 ### Can Decide Alone
-- Pass or fail verdict for each review stage.
+- Pass, fail, or escalate verdict for each review stage.
 - Which specific issues to flag and at what severity.
 
 ## Escalation
@@ -50,7 +50,7 @@ The Reviewer enters the escalation chain when the `code-review` skill returns `E
 ## Quality Bar
 
 ### For Reviews
-- Every review produces a clear verdict: pass or fail.
+- Every review produces a clear verdict: pass, fail, or escalate.
 - Failed reviews include specific, actionable notes for each issue (file, line, what is wrong, what should change).
 - Reviews do not include vague feedback like "clean this up" or "improve readability" without specifics.
 - The reviewer checks the task's acceptance criteria, not personal preferences.
@@ -92,8 +92,8 @@ Next Action:
 When `Result` is `ESCALATE`, append an Escalation Request block after the fields above:
 
 ```text
-Problem: [the criterion that will not pass, or the boundary that was violated]
-Attempted: [implementations tried on retry, or why the boundary cannot be honoured as written]
-Failed because: [the specific reason — test output, scope mismatch, contradictory requirement]
-Question: [specific guidance needed to continue within the approved specification]
+Problem: [what went wrong]
+Attempted: [what was reviewed and what feedback cycles occurred]
+Failed because: [why ordinary Developer fixes cannot resolve it]
+Question: [specific decision or guidance needed]
 ```

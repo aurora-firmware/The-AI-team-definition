@@ -1,6 +1,6 @@
 ---
 name: spec-breakdown-review
-description: Validate a pending task plan before development starts. Use when the Planner has decomposed an approved specification into tasks and Gate 2 must confirm dependency correctness, file conflict risk, ADR consistency, atomicity, and implementation readiness.
+description: Validate a planned task plan before development starts. Use when the Planner has decomposed an approved specification into tasks and Gate 2 must confirm dependency correctness, file conflict risk, ADR consistency, atomicity, and implementation readiness.
 allowed-tools: Read, Grep, Glob, Write, Edit, Skill(new-adr)
 effort: high
 ---
@@ -8,8 +8,8 @@ effort: high
 # Gate 2 Preflight
 
 **Ownership boundary:** spec-breakdown-review owns Gate 2 technical readiness — it validates whether a task plan is safe to hand to `/dev-loop`.
-Plan content (coverage decisions, splitting, EARS-pattern authoring in the task template at `cli/src/ai_team/templates/task.md`) is owned by `spec-breakdown` and `new-task`.
-The result of this skill is a Findings block; the architect role envelope wraps it in its standard output format — do not duplicate `Result:` or `Summary:` fields here.
+Plan content (coverage decisions, splitting, EARS-pattern authoring in the task file the CLI creates) is owned by `spec-breakdown` and `new-task`.
+The result of this skill is a Findings block, which the architect role envelope wraps (see Output Format).
 
 ## Input Requirements
 
@@ -95,14 +95,11 @@ If the plan fails:
 
 ## Output Format
 
-The architect role envelope wraps the Findings block produced here.
-There are no duplicated Result/Summary fields in this output — do not add a top-level `Result:` or `Summary:` outside this block; those fields belong to the architect envelope and must not be repeated here.
+There are no duplicated Result/Summary fields in this output: the verdict goes in the architect envelope's `Result: PASS | FAIL | BLOCKED | ESCALATE` line, not in the Findings block.
 
-Use this structure for the Findings block — matches the Architect agent's standard `Result:` vocabulary:
+Use this structure for the Findings block:
 
 ```text
-Result: PASS | FAIL | BLOCKED | ESCALATE
-
 Spec reviewed: {{project_dir}}/specs/<file>
 Tasks reviewed: <count>
 

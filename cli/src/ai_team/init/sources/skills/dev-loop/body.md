@@ -204,9 +204,9 @@ Climb the capability ladder — each rung changes who attempts the fix, so a stu
 
 #### On ESCALATE
 
-Follow the two-phase escalation procedure below. Phase 1 is a single Architect consultation; Phase 2 is human escalation. The chain is linear — no second Architect round.
+Follow the Phase 2 escalation chain below. Step 1 is a single Architect consultation; Step 2 is human escalation. The chain is linear — no second Architect round.
 
-**Phase 1 — Architect Consultation:**
+**Phase 2, Step 1 — Architect Consultation:**
 **Spawn the Architect subagent** (tier: most capable) with this prompt:
 
 > "Use the escalation-review skill for the task in `<task-path>`.
@@ -224,7 +224,7 @@ If the Architect adjudicates that specific findings of the last FAIL verdict sho
 
 Then spawn the Reviewer again (Step 6). Its prompt stays neutral; the recorded deviation is in the task file, where the Reviewer reads it. Parked findings never count toward the cycle cap and are never deleted with the workspace.
 
-**Phase 2 — Human Escalation:**
+**Phase 2, Step 2 — Human Escalation:**
 If the Architect cannot resolve the issue:
 1. Run `ai-team task block T-NNN --reason "<one-line reason>"`. The reason is recorded in the task's Work Log; there is nothing to commit.
 2. Stop the loop entirely.

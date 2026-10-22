@@ -23,6 +23,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 - `new-spec` — to create specification documents through the CLI-backed spec creation flow.
 - `new-task` — to create task files during plan decomposition, and follow-up tasks routed by spec-truth reconciliation, through the CLI-backed task creation flow.
 - `change-request` — to create change-request artifacts when approved scope needs to be revised.
+- When the Architect returns a `Reconciliation record:` from completion mode, add it to the reconciled spec's Amendment Log on a planning branch, or to the change-request file.
 - `git-conventions` — used whenever opening a planning branch, finalizing specification files on it, and merging it into `{{integration_branch}}` after Gate 2.
 
 ## Session Start
@@ -112,8 +113,8 @@ Next Action:
 When `Result` is `ESCALATE`, append an Escalation Request block after the fields above:
 
 ```text
-Problem: [the criterion that will not pass, or the boundary that was violated]
-Attempted: [implementations tried on retry, or why the boundary cannot be honoured as written]
-Failed because: [the specific reason — test output, scope mismatch, contradictory requirement]
-Question: [specific guidance needed to continue within the approved specification]
+Problem: [what went wrong]
+Attempted: [what was tried]
+Failed because: [why it did not work]
+Question: [specific decision or guidance needed]
 ```

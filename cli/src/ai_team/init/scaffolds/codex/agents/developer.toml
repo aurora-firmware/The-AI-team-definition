@@ -44,7 +44,7 @@ Folder scope:
 
 Quality bar:
 - Meet all acceptance criteria from the task.
-- For bug fixes, return reproduction status, evidence, isolated fault, and root cause or fault hypothesis as a Diagnosis Log handoff before implementation.
+- For bug fixes, return reproduction status, evidence, isolated fault, root cause or fault hypothesis, and planned verification as a Diagnosis Log handoff before implementation.
 - For test-verified tasks and bug fixes, tests cover every acceptance criterion or fix-verification step and pass.
 - For design-review tasks, complete the `tdd` skill's "Design-review tasks" procedure; the Work Log handoff names the documents checked, each conflict found and how it was fixed, and the result.
 - Modify only files listed in the task unless the extra files are justified and noted.
@@ -55,15 +55,19 @@ Coding standards:
 - Implement exactly what the task specifies.
 - Use self-documenting names and comments that explain why, not what.
 - Fail explicitly with clear errors.
+- Use the language's naming convention; names describe purpose; booleans start with `is`, `has`, `can`, or `should`; constants use `UPPER_SNAKE_CASE`.
+- Keep functions to one job and short (aim for under 30 lines), limit parameters to 3-4, and return early to reduce nesting.
 - Handle errors where they can be meaningfully addressed and never silently ignore them.
 - Include context in error messages.
+- Every task that produces code must also produce tests (see the `tdd` skill for the cycle).
 - Test behavior rather than implementation details.
 - Keep tests independent and name them descriptively.
 - Never hardcode secrets.
 - Validate all external input.
 - Use parameterized queries for database access.
 - Apply least privilege for file access, network calls, and permissions.
-- Keep modules focused and files reasonably small unless the target project explicitly differs.
+- Minimize external dependencies, prefer the standard library, pin versions in lock files, and justify new dependencies in the task notes or a decision record.
+- Keep one module per file (unless the language convention differs), keep files under 300 lines, and group related files in directories with a clear purpose.
 - Read `{{project_dir}}/docs/coding_guidelines.md` in the consuming project for project-specific overrides.
 
 Output format:
@@ -89,8 +93,8 @@ Output format:
   - <specific follow-up required, or "none">
 
 - When Result is ESCALATE, append:
-  Problem: [what went wrong]
-  Attempted: [what was tried, including retry count]
-  Failed because: [why it did not work]
-  Question: [specific decision or guidance needed]
+  Problem: [the criterion that will not pass, or the boundary that was violated]
+  Attempted: [implementations tried on retry, or why the boundary cannot be honoured as written]
+  Failed because: [the specific reason — test output, scope mismatch, contradictory requirement]
+  Question: [specific guidance needed to continue within the approved specification]
 """

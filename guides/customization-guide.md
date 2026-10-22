@@ -34,7 +34,7 @@ Exported skill files in `.claude/skills/` and `.agents/skills/` may be edited fo
 - Replace the project name and purpose description.
 - Add your tech stack, repository layout, and the specific build/run/test/lint commands agents should use.
 - Point agents to project-local conventions, including `ai-team/docs/coding_guidelines.md` if present.
-- Keep the Repository Map, How to Work Here, and Conventions sections. Update paths to match your project layout.
+- Keep the five sections `ai-team check-layout` requires: `## Build and Install`, `## Test`, `## Run`, `## Lint and Format`, and `## Key Conventions`.
 
 **`README.md`** — Your project's README:
 - Write a new README describing your actual project, not the framework.
@@ -54,13 +54,18 @@ Exported skill files in `.claude/skills/` and `.agents/skills/` may be edited fo
 
 `ai-team init` can scaffold two root-level guidance files from starter templates:
 
-- **`CLAUDE.md`** (repo root) — read by Claude and the dev-loop. The `## Test`
-  section is the primary place to document the build, test, lint, and run
-  commands for your project. The dev-loop reads this file before starting any
-  session so agents can run your tests without guessing.
+- **`CLAUDE.md`** (repo root) — read by Claude and the dev-loop. It documents
+  the build, test, run, and lint commands and the conventions for your project.
+  The dev-loop reads this file before starting any session so agents can run
+  your tests without guessing.
 - **`AGENTS.md`** (repo root) — read by non-Claude AI tooling (for example,
-  Codex). Mirror your `## Test` section here if you use Codex agents so they
-  also have the correct commands. Claude reads `CLAUDE.md`, not `AGENTS.md`.
+  Codex). Mirror the same sections here if you use Codex agents so they also
+  have the correct commands. Claude reads `CLAUDE.md`, not `AGENTS.md`.
+
+Both starters come from the root guidance template
+(`cli/src/ai_team/init/sources/root/CLAUDE.md`) and use the five sections
+`ai-team check-layout` requires: `## Build and Install`, `## Test`, `## Run`,
+`## Lint and Format`, and `## Key Conventions`.
 
 #### What they're for
 
@@ -69,32 +74,41 @@ source code alone: how to install dependencies, how to run the test suite, how
 to lint, and what environment assumptions apply. Without them, agents fall back
 to guessing — or stop and ask, slowing down the loop.
 
-#### The `## Test` section convention
+#### The command sections
 
-The dev-loop skill reads the `## Test` section of `CLAUDE.md` to determine the
-verification command for a task. Structure it like this:
+The dev-loop reads `## Test` for the baseline verification command; agents use
+the other sections for build, run, and lint commands. For example:
 
 ```markdown
 ## Test
 
 \`\`\`bash
 uv run pytest
+\`\`\`
+
+## Lint and Format
+
+\`\`\`bash
 uv run ruff format --check .
 uv run ruff check .
 \`\`\`
 ```
 
-Keep this section accurate. If the test command changes (new linter added,
+Keep these sections accurate. If a command changes (new linter added,
 test runner changed), update `CLAUDE.md` in the same commit.
 
 #### Workflow after `ai-team init` scaffolds them
 
 1. Open the generated `CLAUDE.md` and `AGENTS.md` from the starter templates.
 2. Replace the placeholder project name and description.
-3. Fill in your actual build, test, lint, and run commands under `## Test`.
-4. Add your tech stack, repo layout, and any agent-facing conventions.
+3. Fill in your actual commands under `## Build and Install`, `## Test`,
+   `## Run`, and `## Lint and Format`.
+4. Add your tech stack, repo layout, and any agent-facing conventions under
+   `## Key Conventions`.
 5. Commit both files. They are yours to maintain — re-running `ai-team init`
-   without `--force` will not overwrite them.
+   without `--force` on an initialized project refuses to overwrite any existing
+   file and exits with an error, and `--force` overwrites root guidance only as
+   described in the setup guide.
 
 ### Optional Customization
 
@@ -151,5 +165,5 @@ If you have an existing codebase:
 3. Write or update `CLAUDE.md` so agents can find project commands, coding guidance, and repository layout.
 4. Create `ai-team/docs/coding_guidelines.md` for stack-specific conventions if those rules are not already documented elsewhere.
 5. Migrate existing issues/tasks by creating a task for each open item with `ai-team task new` (they land in the local tracker).
-6. Write a specification for the current system state in `ai-team/specs/` — this becomes the baseline.
+6. Write the S-000 system overview spec — what the project is for and how it divides into components (`ai-team spec new --overview` or the `new-system-overview` skill).
 7. Create an ADR in `ai-team/decisions/` documenting the decision to adopt this framework.

@@ -1,7 +1,7 @@
 ---
-number: 0
+id: "ADR-000"
 title: "[Decision Title]"
-status: proposed  # proposed | decided | deprecated | superseded
+status: proposed  # proposed | accepted | superseded
 created: YYYY-MM-DD
 ---
 

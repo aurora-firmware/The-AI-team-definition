@@ -117,6 +117,10 @@ Do not paste a real configuration file. The Developer writes the file against th
 
 **Weak:** a 20-line `ci.yml` snippet.
 
+### Success Criteria
+
+**Recipe:** a numbered list of criteria that together show the spec is satisfied. Each one is measurable; see [How to write measurable success criteria](#how-to-write-measurable-success-criteria).
+
 ### Implementation Order
 
 **Recipe:** coarse phases (typically two to five), each delivering an observable outcome. State each phase's dependency on the previous ones.
@@ -134,16 +138,16 @@ A phase is not a task. The `spec-breakdown` skill produces the actual tasks from
 
 ### Amendment Log
 
-**Recipe:** leave the table empty when the spec is first written. Add rows only after Gate 1 approval, when scope changes while tasks are in flight. Each row: date, what changed, why, affected tasks.
+**Recipe:** leave the table empty when the spec is first written. Add rows only after Gate 1 approval, when scope changes while tasks are in flight. Each row: date, what changed, why, affected tasks. Each amendment bumps the spec's minor `version` (for example `0.1` → `0.2`). A spec-truth reconciliation row records a verdict, changes no scope, and does not bump `version`.
 
 ## The system overview spec (S-000)
 
 S-000 is the canonical project-overview spec: one document that says what the project is, who it serves, and which components make it up. It is written in plain language for a reader who has never seen the project. It has seven sections, in this order:
 
 1. **Purpose** — one short paragraph: what the project is and the outcome it exists to deliver.
-2. **Users** — who uses the system, one line per kind of user, naming what each needs from it.
+2. **Users** — who uses the system and in what situations, one line per kind of user, naming what each needs from it.
 3. **Pain points** — the concrete problems those users have today that the project removes.
-4. **Use cases** — the main things a user does with the system, each as one short scenario from the user's point of view.
+4. **Use cases** — the main things a user does with the system, each as one short scenario from the user's point of view and each tied to the pain point it removes.
 5. **Solution overview** — how the system addresses the pain points, in a few paragraphs, without naming technologies.
 6. **Components** — the parts the system is divided into. Each component entry gives its name, its owned responsibility (what it is for), its boundary (what it is not responsible for), and the other components it works with.
 7. **Project exclusions** — what the project deliberately does not do, each with a one-line reason.
@@ -206,6 +210,10 @@ PR opened or updated → CI runner triggers → results posted as PR check →
 - **Trigger event filter.** Must be configurable to PR-opened, PR-updated, and rerun-on-request.
 - **Network policy.** During validation, network access must be limited to the project's dependency mirror.
 
+## Success Criteria
+1. Every PR targeting `main` shows a check that passed or failed within five minutes of opening.
+2. A PR with a failing test cannot be merged.
+
 ## Implementation Order
 | Phase | What | Depends on |
 |---|---|---|
@@ -226,6 +234,7 @@ Before declaring the spec ready for Gate 1, the author confirms each of these:
 - [ ] **No implementation artefacts.** No full config files, no CI manifests, no function-by-function decompositions. Where a literal value is the contract, it is labelled **Contract**.
 - [ ] **Every requirement is measurable.** An outside reader can describe how to verify it.
 - [ ] **Interfaces are described for this spec's own component or feature**, at the interface level. No method signatures, no attribute lists.
+- [ ] **Success Criteria are listed**, each one measurable.
 - [ ] **Implementation Order has coarse phases**, not tasks.
 - [ ] **Amendment Log is empty** (until amendments arrive after Gate 1).
 

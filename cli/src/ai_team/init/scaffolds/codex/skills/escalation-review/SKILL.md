@@ -62,11 +62,11 @@ If the issue requires changing the approved spec, or cannot be resolved after fu
 
 ## Output Format
 
+The Architect role envelope wraps this block. The escalation verdict goes in the envelope's `Result:` line: `Result: PASS` when the guidance resolves the blocker, or `Result: ESCALATE` when human escalation is required.
+
 Use this structure:
 
 ```text
-Escalation Verdict: RESOLVED | HUMAN_ESCALATION
-
 Classification: <execution | work-item | architecture | specification | unresolved>
 
 Analysis:
@@ -78,13 +78,16 @@ Directive:
 Verification:
 - <command or check that proves the directive worked>
 
+Parked findings:
+- <finding from the last FAIL verdict that the work item meets its criteria without, and why — or "none">
+
 Human escalation required because:
-- <only when verdict is HUMAN_ESCALATION>
+- <only when Result is ESCALATE>
 ```
 
 ### Phase 2 — Human Escalation Report Template
 
-When the verdict is `HUMAN_ESCALATION`, also produce a Phase 2 Human Escalation Report. This is the single canonical template that all callers (dev-loop, bug-loop, spec-breakdown, and any future orchestrator) use when handing off to a human. The report is plain markdown appended to the final output.
+When `Result` is `ESCALATE`, also produce a Phase 2 Human Escalation Report. This is the single canonical template that all callers (dev-loop, bug-loop, spec-breakdown, and any future orchestrator) use when handing off to a human. The report is plain markdown appended to the final output.
 
 ```text
 ## Human Escalation Report
@@ -97,7 +100,7 @@ Date: <YYYY-MM-DD>
 <The blocked role's escalation request, verbatim — the four-field Problem / Attempted / Failed because / Question block.>
 
 ### Self-recovery attempts
-<What the blocked role tried before escalating, including retry counts, review cycles, or bisect attempts.>
+<What the blocked role tried before escalating, including retry counts, review cycles, or merge attempts.>
 
 ### Architect analysis
 <Classification, root-cause analysis, and any directive the Architect issued (or "no resolution possible — see reason below").>

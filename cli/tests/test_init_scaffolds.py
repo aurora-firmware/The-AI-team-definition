@@ -1148,10 +1148,10 @@ def test_spec_breakdown_review_states_gate_2_technical_readiness_ownership_bound
 def test_spec_breakdown_ears_reference_points_to_task_template_not_new_task_skill() -> (
     None
 ):
-    """AC-2: spec-breakdown EARS reference uses task template path, not 'the new-task skill'."""
+    """AC-2: spec-breakdown EARS reference points to the CLI-created task file, not 'the new-task skill'."""
     source, claude, codex = _spec_breakdown_skill_texts()
 
-    task_template_phrases = ("task template", "templates/task")
+    task_template_phrases = ("task file the CLI created",)
     forbidden_phrase = "documented in the new-task skill"
 
     for phrase in task_template_phrases:
@@ -1173,10 +1173,10 @@ def test_spec_breakdown_ears_reference_points_to_task_template_not_new_task_skil
 def test_spec_breakdown_review_ears_reference_points_to_task_template_not_new_task_skill() -> (
     None
 ):
-    """AC-2: spec-breakdown-review EARS reference uses task template path, not 'the new-task skill'."""
+    """AC-2: spec-breakdown-review EARS reference points to the CLI-created task file, not 'the new-task skill'."""
     source, claude, codex = _spec_breakdown_review_skill_texts()
 
-    task_template_phrases = ("task template", "templates/task")
+    task_template_phrases = ("task file the CLI creates",)
 
     for phrase in task_template_phrases:
         assert phrase in source, (

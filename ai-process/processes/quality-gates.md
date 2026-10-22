@@ -31,7 +31,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 ## Gate 2: Task Plan Preflight
 
-**When:** After the Planner writes the task plan from either an approved specification or an accepted change-request, before the development loop starts. Follow-up tasks routed by spec-truth reconciliation are exempt: they are created `pending`, and the reconciliation re-run checks them (ADR-002).
+**When:** After the Planner writes the task plan from either an approved specification or an approved change-request, before the development loop starts. Follow-up tasks routed by spec-truth reconciliation are exempt: they are created `pending`, and the reconciliation re-run checks them (ADR-002).
 **Evaluator:** Architect.
 **Scope:** Gate 2 focuses on **technical task-plan readiness**. The Architect evaluates dependencies, file conflicts, architectural consistency with existing decisions, atomicity, and verifiability. Gate 2 does not reopen product or spec approval questions that were already settled at Gate 1 or by human approval of a TODO-free change-request. If the Architect finds a product-scope concern that does not block technical readiness, it is noted as follow-up feedback rather than a Gate 2 failure. Only a contradiction against the approved spec, the approved change-request intent, or existing ADRs causes a Gate 2 failure or escalation. The same consistency principle applies whenever a spec, ADR, or change-request itself changes — see [Architecture Consistency Review](#architecture-consistency-review) below.
 **Pass criteria:**
@@ -43,7 +43,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 - Tasks are atomic, independently verifiable, and ready for implementation. Verification is a test or, for a task that changes only prose, a named design review that lists its references (the source spec, accepted ADRs, and S-000 when it exists); a task that changes behaviour a test can observe has a test.
 - No task contains placeholder text (`TBD`, `TODO`, "implement later", "add appropriate error handling", "similar to Task N", or a reference to something no task defines).
 
-**On failure:** Architect returns a correction request to the Planner. The Planner revises the task plan and resubmits it to Gate 2.
+**On failure:** Architect returns a correction request to the Planner. The Planner revises the task plan and resubmits it to Gate 2. The one exception: the Architect may fix an obvious missing dependency, file ordering, or naming mismatch directly in the planned task files, as the `spec-breakdown-review` skill allows.
 
 ## Architecture Consistency Review
 
@@ -78,8 +78,8 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 
 ### Bug Fix Criteria
 For bug fixes, the Reviewer also verifies:
-- The complete diagnosis→fix evidence chain is present: the recorded Diagnosis Log entry (the fix contract) records reproduction status, captured evidence, isolated fault, and root cause or fault hypothesis; the fix addresses that isolated cause; and the Fix Verification steps from the bug report confirm the defect is resolved.
-- The Diagnosis Log records reproduction status, captured evidence, isolated fault, and root cause or fault hypothesis.
+- The complete diagnosis→fix evidence chain is present: the recorded Diagnosis Log entry (the fix contract) records reproduction status, captured evidence, isolated fault, root cause or fault hypothesis, and planned verification; the fix addresses that isolated cause; and the Fix Verification steps from the bug report confirm the defect is resolved.
+- The Diagnosis Log records reproduction status, captured evidence, isolated fault, root cause or fault hypothesis, and planned verification.
 - The fix targets the isolated cause rather than masking the symptom downstream.
 - A regression test exists when the defect can be tested automatically, or the Work Log explains why only manual verification is possible.
 - The Fix Verification steps from the bug report were run or a clear reason is recorded.
@@ -115,7 +115,7 @@ Before the development loop claims its first task it discovers the documented ba
 - The latest spec-truth reconciliation returned `PASS`, or every correction it routed is done: each spec amendment applied, and each follow-up task completed with a re-run that returns `PASS` (see [Architecture Consistency Review](#architecture-consistency-review)).
 - The status summary lists completed tasks, unresolved bugs by severity, and latest integration-test result.
 
-**Before sign-off:** The Architect runs spec-truth reconciliation (ADR-002) — `architecture-consistency-review` in completion mode — for every approved spec the completed work touched. This completion review does not include S-000, which has no tasks or Work Logs.
+**Before sign-off:** The Architect runs spec-truth reconciliation (ADR-002) — `architecture-consistency-review` in completion mode — for every approved spec the completed work touched. This completion review does not include S-000, which has no tasks or Work Logs. The Architect returns each completion-mode verdict as a dated Amendment Log row, which the Planner records in the reconciled spec's Amendment Log (or in the change-request file for change-request work), as defined in the `architecture-consistency-review` skill.
 
 **On failure:** Human provides feedback. New tasks are created to address issues.
 

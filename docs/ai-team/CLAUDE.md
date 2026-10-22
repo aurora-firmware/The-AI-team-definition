@@ -6,7 +6,7 @@ This `docs/ai-team/` directory stores project-local planning and execution artif
 
 - `specs/` holds approved feature or change specifications.
 - `decisions/` stores Architecture Decision Records (ADRs) and amendments.
-- `docs/reports/` stores status reports generated on demand; it is git-ignored by default.
+- `docs/reports/` stores status reports generated on demand; this repo tracks them (the scaffold ignores them by default).
 - `docs/` stores project-local docs such as coding guidelines and runbooks.
 
 Keep these artifacts under version control so automation and reviewers can read

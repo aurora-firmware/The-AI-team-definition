@@ -67,12 +67,12 @@ Feature Request (human)          Change Request (human)
 
 **Role:** Planner.
 **Procedure:** `new-system-overview`.
-**Input:** The project's purpose, architecture, and constraints, as described by the human.
+**Input:** What the project is for and how it divides into components, as described by the human; for an existing project, also its approved specs, accepted ADRs, documentation, and code.
 **Output:** The system overview specification, S-000, in `ai-team/specs/`.
 
 For a new project the Planner proposes `new-system-overview` before brainstorming the first feature, so every later spec is written against a shared description of the system.
 The step is optional for projects that already have specs; the human may add S-000 at any time.
-It is also the entry point for brownfield adoption: a project with existing code uses S-000 to record the system as it stands before new features are specified.
+It is also the entry point for brownfield adoption: a project with existing code uses S-000 to record what the project is for and how it divides, not how it is built today, before new features are specified.
 
 S-000 describes the system as a whole and is never broken down into tasks. Feature specs carry the work; S-000 is the reference they are checked against.
 
@@ -103,14 +103,14 @@ Because the human shaped the spec throughout the dialogue, Gate 1 approval shoul
 
 **Role:** Planner (structured mode), then Architect (Gate 2 evaluator).
 **Procedure:** Structured task decomposition.
-**Input:** Approved specification (or accepted change-request).
+**Input:** Approved specification (or approved change-request).
 **Output:** Set of tasks in the local tracker, created as `planned`, validated by the Architect, and set to `pending` once the planning branch merges.
 
 During breakdown the Planner explicitly considers whether the spec changes require documentation updates or test coverage updates. When they do, those updates are planned as implementation tasks or acceptance criteria — not as prerequisites before task creation. If documentation and test updates are not needed, the Planner omits them without creating placeholder tasks.
 
 The Planner also chooses each task's verification mode: a test, or, for a prose-only task, a design review against the source spec, the accepted ADRs, and S-000 when it exists. Each task regenerates the generated files its own change affects and lists them in Files to Touch, so a plan has no trailing "regenerate everything" task.
 
-Before task breakdown starts, the input artifact must be ready for execution: an approved spec must already be free of human-answerable `[TODO]` markers, and an accepted change-request must already be TODO-free, human-approved, and reconciled against Architect consistency findings that do not change the approved intent. If a consistency finding would alter the approved change-request's intended scope, the process stops for a human decision instead of letting the Planner reinterpret the request.
+Before task breakdown starts, the input artifact must be ready for execution: an approved spec must already be free of human-answerable `[TODO]` markers, and an approved change-request must already be TODO-free, human-approved, and reconciled against Architect consistency findings that do not change the approved intent. If a consistency finding would alter the approved change-request's intended scope, the process stops for a human decision instead of letting the Planner reinterpret the request.
 
 After the Planner writes the task files, the Architect automatically reviews the task plan at Gate 2. Gate 2 focuses on technical task-plan readiness — dependencies, file conflict risks, architectural consistency with existing decision records, atomicity, and verifiability. It does not reopen product or spec approval questions already settled at Gate 1.
 - Checks dependency correctness and completeness.
@@ -146,7 +146,7 @@ Before claiming the first task, the loop discovers the project's documented base
 2. Sets it to `in-progress` with `ai-team task start` and creates the task branch from `dev-agent`.
 3. Assigns the task to the **Developer** for test-driven implementation and debugging — waits for completion and a Work Log handoff.
 4. Appends the Developer's Work Log entry to the task file in the tracker.
-5. Assigns the completed task to the **Reviewer** for two-stage code review — waits for a committed verdict.
+5. Assigns the completed task to the **Reviewer** for two-stage code review — waits for a recorded verdict.
 6. Reads the verdict (`PASS` / `FAIL` / `ESCALATE`) from the task file.
 7. On **PASS**: runs the integration procedure to merge the task branch into `dev-agent`, run tests, and set the task to `completed`. Picks the next task.
 8. On **FAIL** (cycle 1): sends the task back to the same Developer with the reviewer's feedback. On **FAIL** (cycle 2): sends it to a fresh Developer on the most capable model tier, which reads the task file instead of inheriting the failed session.
@@ -273,8 +273,8 @@ The integration procedure owns merge and post-merge validation.
 
 | State | Owner | Entry condition | Exit condition |
 |---|---|---|---|
-| `open` | Integration procedure or Human | Regression or defect is filed | Bug-fix loop selects it |
-| `in-progress` | Bug-fix loop | Bug branch is created | Reviewer passes, bug is blocked, or escalation occurs |
+| `open` | Bug creator (human, Reviewer, Developer, or integration procedure) | Regression or defect is filed | Bug-fix loop selects it |
+| `in-progress` | Bug-fix loop | Bug branch is created | Reviewer passes, or escalation stops the bug-fix loop |
 | diagnosis pending | Developer | Developer receives bug assignment | Defect is reproduced or evidence-backed non-reproduction is documented |
 | bug branch | Developer | Root cause or fault hypothesis is recorded | Developer submits fix for review |
 | review pending | Reviewer | Developer reports completion | PASS, FAIL, or ESCALATE verdict |
@@ -292,14 +292,14 @@ The bug-fix loop records Developer Diagnosis Log and Work Log handoffs in that f
 | Gate | Controls transition | Evaluator | Output |
 |---|---|---|---|
 | Gate 1: Specification Approval | Feature request → TODO-free approved spec | Human | Approved specification |
-| Gate 2: Task Plan Preflight | Task plan draft (from approved spec **or** accepted change-request) → implementation-ready task queue; follow-up tasks from spec-truth reconciliation are exempt (ADR-002) | Architect | Approved task queue or correction request |
+| Gate 2: Task Plan Preflight | Task plan draft (from approved spec **or** approved change-request) → implementation-ready task queue; follow-up tasks from spec-truth reconciliation are exempt (ADR-002) | Architect | Approved task queue or correction request |
 | Gate 3: Code Review | Developer-complete task → integration-ready branch | Reviewer | PASS, FAIL, or ESCALATE |
 | Gate 4: Integration Tests | Reviewed branch → completed task or bug | Integration procedure | Merged/completed or regression report |
 | Gate 5: Final Merge Sign-off | Completed queue → production merge | Human | Approval to merge `dev-agent` to `main` |
 
-Change-requests are a lighter intake path that may bypass Gate 1, but they do not bypass intent completion: the Planner resolves human-answerable `[TODO]` markers before approval, the human approves the TODO-free request, and the Planner then carries forward only those Architect consistency fixes that preserve the approved intent. Accepted change-requests then feed into the existing Task Breakdown and Gate 2 flow without adding a new human review gate. Full features still go through Brainstorm, Gate 1, and Task Breakdown.
+Change-requests are a lighter intake path that may bypass Gate 1, but they do not bypass intent completion: the Planner resolves human-answerable `[TODO]` markers before approval, the human approves the TODO-free request, and the Planner then carries forward only those Architect consistency fixes that preserve the approved intent. Approved change-requests then feed into the existing Task Breakdown and Gate 2 flow without adding a new human review gate. Full features still go through Brainstorm, Gate 1, and Task Breakdown.
 
-Each gate defines its input artifact, evaluator, pass output, fail output, and next owner in `ai-process/processes/quality-gates.md`.
+Each gate's timing, evaluator, pass criteria, and failure handling are defined in `ai-process/processes/quality-gates.md`.
 
 ## Git Branching Strategy
 
@@ -344,5 +344,5 @@ Five gates control the workflow (see `ai-process/processes/quality-gates.md` for
 
 Gates 1 and 5 are human touchpoints — design approval and final production sign-off.
 Gate 1 is required for full feature specs, and those specs must be TODO-free before Architecture Consistency Review and human approval. Change-requests bypass Gate 1, but they still must become TODO-free and human-approved before Architect consistency work and Task Breakdown continue.
-Gate 2 is automated — it catches structural problems in the task plan before implementation starts, not product-intent questions already settled by an approved spec or accepted change-request.
+Gate 2 is automated — it catches structural problems in the task plan before implementation starts, not product-intent questions already settled by an approved spec or approved change-request.
 Gates 3 and 4 are automated role and procedure checks — they catch defects during execution.

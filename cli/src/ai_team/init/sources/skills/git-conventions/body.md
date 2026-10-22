@@ -17,7 +17,7 @@ Project-specific commit scopes and any overrides belong in the project's own `CL
 - No automated role ever commits to `main`.
 - `{{integration_branch}}` receives merge commits from the integration procedure, the Integrator role, and planning-branch merges, and direct ADR commits from the Architect (no direct source code).
 - Developer always works on a task branch, never on `{{integration_branch}}`.
-- Task branches are created when the Developer picks up a task and deleted after successful integration into `{{integration_branch}}`.
+- Task branches are created when the development loop picks up a task and deleted after successful integration into `{{integration_branch}}`.
 - Bug branches are created when the bug-fix loop picks up a bug.
   Existing-defect bug branches are based on `{{integration_branch}}`; task-regression bug branches are based on the bug report's `source_branch`.
 - Planning branches are created from `{{integration_branch}}` when a spec or change-request is created. Every planning artifact for that work is committed there, never directly on `{{integration_branch}}`.
@@ -114,6 +114,7 @@ If the procedure deleted that branch — `integrate` deletes a merged source bra
 - Never commit secrets, `.env` files, or credentials.
 - Never discard or delete work the current step did not create — park it as described in Workspace Hygiene.
 - Never commit or merge lifecycle files — tasks, bugs, and change-requests — from an implementation branch or any other branch: they live in the local tracker, outside version control.
+- No routine forced branch deletion (`git branch -D`) during integration. Use safe deletion (`git branch -d`) only. If `-d` is refused, stop and report instead of forcing deletion.
 
 ## Rationalizations
 

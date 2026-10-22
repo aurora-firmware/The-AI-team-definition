@@ -40,10 +40,12 @@ def _summary_line(payload: dict[str, object]) -> str:
 
     return (
         f"Active specs: {counts['specs_active']}. "
+        f"Planned tasks: {tasks['planned']}. "
         f"Pending tasks: {tasks['pending']}. "
         f"In progress tasks: {tasks['in_progress']}. "
         f"Completed tasks: {tasks['completed']}. "
         f"Blocked tasks: {tasks['blocked']}. "
+        f"Cancelled tasks: {tasks['cancelled']}. "
         f"Open bugs: {bugs['open']}. "
         f"Bugs in progress: {bugs['in_progress']}. "
         f"Resolved bugs: {bugs['resolved']}. "
@@ -218,7 +220,7 @@ def _render_report(
             _blocked_rows(payload),
         ),
         ("| B-001 | Bug title | high | open | not started |", _bug_rows(root)),
-        ("| 001 | Decision title | decided |", _decision_rows(root)),
+        ("| 001 | Decision title | accepted |", _decision_rows(root)),
         (
             (
                 "1. Next priority action\n"

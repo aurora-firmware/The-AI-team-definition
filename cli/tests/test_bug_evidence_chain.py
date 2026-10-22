@@ -77,11 +77,11 @@ def test_debug_skill_fix_contract_includes_isolated_fault() -> None:
     )
 
 
-def test_debug_skill_fix_contract_includes_planned_fix() -> None:
-    """AC-1: fix contract must include planned fix."""
+def test_debug_skill_fix_contract_includes_root_cause() -> None:
+    """AC-1: fix contract must include root cause or fault hypothesis."""
     body = _skill_source("debug")
-    assert "planned fix" in body.lower(), (
-        "debug body.md fix contract must include planned fix"
+    assert "root cause or fault hypothesis" in body.lower(), (
+        "debug body.md fix contract must include root cause or fault hypothesis"
     )
 
 

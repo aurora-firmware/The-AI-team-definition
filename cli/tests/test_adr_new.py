@@ -93,3 +93,18 @@ def test_adr_new_refuses_to_overwrite_when_allocated_path_exists(monkeypatch, tm
     assert result.exit_code != 0
     assert "already exists" in result.stderr.lower()
     assert existing.read_text(encoding="utf-8") == "existing bytes\n"
+
+
+def test_adr_new_fills_the_heading_with_id_and_title(monkeypatch, tmp_path):
+    """`adr new` replaces the template heading placeholder with the ADR id and title."""
+    from ai_team.cli import app
+
+    _mkdir(tmp_path / "ai-team" / "decisions")
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["adr", "new", "Use event bus"])
+
+    assert result.exit_code == 0
+    text = Path(result.stdout.strip()).read_text(encoding="utf-8")
+    assert "# ADR-001: Use event bus" in text
+    assert "[Decision Title]" not in text

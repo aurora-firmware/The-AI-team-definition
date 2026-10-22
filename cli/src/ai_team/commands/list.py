@@ -124,17 +124,16 @@ def bugs(
 
 @app.command()
 def specs(
-    state: str | None = typer.Option(
-        None, "--state", help="Filter by state where applicable."
-    ),
+    state: str | None = typer.Option(None, "--state", help="Filter by spec status."),
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     """List specs from the project specs folder."""
-    _ = state
     root = project_root()
     rows: list[dict[str, str]] = []
     for path in _iter_markdown_files(root.specs):
         spec = parse_spec(path)
+        if state is not None and spec.status != state:
+            continue
         spec_id = spec.id or path.stem
         rows.append(
             {
@@ -152,17 +151,16 @@ def specs(
 
 @app.command()
 def adrs(
-    state: str | None = typer.Option(
-        None, "--state", help="Filter by state where applicable."
-    ),
+    state: str | None = typer.Option(None, "--state", help="Filter by ADR status."),
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     """List ADRs from the project decisions folder."""
-    _ = state
     root = project_root()
     rows: list[dict[str, str]] = []
     for path in _iter_markdown_files(root.decisions):
         adr = parse_adr(path)
+        if state is not None and adr.status != state:
+            continue
         rows.append(
             {
                 "id": adr.id,

@@ -27,14 +27,14 @@ Phase 2: Escalation Chain
 ## Phase 1: Role Self-Recovery
 
 Before escalating, every role must make a reasonable effort to solve the problem on its own.
-Each role definition specifies its own retry threshold.
+Each role's skills specify its retry threshold.
 These retries happen **before** entering the escalation chain.
 
 | Role | Self-recovery threshold |
 |-------|------------------------|
 | Developer | Three consecutive failed attempts to make tests pass |
 | Reviewer | One review cycle for ESCALATE-worthy issues — if the code has fundamental design problems that no amount of Developer fixes can address, issue ESCALATE immediately rather than FAIL. For ordinary quality issues, issue FAIL; the Development Loop allows up to three total review cycles before forcing escalation |
-| Integrator | One bisect cycle — if the root cause spans multiple tasks, escalate immediately |
+| Integrator | One merge attempt — if a post-merge regression cannot be attributed to the source branch just merged, escalate immediately |
 
 Once the role exceeds its threshold, it stops retrying and enters Phase 2.
 
@@ -65,10 +65,10 @@ Question: [Specific question for the Architect]
 
 | Human decision | What happens next | Role responsible |
 |---------------|-------------------|-------------------|
-| Revise the spec | Planner edits spec in-place, adds entry to the spec's Amendment Log section, identifies affected tasks, adds a note to each affected `in-progress` task referencing the amendment. | Planner |
-| Modify the task | Task file is updated directly with new or changed requirements. Developer re-reads the task and continues. | Human or Planner |
+| Revise the spec | Planner edits spec in-place, adds entry to the spec's Amendment Log section, and identifies affected tasks. The Development Loop adds a note to each affected `in-progress` task referencing the amendment. | Planner, then Development Loop |
+| Modify the task | The human updates the task file directly with new or changed requirements, or the Planner raises a change-request. Developer re-reads the task and continues. | Human, or Planner through a change-request |
 | Provide guidance | The blocked role applies the guidance and continues. No document changes needed. | Blocked role |
-| Defer the work | Task is set to `blocked` with the reason noted. The spec issue is not addressed now. | Developer |
+| Defer the work | Task is set to `blocked` with the reason noted. The spec issue is not addressed now. | Development Loop |
 
 After a spec is amended, the Architect runs the [Architecture Consistency Review](quality-gates.md#architecture-consistency-review) (the `architecture-consistency-review` skill) to confirm the amended spec stays consistent with every other approved spec and accepted ADR, and routes any further amendments the change exposes.
 
@@ -78,7 +78,7 @@ A role enters the escalation chain when it **cannot complete its assigned task**
 
 - **Developer:** Tests fail repeatedly (3 attempts). Requirements are ambiguous or untestable. Conflicting constraints make the task impossible as specified.
 - **Reviewer:** Code has fundamental design issues that cannot be fixed without changing the specification.
-- **Integrator:** Merge conflicts that cannot be resolved without understanding both sides' intent. Integration tests fail and bisect points to multiple interacting causes.
+- **Integrator:** Merge conflicts that cannot be resolved without understanding both sides' intent. Integration tests fail and the regression cannot be attributed to the source branch just merged.
 
 ## Rules
 

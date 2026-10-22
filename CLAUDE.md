@@ -18,7 +18,7 @@ uv build
 
 Run `python scripts/sync_init_scaffolds.py` whenever source scaffolds change.
 If you update command output or release guidance, regenerate `cli/docs/commands.md`
-with `bash cli/scripts/gen_docs.sh` before committing.
+with `bash cli/scripts/gen_docs.sh` (from the repository root) before committing.
 
 ## Test
 

@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: Two-stage code review for completed tasks and bug fixes. Use when a Developer submits work and the Reviewer must check task acceptance or bug diagnosis criteria before reviewing code quality.
-allowed-tools: Read, Edit, Grep, Glob, Bash(git diff *), Bash(git status *), Bash(git checkout *)
+allowed-tools: Read, Edit, Grep, Glob, Bash, Skill(new-bug)
 effort: high
 ---
 
@@ -26,7 +26,7 @@ For tasks, understand what was asked, what the acceptance criteria are, and whic
 For bugs, understand the symptom, reproduction status, diagnostic evidence, isolated fault, root cause or fault hypothesis, and Fix Verification steps.
 
 For bug fixes, verify the diagnosis→fix evidence chain before proceeding to Stage 1:
-- Does the Diagnosis Log exist and contain a complete fix contract (isolated fault, planned fix, planned verification)?
+- Does the Diagnosis Log exist and contain a complete fix contract (reproduction status, evidence captured, isolated fault, root cause or fault hypothesis, planned verification)?
 - If the evidence chain is missing or incomplete, return **FAIL** immediately. Do not infer intent from the diff.
 
 ### Step 2: Stage 1 — Acceptance Or Bug Criteria
@@ -55,9 +55,9 @@ If any task criterion or bug-fix criterion is not met, skip Stage 2 and set the 
 **Bug Fix Addendum:**
 For bug fixes, also check:
 - The fix is minimal — only the code required to address the isolated fault was changed.
-- A regression test exists that fails before the fix and passes after it.
+- A regression test that fails before the fix and passes after it exists when the defect can be tested automatically, or the Work Log explains why only manual verification is possible.
 - No unrelated refactoring, cleanup, or feature code is bundled into the fix.
-- The Diagnosis Log fix contract (isolated fault, planned fix, planned verification) matches what was actually implemented.
+- The Diagnosis Log fix contract (reproduction status, evidence captured, isolated fault, root cause or fault hypothesis, planned verification) matches what was actually implemented.
 
 ### Design-Review Tasks
 
