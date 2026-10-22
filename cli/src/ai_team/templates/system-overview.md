@@ -1,4 +1,5 @@
 ---
+id: "S-000"
 title: "[Specification Title]"
 version: "0.1"
 status: draft  # draft | review | approved | superseded
@@ -27,10 +28,10 @@ What is this project, and what outcome does it exist to deliver?
 
 ## Users
 
-<!-- Recipe: one line per kind of user, naming what each needs from the
-  system. -->
+<!-- Recipe: one line per kind of user, naming the situations they use the
+  system in and what each needs from it. -->
 
-- **User kind.** What this user needs from the system.
+- **User kind.** In what situations this user works with the system and what they need from it.
 
 ## Pain points
 
@@ -42,9 +43,10 @@ What is this project, and what outcome does it exist to deliver?
 ## Use cases
 
 <!-- Recipe: the main things a user does with the system, each as one short
-  scenario from the user's point of view. -->
+  scenario from the user's point of view and each tied to the pain point it
+  removes. -->
 
-- **Use case title.** One short scenario from the user's point of view.
+- **Use case title.** One short scenario from the user's point of view. Removes: the pain point it addresses.
 
 ## Solution overview
 

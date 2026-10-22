@@ -220,10 +220,12 @@ def test_status_json_emits_structured_payload_without_rich_table(monkeypatch, tm
         }
     ]
     assert payload["counts"]["tasks"] == {
+        "planned": 0,
         "pending": 0,
         "in_progress": 1,
         "completed": 0,
         "blocked": 0,
+        "cancelled": 0,
     }
     assert payload["counts"]["bugs"] == {
         "open": 0,
@@ -435,3 +437,40 @@ def test_status_reports_not_found_when_completed_item_has_no_sessions(
     )
 
     assert _integration_result(monkeypatch, tmp_path) == "not found"
+
+
+def test_status_counts_every_task_state(monkeypatch, tmp_path):
+    """`status --json` counts planned and cancelled tasks alongside the others."""
+    from ai_team.cli import app
+
+    tasks = tmp_path / ".ai-team" / "tracker" / "tasks"
+    _write(tasks / "T-001.md", _task("T-001", "Planned", "planned"))
+    _write(tasks / "T-002.md", _task("T-002", "Cancelled", "cancelled"))
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["status", "--json"])
+
+    assert result.exit_code == 0
+    counts = json.loads(result.stdout)["counts"]["tasks"]
+    assert counts["planned"] == 1
+    assert counts["cancelled"] == 1
+
+    rich = CliRunner().invoke(app, ["status"])
+    assert "Planned tasks: 1" in rich.stdout
+    assert "Cancelled tasks: 1" in rich.stdout
+
+
+def test_status_active_specs_exclude_superseded_and_overview(monkeypatch, tmp_path):
+    """Superseded specs and the S-000 overview are not counted as active specs."""
+    from ai_team.cli import app
+
+    specs = tmp_path / "ai-team" / "specs"
+    _write(specs / "S-000-overview.md", _spec("Overview", "0.1", "approved"))
+    _write(specs / "S-001-a.md", _spec("Live", "0.1", "approved"))
+    _write(specs / "S-002-b.md", _spec("Old", "0.1", "superseded"))
+
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["status", "--json"])
+
+    assert result.exit_code == 0
+    assert json.loads(result.stdout)["counts"]["specs_active"] == 1

@@ -11,7 +11,7 @@ from typer.core import TyperGroup
 
 from ai_team.commands import discover_and_mount
 from ai_team.core.layout import resolve_layout
-from ai_team.core.locator import find_project_root
+from ai_team.core.locator import ProjectRootNotFound, find_project_root
 
 DEVELOPMENT_WARNING = (
     "Warning: ai-team is under development. Please report issues at "
@@ -30,6 +30,14 @@ class DevelopmentWarningGroup(TyperGroup):
     def main(self, *args, **kwargs):
         typer.echo(DEVELOPMENT_WARNING, err=True)
         return super().main(*args, **kwargs)
+
+    def invoke(self, ctx):
+        """Report a missing project as a plain error instead of a traceback."""
+        try:
+            return super().invoke(ctx)
+        except ProjectRootNotFound as exc:
+            typer.echo(f"Error: {exc}", err=True)
+            raise typer.Exit(code=1) from exc
 
 
 app = typer.Typer(

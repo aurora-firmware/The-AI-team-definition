@@ -1,0 +1,15 @@
+[project]
+dir = "docs/ai-team"
+
+[init]
+tools = [
+    "claude",
+    "codex",
+]
+framework_version = "0.14.0"
+
+[tracker]
+dir = ".ai-team/tracker"
+
+[git]
+integration_branch = "dev-agent"

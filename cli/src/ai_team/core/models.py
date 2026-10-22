@@ -131,6 +131,7 @@ class Bug:
     # Optional because legacy resolved artifacts pre-date this field requirement.
     created: str | None = None
     task: str | None = None  # Optional reference to a related task ID
+    source_branch: str | None = None  # Branch a task-regression bug came from
     # Holds the original CommentedMap from parsing so comments survive dump.
     _source_map: CommentedMap | None = field(default=None, compare=False, repr=False)
 
@@ -231,6 +232,9 @@ def parse_bug(path: Path) -> Bug:
         status=str(_require(data, "status", path)),
         created=str(raw_created) if raw_created is not None else None,
         task=str(data["task"]) if data.get("task") is not None else None,
+        source_branch=str(data["source_branch"])
+        if data.get("source_branch") is not None
+        else None,
         _source_map=data,
     )
 
@@ -324,6 +328,7 @@ _BUG_FIELDS: list[tuple[str, str]] = [
     ("status", "status"),
     ("created", "created"),
     ("task", "task"),  # optional — omitted when None
+    ("source_branch", "source_branch"),  # optional — omitted when None
 ]
 
 _SPEC_FIELDS: list[tuple[str, str]] = [

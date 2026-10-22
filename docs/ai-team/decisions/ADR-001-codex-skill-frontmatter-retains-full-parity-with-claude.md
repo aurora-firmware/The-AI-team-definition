@@ -14,7 +14,7 @@ Codex (`.codex/skills/`). Since CR-002 (2026-10-20), Codex skills are exported t
 `.agents/skills/`; the decision below is unaffected. Each skill is authored once in a source tree and exported as a
 scaffold for both tools.
 
-During the 2026-05 full-skills review (`full_skills_review.md`, issue P2), a question arose
+During the 2026-05 full-skills review (issue P2), a question arose
 about whether the `[codex]` section of every exported `SKILL.md` should carry the same
 frontmatter keys as the `[claude]` section or a reduced subset. The concern was that some
 keys — `allowed-tools`, `argument-hint`, `effort`, and `disable-model-invocation` — might
@@ -35,7 +35,7 @@ headers. In particular, a skill referenced through `Skill(<name>)` must not set
 unreachable; omitting that key from both headers preserves parity.
 
 Skill-to-skill wiring expressed via `Skill(<name>)` in `allowed-tools` (e.g.,
-`Skill(status-report)`) is preserved as-is in the Codex section. Future skill-creator
+`Skill(new-adr)`) is preserved as-is in the Codex section. Future skill-creator
 passes MUST NOT strip these keys from Codex headers.
 
 ## Consequences

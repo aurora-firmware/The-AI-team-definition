@@ -51,7 +51,7 @@ One-paragraph overview of current project state.
 
 | ADR | Title | Status |
 |---|---|---|
-| 001 | Decision title | decided |
+| 001 | Decision title | accepted |
 
 ## Next Actions
 

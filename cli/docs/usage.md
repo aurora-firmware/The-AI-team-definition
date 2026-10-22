@@ -104,7 +104,7 @@ ai-team init [PATH] [OPTIONS]
 |---|---|
 | `--tools TEXT` | Comma-separated tool names to scaffold (e.g. `claude`, `codex`, `all`, `none`). |
 | `--dry-run` | Print what the real run with the same flags would do, without touching the filesystem. Lines are `WOULD WRITE` (new file), `WOULD OVERWRITE` (existing file, with `--force`), `WOULD CREATE` (a missing tracker folder), `WOULD UPDATE` (a `.gitignore` missing the tracker rule) and `WOULD PROMPT` (a root `CLAUDE.md` or `AGENTS.md` the interactive run would ask about). Root guidance files the real run would skip are not listed, and existing files without `--force` give only the refusal. |
-| `--force` | Overwrite existing files. Without this flag the command refuses to overwrite. On a repository that already has `.ai-team.toml`, the configured `[project] dir`, `[tracker] dir`, `[git] integration_branch`, and any other tables are kept, so `--force` only refreshes the generated agents and skills. Every existing file that is replaced is reported as `OVERWROTE: <path>`. |
+| `--force` | Overwrite existing files. Without this flag the command refuses to overwrite. On a repository that already has `.ai-team.toml`, the configured `[project] dir`, `[tracker] dir`, `[git] integration_branch`, and any other tables are kept, but `--force` still overwrites the generated agents and skills and the project scaffold (`CLAUDE.md`, `AGENTS.md`, and `.gitignore` inside the project directory), and rewrites `.ai-team.toml`. Root guidance files follow the table under [Root guidance files](#root-guidance-files). Every existing file that is replaced is reported as `OVERWROTE: <path>`. |
 | `--project-dir TEXT` | Artifact folder, at any depth (e.g. `docs/ai-team`). Defaults to the configured `[project] dir`, else `ai-team`. Must be relative and contain no `..`. |
 | `--integration-branch TEXT` | Branch that task, bug, and planning work integrates into. Defaults to the configured `[git] integration_branch`, else `dev-agent`. |
 | `--no-interactive` | Skip all prompts. Requires `--tools` to be provided explicitly. |
@@ -170,8 +170,7 @@ tell AI tools how to build, test, and run your project.
   create a starter template, or `n` to skip.
 - **`--create-root-guidance`**: creates both files without prompting, in
   interactive and non-interactive mode. Useful in CI or scripted setup flows.
-- **`--no-interactive` without `--create-root-guidance`**: skips both files and
-  prints a reminder to add them manually.
+- **`--no-interactive` without `--create-root-guidance`**: skips both files.
 
 Existing root guidance files are never overwritten unless `--force` is also passed:
 
@@ -286,6 +285,10 @@ ai-team show T-001
 # 1. File a new bug
 ai-team bug new "Login crashes on empty token" --severity high
 
+# A regression from a task branch records that branch as source_branch;
+# the bug-fix loop bases the bug branch on it
+ai-team bug new "Login regressed" --source-branch task/T-021-login
+
 # 2. Start investigation (sets status: in-progress)
 ai-team bug start B-001
 
@@ -377,7 +380,8 @@ ai-team report
 ai-team report --out /tmp/custom-report.md
 ```
 
-`ai-team status` shows counts of active specs, tasks by state, bugs by state,
+`ai-team status` shows counts of active specs (not superseded, excluding the
+S-000 overview), tasks in every state, bugs by state,
 in-progress tasks, blocked tasks, critical/high bugs, and the latest
 integration result. The integration result cites the newest Work Log session
 of a completed task or resolved bug (ID, session, date, and first line), or
@@ -410,7 +414,8 @@ Exit code is 1 if any error-level finding is reported.
 ### Archive old artifacts
 
 Completed tasks and resolved bugs older than a threshold are moved to
-`ai-team/archive/YYYY-MM/`:
+`<tracker>/archive/YYYY-MM/`. Both the age and the `YYYY-MM` month come from the
+item's `created` date:
 
 ```bash
 # Preview what would be archived (default: older than 90 days)
@@ -441,8 +446,8 @@ the **locator**, which tries four strategies in order:
 4. **Walk up from `cwd` looking for a folder named `ai-team`** — the
    convention-based fallback.
 
-If no project root is found the CLI exits with a `ProjectRootNotFound` error
-and suggests running `ai-team init`.
+If no project root is found the CLI prints an error that suggests running
+`ai-team init` and exits with code 1.
 
 ### The `.ai-team.toml` marker
 
@@ -496,12 +501,16 @@ Hand edits to generated files are overwritten by that refresh.
     change-requests/          ← CR-NNN-*.md; state is the status field
     archive/
       YYYY-MM/                ← old completed/resolved items (ai-team archive)
+    review-packages/          ← loop scratch files: <id>.md review package
 ```
 
 Tasks, bugs, and change-requests live in the tracker, outside version control.
 A relative `[tracker] dir` resolves against the folder holding `.ai-team.toml`
 in the repository's main working tree, so every git worktree shares one
-tracker; `ai-team tracker path` prints the resolved folder.
+tracker; `ai-team tracker path` prints the resolved folder. The development
+and bug-fix loops write scratch review packages to
+`<tracker>/review-packages/<id>.md`, locating the tracker with
+`ai-team tracker path`.
 
 Artifact filenames follow the patterns `T-NNN-<slug>.md` (tasks),
 `B-NNN-<slug>.md` (bugs), `S-NNN-<slug>.md` (specs), and `ADR-NNN-<slug>.md`
@@ -520,9 +529,9 @@ never deleted: the lock is a kernel-level `flock` on the file, released
 automatically when the holding process exits, so leaving the sentinel on disk
 is harmless and removing it would reopen the race the lock exists to prevent.
 
-`ai-team init` scaffolds an `ai-team/.gitignore` containing a single
-`.ai-team.lock` entry, so the sentinel never shows up as untracked in `git
-status`. Projects that ran `ai-team init` before this `.gitignore` was added
+`ai-team init` scaffolds an `ai-team/.gitignore` with a `.ai-team.lock` entry,
+so the sentinel never shows up as untracked in `git status`, and a
+`docs/reports/` entry that keeps on-demand status reports untracked. Projects that ran `ai-team init` before this `.gitignore` was added
 will not receive it retroactively — add a `.ai-team.lock` entry to your own
 `.gitignore` (at the repository root or inside the project directory) to get
 the same effect.
@@ -617,12 +626,17 @@ python scripts/sync_init_scaffolds.py
 uv build
 ```
 
-The wheel and source distribution land in `cli/dist/`. To publish a release on
-GitHub:
+The wheel and source distribution land in `cli/dist/`. To publish a release,
+push a version tag with no `v` prefix (`1.2.3`, or `1.2.3-label` for a
+pre-release):
 
 ```bash
-gh release create <tag> cli/dist/*.whl cli/dist/*.tar.gz cli/docs/commands.md
+git tag 1.2.3
+git push origin 1.2.3
 ```
+
+CI then builds the wheel and sdist, regenerates `commands.md`, and publishes a
+GitHub Release with those files attached.
 
 To install the local wheel for manual testing:
 

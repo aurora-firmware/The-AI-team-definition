@@ -1,8 +1,8 @@
 ---
 name: dev-loop
-description: Fully autonomous implementation loop. Picks pending tasks one at a time, drives each through Developer → Reviewer cycles until the reviewer passes, commits, then moves to the next task. Stops only when the queue is empty, a task is blocked, or escalation is required. Use only when the human asks to run the development loop.
+description: Fully autonomous implementation loop that drives pending tasks through Developer and Reviewer cycles to integration, one task at a time. Use when Gate 2 has passed and pending tasks are ready for development. Use only when the human asks to run the development loop.
 argument-hint: "[task-id | task-branch] — optional single task to process (e.g., T-012 or task/T-012-my-feature). If omitted, processes the full pending queue."
-allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate), Skill(git-conventions)
+allowed-tools: Read, Glob, Grep, Bash, Agent, Skill(integrate), Skill(new-bug), Skill(git-conventions)
 ---
 
 # Dev Loop

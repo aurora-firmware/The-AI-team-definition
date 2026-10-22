@@ -8,6 +8,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 CLAUDE_SOURCE_ROOT = (
     REPO_ROOT / "src" / "ai_team" / "init" / "sources" / "agents" / "claude"
 )
+CODEX_SOURCE_ROOT = (
+    REPO_ROOT / "src" / "ai_team" / "init" / "sources" / "agents" / "codex"
+)
 CLAUDE_SCAFFOLD_ROOT = (
     REPO_ROOT / "src" / "ai_team" / "init" / "scaffolds" / "claude" / "agents"
 )
@@ -86,8 +89,22 @@ def test_architect_gate_2_output_matches_reconciled_envelope() -> None:
             assert phrase in text
 
 
+def _escalation_fields(text: str) -> list[str]:
+    """Return the four escalation request lines, stripped of indentation."""
+    prefixes = ("Problem: ", "Attempted: ", "Failed because: ", "Question: ")
+    return [
+        line.strip() for line in text.splitlines() if line.strip().startswith(prefixes)
+    ]
+
+
 def test_all_claude_roles_use_canonical_escalation_request_block() -> None:
-    """AC-4: all Claude roles use the frozen four-field escalation request wording."""
+    """AC-4: the Developer uses the frozen four-field escalation request wording,
+    and every Claude role's block matches its Codex counterpart."""
+    for text in _agent_texts("developer"):
+        assert CANONICAL_ESCALATION_BLOCK in text
     for role in CLAUDE_ROLES:
+        codex = (CODEX_SOURCE_ROOT / f"{role}.toml").read_text(encoding="utf-8")
         for text in _agent_texts(role):
-            assert CANONICAL_ESCALATION_BLOCK in text, role
+            fields = _escalation_fields(text)
+            assert len(fields) == 4, role
+            assert fields == _escalation_fields(codex), role

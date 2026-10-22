@@ -82,13 +82,13 @@ If the evidence supports only a fault hypothesis, label it as a hypothesis and e
 ### Step 5: Prepare the Diagnosis Handoff (Fix Contract)
 
 Prepare a bug file Diagnosis Log entry — the **fix contract** — before any production code
-change is made. The fix contract must include all four of the following fields; entries
+change is made. The fix contract must include all five of the following fields; entries
 that omit any field are incomplete and must not be treated as a green light to implement:
 
 - **Reproduction status** — confirmed, intermittent, or unconfirmed (with rationale).
 - **Evidence captured** — the exact commands, outputs, and artifacts gathered.
 - **Isolated fault** — the specific function, module, or line responsible for the defect.
-- **Planned fix** — the minimal code change required to address the isolated fault.
+- **Root cause or fault hypothesis** — the root cause recorded in Step 4, or the labeled fault hypothesis.
 - **Planned verification** — the test command or manual step that will confirm the fix.
 
 Return this fix contract to the active loop. The loop appends it to the bug file in
@@ -107,7 +107,7 @@ red→green→refactor cycle that follows.
 
 - The root cause or fault hypothesis is identified and documented before any code change.
 - Reproduction status and evidence are recorded.
-- The fix contract is complete: isolated fault, planned fix, planned verification are all present.
+- The fix contract is complete: all five fields are present.
 - No production code is changed by this skill.
 - No new debugging artifacts remain in the codebase (print statements, commented-out code).
 

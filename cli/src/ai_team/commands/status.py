@@ -11,8 +11,9 @@ from rich.markdown import Markdown
 
 from ai_team.commands._shared import hint_missing_overview, project_root
 from ai_team.core.fs import ArtifactKind, read_artifact
+from ai_team.core.ids import is_overview_reference
 from ai_team.core.locator import ProjectRoot
-from ai_team.core.models import parse_bug, parse_task
+from ai_team.core.models import parse_bug, parse_spec, parse_task
 from ai_team.core.tracker import iter_items
 from ai_team.render import console, print_json
 
@@ -57,6 +58,18 @@ def _iter_markdown_files(folder: Path) -> list[Path]:
 
 def _count(folder: Path) -> int:
     return len(_iter_markdown_files(folder))
+
+
+def _count_active_specs(folder: Path) -> int:
+    """Count specs that are not superseded, leaving out the S-000 overview."""
+    count = 0
+    for path in _iter_markdown_files(folder):
+        if is_overview_reference(path.name):
+            continue
+        spec = parse_spec(path)
+        if spec.status != "superseded" and not is_overview_reference(spec.id or ""):
+            count += 1
+    return count
 
 
 def _latest_work_log_session(path: Path, kind: ArtifactKind) -> tuple[str, str] | None:
@@ -178,12 +191,14 @@ def _payload(root: ProjectRoot) -> dict[str, object]:
 
     payload: dict[str, object] = {
         "counts": {
-            "specs_active": _count(root.specs),
+            "specs_active": _count_active_specs(root.specs),
             "tasks": {
+                "planned": count_tasks("planned"),
                 "pending": count_tasks("pending"),
                 "in_progress": count_tasks("in-progress"),
                 "completed": count_tasks("completed"),
                 "blocked": count_tasks("blocked"),
+                "cancelled": count_tasks("cancelled"),
             },
             "bugs": {
                 "open": count_bugs("open"),
@@ -266,10 +281,12 @@ def _to_markdown(payload: dict[str, object]) -> str:
         "## Status Report\n\n"
         "### Summary\n"
         f"- Active specs: {counts['specs_active']}\n"
+        f"- Planned tasks: {tasks['planned']}\n"
         f"- Pending tasks: {tasks['pending']}\n"
         f"- In progress: {tasks['in_progress']}\n"
         f"- Completed: {tasks['completed']}\n"
         f"- Blocked: {tasks['blocked']}\n"
+        f"- Cancelled tasks: {tasks['cancelled']}\n"
         f"- Open bugs: {bugs['open']}\n"
         f"- Bugs in progress: {bugs['in_progress']}\n"
         f"- Resolved bugs: {bugs['resolved']}\n"

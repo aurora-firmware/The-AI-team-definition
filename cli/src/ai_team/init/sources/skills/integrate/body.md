@@ -143,15 +143,12 @@ Evaluate the result:
      - `title`: concise regression title
      - `severity`: based on user impact, data risk, security risk, and how much of the system is blocked
      - `summary`: include the merge commit that introduced the regression, the destination branch, the source branch that was being integrated, and the classification (true regression or previously-uncovered failure)
-     - `reproduction-status`: `confirmed`
-     - `reproduction-steps`: the destination-branch command that now fails
-     - `expected-behavior`: the command should pass after integration
-     - `actual-behavior`: the failing test name and error message
+     - `source_branch`: the source branch being integrated, so the bug-fix loop fixes the regression on that preserved branch before integration is retried
+     - `expected_behavior`: the command should pass after integration
+     - `actual_behavior`: the failing test name and error message
      - `evidence`: failing command, stderr/stdout summary, merge commit, destination branch, source branch, and whether Step 4 ran and passed the test or never executed it
-     - `environment`: current project/runtime details known from the verification run
-     - `source-branch`: the source branch being integrated, so the bug-fix loop fixes the regression on that preserved branch before integration is retried
-     - `suspected-area`: changed files implicated by the regression, or `unknown`
-     - `fix-verification`: the destination-branch command that must pass after the fix
+     - `fix_verification`: the destination-branch command that must pass after the fix
+     - `details`: Reproduction Status `confirmed`; Reproduction Steps — the destination-branch command that now fails; Environment — current project/runtime details known from the verification run; Suspected Area — changed files implicated by the regression, or `unknown`
 3. Stay on the destination branch — bug reports live in the tracker, so filing them needs no switch and no commit.
 4. After filing all regression bugs, **revert the merge commit**:
    ```bash
@@ -224,14 +221,14 @@ All integrator commits follow the `git-conventions` skill. Canonical patterns fo
 
 ## Escalation
 
-The Integrator's self-recovery threshold is **one bisect cycle**.
-Return `ESCALATE` when a post-merge regression cannot be localized to a single task branch after one bisect, or the merge conflict in Step 5 cannot be resolved by the `merge-conflicts` skill.
+The Integrator's self-recovery threshold is **one merge attempt**.
+Return `ESCALATE` when a post-merge regression cannot be attributed to the source branch just merged, or the merge conflict in Step 5 cannot be resolved by the `merge-conflicts` skill.
 Use this structured request:
 
 ```text
 Problem: [what went wrong — unresolvable conflict, multi-task regression, etc.]
-Attempted: [merge attempt, merge-conflicts invocation, bisect scope]
-Failed because: [why the single-bisect or merge-conflicts could not isolate the cause]
+Attempted: [merge attempt, merge-conflicts invocation, regression tests run]
+Failed because: [why the regression run or merge-conflicts could not isolate the cause]
 Question: [specific guidance needed — which source task owns the behavior, which spec applies, etc.]
 ```
 

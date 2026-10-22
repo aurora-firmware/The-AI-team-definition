@@ -132,8 +132,8 @@ def test_escalation_review_frozen_block_has_all_four_fields() -> None:
 def test_escalation_review_has_escalation_verdict_block() -> None:
     """AC-2: escalation-review body must contain an Escalation Verdict block."""
     body = _skill_source("escalation-review")
-    assert "Escalation Verdict" in body, (
-        "escalation-review body.md must contain an 'Escalation Verdict' block"
+    assert "`Result: ESCALATE`" in body, (
+        "escalation-review body.md must map its verdict to the envelope's `Result:` line"
     )
 
 
@@ -188,8 +188,8 @@ def test_escalation_review_scaffolds_have_frozen_block_and_verdict() -> None:
         assert "FROZEN" in scaffold, (
             f"escalation-review {tool} scaffold must contain FROZEN block"
         )
-        assert "Escalation Verdict" in scaffold, (
-            f"escalation-review {tool} scaffold must contain 'Escalation Verdict'"
+        assert "`Result: ESCALATE`" in scaffold, (
+            f"escalation-review {tool} scaffold must contain '`Result: ESCALATE`'"
         )
         assert "Phase 2" in scaffold, (
             f"escalation-review {tool} scaffold must contain 'Phase 2' template"

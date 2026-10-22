@@ -237,3 +237,16 @@ def test_codex_scaffold_package_data_is_reachable():
 
     assert planner_toml.is_file(), "codex agents/planner.toml not reachable"
     assert tdd_skill.is_file(), "codex skills/tdd/SKILL.md not reachable"
+
+
+def test_missing_project_root_prints_clean_error_and_exits_1(monkeypatch, tmp_path):
+    """A command run outside any project reports the locator error, not a traceback."""
+    from ai_team.cli import app
+
+    monkeypatch.delenv("AI_TEAM_ROOT", raising=False)
+    monkeypatch.chdir(tmp_path)
+    result = CliRunner().invoke(app, ["list", "tasks"])
+
+    assert result.exit_code == 1
+    assert result.exception is None or isinstance(result.exception, SystemExit)
+    assert "ai-team init" in result.stderr

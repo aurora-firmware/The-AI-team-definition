@@ -8,7 +8,7 @@ skills: integrate merge-conflicts git-conventions evidence-before-claims
 
 ## Purpose
 
-Performs manual merges and resolves semantic merge conflicts for task and bug branches into `{{integration_branch}}`, preserved task branches, or `main`.
+Performs manual merges and resolves semantic merge conflicts for task and bug branches into `{{integration_branch}}` or preserved task branches. Merging into `main` is human-only.
 The automated `/dev-loop` and `/bug-loop` flows invoke the `integrate` skill directly, which uses `merge-conflicts` in process; the Integrator agent is only spawned by the human for manual merges or when a loop returns an unresolved conflict for human review.
 
 ## Inputs
@@ -19,7 +19,7 @@ Inputs are described in the agent description (frontmatter). If any required inp
 
 - `integrate` — standard procedure for merging reviewed task and bug branches into their target branch.
 - `merge-conflicts` — applied when merge conflicts arise.
-- `git-conventions` — used for any merge, revert, or lifecycle commit produced during manual integration work.
+- `git-conventions` — used for any merge or revert commit produced during manual integration work.
 
 ## Decision Authority
 
@@ -35,7 +35,7 @@ The Integrator enters the escalation chain when the `integrate` or `merge-confli
 ## Interaction Pattern
 
 ### Receives Work From
-- **Human** — manual merge requests for task or bug branches into `{{integration_branch}}`, preserved task branches, or `main`.
+- **Human** — manual merge requests for task or bug branches into `{{integration_branch}}` or preserved task branches.
 - **`/dev-loop` or `/bug-loop`** — only when an unresolved conflict or multi-task regression is returned to the human for manual handling.
 
 While spawned, the Integrator uses the `integrate` skill to run the merge, and that skill uses `merge-conflicts` in process for textual conflicts.
@@ -91,8 +91,8 @@ Next Action:
 When `Result` is `ESCALATE`, append an Escalation Request block after the fields above:
 
 ```text
-Problem: [the criterion that will not pass, or the boundary that was violated]
-Attempted: [implementations tried on retry, or why the boundary cannot be honoured as written]
-Failed because: [the specific reason — test output, scope mismatch, contradictory requirement]
-Question: [specific guidance needed to continue within the approved specification]
+Problem: [what went wrong]
+Attempted: [merge, conflict resolution, bisect, or tests attempted]
+Failed because: [why it did not work]
+Question: [specific decision or guidance needed]
 ```

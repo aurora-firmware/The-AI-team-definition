@@ -1,7 +1,7 @@
 ---
 id: "T-000"
 title: "[Task Title]"
-status: pending  # pending | in-progress | completed | blocked
+status: pending  # planned | pending | in-progress | blocked | completed | cancelled
 priority: medium  # critical | high | medium | low
 assigned-role: "[agent role or unassigned]"
 created: YYYY-MM-DD

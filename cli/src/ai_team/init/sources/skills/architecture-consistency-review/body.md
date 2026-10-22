@@ -4,7 +4,7 @@
 
 Approved specs and accepted ADRs are both binding sources of truth. A new or changed decision can silently contradict something an existing spec or ADR already records, leaving two authoritative artifacts that disagree until someone notices by hand. This review catches that drift at the moment of change.
 
-The result is a Findings block; the Architect role envelope wraps it in its standard output format — do not duplicate `Result:` or `Summary:` fields here.
+The result is a Findings block, which the Architect role envelope wraps (see Output Format).
 
 ## When This Runs
 
@@ -20,7 +20,7 @@ Whenever an architecture artifact changes:
 In completion mode the review confirms that each approved spec is still true of what was built. It uses the same binding set, findings block, routing rules, and verdicts as every other trigger, with these differences:
 
 - **Changed artifact** — each approved spec touched by the completed work, named by the caller. Do not review specs the work did not touch.
-- **Evidence read in place of a delta** — the Work Logs of the completed tasks and resolved bugs that implemented the spec, every ADR created or amended while the work was in flight, and the deferred-Minor findings roll-up (`status-report`).
+- **Evidence read in place of a delta** — the Work Logs of the completed tasks and resolved bugs that implemented the spec, every ADR created or amended while the work was in flight, and the deferred-Minor findings listed under `#### Deferred Minor findings` in their Review Verdicts.
 - **Step 1** isolates what the spec asserts (requirements, interfaces, guarantees) instead of what changed.
 - **Step 3** checks each assertion against the evidence: a requirement the work did not deliver, behavior the work added that the spec does not describe, or an interface that now differs. Record each drift with the spec statement and the evidence that contradicts it.
 - **Routing** first decides, for each drift, which side is authoritative: the spec or the completed work.
@@ -28,6 +28,7 @@ In completion mode the review confirms that each approved spec is still true of 
   - **The work falls short** (the spec is right) → the Planner creates follow-up tasks with `new-task` under the same spec or change-request. Each task names the finding and the spec statement it must satisfy. The Planner chooses each follow-up task's verification mode by the spec-breakdown rule (a test for any change a test can observe; a design review only for a prose-only change) and fills every section without placeholder text, as `new-task` requires. Follow-up tasks are created `pending` and are exempt from Gate 2: their scope is fixed by the finding and the approved spec. After the development loop completes them, the Architect re-runs completion mode for that spec. If the re-run still finds drift on a finding that already had follow-up tasks, escalate to the human instead of routing another round. Never amend a spec to match work that fell short.
   - **The authoritative side is unclear**, or both sides need to change → escalate to the human.
   - The Architect amends or supersedes ADRs, as for any other trigger.
+- **Record** — the verdict is recorded durably as one dated line, `- **YYYY-MM-DD:** spec-truth reconciliation — PASS|FAIL, <one-line summary>`, in the reconciled spec's Amendment Log, or in the change-request file for change-request work. The Architect returns the line as `Reconciliation record:`; the Planner records it, since the Architect never edits specs.
 
 S-000 is never a touched spec in completion mode, because it has no tasks or Work Logs to reconcile against.
 
@@ -85,11 +86,9 @@ The Architect reports findings and routing; the Architect never edits specs dire
 
 ## Output Format
 
-The Architect role envelope wraps the Findings block produced here. Do not add a top-level `Result:` or `Summary:` outside this block; those belong to the Architect envelope.
+The verdict goes in the Architect envelope's `Result: PASS | FAIL | BLOCKED | ESCALATE` line, not in the Findings block.
 
 ```text
-Result: PASS | FAIL | BLOCKED | ESCALATE
-
 Artifact reviewed: <path of the changed ADR / spec / change-request>
 Binding set checked: <count> accepted ADRs, <count> approved specs
 
@@ -101,6 +100,9 @@ Corrections routed:
 
 Next owner:
 - Planner | Architect | Human | none
+
+Reconciliation record:
+- <completion mode only: the dated Amendment Log or change-request line>
 ```
 
 `BLOCKED` is returned when the changed artifact was not provided. When `Result` is `ESCALATE`, append an Escalation Request block and then a Phase 2 Human Escalation Report using the template defined in the `escalation-review` skill.

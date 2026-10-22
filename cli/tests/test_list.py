@@ -449,3 +449,35 @@ def test_list_specs_reports_frontmatter_id_not_filename_stem_for_prefixed_filena
             "version": "1.0",
         }
     ]
+
+
+def test_list_specs_and_adrs_state_filter_keeps_matching_status(monkeypatch, tmp_path):
+    """`list specs --state` and `list adrs --state` keep only matching statuses."""
+    from ai_team.cli import app
+
+    _write(
+        tmp_path / "ai-team" / "specs" / "S-001-a.md",
+        _spec("Approved spec", "0.1", "approved", spec_id="S-001"),
+    )
+    _write(
+        tmp_path / "ai-team" / "specs" / "S-002-b.md",
+        _spec("Draft spec", "0.1", "draft", spec_id="S-002"),
+    )
+    _write(
+        tmp_path / "ai-team" / "decisions" / "ADR-001.md",
+        _adr("ADR-001", "Accepted adr", "accepted"),
+    )
+    _write(
+        tmp_path / "ai-team" / "decisions" / "ADR-002.md",
+        _adr("ADR-002", "Proposed adr", "proposed"),
+    )
+
+    monkeypatch.chdir(tmp_path)
+
+    specs = CliRunner().invoke(app, ["list", "specs", "--state", "draft", "--json"])
+    assert specs.exit_code == 0
+    assert [row["id"] for row in json.loads(specs.stdout)] == ["S-002"]
+
+    adrs = CliRunner().invoke(app, ["list", "adrs", "--state", "accepted", "--json"])
+    assert adrs.exit_code == 0
+    assert [row["id"] for row in json.loads(adrs.stdout)] == ["ADR-001"]

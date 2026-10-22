@@ -112,8 +112,8 @@ Next Action:
 When `Result` is `ESCALATE`, append an Escalation Request block after the fields above:
 
 ```text
-Problem: [the criterion that will not pass, or the boundary that was violated]
-Attempted: [implementations tried on retry, or why the boundary cannot be honoured as written]
-Failed because: [the specific reason — test output, scope mismatch, contradictory requirement]
-Question: [specific guidance needed to continue within the approved specification]
+Problem: [what went wrong]
+Attempted: [what was tried]
+Failed because: [why it did not work]
+Question: [specific decision or guidance needed]
 ```

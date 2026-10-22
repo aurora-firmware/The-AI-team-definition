@@ -64,3 +64,4 @@ Use these checks when reviewing a bug fix:
 
 **Pass** — all checks are satisfied.
 **Fail** — one or more checks are not satisfied. Return to Developer with specific, actionable notes for each failed check.
+**Escalate** — the code has a fundamental design issue that Developer fixes cannot resolve within the approved specification. The active loop consults the Architect.

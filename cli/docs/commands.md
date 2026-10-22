@@ -127,6 +127,7 @@ $ ai-team bug new [OPTIONS] TITLE
 
 * `--severity [critical|high|medium|low]`: [default: medium]
 * `--task TEXT`
+* `--source-branch TEXT`: Branch that introduced a task regression; omit for existing defects.
 * `--json`: Emit JSON output.
 * `--help`: Show this message and exit.
 
@@ -349,7 +350,7 @@ $ ai-team list specs [OPTIONS]
 
 **Options**:
 
-* `--state TEXT`: Filter by state where applicable.
+* `--state TEXT`: Filter by spec status.
 * `--json`: Emit JSON output.
 * `--help`: Show this message and exit.
 
@@ -365,7 +366,7 @@ $ ai-team list adrs [OPTIONS]
 
 **Options**:
 
-* `--state TEXT`: Filter by state where applicable.
+* `--state TEXT`: Filter by ADR status.
 * `--json`: Emit JSON output.
 * `--help`: Show this message and exit.
 

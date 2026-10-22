@@ -50,7 +50,7 @@ The `new-task` skill handles template loading, ID assignment, filename, and fron
 Then fill in the task body so it satisfies:
 - **Title**: Clear, descriptive, starts with a verb (Implement, Add, Create, Fix).
 - **Description**: Enough context to start without asking questions.
-- **Acceptance criteria**: Author every criterion using one of the five EARS patterns documented in the task template (`cli/src/ai_team/templates/task.md`) (Ubiquitous, Event-driven, Unwanted-behaviour, State-driven, Optional).
+- **Acceptance criteria**: Author every criterion using one of the five EARS patterns documented in the task file the CLI created (Ubiquitous, Event-driven, Unwanted-behaviour, State-driven, Optional).
 - **Dependencies**: List of task IDs that must complete first.
 - **Files to touch**: Exact file paths that will be created or modified.
 - **Verification mode**: the Planner decides per task whether it is verified by a **test** or a **design review**. A task that changes code, CLI output, or a rule a test can observe gets a **test**, and its test file is in Files to Touch. A task that changes only prose (guides, process docs, skill wording no test pins) gets a **design review**, recorded with the `Design review:` Verification form defined by `new-task`, listing the source spec, the accepted ADRs, and S-000 when it exists. Anything a test can observe gets a test. If the task changes a shared or public interface (an API, schema, shared library function, or contract consumed by code outside the task's own module), `## Verification` must include the project's documented baseline/full-suite command in addition to any module-scoped command — a module-scoped command alone is not sufficient for such tasks.

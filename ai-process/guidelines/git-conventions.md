@@ -25,7 +25,7 @@ Project-specific commit scopes and any overrides belong in the project's own `CL
 - No automated role ever commits to `main`.
 - `dev-agent` receives merge commits from the integration procedure, the Integrator role, and planning-branch merges, and direct ADR commits from the Architect (no direct source code).
 - Developer always works on a task branch, never on `dev-agent`.
-- Task branches are created when the Developer picks up a task and deleted after successful integration into `dev-agent`.
+- Task branches are created when the development loop picks up a task and deleted after successful integration into `dev-agent`.
 - Bug branches are created when the bug-fix loop picks up a bug.
   Existing-defect bug branches are based on `dev-agent`; task-regression bug branches are based on the bug report's `source_branch`.
 - Planning branches are created from `dev-agent` when a spec or change-request is created. Every planning artifact for that work is committed there, never directly on `dev-agent`.
@@ -78,7 +78,7 @@ chore(plan): merge S-004 billing export
 | **Architect** | After producing an ADR or amendment | `plan/…` when raised during planning; otherwise `dev-agent` |
 | **Integrator** | One merge commit per task or bug branch merged into its target branch | target branch |
 
-<!-- Implementation-layer copy: .claude/skills/git-conventions/SKILL.md — changes must be made to both files atomically. -->
+<!-- Implementation-layer copy: cli/src/ai_team/init/sources/skills/git-conventions/body.md — changes must be made to both files atomically. -->
 
 ## Workspace Hygiene
 

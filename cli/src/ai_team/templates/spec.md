@@ -1,4 +1,5 @@
 ---
+id: "S-000"
 title: "[Specification Title]"
 version: "0.1"
 status: draft  # draft | review | approved | superseded
@@ -99,6 +100,13 @@ Describe the settings, environment variables, or external configuration the work
 Do not paste a real configuration file here. The Developer writes the file against the project's conventions; this section tells them what the file must guarantee.
 
 If — and only if — a literal value is itself the contract (e.g. a fixed external API key name, a wire-protocol field), include it inline and mark it explicitly as **Contract**, not as **Example**.
+
+## Success Criteria
+
+<!-- Each criterion is measurable: an outside party can run a check (a command,
+  an observation, a metric query) and get an unambiguous pass or fail. -->
+
+1. A measurable criterion that shows the spec is satisfied.
 
 ## Implementation Order
 

@@ -73,6 +73,11 @@ def new_bug(
     title: str,
     severity: Severity = typer.Option("medium", "--severity"),
     task: str | None = typer.Option(None, "--task"),
+    source_branch: str | None = typer.Option(
+        None,
+        "--source-branch",
+        help="Branch that introduced a task regression; omit for existing defects.",
+    ),
     as_json: bool = typer.Option(False, "--json", help="Emit JSON output."),
 ) -> None:
     """Create a new open bug in the tracker from the bundled template."""
@@ -93,6 +98,7 @@ def new_bug(
             status="open",
             created=date.today().isoformat(),
             task=task,
+            source_branch=source_branch,
         )
         return dest, model, body
 

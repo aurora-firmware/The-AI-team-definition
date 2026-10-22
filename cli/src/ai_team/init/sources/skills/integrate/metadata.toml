@@ -1,7 +1,7 @@
 [claude]
 header = """---
 name: integrate
-description: Integrate a task or bug branch into a destination branch. Verifies expected changes, runs tests on the source branch, merges, re-runs tests for regressions, files bugs on failure, and deletes the branch on success.
+description: Integrate a reviewed task or bug branch into a destination branch. Use when a branch's latest Review Verdict is PASS and it must be merged, or when a loop hands a reviewed branch to integration.
 argument-hint: "<branch-or-task-id> [destination-branch]"
 allowed-tools: Read, Grep, Glob, Bash, Skill(merge-conflicts), Skill(new-bug), Skill(git-conventions)
 ---"""
@@ -9,7 +9,7 @@ allowed-tools: Read, Grep, Glob, Bash, Skill(merge-conflicts), Skill(new-bug), S
 [codex]
 header = """---
 name: integrate
-description: Integrate a task or bug branch into a destination branch. Verifies expected changes, runs tests on the source branch, merges, re-runs tests for regressions, files bugs on failure, and deletes the branch on success.
+description: Integrate a reviewed task or bug branch into a destination branch. Use when a branch's latest Review Verdict is PASS and it must be merged, or when a loop hands a reviewed branch to integration.
 argument-hint: "<branch-or-task-id> [destination-branch]"
 allowed-tools: Read, Grep, Glob, Bash, Skill(merge-conflicts), Skill(new-bug), Skill(git-conventions)
 ---"""

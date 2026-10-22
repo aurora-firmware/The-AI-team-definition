@@ -7,9 +7,9 @@ Create the S-000 system overview spec with `ai-team spec new --overview --json`,
 S-000 has seven sections, in this order:
 
 1. **Purpose** — one short paragraph: what the project is and the outcome it exists to deliver.
-2. **Users** — who uses the system, one line per kind of user, naming what each needs from it.
+2. **Users** — who uses the system and in what situations, one line per kind of user, naming what each needs from it.
 3. **Pain points** — the concrete problems those users have today that the project removes.
-4. **Use cases** — the main things a user does with the system, each as one short scenario from the user's point of view.
+4. **Use cases** — the main things a user does with the system, each as one short scenario from the user's point of view and each tied to the pain point it removes.
 5. **Solution overview** — how the system addresses the pain points, in a few paragraphs, without naming technologies.
 6. **Components** — the parts the system is divided into. Each component entry gives its name, its owned responsibility (what it is for), its boundary (what it is not responsible for), and the other components it works with.
 7. **Project exclusions** — what the project deliberately does not do, each with a one-line reason.

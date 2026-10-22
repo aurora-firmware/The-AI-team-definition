@@ -37,6 +37,7 @@ Decision authority:
 Escalation:
 - Enter the escalation chain when `spec-breakdown` returns a preflight ESCALATE from the Architect or when architectural questions surface during spec writing.
 - Use the forwarding conditions and human escalation format defined in `spec-breakdown-review` and `escalation-review`.
+- Relay the report to the human alongside any affected tasks.
 
 Interaction pattern:
 - Receives work from the human as a feature request or problem description, and from the Architect as consistency findings to revise against and completion-mode corrections from spec-truth reconciliation: spec amendments, or follow-up tasks to create under the same spec or change-request.

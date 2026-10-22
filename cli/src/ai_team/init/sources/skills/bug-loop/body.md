@@ -114,6 +114,7 @@ Stay on the bug branch — no switch and no commit. That recorded entry is the f
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
 
 Wait for the Developer to complete before continuing.
+If the Developer returns `ESCALATE`, go directly to **On ESCALATE**.
 If the Developer does not return a Work Log handoff entry, stop with `BLOCKED` and report the missing handoff.
 
 Record the Work Log handoff: append the Developer's entry under `## Work Log` in the bug file. No switch and no commit.
@@ -136,7 +137,7 @@ Rewrite it before every review cycle so it covers the whole range, including com
 > "Review the bug fix described in the bug file `<bug-path>` using the code-review skill.
 > The Developer has completed their work on branch `bug/B-NNN-...`.
 > The review range and its diff are in the review package `<package-path>`; read that one file instead of deriving the diff yourself.
-> Verify the Diagnosis Log records reproduction status, evidence captured, isolated fault, and root cause or fault hypothesis.
+> Verify the Diagnosis Log records reproduction status, evidence captured, isolated fault, root cause or fault hypothesis, and planned verification.
 > Verify the fix addresses the isolated cause and passes the Fix Verification steps in the bug file.
 > Verify a regression test exists when practical, or that the Work Log explains why only manual verification was possible.
 > Append your verdict to the bug file under `### Review Verdict — YYYY-MM-DD`. The bug file is outside version control: do not commit it.
@@ -203,7 +204,7 @@ Follow the two-phase escalation procedure below. Phase 1 is a single Architect c
 > Question: <specific guidance needed to continue within the bug report and approved specification>
 > Populate every field of the Output Format block, including `Obstacles Encountered`."
 
-If the Architect resolves the issue, go back to **Step 5** with the Architect's guidance.
+If the Architect resolves the issue, go back to **Step 4** with the Architect's guidance when the escalation was raised during diagnosis, or to **Step 5** otherwise.
 
 If the Architect adjudicates that specific findings of the last FAIL verdict should be **parked** rather than fixed — the bug meets its criteria without them — the loop makes each parked finding a durable artifact before continuing; a ledger line in the chat is not one:
 - file it as a new bug with the `new-bug` skill, naming this bug and the finding, or

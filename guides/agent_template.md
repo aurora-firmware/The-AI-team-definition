@@ -52,6 +52,8 @@ Every agent in this framework uses exactly these nine sections, in this order:
 8. `## Quality Bar`
 9. `## Output Format`
 
+A role that must read something before any other work may add one optional `## Session Start` section between `## Skills` and `## Decision Authority`. The Codex file carries the same content under `Session start:`.
+
 ## `.claude/agents` vs `.codex/agents`
 
 The role definition is the same in both systems, but the file format is different.
@@ -227,11 +229,11 @@ Rationale: thresholds change as the procedure changes. Keeping them in one place
 
 | Agent | Model | Tools | Main skills |
 |---|---|---|---|
-| Planner | Opus | `Read, Write, Edit, Glob, Grep, Bash` | `brainstorm`, `spec-breakdown`, `new-spec`, `new-task` |
-| Architect | Opus | `Read, Write, Edit, Glob, Grep, Bash` | `spec-breakdown-review`, `escalation-review`, `new-adr` |
-| Developer | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `tdd`, `debug`, `new-bug` |
-| Reviewer | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `code-review`, `new-bug` |
-| Integrator | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `integrate`, `merge-conflicts` |
+| Planner | Opus | `Read, Write, Edit, Glob, Grep, Bash` | `brainstorm`, `spec-breakdown`, `new-spec`, `new-task`, `change-request`, `new-system-overview`, `git-conventions`, `evidence-before-claims` |
+| Architect | Opus | `Read, Write, Edit, Glob, Grep, Bash` | `spec-breakdown-review`, `architecture-consistency-review`, `escalation-review`, `new-adr`, `git-conventions`, `evidence-before-claims` |
+| Developer | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `tdd`, `debug`, `new-bug`, `git-conventions`, `evidence-before-claims` |
+| Reviewer | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `code-review`, `new-bug`, `evidence-before-claims` |
+| Integrator | Sonnet | `Read, Write, Edit, Glob, Grep, Bash` | `integrate`, `merge-conflicts`, `git-conventions`, `evidence-before-claims` |
 
 Keep agents stable and small. When behavior becomes a repeatable sequence, create or update a skill rather than expanding the agent file.
 
