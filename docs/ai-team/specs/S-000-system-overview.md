@@ -2,7 +2,7 @@
 id: S-000
 title: System Overview
 version: '0.1'
-status: draft  # draft | review | approved | superseded
+status: approved  # draft | review | approved | superseded
 created: '2026-10-22'
 author: planner
 ---
