@@ -65,7 +65,7 @@ Also consider test updates and verification changes as implementation work deriv
 If documentation or test updates are not needed, omit them without placeholder tasks.
 
 ### Step 4: Validate the Plan
-Verify completeness: does the full set of tasks cover the entire specification?
+Verify completeness: does the full set of tasks cover the entire specification? For S-000, the bootstrap scope only (Step 0).
 Verify isolation: do any two tasks modify the same file? If yes, add a dependency between them.
 Verify atomicity: can each task be completed in a single agent pass? If a task feels too large, split it.
 Verify regeneration: does each task list the generated files its own change affects? If the plan ends with a separate "regenerate everything" task, move each regeneration into the task whose change requires it.
@@ -117,7 +117,7 @@ Until this step, the tasks stay `planned` and invisible to `/dev-loop`, and `{{i
 - Every task is **self-contained** — the description provides enough context to start.
 - Every AC uses one of the five EARS patterns.
 - No two tasks modify the same file without an explicit dependency between them.
-- The full set of tasks covers 100% of the specification.
+- The full set of tasks covers 100% of the specification (for S-000, its bootstrap scope; see Step 0).
 
 ## Common Pitfalls
 

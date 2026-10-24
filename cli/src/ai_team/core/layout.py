@@ -316,7 +316,7 @@ def _coding_guidelines_findings(contract: LayoutContract) -> list[LayoutFinding]
             1,
             display_path,
             f"Required project file '{display_path}' is missing.",
-            f"Create '{display_path}' from the scaffold placeholder, or rerun 'ai-team init' to restore it.",
+            f"Create '{display_path}' from the scaffold placeholder.",
         )
     ]
 

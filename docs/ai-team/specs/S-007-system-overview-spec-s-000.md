@@ -95,11 +95,11 @@ Architect reviews S-000 for internal consistency
   ↓
 Planner sets S-000 to approved and merges its planning branch into dev-agent
   ↓
+Brownfield only: Planner proposes a change request aligning existing specs with S-000
+  ↓
 Planner creates the project bootstrap tasks from S-000
   ↓
 ★ Architect checks the bootstrap task plan (Gate 2) → development loop
-  ↓
-Brownfield only: Planner proposes a change request aligning existing specs with S-000
   ↓
 Planner brainstorms and writes one spec per component or slice
   ↓
@@ -122,7 +122,7 @@ A spec that needs something S-000 does not cover is a signal either to amend S-0
 8. **Feature spec template.** The system-wide parts of the Architecture section move out of the feature spec template; the spec keeps principles specific to its own scope and refers to S-000 for the rest. Existing approved specs stay valid unchanged.
 9. **Quality gate.** Gate 1 criteria apply to S-000 with its own pass criteria: plain language, no technology or interfaces, every use case tied to a pain point, every component with a boundary and responsibility, components in the solution and development-infrastructure groups, every infrastructure component with its Decisions needed, and no unresolved `[TODO]`. These replace, rather than add to, the Gate 1 criterion that the architecture is detailed enough to derive tasks, which S-000 cannot meet by design.
 10. **Completion review.** The pre-Gate-5 completion review (ADR-002) does not include S-000. Its bootstrap tasks answer questions S-000 only asks, so S-000 makes no assertion for that work to drift from.
-11. **Completing S-000.** After Gate 1, the Planner sets S-000 to `approved` and merges its planning branch into `dev-agent` with `--no-ff`. S-000 has no Gate 2 of its own, so this merge is the one exception to merging a planning branch after Gate 2.
+11. **Completing S-000.** After Gate 1, the Planner sets S-000 to `approved` and merges its planning branch into `dev-agent` with `--no-ff`. S-000's own planning branch does not wait for Gate 2 (only its bootstrap task plan does), so this merge is the one exception to merging a planning branch after Gate 2.
 12. **Project bootstrap.** After S-000 is approved, the Planner creates the bootstrap tasks from S-000; there is no bootstrap spec. The task plan passes Gate 2 and runs through the development loop. The tasks produce: the answers to every Decisions needed, in internal development documentation; the development environment configuration (container or environment manager, environment variables and settings); a confirmed check of access to the remote repository; the project's coding guidelines; placeholders for the remaining internal documentation; the project guidance for agents, populated with the common rules and the build, test, lint and run commands; and the README's project description, written from S-000. In a brownfield project the bootstrap covers only what is missing, and the human may skip items that already exist. While no baseline test command exists yet, the development loop runs the bootstrap tasks after the human confirms that no automated baseline is available.
 13. **Internal development documentation.** By default the bootstrap tasks write the answers to a repository-root `docs/development/` folder, in two fixed files: `architecture.md` (high-level design of the solution components) and `tech-stack.md` (the answers to every Decisions needed). When the project already has rules about where such documents go, those rules win, and the task records the chosen location in the project guidance so every agent finds it.
 14. **Brownfield findings.** After Gate 1 of a brownfield S-000, the Planner proposes a change request that brings the existing specs in line with S-000's components, from the overlaps, gaps and disagreements the draft reported. The human decides which side of each disagreement changes.
@@ -152,3 +152,4 @@ In a project that already has specs, code or decisions, the agent can use `new-s
 |------|-------------|-----|----------------|
 | 2026-10-20 | Requirement 3: a design-review task may name S-000 as a reference; the Developer and Reviewer read it when they run or check that review, not at session start. Driven by CR-003 §2 and Architecture Consistency Review finding F2. | CR-003 introduces design-review verification against the source spec, accepted ADRs and S-000, which the session-start rule for Developer and Reviewer did not allow for. | None in flight |
 | 2026-10-24 | Content contract: component definition and checks, solution and development-infrastructure groups, Decisions needed, Users scope. Exclusions and Design Principles: S-000 asks technology questions and produces only bootstrap tasks. Workflow, Requirements 2, 9 and 10 restated; Requirements 11–14 added (post-Gate-1 completion, project bootstrap, internal development documentation, brownfield findings). Brownfield adoption: components from use cases; findings become a CR. Driven by CR-004 items 1–9. | Writing this repository's S-000 needed a component model and a post-approval step the contract did not define (CR-004). | None in flight |
+| 2026-10-24 | Workflow: the brownfield change request comes before the bootstrap tasks, matching `new-system-overview`; Requirement 11 reworded ("S-000's own planning branch does not wait for Gate 2"). In-flight CR-004 amendment from the PR #48 review. | The diagram and the skill gave different orders, and "S-000 has no Gate 2" read as contradicting the bootstrap plan's Gate 2. | None in flight |

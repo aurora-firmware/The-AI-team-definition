@@ -131,3 +131,28 @@ def test_step_headings_are_unchanged_with_exactly_one_step_zero():
 
     assert headings == EXPECTED_HEADINGS
     assert sum(h.startswith("### Step 0") for h in headings) == 1
+
+
+def test_gate2_coverage_for_s000_is_the_bootstrap_scope():
+    """Gate 2 coverage for S-000 covers the bootstrap scope only, in every rule text."""
+    repo = Path(__file__).resolve().parents[2]
+    review = (
+        repo
+        / "cli"
+        / "src"
+        / "ai_team"
+        / "init"
+        / "sources"
+        / "skills"
+        / "spec-breakdown-review"
+        / "body.md"
+    ).read_text(encoding="utf-8")
+    gates = (repo / "ai-process" / "processes" / "quality-gates.md").read_text(
+        encoding="utf-8"
+    )
+    for text in (review, gates):
+        assert "For S-000, coverage means the bootstrap scope only" in text
+        assert "S-000's solution components never need tasks" in text
+    body = _body()
+    assert "For S-000, the bootstrap scope only (Step 0)." in body
+    assert "(for S-000, its bootstrap scope; see Step 0)" in body

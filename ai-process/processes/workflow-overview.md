@@ -76,7 +76,7 @@ It is also the entry point for brownfield adoption: a project with existing code
 
 S-000 describes the system as a whole. It produces only the project bootstrap tasks, which cover its development-infrastructure components; solution work comes from feature specs, and S-000 is the reference they are checked against.
 
-S-000 has no Gate 2 of its own. After Gate 1, the Planner sets S-000 to `approved` and merges its planning branch into `dev-agent` with `--no-ff`.
+S-000's own planning branch does not wait for Gate 2; only its bootstrap task plan does. After Gate 1, the Planner sets S-000 to `approved` and merges its planning branch into `dev-agent` with `--no-ff`.
 For a brownfield S-000, the Planner then proposes a change request that brings the existing specs in line with S-000's components, from the overlaps, gaps, and disagreements the draft reported; the human decides which side of each disagreement changes.
 
 ### Project bootstrap
@@ -320,8 +320,8 @@ Full rules and commit format: `ai-process/guidelines/git-conventions.md`.
 
 **Branches:**
 - `main` — human-only, production releases.
-- `dev-agent` — integration target. The integration procedure merges task branches here during the development loop; the Integrator handles manual merges and conflict resolution. The Planner merges planning branches here after Gate 2. Architects commit ADRs raised outside planning here.
-- `plan/S-NNN-short-description` or `plan/CR-NNN-short-description` — planning branch for one spec or change-request. It carries the spec, spec amendments, and ADRs raised by its consistency review, and is merged into `dev-agent` only after Gate 2 passes; its tasks stay `planned` in the tracker until then.
+- `dev-agent` — integration target. The integration procedure merges task branches here during the development loop; the Integrator handles manual merges and conflict resolution. The Planner merges planning branches here after Gate 2 (S-000: after Gate 1, see the git conventions). Architects commit ADRs raised outside planning here.
+- `plan/S-NNN-short-description` or `plan/CR-NNN-short-description` — planning branch for one spec or change-request. It carries the spec, spec amendments, and ADRs raised by its consistency review, and is merged into `dev-agent` only after Gate 2 passes (S-000: after Gate 1, see the git conventions); its tasks stay `planned` in the tracker until then.
 - `task/T-NNN-short-description` — implementation branch for a single task, deleted after successful integration.
 - `bug/B-NNN-short-description` — implementation branch for a single bug, created by the bug-fix loop from `dev-agent` or the bug report's `source_branch`, deleted after successful integration.
 
@@ -332,7 +332,7 @@ Full rules and commit format: `ai-process/guidelines/git-conventions.md`.
 - The integration procedure is also the standard path for merging bug branches into their target branch.
 - Tasks, bugs, and change-requests live in the local tracker, outside version control; no branch holds lifecycle state and no lifecycle change creates a commit.
 - Branches blocked at review stay open on their task branch until the blocker is resolved.
-- Spec and change-request work never lands on `dev-agent` before its task plan passes Gate 2. There are two exceptions: a follow-up task routed by spec-truth reconciliation, which the reconciliation re-run checks instead (ADR-002), and S-000, whose planning branch merges after Gate 1 because S-000 has no Gate 2.
+- Spec and change-request work never lands on `dev-agent` before its task plan passes Gate 2. There are two exceptions: a follow-up task routed by spec-truth reconciliation, which the reconciliation re-run checks instead (ADR-002), and S-000, whose own planning branch merges after Gate 1; only its bootstrap task plan goes through Gate 2.
 - Every orchestrating procedure applies the Workspace Hygiene check from the git conventions before it starts, before every branch switch, after every merge, and before it ends. No procedure leaves untracked files or uncommitted changes behind.
 
 ## Escalation

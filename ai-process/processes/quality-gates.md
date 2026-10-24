@@ -37,7 +37,7 @@ Gates are checkpoints where work must meet defined criteria before proceeding. T
 **Evaluator:** Architect.
 **Scope:** Gate 2 focuses on **technical task-plan readiness**. The Architect evaluates dependencies, file conflicts, architectural consistency with existing decisions, atomicity, and verifiability. Gate 2 does not reopen product or spec approval questions that were already settled at Gate 1 or by human approval of a TODO-free change-request. If the Architect finds a product-scope concern that does not block technical readiness, it is noted as follow-up feedback rather than a Gate 2 failure. Only a contradiction against the approved spec, the approved change-request intent, or existing ADRs causes a Gate 2 failure or escalation. The same consistency principle applies whenever a spec, ADR, or change-request itself changes — see [Architecture Consistency Review](#architecture-consistency-review) below.
 **Pass criteria:**
-- Task plan covers every requirement in the approved specification (spec-coverage verification).
+- Task plan covers every requirement in the approved specification (spec-coverage verification). For S-000, coverage means the bootstrap scope only: every development-infrastructure component and every Decisions needed question has a task, or the human recorded it as skipped (brownfield). S-000's solution components never need tasks.
 - Task dependencies are correct and complete.
 - File conflict risks are identified and resolved through dependencies or task changes.
 - Interfaces are consistent across tasks: every type, function, or file a task consumes is produced by a task it depends on (or already exists), under the same name and signature.
@@ -117,7 +117,7 @@ Before the development loop claims its first task it discovers the documented ba
 - The latest spec-truth reconciliation returned `PASS`, or every correction it routed is done: each spec amendment applied, and each follow-up task completed with a re-run that returns `PASS` (see [Architecture Consistency Review](#architecture-consistency-review)).
 - The status summary lists completed tasks, unresolved bugs by severity, and latest integration-test result.
 
-**Before sign-off:** The Architect runs spec-truth reconciliation (ADR-002) — `architecture-consistency-review` in completion mode — for every approved spec the completed work touched. This completion review does not include S-000, which has no tasks or Work Logs. The Architect returns each completion-mode verdict as a dated Amendment Log row, which the Planner records in the reconciled spec's Amendment Log (or in the change-request file for change-request work), as defined in the `architecture-consistency-review` skill.
+**Before sign-off:** The Architect runs spec-truth reconciliation (ADR-002) — `architecture-consistency-review` in completion mode — for every approved spec the completed work touched. This completion review does not include S-000: its bootstrap tasks answer questions S-000 only asks, so S-000 makes no assertion for that work to drift from (see [Architecture Consistency Review](#architecture-consistency-review)). The Architect returns each completion-mode verdict as a dated Amendment Log row, which the Planner records in the reconciled spec's Amendment Log (or in the change-request file for change-request work), as defined in the `architecture-consistency-review` skill.
 
 **On failure:** Human provides feedback. New tasks are created to address issues.
 
