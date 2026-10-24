@@ -21,6 +21,7 @@ ARCHITECT_SOURCES = [
 ]
 
 NON_ARCHITECT_ROLES = ["developer", "reviewer", "integrator"]
+DEVELOPER_BOOTSTRAP_EXCEPTION = "a task whose source spec is S-000"
 
 
 def _text(path: Path) -> str:
@@ -54,4 +55,9 @@ def test_architect_uses_s000_as_reference_for_the_consistency_check(path):
 def test_non_architect_roles_do_not_mention_s000(role, platform, suffix):
     path = AGENTS_DIR / platform / f"{role}.{suffix}"
 
-    assert "S-000" not in _text(path)
+    text = _text(path)
+    if role == "developer":
+        assert text.count(DEVELOPER_BOOTSTRAP_EXCEPTION) == 1
+        text = text.replace(DEVELOPER_BOOTSTRAP_EXCEPTION, "")
+
+    assert "S-000" not in text

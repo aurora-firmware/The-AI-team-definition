@@ -165,3 +165,32 @@ def test_git_conventions_common_pitfalls_no_longer_owns_the_rule() -> None:
     for body in _git_conventions_texts():
         pitfalls = _common_pitfalls_section(body)
         assert "lifecycle-file edits from an implementation branch" not in pitfalls
+
+
+# ---------------------------------------------------------------------------
+# Bootstrap exception: internal docs listed by an S-000 task
+# ---------------------------------------------------------------------------
+
+
+def _both_developer_never_touch_lines() -> list[str]:
+    return [
+        _never_touch_line(text)
+        for text in (*_claude_developer_texts(), *_codex_developer_texts())
+    ]
+
+
+def test_developer_never_touch_allows_docs_listed_by_an_s000_task() -> None:
+    """The docs/ path is writable only when a task whose source spec is S-000
+    lists it in Files to Touch."""
+    for line in _both_developer_never_touch_lines():
+        assert "{{project_dir}}/docs/" in line
+        assert "source spec is S-000" in line
+        assert "Files to Touch" in line
+
+
+def test_developer_never_touch_keeps_specs_and_decisions_without_exception() -> None:
+    """specs/ and decisions/ stay off limits, with no exception stated."""
+    for line in _both_developer_never_touch_lines():
+        assert "`{{project_dir}}/specs/`" in line
+        assert "`{{project_dir}}/decisions/`" in line
+        assert "without exception" in line
