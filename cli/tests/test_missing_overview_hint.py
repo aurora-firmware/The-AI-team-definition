@@ -288,11 +288,16 @@ def test_tracker_new_commands_print_no_hint_when_s_000_exists(project, args):
     assert OVERVIEW_HINT not in result.stderr
 
 
-def test_task_new_refused_for_s_000_prints_only_the_refusal(project):
+def test_task_new_for_s_000_succeeds_and_still_prints_hint_when_s_000_is_missing(
+    project,
+):
     from ai_team.cli import app
 
-    result = CliRunner().invoke(app, ["task", "new", "Do thing", "--spec", "S-000"])
+    result = CliRunner().invoke(
+        app, ["task", "new", "Do thing", "--spec", "S-000", "--json"]
+    )
 
-    assert result.exit_code == 1
-    assert "S-000 is the project overview" in result.stderr
-    assert OVERVIEW_HINT not in result.stderr
+    assert result.exit_code == 0
+    assert OVERVIEW_HINT in result.stderr
+    assert OVERVIEW_HINT not in result.stdout
+    assert set(json.loads(result.stdout)) == {"id", "path"}
