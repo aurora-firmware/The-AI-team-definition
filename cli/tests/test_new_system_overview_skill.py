@@ -82,3 +82,53 @@ def test_dispatch_table_names_new_system_overview():
     rows = [line for line in body.splitlines() if line.startswith("| ")]
 
     assert any("`new-system-overview`" in row for row in rows)
+
+
+def _section(body: str, heading: str) -> str:
+    return body.split(heading, 1)[1].split("\n## ", 1)[0]
+
+
+def test_section_contract_states_component_definition_groups_and_decisions_needed():
+    contract = _section(_body(), "## Section contract")
+
+    assert "A component is a part of the software solution" in contract
+    assert "three checks" in contract
+    assert "### Solution" in contract
+    assert "### Development infrastructure" in contract
+    assert "**Decisions needed**" in contract
+    assert "never answers them" in contract
+
+
+def test_interview_and_checklist_cover_component_split_and_decisions_needed():
+    body = _body()
+    procedure = _section(body, "## Procedure")
+    checklist = _section(body, "## Pre-submission checklist")
+
+    assert "solution and development-infrastructure components" in procedure
+    assert "decisions needed" in procedure
+    assert "Solution and Development infrastructure" in checklist
+    assert "Decisions needed" in checklist
+
+
+def test_brownfield_derives_components_from_use_cases_not_code_layout():
+    brownfield = _section(_body(), "## Brownfield adoption")
+
+    assert "derive the components from the use cases" in brownfield
+    assert "never from the code or folder layout" in brownfield
+    assert "three component checks" in brownfield
+
+
+def test_steps_after_gate_1_approve_merge_propose_change_request_and_bootstrap():
+    body = _body()
+    after_gate = _section(body, "## After Gate 1")
+
+    assert "`approved`" in after_gate
+    assert "`--no-ff`" in after_gate
+    assert "{{integration_branch}}" in after_gate
+    assert "`git-conventions`" in after_gate
+    assert "change request" in after_gate
+    assert "`change-request`" in after_gate
+    assert "`spec-breakdown`" in after_gate
+    assert "S-000" in after_gate
+    assert after_gate.index("`approved`") < after_gate.index("`--no-ff`")
+    assert after_gate.index("`--no-ff`") < after_gate.index("`spec-breakdown`")
