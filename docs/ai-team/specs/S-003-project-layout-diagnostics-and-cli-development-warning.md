@@ -1,6 +1,6 @@
 ---
 title: Project layout diagnostics and CLI development warning
-version: '0.1'
+version: '0.2'
 status: approved  # draft | review | approved | superseded
 created: '2026-06-24'
 author: planner
@@ -157,7 +157,9 @@ not be completed rather than raising an unhandled exception.
    configured project directory and every directory in the current CLI project
    scaffold. For each tool named in `.ai-team.toml`, its current
    agent and skill scaffold directories must also exist, at the export paths
-   below. Extra directories are permitted and are not findings.
+   below. Extra directories are permitted and are not findings. A missing
+   `docs/coding_guidelines.md` in the project directory is a finding; the
+   suggested fix is to create it from the scaffold placeholder (CR-004).
 
    | Tool | Agents | Skills |
    |---|---|---|
@@ -255,3 +257,4 @@ project. Those marker cases remain level 4 findings.
 |------|-------------|-----|----------------|
 | 2026-10-20 | Added the version mismatch warning (Component 5, warning text contract, workflow, configuration). Level 1 now names per-tool export paths: Codex skills move from `.codex/skills/` to `.agents/skills/`, and a legacy framework-owned `.codex/skills/<name>/` folder is a finding. Driven by CR-002. | Only `check-layout` compared `framework_version`, so stale scaffolds and an older CLI gave wrong results without a warning (report #1, #7). Codex discovers repository skills in `.agents/skills/` and is deprecating `.codex/skills/`. | None in flight |
 | 2026-10-21 | Level 1 no longer requires lifecycle directories; it requires every project scaffold directory and reports an unignored in-repository tracker and legacy work-item folders that still hold a markdown file other than `.gitkeep` or `TEMPLATE-*.md`. Level 2 validates tasks, bugs, and change requests in the local tracker, checks their `status` against the allowed values (specs and decisions get a presence check only), and drops the folder-versus-status mismatch. | S-006 moved work items to the local tracker and made `status` the only lifecycle state; the levels still described lifecycle folders. The Architect raised this during the CR-003 completion review. Level 1 and the status rules document behaviour already implemented. The consistency review of this amendment found that level 2 stopped all checks when the project directory was missing, which broke the existing rule that independent checks continue. `check-layout` now blocks only the spec and decision checks in that case and keeps checking tracker artifacts. | None in flight |
+| 2026-10-24 | Level 1 reports a missing `docs/coding_guidelines.md` in the project directory. Driven by CR-004 item 10. | The project skeleton now scaffolds the file (S-009). | None in flight |
