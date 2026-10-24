@@ -85,3 +85,57 @@ def test_feature_spec_recipe_headings_are_still_present_in_order() -> None:
     assert positions == sorted(positions)
     assert text.index("## How to write each section") < positions[0]
     assert positions[-1] < text.index(HEADING)
+
+
+TEMPLATE_PATH = (
+    REPO_ROOT / "cli" / "src" / "ai_team" / "templates" / "system-overview.md"
+)
+
+
+def test_s000_section_defines_component_and_its_kinds() -> None:
+    section = _s000_section().lower()
+    assert (
+        "a part of the software solution, or something that affects the "
+        "solution's use, delivery or deployment" in section
+    )
+    for kind in ("software", "documentation", "delivery and deployment", "tooling"):
+        assert kind in section, f"missing component kind {kind}"
+
+
+def test_s000_section_states_the_three_component_checks() -> None:
+    section = _s000_section().lower()
+    assert "three checks" in section
+    assert "serves at least one use case" in section
+    assert "one spec could own its contract" in section
+    assert "boundary would hold if the implementation were reorganised" in section
+
+
+def test_s000_section_splits_components_into_solution_and_infrastructure() -> None:
+    section = _s000_section()
+    assert "**Solution**" in section
+    assert "**Development infrastructure**" in section
+
+
+def test_s000_section_requires_decisions_needed_and_asks_without_answering() -> None:
+    section = _s000_section()
+    assert "**Decisions needed**" in section
+    assert "asks technology questions and never answers them" in section
+
+
+def test_s000_section_states_users_scope_and_flat_list_validity() -> None:
+    section = _s000_section().lower()
+    assert "users names the users of the solution" in section
+    assert "single flat components list" in section
+    assert "stays valid" in section
+
+
+def test_template_keeps_seven_sections_and_groups_components() -> None:
+    text = TEMPLATE_PATH.read_text(encoding="utf-8")
+    top = re.findall(r"^## (.+)$", text, re.M)
+    assert top[:7] == S000_SECTIONS
+    components = text[text.index("## Components") : text.index("## Project exclusions")]
+    assert components.index("### Solution") < components.index(
+        "### Development infrastructure"
+    )
+    infrastructure = components[components.index("### Development infrastructure") :]
+    assert "**Decisions needed:**" in infrastructure
