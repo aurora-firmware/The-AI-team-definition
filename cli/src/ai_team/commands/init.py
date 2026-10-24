@@ -34,6 +34,10 @@ _SUPPORTED_TOOLS = ["claude", "codex"]
 
 _ROOT_GUIDANCE_FILES = ["CLAUDE.md", "AGENTS.md"]
 
+# Project skeleton files that belong to the project once written: init creates
+# them only when missing, so a framework upgrade keeps the project's own copy.
+_KEEP_IF_EXISTS_PROJECT_FILES = [Path("docs") / "coding_guidelines.md"]
+
 _ROOT_GUIDANCE_DECLINED_MESSAGE = (
     "To help agents run your project without guessing, add your test and run "
     "commands to a root CLAUDE.md and AGENTS.md. "
@@ -63,6 +67,18 @@ def _tracker_ignore_rule(tracker_dir: str) -> str | None:
 def _plan_copies(source: Path, destination: Path) -> list[tuple[Path, Path]]:
     return [
         (path, destination / path.relative_to(source)) for path in _iter_files(source)
+    ]
+
+
+def _plan_project_copies(source: Path, project_root: Path) -> list[tuple[Path, Path]]:
+    """Plan the project skeleton copies, leaving out kept-if-existing files."""
+    return [
+        (path, destination)
+        for path, destination in _plan_copies(source, project_root)
+        if not (
+            destination.exists()
+            and destination.relative_to(project_root) in _KEEP_IF_EXISTS_PROJECT_FILES
+        )
     ]
 
 
@@ -359,7 +375,7 @@ def init_command(
     ):
         planned: list[tuple[Path, Path]] = []
         planned.extend(
-            _plan_copies(scaffolds_path / "project", target_root / project_dir)
+            _plan_project_copies(scaffolds_path / "project", target_root / project_dir)
         )
 
         for tool in selected_tools:

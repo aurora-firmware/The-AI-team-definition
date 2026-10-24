@@ -329,6 +329,101 @@ def test_init_force_overwrites_project_guidance_files(monkeypatch, tmp_path):
     assert (target / "ai-team" / "AGENTS.md").is_file()
 
 
+def _write_existing_guidelines(target: Path) -> Path:
+    existing = target / "ai-team" / "docs" / "coding_guidelines.md"
+    existing.parent.mkdir(parents=True, exist_ok=True)
+    existing.write_text("project rules\n", encoding="utf-8")
+    return existing
+
+
+def test_init_writes_coding_guidelines_placeholder_when_missing(tmp_path):
+    """AC-1: init writes docs/coding_guidelines.md when it does not exist."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    result = CliRunner().invoke(
+        app, ["init", str(target), "--tools", "claude", "--no-interactive"]
+    )
+
+    assert result.exit_code == 0
+    written = target / "ai-team" / "docs" / "coding_guidelines.md"
+    assert written.is_file()
+    assert written.read_text(encoding="utf-8").strip() != ""
+
+
+def test_init_keeps_existing_coding_guidelines_without_counting_a_collision(tmp_path):
+    """AC-2: an existing coding_guidelines.md is not a collision and is kept."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    target.mkdir()
+    existing = _write_existing_guidelines(target)
+
+    result = CliRunner().invoke(
+        app, ["init", str(target), "--tools", "claude", "--no-interactive"]
+    )
+
+    assert result.exit_code == 0
+    assert existing.read_text(encoding="utf-8") == "project rules\n"
+    assert (target / "ai-team" / "CLAUDE.md").is_file()
+
+
+def test_init_force_keeps_existing_coding_guidelines(tmp_path):
+    """AC-2: --force does not overwrite an existing coding_guidelines.md."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    target.mkdir()
+    existing = _write_existing_guidelines(target)
+
+    result = CliRunner().invoke(
+        app, ["init", str(target), "--tools", "claude", "--no-interactive", "--force"]
+    )
+
+    assert result.exit_code == 0
+    assert existing.read_text(encoding="utf-8") == "project rules\n"
+    assert str(existing) not in result.output
+
+
+def test_init_dry_run_does_not_list_existing_coding_guidelines(tmp_path):
+    """AC-3: dry-run omits coding_guidelines.md when it exists, lists it when missing."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    target.mkdir()
+    existing = _write_existing_guidelines(target)
+    args = ["init", str(target), "--tools", "claude", "--no-interactive", "--dry-run"]
+
+    kept = CliRunner().invoke(app, args)
+    existing.unlink()
+    missing = CliRunner().invoke(app, args)
+
+    assert kept.exit_code == 0
+    assert str(existing) not in kept.output
+    assert str(existing) in missing.output
+
+
+def test_init_still_refuses_other_skeleton_collisions_when_guidelines_exist(tmp_path):
+    """AC-4: other skeleton files still collide and are overwritten by --force."""
+    from ai_team.cli import app
+
+    target = tmp_path / "repo"
+    target.mkdir()
+    guidelines = _write_existing_guidelines(target)
+    claude_md = target / "ai-team" / "CLAUDE.md"
+    claude_md.write_text("occupied\n", encoding="utf-8")
+    args = ["init", str(target), "--tools", "claude", "--no-interactive"]
+
+    refused = CliRunner().invoke(app, args)
+    forced = CliRunner().invoke(app, [*args, "--force"])
+
+    assert refused.exit_code != 0
+    assert str(guidelines) not in refused.output
+    assert forced.exit_code == 0
+    assert claude_md.read_text(encoding="utf-8") != "occupied\n"
+    assert guidelines.read_text(encoding="utf-8") == "project rules\n"
+
+
 # ── Root guidance file tests (T-050) ─────────────────────────────────────────
 
 
