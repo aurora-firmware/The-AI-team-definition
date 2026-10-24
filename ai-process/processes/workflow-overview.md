@@ -74,7 +74,20 @@ For a new project the Planner proposes `new-system-overview` before brainstormin
 The step is optional for projects that already have specs; the human may add S-000 at any time.
 It is also the entry point for brownfield adoption: a project with existing code uses S-000 to record what the project is for and how it divides, not how it is built today, before new features are specified.
 
-S-000 describes the system as a whole and is never broken down into tasks. Feature specs carry the work; S-000 is the reference they are checked against.
+S-000 describes the system as a whole. It produces only the project bootstrap tasks, which cover its development-infrastructure components; solution work comes from feature specs, and S-000 is the reference they are checked against.
+
+S-000 has no Gate 2 of its own. After Gate 1, the Planner sets S-000 to `approved` and merges its planning branch into `dev-agent` with `--no-ff`.
+For a brownfield S-000, the Planner then proposes a change request that brings the existing specs in line with S-000's components, from the overlaps, gaps, and disagreements the draft reported; the human decides which side of each disagreement changes.
+
+### Project bootstrap
+
+**Role:** Planner.
+**Procedure:** `spec-breakdown` on S-000.
+**Input:** The approved S-000.
+**Output:** The bootstrap task plan, which passes Gate 2 and runs through the development loop.
+
+There is no bootstrap spec; the tasks come directly from S-000. They record the answers to every Decisions needed and set up the development environment, the project's coding guidelines, the agent guidance, and the README's project description. In a brownfield project the bootstrap covers only what is missing, and the human may skip items that already exist.
+While no baseline test command exists, the development loop runs these tasks after the human confirms that no automated baseline is available.
 
 ### 1. Brainstorm
 
@@ -319,7 +332,7 @@ Full rules and commit format: `ai-process/guidelines/git-conventions.md`.
 - The integration procedure is also the standard path for merging bug branches into their target branch.
 - Tasks, bugs, and change-requests live in the local tracker, outside version control; no branch holds lifecycle state and no lifecycle change creates a commit.
 - Branches blocked at review stay open on their task branch until the blocker is resolved.
-- Spec and change-request work never lands on `dev-agent` before its task plan passes Gate 2. The one exception is a follow-up task routed by spec-truth reconciliation, which the reconciliation re-run checks instead (ADR-002).
+- Spec and change-request work never lands on `dev-agent` before its task plan passes Gate 2. There are two exceptions: a follow-up task routed by spec-truth reconciliation, which the reconciliation re-run checks instead (ADR-002), and S-000, whose planning branch merges after Gate 1 because S-000 has no Gate 2.
 - Every orchestrating procedure applies the Workspace Hygiene check from the git conventions before it starts, before every branch switch, after every merge, and before it ends. No procedure leaves untracked files or uncommitted changes behind.
 
 ## Escalation
