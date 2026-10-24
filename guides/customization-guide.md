@@ -162,8 +162,8 @@ If you have an existing codebase:
 
 1. Follow the setup guide to create the directory structure alongside your existing code.
 2. Your existing source code stays where it is — the framework directories are additive.
-3. Write or update `CLAUDE.md` so agents can find project commands, coding guidance, and repository layout.
-4. Create `ai-team/docs/coding_guidelines.md` for stack-specific conventions if those rules are not already documented elsewhere.
-5. Migrate existing issues/tasks by creating a task for each open item with `ai-team task new` (they land in the local tracker).
-6. Write the S-000 system overview spec — what the project is for and how it divides into components (`ai-team spec new --overview` or the `new-system-overview` skill).
+3. Write or update `CLAUDE.md` so agents can find project commands and repository layout.
+4. Migrate existing issues/tasks by creating a task for each open item with `ai-team task new` (they land in the local tracker).
+5. Write the S-000 system overview spec — what the project is for and how it divides into components (`ai-team spec new --overview` or the `new-system-overview` skill), and get it approved.
+6. Run the project bootstrap after S-000 is approved (`spec-breakdown` on S-000): its tasks fill in the project guidance and the coding guidelines in `ai-team/docs/coding_guidelines.md`, instead of you writing them by hand.
 7. Create an ADR in `ai-team/decisions/` documenting the decision to adopt this framework.
