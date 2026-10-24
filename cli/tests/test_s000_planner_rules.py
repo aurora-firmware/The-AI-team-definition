@@ -21,6 +21,7 @@ PLANNER_SOURCES = [
 ]
 
 NON_PLANNER_ROLES = ["developer", "reviewer", "integrator"]
+DEVELOPER_BOOTSTRAP_EXCEPTION = "a task whose source spec is S-000"
 
 
 def _text(path: Path) -> str:
@@ -86,7 +87,12 @@ def test_planner_quality_bar_holds_s000_to_gate_1_criteria_replacing_task_deriva
 def test_non_planner_roles_do_not_mention_s000(role, platform, suffix):
     path = AGENTS_DIR / platform / f"{role}.{suffix}"
 
-    assert "S-000" not in _text(path)
+    text = _text(path)
+    if role == "developer":
+        assert text.count(DEVELOPER_BOOTSTRAP_EXCEPTION) == 1
+        text = text.replace(DEVELOPER_BOOTSTRAP_EXCEPTION, "")
+
+    assert "S-000" not in text
 
 
 @pytest.mark.parametrize("path", PLANNER_SOURCES)
