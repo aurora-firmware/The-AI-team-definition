@@ -21,8 +21,8 @@ Project-specific commit scopes and any overrides belong in the project's own `CL
 - Bug branches are created when the bug-fix loop picks up a bug.
   Existing-defect bug branches are based on `{{integration_branch}}`; task-regression bug branches are based on the bug report's `source_branch`.
 - Planning branches are created from `{{integration_branch}}` when a spec or change-request is created. Every planning artifact for that work is committed there, never directly on `{{integration_branch}}`.
-  The Planner merges the planning branch into `{{integration_branch}}` with `--no-ff` only after Gate 2 passes, then deletes it with `git branch -d`.
-  `{{integration_branch}}` therefore never carries a spec amendment without the task plan that implements it. Abandoning a spec or change-request means the human deletes its planning branch.
+  The Planner merges the planning branch into `{{integration_branch}}` with `--no-ff` only after Gate 2 passes, then deletes it with `git branch -d`. The only exception is S-000, which has no Gate 2: its planning branch merges into {{integration_branch}} with `--no-ff` after Gate 1, once S-000 is `approved`.
+  `{{integration_branch}}` therefore never carries a spec amendment without the task plan that implements it, except the S-000 planning branch, which merges after Gate 1 once S-000 is `approved`. Abandoning a spec or change-request means the human deletes its planning branch.
 - Tasks, bugs, and change-requests live in the local tracker (`ai-team tracker path`), outside version control and outside every branch.
   Their lifecycle state is the frontmatter `status` field. Recording state, Work Logs, Diagnosis Logs, or Review Verdicts never creates a commit and never requires a branch switch.
 
@@ -65,7 +65,7 @@ chore(plan): merge S-004 billing export
 | Role | Commits when | Branch |
 |---|---|---|
 | **Planner** | Each spec or spec amendment is finalized | `plan/…` |
-| **Planner** | One merge commit per planning branch after Gate 2 passes | `{{integration_branch}}` |
+| **Planner** | One merge commit per planning branch after Gate 2 passes (S-000: after Gate 1, once S-000 is `approved`) | `{{integration_branch}}` |
 | **Developer** | After each implementation cycle for source, tests, and project artifacts | `task/T-NNN-…` or `bug/B-NNN-…` |
 | **Architect** | After producing an ADR or amendment | `plan/…` when raised during planning; otherwise `{{integration_branch}}` |
 | **Integrator** | One merge commit per task or bug branch merged into its target branch | target branch |
