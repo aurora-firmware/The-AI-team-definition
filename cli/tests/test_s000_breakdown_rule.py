@@ -1,4 +1,4 @@
-"""T-087: spec-breakdown refuses to break down S-000."""
+"""spec-breakdown plans only the bootstrap tasks from S-000."""
 
 from __future__ import annotations
 
@@ -47,39 +47,83 @@ def _section(heading: str) -> str:
     return body[start:end]
 
 
-def test_input_requirements_state_that_s000_stops_the_skill():
+def test_input_requirements_accept_s000_for_bootstrap_tasks_only():
     section = _section("## Input Requirements")
 
     assert "S-000" in section
-    assert "project overview" in section
-    assert "stops" in section
+    assert "bootstrap tasks only" in section
+    assert "development-infrastructure components" in section
 
 
-def test_step_zero_opens_with_the_s000_refusal_before_any_checkout():
+def test_step_zero_plans_only_bootstrap_tasks_when_the_spec_is_s000():
     section = _section("### Step 0: Check Out the Planning Branch")
     first_paragraph = section.strip().split("\n", 1)[0]
 
     assert "S-000" in first_paragraph
-    assert "stop" in first_paragraph
+    assert "only the project bootstrap tasks" in first_paragraph
+    assert "development-infrastructure components" in first_paragraph
     assert section.index("S-000") < section.index("check it out")
 
 
-def test_refusal_names_feature_specs_as_input_and_creates_no_task():
+def test_solution_work_from_s000_is_refused_naming_the_feature_specs():
     section = _section("### Step 0: Check Out the Planning Branch")
 
+    assert "solution work" in section
+    assert "refuse" in section
     assert "feature specs" in section
-    assert "no task" in section
+    assert "ai-team list specs" in section
 
 
-def test_refusal_states_the_cli_also_refuses_task_new_for_s000():
-    assert "`ai-team task new --spec S-000`" in _section(
-        "### Step 0: Check Out the Planning Branch"
-    )
-    assert "`ai-team task new --spec S-000`" in _section("## Input Requirements")
+def test_bootstrap_outputs_are_listed():
+    section = _section("### Step 0: Check Out the Planning Branch")
+
+    for output in (
+        "Decisions needed",
+        "docs/development/architecture.md",
+        "tech-stack.md",
+        "environment configuration",
+        "remote access check",
+        "coding guidelines",
+        "internal documentation placeholders",
+        "project guidance",
+        "README",
+    ):
+        assert output in section, output
 
 
-def test_common_pitfalls_list_breaking_down_s000():
-    assert "S-000" in _section("## Common Pitfalls")
+def test_documentation_location_rule_lets_project_rules_win_and_records_location():
+    section = _section("### Step 0: Check Out the Planning Branch")
+
+    assert "repository root" in section
+    assert "project's rules" in section
+    assert "location" in section
+    assert "project guidance" in section
+
+
+def test_brownfield_bootstrap_plans_only_missing_items():
+    section = _section("### Step 0: Check Out the Planning Branch")
+
+    assert "brownfield" in section
+    assert "only the missing items" in section
+
+
+def test_bootstrap_plan_goes_through_gate_two():
+    assert "Gate 2" in _section("### Step 0: Check Out the Planning Branch")
+
+
+def test_skill_no_longer_states_the_cli_refuses_task_new_for_s000():
+    body = _body()
+
+    assert "refuses `ai-team task new --spec S-000`" not in body
+    assert "CLI also refuses" not in body
+    assert "refused by the CLI" not in body
+
+
+def test_common_pitfalls_list_planning_solution_work_from_s000():
+    section = _section("## Common Pitfalls")
+
+    assert "S-000" in section
+    assert "solution work" in section
 
 
 def test_step_headings_are_unchanged_with_exactly_one_step_zero():
