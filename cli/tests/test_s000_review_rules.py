@@ -54,10 +54,23 @@ def test_skill_reviews_s000_for_internal_consistency_and_plain_language() -> Non
     assert "plain-language" in body
 
 
-def test_completion_mode_states_s000_is_never_a_touched_spec() -> None:
+def test_completion_mode_keeps_s000_out_with_the_bootstrap_reason() -> None:
     section = _section(_skill_body(), "## Completion Mode")
     assert "S-000 is never a touched spec" in section
-    assert "no tasks or Work Logs" in section
+    assert "bootstrap tasks answer questions S-000 only asks" in section
+    assert "S-000 makes no assertion for that work to drift from" in section
+    assert "no tasks or Work Logs" not in section
+
+
+def test_changed_s000_is_checked_for_groups_decisions_needed_and_component_checks() -> (
+    None
+):
+    body = _skill_body()
+    section = body[body.index("### Step 3b") : body.index("### Step 4")]
+    assert "Solution" in section
+    assert "Development infrastructure" in section
+    assert "Decisions needed" in section
+    assert "three component checks" in section
 
 
 def test_gate_1_lists_s000_pass_criteria() -> None:
