@@ -57,17 +57,43 @@ How does the system address the pain points above?
 
 ## Components
 
-<!-- Recipe: the parts the system is divided into. Each entry gives its name,
-  its owned responsibility (what it is for), its boundary (what it is not
-  responsible for), and the other components it works with. S-000 owns the
-  decomposition; a feature spec owns the contract of one component. -->
+<!-- Recipe: the parts the system is divided into. A component is a part of
+  the software solution, or something that affects the solution's use,
+  delivery or deployment: software, documentation, delivery and deployment,
+  or tooling. Each passes three checks: it serves at least one use case (or,
+  in the infrastructure group, affects the solution's use, delivery or
+  deployment); one spec could own its contract; its boundary would hold if
+  the implementation were reorganised. Each entry gives its name, its owned
+  responsibility (what it is for), its boundary (what it is not responsible
+  for), and the other components it works with. Development infrastructure
+  entries also carry Decisions needed: questions to answer before
+  development starts. S-000 asks them and never answers them. S-000 owns the
+  decomposition; a feature spec owns the contract of one component. A single
+  flat list of components, without the two groups, stays valid. -->
 
-### Component name
+### Solution
+
+<!-- The software delivered to the end user that removes the pain points. -->
+
+#### Component name
 
 - **Name:** The component's name.
 - **Responsibility:** What the component is for.
 - **Boundary:** What the component is not responsible for.
 - **Works with:** The other components it works with.
+
+### Development infrastructure
+
+<!-- Everything the project needs to build, check, document and deliver the
+  solution; not delivered to the end user. -->
+
+#### Component name
+
+- **Name:** The component's name.
+- **Responsibility:** What the component is for.
+- **Boundary:** What the component is not responsible for.
+- **Works with:** The other components it works with.
+- **Decisions needed:** The questions to answer before development starts, such as the language and version or the test harness.
 
 ## Project exclusions
 

@@ -8,6 +8,7 @@ from pathlib import Path
 PROCESS_DIR = Path(__file__).resolve().parents[2] / "ai-process"
 WORKFLOW_PATH = PROCESS_DIR / "processes" / "workflow-overview.md"
 COMPONENT_MAP_PATH = PROCESS_DIR / "architecture" / "component-map.md"
+QUALITY_GATES_PATH = PROCESS_DIR / "processes" / "quality-gates.md"
 
 SKILL_PATH = "`.claude/skills/new-system-overview/SKILL.md`"
 
@@ -66,8 +67,93 @@ def test_workflow_overview_describes_brownfield_adoption():
     assert "brownfield" in _s000_phase()
 
 
-def test_workflow_overview_states_s000_is_never_broken_down_into_tasks():
-    assert "never broken down into tasks" in _s000_phase()
+def test_workflow_overview_states_s000_produces_only_bootstrap_tasks():
+    phase = _s000_phase()
+
+    assert "only the project bootstrap tasks" in phase
+    assert "never broken down into tasks" not in phase
+
+
+def test_workflow_overview_describes_completing_s000_after_gate_1():
+    phase = _s000_phase()
+
+    assert "After Gate 1" in phase
+    assert "`approved`" in phase
+    assert "`--no-ff`" in phase
+
+
+def test_workflow_overview_describes_the_brownfield_change_request():
+    phase = _s000_phase()
+
+    assert "change request" in phase
+    assert "overlaps, gaps" in phase
+
+
+def test_workflow_overview_describes_the_project_bootstrap_phase():
+    text = _workflow()
+    phase = _section(text, "### Project bootstrap")
+
+    assert text.index("### 0. System Overview (S-000)") < text.index(
+        "### Project bootstrap"
+    )
+    assert text.index("### Project bootstrap") < text.index("### 1. Brainstorm")
+    assert "**Role:** Planner" in phase
+    assert "`spec-breakdown`" in phase
+    assert "**Input:**" in phase
+    assert "approved S-000" in phase
+    assert "**Output:**" in phase
+    assert "Gate 2" in phase
+    assert "development loop" in phase
+
+
+def test_workflow_overview_requires_no_baseline_confirmation_for_bootstrap():
+    phase = _section(_workflow(), "### Project bootstrap")
+
+    assert "no baseline test command" in phase
+    assert "human confirms that no automated baseline is available" in phase
+
+
+def _s000_gate_1_criteria() -> str:
+    text = QUALITY_GATES_PATH.read_text(encoding="utf-8")
+    start = text.index("**S-000 pass criteria:**")
+    return text[start : text.index("**On failure:**", start)]
+
+
+def test_quality_gates_s000_criteria_require_solution_and_infrastructure_groups():
+    criteria = _s000_gate_1_criteria()
+
+    assert "solution" in criteria
+    assert "development-infrastructure" in criteria
+
+
+def test_quality_gates_s000_criteria_require_decisions_needed_on_infrastructure():
+    criteria = _s000_gate_1_criteria()
+
+    assert "Decisions needed" in criteria
+    assert "infrastructure component" in criteria
+
+
+def test_quality_gates_keep_s000_out_of_the_completion_review_with_reason():
+    text = QUALITY_GATES_PATH.read_text(encoding="utf-8")
+    sentence = next(
+        line for line in text.splitlines() if "does not include S-000" in line
+    )
+
+    assert "bootstrap tasks answer questions S-000 only asks" in sentence
+    assert "makes no assertion" in sentence
+
+
+def test_workflow_overview_names_s000_merge_as_landing_exception():
+    text = _section(_workflow(), "## Git Branching Strategy")
+    rule = next(
+        line
+        for line in text.splitlines()
+        if line.startswith("- Spec and change-request work never lands")
+    )
+
+    assert "follow-up task" in rule
+    assert "S-000" in rule
+    assert "after Gate 1" in rule
 
 
 def test_component_map_procedures_has_new_system_overview_row():

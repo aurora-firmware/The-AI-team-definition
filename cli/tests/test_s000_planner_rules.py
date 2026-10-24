@@ -21,6 +21,7 @@ PLANNER_SOURCES = [
 ]
 
 NON_PLANNER_ROLES = ["developer", "reviewer", "integrator"]
+DEVELOPER_BOOTSTRAP_EXCEPTION = "a task whose source spec is S-000"
 
 
 def _text(path: Path) -> str:
@@ -86,4 +87,31 @@ def test_planner_quality_bar_holds_s000_to_gate_1_criteria_replacing_task_deriva
 def test_non_planner_roles_do_not_mention_s000(role, platform, suffix):
     path = AGENTS_DIR / platform / f"{role}.{suffix}"
 
-    assert "S-000" not in _text(path)
+    text = _text(path)
+    if role == "developer":
+        assert text.count(DEVELOPER_BOOTSTRAP_EXCEPTION) == 1
+        text = text.replace(DEVELOPER_BOOTSTRAP_EXCEPTION, "")
+
+    assert "S-000" not in text
+
+
+@pytest.mark.parametrize("path", PLANNER_SOURCES)
+def test_planner_states_the_three_steps_after_s000_gate_1(path):
+    text = _flat(path)
+
+    assert "After Gate 1 approves S-000" in text
+    assert "completes S-000 with `new-system-overview`" in text
+    assert "creates the project bootstrap tasks with `spec-breakdown` on S-000" in text
+    assert "proposes the change request from its findings" in text
+    assert "brownfield" in text
+
+
+@pytest.mark.parametrize("path", PLANNER_SOURCES)
+def test_planner_states_s000_merges_after_gate_1_as_exception_to_gate_2(path):
+    text = _flat(path)
+
+    assert "merging it into `{{integration_branch}}` after Gate 2" in text
+    assert (
+        "except the S-000 planning branch, which merges into "
+        "`{{integration_branch}}` after Gate 1"
+    ) in text

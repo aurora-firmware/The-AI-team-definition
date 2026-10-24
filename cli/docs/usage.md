@@ -104,7 +104,7 @@ ai-team init [PATH] [OPTIONS]
 |---|---|
 | `--tools TEXT` | Comma-separated tool names to scaffold (e.g. `claude`, `codex`, `all`, `none`). |
 | `--dry-run` | Print what the real run with the same flags would do, without touching the filesystem. Lines are `WOULD WRITE` (new file), `WOULD OVERWRITE` (existing file, with `--force`), `WOULD CREATE` (a missing tracker folder), `WOULD UPDATE` (a `.gitignore` missing the tracker rule) and `WOULD PROMPT` (a root `CLAUDE.md` or `AGENTS.md` the interactive run would ask about). Root guidance files the real run would skip are not listed, and existing files without `--force` give only the refusal. |
-| `--force` | Overwrite existing files. Without this flag the command refuses to overwrite. On a repository that already has `.ai-team.toml`, the configured `[project] dir`, `[tracker] dir`, `[git] integration_branch`, and any other tables are kept, but `--force` still overwrites the generated agents and skills and the project scaffold (`CLAUDE.md`, `AGENTS.md`, and `.gitignore` inside the project directory), and rewrites `.ai-team.toml`. Root guidance files follow the table under [Root guidance files](#root-guidance-files). Every existing file that is replaced is reported as `OVERWROTE: <path>`. |
+| `--force` | Overwrite existing files. Without this flag the command refuses to overwrite. On a repository that already has `.ai-team.toml`, the configured `[project] dir`, `[tracker] dir`, `[git] integration_branch`, and any other tables are kept, but `--force` still overwrites the generated agents and skills and the project scaffold (`CLAUDE.md`, `AGENTS.md`, and `.gitignore` inside the project directory), and rewrites `.ai-team.toml`. `docs/coding_guidelines.md` is the exception: it is written only when missing and never overwritten, even with `--force`. Root guidance files follow the table under [Root guidance files](#root-guidance-files). Every existing file that is replaced is reported as `OVERWROTE: <path>`. |
 | `--project-dir TEXT` | Artifact folder, at any depth (e.g. `docs/ai-team`). Defaults to the configured `[project] dir`, else `ai-team`. Must be relative and contain no `..`. |
 | `--integration-branch TEXT` | Branch that task, bug, and planning work integrates into. Defaults to the configured `[git] integration_branch`, else `dev-agent`. |
 | `--no-interactive` | Skip all prompts. Requires `--tools` to be provided explicitly. |
@@ -221,7 +221,9 @@ The command runs four ordered validation levels:
    reports a tracker folder that lies inside the repository but is not ignored
    by git, and legacy `tasks/`, `bugs/`, `change-requests/`, or `archive/`
    folders in the project directory that still hold a markdown file other than
-   `.gitkeep` or `TEMPLATE-*.md`.
+   `.gitkeep` or `TEMPLATE-*.md`. Also reports a missing
+   `docs/coding_guidelines.md` in the project directory, with the suggested fix
+   to create it from the scaffold placeholder.
 2. **Level 2 — artifact names and frontmatter.** Checks managed specs and
    decisions in the project directory, and tasks, bugs, and change requests in
    the tracker, for the expected filename and required frontmatter. Tasks, bugs,
@@ -331,9 +333,10 @@ advisory hint to stderr: "this project has no system overview (S-000)". The
 hint is always on, never changes stdout or exit codes, and disappears once
 S-000 exists.
 
-S-000 describes the system and produces no tasks, so
-`ai-team task new --spec S-000` is refused with exit code 1. Reference a
-feature spec instead.
+`ai-team task new --spec S-000` creates the project bootstrap tasks, the
+tasks that set a new project up from its system overview.
+`validate` does not report them, because their source spec is the system
+overview.
 
 ### File a change request
 

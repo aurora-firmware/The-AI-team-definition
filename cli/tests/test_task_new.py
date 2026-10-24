@@ -209,12 +209,11 @@ def test_task_new_allocates_distinct_ids_for_two_concurrent_callers(
     assert len(ids) == 2, f"expected two distinct task ids, got files: {files}"
 
 
-@pytest.mark.parametrize(
-    "spec_reference", ["S-000", "S-000-system-overview", "S-000-system-overview.md"]
-)
-def test_task_new_refuses_overview_spec_and_creates_no_task(
-    monkeypatch, tmp_path, spec_reference
+def test_task_new_creates_task_with_overview_spec_and_json_output(
+    monkeypatch, tmp_path
 ):
+    import json
+
     from ai_team.cli import app
 
     tasks_dir = tmp_path / ".ai-team" / "tracker" / "tasks"
@@ -222,37 +221,13 @@ def test_task_new_refuses_overview_spec_and_creates_no_task(
 
     monkeypatch.chdir(tmp_path)
     result = CliRunner().invoke(
-        app, ["task", "new", "Overview work", "--spec", spec_reference]
+        app, ["task", "new", "Bootstrap tooling", "--spec", "S-000", "--json"]
     )
 
-    assert result.exit_code == 1
-    assert "S-000" in result.stderr
-    assert "project overview" in result.stderr
-    assert list(tasks_dir.glob("*.md")) == []
-
-
-@pytest.mark.parametrize("spec_reference", ["system-overview", "system-overview.md"])
-def test_task_new_refuses_overview_spec_alias_and_creates_no_task(
-    monkeypatch, tmp_path, spec_reference
-):
-    from ai_team.cli import app
-
-    tasks_dir = tmp_path / ".ai-team" / "tracker" / "tasks"
-    _mkdir(tasks_dir)
-    specs_dir = tmp_path / "ai-team" / "specs"
-    _mkdir(specs_dir)
-    (specs_dir / "S-000-system-overview.md").write_text(
-        "---\nid: S-000\n---\n# System Overview\n", encoding="utf-8"
-    )
-
-    monkeypatch.chdir(tmp_path)
-    result = CliRunner().invoke(
-        app, ["task", "new", "Overview work", "--spec", spec_reference]
-    )
-
-    assert result.exit_code == 1
-    assert "project overview" in result.stderr
-    assert list(tasks_dir.glob("*.md")) == []
+    assert result.exit_code == 0
+    created = json.loads(result.stdout)
+    assert created["id"] == "T-001"
+    assert parse_task(tasks_dir / "T-001-bootstrap-tooling.md").spec == "S-000"
 
 
 def test_task_new_accepts_feature_spec_reference(monkeypatch, tmp_path):

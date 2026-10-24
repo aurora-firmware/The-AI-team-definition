@@ -1,7 +1,7 @@
 ---
 id: S-000
 title: System Overview
-version: '0.1'
+version: '0.2'
 status: approved  # draft | review | approved | superseded
 created: '2026-10-22'
 author: planner
@@ -44,6 +44,7 @@ The AI Team Definition is a reusable framework that lets a team of AI agents bui
 - **Keep the framework current.** The product owner updates the project to a newer framework version. The delivered roles and procedures are replaced without touching the project's own content, and a layout check reports anything out of place with a suggested fix. Removes: setup is manual and drifts.
 - **Teach agents the project's specifics.** The product owner records the project's build, test and run commands and conventions in the project guidance, and every agent reads them from there instead of guessing. Removes: agents guess project specifics.
 - **Describe the system.** The product owner and the planning agent write one plain-language overview of the project (its purpose, users, pain points and components), which every later specification is checked against. Removes: inconsistent work artifacts; all-or-nothing oversight.
+- **Bootstrap the project.** Once the overview is approved, the planning agent turns its open technology questions into setup tasks. The agents set up the development environment, record the technology decisions, write the coding guidelines and the project guidance, and describe the project in its readme, before any feature is built. Removes: agents guess project specifics.
 - **Plan a feature.** The product owner describes a feature. The planning agent explores options with the product owner and writes a specification, the product owner approves it, the planning agent breaks it into small independent tasks, and the architecture agent checks the plan before any work starts. Removes: unguided agents improvise; all-or-nothing oversight.
 - **Request a small change.** The product owner asks for a change that is too small for a full specification. The planning agent records it as a change request and turns it into tasks or a specification amendment after an architecture check. Removes: all-or-nothing oversight.
 - **Run the development loop.** The product owner starts the loop. The agents implement, review and integrate each pending task in turn, with tests and evidence, and stop only when the queue is empty, a task is blocked, or a question needs the product owner. Removes: unguided agents improvise; all-or-nothing oversight.
@@ -142,8 +143,6 @@ The components fall into two groups. The **solution** is the software delivered 
 
 ## Amendment Log
 
-<!-- Optional. Use when an approved spec is amended after tasks are in flight.
 | Date | What changed | Why | Affected tasks |
 |------|-------------|-----|----------------|
-| YYYY-MM-DD | Description of change | Reason for amendment | T-XXX, T-YYY |
--->
+| 2026-10-24 | Use cases: added "Bootstrap the project". Driven by CR-004 item 9 and its Architecture Consistency Review. | CR-004 adds the project bootstrap after S-000 approval, a capability no use case covered. | None in flight |

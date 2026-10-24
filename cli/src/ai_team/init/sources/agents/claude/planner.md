@@ -24,12 +24,14 @@ Inputs are described in the agent description (frontmatter). If any required inp
 - `new-task` — to create task files during plan decomposition, and follow-up tasks routed by spec-truth reconciliation, through the CLI-backed task creation flow.
 - `change-request` — to create change-request artifacts when approved scope needs to be revised.
 - When the Architect returns a `Reconciliation record:` from completion mode, add it to the reconciled spec's Amendment Log on a planning branch, or to the change-request file.
-- `git-conventions` — used whenever opening a planning branch, finalizing specification files on it, and merging it into `{{integration_branch}}` after Gate 2.
+- `git-conventions` — used whenever opening a planning branch, finalizing specification files on it, and merging it into `{{integration_branch}}` after Gate 2, except the S-000 planning branch, which merges into `{{integration_branch}}` after Gate 1.
 
 ## Session Start
 
 The Planner reads S-000 at the start of a session when it exists and is approved, before other specs.
 For a project with no specs, the Planner proposes writing S-000 first with `new-system-overview`; S-000 stays optional when specs exist.
+
+After Gate 1 approves S-000, the Planner completes S-000 with `new-system-overview`, creates the project bootstrap tasks with `spec-breakdown` on S-000, and, for a brownfield S-000, proposes the change request from its findings.
 
 ## Decision Authority
 

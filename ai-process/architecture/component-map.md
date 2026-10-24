@@ -22,7 +22,8 @@ This document maps the ai-process roles, procedures, processes, and gates to the
 
 | Procedure | Purpose | Used By | Implementation |
 |---|---|---|---|
-| New System Overview | Create the S-000 system overview that later specs are checked against; never broken down into tasks | Planner | `.claude/skills/new-system-overview/SKILL.md` |
+| New System Overview | Create the S-000 system overview that later specs are checked against; produces only the project bootstrap tasks, never solution tasks | Planner | `.claude/skills/new-system-overview/SKILL.md` |
+| Project Bootstrap | Plan the bootstrap tasks of an approved S-000: decisions and architecture documents, environment configuration, coding guidelines, project guidance, and the README description | Planner | `.claude/skills/spec-breakdown/SKILL.md` (run on S-000) |
 | Brainstorm | Explore the request, alternatives, constraints, and prior decisions before writing a specification | Planner | `.claude/skills/brainstorm/SKILL.md` |
 | Change Request (intake) | Capture smaller desired changes and possible spec amendments without the full brainstorm-to-spec flow; produces tasks and amendments as needed | Planner, Human | `ai-team change-request new`; template at `cli/src/ai_team/templates/change-request.md`; artifacts stored in the local tracker |
 | Spec Breakdown | Decompose an approved specification into atomic tasks with dependencies, acceptance criteria, and verification | Planner | `.claude/skills/spec-breakdown/SKILL.md` |

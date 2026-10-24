@@ -53,6 +53,9 @@ def _create_current_scaffold(repo: Path, tools: tuple[str, ...]) -> None:
                     parents=True, exist_ok=True
                 )
         (repo / destination_name).mkdir(parents=True, exist_ok=True)
+    guidelines = repo / "ai-team" / "docs" / "coding_guidelines.md"
+    guidelines.parent.mkdir(parents=True, exist_ok=True)
+    guidelines.write_text("# Coding guidelines\n", encoding="utf-8")
 
 
 def _snapshot(repo: Path) -> list[tuple[str, bool, bytes | None]]:
@@ -184,6 +187,35 @@ def test_level_1_reports_missing_agents_skills_for_codex(tmp_path: Path) -> None
     findings = check_level_1(contract)
 
     assert ".agents/skills" in {finding.path for finding in findings}
+
+
+def test_level_1_reports_missing_coding_guidelines_with_scaffold_fix(
+    tmp_path: Path,
+) -> None:
+    _write_marker(tmp_path, tools=("claude",))
+    _create_current_scaffold(tmp_path, ("claude",))
+    (tmp_path / "ai-team" / "docs" / "coding_guidelines.md").unlink()
+    contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
+
+    findings = check_level_1(contract)
+
+    assert [(f.level, f.path) for f in findings] == [
+        (1, "ai-team/docs/coding_guidelines.md")
+    ]
+    assert "scaffold placeholder" in findings[0].suggested_fix
+
+
+def test_level_1_reports_no_finding_for_existing_coding_guidelines_of_any_content(
+    tmp_path: Path,
+) -> None:
+    _write_marker(tmp_path, tools=("claude",))
+    _create_current_scaffold(tmp_path, ("claude",))
+    (tmp_path / "ai-team" / "docs" / "coding_guidelines.md").write_text(
+        "", encoding="utf-8"
+    )
+    contract, _ = resolve_layout(tmp_path, current_version="1.2.3")
+
+    assert check_level_1(contract) == []
 
 
 def test_level_1_does_not_require_bare_tool_roots(tmp_path: Path) -> None:

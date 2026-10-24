@@ -448,8 +448,40 @@ def test_usage_md_documents_missing_overview_hint():
         )
 
 
-def test_usage_md_documents_task_new_s000_refusal():
-    """usage.md must state that task new --spec S-000 is refused."""
+def _system_overview_section() -> str:
     content = _content()
-    assert "task new" in content and "--spec S-000" in content
-    assert "refused" in _lower()
+    start = content.index("### System overview (S-000)")
+    return content[start : content.index("### File a change request")]
+
+
+def test_usage_md_documents_task_new_s000_creates_bootstrap_tasks():
+    """usage.md must state that task new --spec S-000 creates the bootstrap tasks."""
+    section = _system_overview_section()
+    assert "ai-team task new" in section and "--spec S-000" in section
+    assert "bootstrap tasks" in section
+    assert "refused" not in section.lower()
+
+
+def test_usage_md_documents_validate_does_not_report_s000_tasks():
+    """usage.md must state that validate does not report the S-000 tasks."""
+    section = _system_overview_section()
+    assert "`validate` does not report" in section
+
+
+def test_usage_md_documents_level_one_missing_coding_guidelines_finding():
+    """usage.md must list the missing docs/coding_guidelines.md level 1 finding."""
+    content = _content()
+    start = content.index("1. **Level 1 — expected directories.**")
+    level_one = content[start : content.index("2. **Level 2", start)]
+    assert "docs/coding_guidelines.md" in level_one
+    assert "scaffold placeholder" in level_one
+
+
+def test_usage_md_documents_force_never_overwrites_coding_guidelines():
+    """usage.md must state --force never overwrites docs/coding_guidelines.md."""
+    row = next(
+        line for line in _content().splitlines() if line.startswith("| `--force` |")
+    )
+    assert "docs/coding_guidelines.md" in row
+    assert "only when missing" in row
+    assert "never overwritten" in row
