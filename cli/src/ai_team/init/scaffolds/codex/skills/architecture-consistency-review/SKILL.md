@@ -37,7 +37,7 @@ In completion mode the review confirms that each approved spec is still true of 
   - The Architect amends or supersedes ADRs, as for any other trigger.
 - **Record** — the verdict is recorded durably as one Amendment Log row in the reconciled spec, `| YYYY-MM-DD | spec-truth reconciliation — PASS or FAIL | <one-line summary> | none |`, or as the same line in the change-request file for change-request work. A reconciliation row changes no scope and does not bump `version`. The Architect returns the line as `Reconciliation record:`; the Planner records it, since the Architect never edits specs.
 
-S-000 is never a touched spec in completion mode, because it has no tasks or Work Logs to reconcile against.
+S-000 is never a touched spec in completion mode: its bootstrap tasks answer questions S-000 only asks, so S-000 makes no assertion for that work to drift from.
 
 A `PASS` means every touched spec is still true. Gate 5 accepts a `PASS`, or a `FAIL` whose routed corrections are all done: every spec amendment applied, and every follow-up task completed with a re-run that returns `PASS`.
 
@@ -68,7 +68,7 @@ For each binding artifact, decide whether the changed artifact contradicts it �
 
 When an approved S-000 exists, also confirm that a new or changed spec stays within S-000's purpose and respects each component's boundary and responsibility. Report a violation as drift and route it as Step 4 says. When a spec needs something S-000 does not cover, report it as either an S-000 amendment or a spec cut back to scope, naming which.
 
-When the changed artifact is S-000 itself, review it for internal consistency and plain-language content instead of checking it against other specs.
+When the changed artifact is S-000 itself, review it for internal consistency and plain-language content instead of checking it against other specs. Also check that its components sit in the Solution and Development infrastructure groups, that every infrastructure component has its Decisions needed, and that every component passes the three component checks (it serves a use case or, in the infrastructure group, affects the solution's use, delivery or deployment; one spec could own its contract; its boundary would hold if the implementation were reorganised). An S-000 written before the groups existed, with one flat Components list, stays valid; apply the group and Decisions needed checks only when it is created or amended.
 
 ### Step 4: Report Findings and Route Corrections
 
