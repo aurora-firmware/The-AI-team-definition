@@ -1,6 +1,6 @@
 ---
 title: CLI-owned framework scaffolds
-version: '0.2'
+version: '0.3'
 status: approved  # draft | review | approved | superseded
 created: '2026-05-14'
 author: planner
@@ -155,7 +155,9 @@ Required behaviour:
 - Agent definitions are copied per tool as real files, never symlinks.
 - The project skeleton holds the `specs/`, `decisions/` and `docs/` folders, each kept
   with an empty placeholder file, plus the project guidance files and `.gitignore` from
-  the sources. It holds no task, bug or change-request folders; those work items live
+  the sources. The `docs/` folder also holds a `coding_guidelines.md` placeholder, which
+  the Developer agent and the skills already point to and the project bootstrap fills
+  in (S-007 requirement 12; CR-004). It holds no task, bug or change-request folders; those work items live
   in the tracker (S-006).
 - The generator copies every file without filling in placeholders.
 - Each run replaces the generated output completely, so a removed source leaves no
@@ -194,6 +196,10 @@ Required behaviour:
   preserved.
 - Existing destination files are not overwritten without `--force`; `--dry-run` reports
   what would be written without writing.
+- `docs/coding_guidelines.md` in the project directory is written only when it is
+  missing. An existing file is never overwritten, even with `--force`, and does not
+  count as a collision, so a framework upgrade keeps the project's own guidelines
+  (CR-004 item 10).
 - `init` never writes `ai-process/`, accepts no `--include-ai-process` option, and asks
   no question about it.
 
@@ -311,3 +317,4 @@ amendment adds:
 | Date | What changed | Why | Affected tasks |
 |------|-------------|-----|----------------|
 | 2026-10-20 | Moved out of `specs/archive/` as S-009 (was a duplicate `S-001`) and retitled from "CLI-owned framework scaffolds and remove ai-process init export". Removed the completed `ai-process/` export removal as a work item, keeping "never exports `ai-process/`" as an invariant. Component 2 now copies skill `assets/`, `references/` and `scripts/` folders into both exports byte for byte, and the generator never fills placeholders; Component 3 states placeholder rendering by `init` and byte-for-byte copy of non-UTF-8 files. The project skeleton no longer has lifecycle folders (S-006); export paths now refer to S-003's level 1 table instead of naming `.codex/skills/`; the `.ai-team.toml` contract includes `[tracker] dir` and `[git] integration_branch`; the TOML example became prose. Driven by CR-003 §7 and §10 and Architecture Consistency Review finding F3. | The spec was still `approved` in the archive and the only written contract for the generator, but described a lifecycle skeleton and `.codex/skills/` export that S-006 and CR-002 replaced, and the generator silently dropped skill supporting folders (report #20). | None in flight |
+| 2026-10-24 | Project skeleton: `docs/` holds a `coding_guidelines.md` placeholder; Init Command Contract: `init` writes it only when missing and never overwrites it, even with `--force`. Driven by CR-004 item 10 and its Gate 2 finding F1. | Agents and skills already reference the file, but `init` never created it. | None in flight |
