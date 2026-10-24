@@ -65,7 +65,7 @@ This exports from the CLI package scaffold sources:
 - **Project directory** `ai-team/` (or the folder set by `--project-dir`) with `specs/`, `decisions/`, and `docs/` folders and its own `CLAUDE.md`, `AGENTS.md`, and `.gitignore`
 - **`.ai-team.toml`** configuration file
 
-Tasks, bugs, and change-requests do not live in the project directory. They live in the local tracker, outside version control. `ai-team init` also configures it: it writes `[tracker] dir = ".ai-team/tracker"` to `.ai-team.toml`, creates the folder, and adds `/.ai-team/` to `.gitignore`. To use a different artifact folder (at any depth, such as `docs/ai-team`) or integration branch, pass `--project-dir` and `--integration-branch` to `ai-team init`, or set `[project] dir` and `[git] integration_branch` in `.ai-team.toml` before running it. `ai-team init` keeps existing values. Re-running `ai-team init` on an initialized project refuses to overwrite existing files and exits with an error; `ai-team init --force` overwrites the generated agents, skills, and project scaffold files (`ai-team/CLAUDE.md`, `ai-team/AGENTS.md`, `ai-team/.gitignore`) and rewrites `.ai-team.toml`, keeping its configured values. Generated agents and skills carry the configured folder and branch, so re-run `ai-team init --force` after changing either, rather than editing the generated files by hand.
+Tasks, bugs, and change-requests do not live in the project directory. They live in the local tracker, outside version control. `ai-team init` also configures it: it writes `[tracker] dir = ".ai-team/tracker"` to `.ai-team.toml`, creates the folder, and adds `/.ai-team/` to `.gitignore`. To use a different artifact folder (at any depth, such as `docs/ai-team`) or integration branch, pass `--project-dir` and `--integration-branch` to `ai-team init`, or set `[project] dir` and `[git] integration_branch` in `.ai-team.toml` before running it. `ai-team init` keeps existing values. Re-running `ai-team init` on an initialized project refuses to overwrite existing files and exits with an error; `ai-team init --force` overwrites the generated agents, skills, and project scaffold files (`ai-team/CLAUDE.md`, `ai-team/AGENTS.md`, `ai-team/.gitignore`) and rewrites `.ai-team.toml`, keeping its configured values. The one exception is `docs/coding_guidelines.md` in the project directory: it is never overwritten, even with `--force`, because the project bootstrap fills it in. Generated agents and skills carry the configured folder and branch, so re-run `ai-team init --force` after changing either, rather than editing the generated files by hand.
 
 For OpenAI Codex compatibility, add `--tools codex` (or `--tools claude,codex`) to also export `.codex/agents/*.toml` Codex agent files and the Codex skills in `.agents/skills/`. Those TOML files translate each Claude-style agent into Codex's custom-agent schema: `name`, `description`, and `developer_instructions`, with optional Codex-native settings such as `model` and `model_reasoning_effort`. A Codex subagent takes its sandbox and approval settings from the parent session, not from the agent file. The roles that create files or commit — Architect, Planner, Developer, Reviewer, and Integrator — need a parent Codex session that allows writes.
 
@@ -83,7 +83,7 @@ The starter `CLAUDE.md` and `AGENTS.md` follow the root guidance template in the
 
 **Baseline test instructions** — Fill in the command agents should run to execute the test suite. Put it in root guidance (`CLAUDE.md` or `AGENTS.md`) or clearly reference a project-local doc that contains it. `dev-loop` reads project guidance at startup; if the command is missing or ambiguous, the loop asks for human clarification before claiming a task. If your project has no automated tests, state that explicitly so the loop can record the confirmation and continue.
 
-**`ai-team/docs/coding_guidelines.md`** — Create this file and add project-specific rules:
+**`ai-team/docs/coding_guidelines.md`** — `ai-team init` scaffolds this file as a placeholder; do not create it by hand. It is filled in by the project bootstrap (see Step 7) once S-000 is approved, with project-specific rules:
 - Stack and framework conventions.
 - Formatter, linter, and dependency policy.
 - Naming conventions and file layout.
@@ -138,7 +138,9 @@ cd cli && python scripts/sync_init_scaffolds.py && uv build \
 
 ### Step 7: Start Working
 
-Your project is ready. The typical workflow is:
+Your project is ready. Start with S-000, the system overview (`/new-system-overview`). After S-000 is approved, run the project bootstrap: ask the planner to run `spec-breakdown` on S-000, which plans only the bootstrap tasks (decisions and architecture documents, environment configuration, coding guidelines, project guidance, and the README description). Run `/dev-loop` on those tasks before feature work. The bootstrap fills in `ai-team/docs/coding_guidelines.md`.
+
+The typical feature workflow is then:
 
 1. **Describe a feature** — write what you want built.
 2. **Brainstorm** — the planner agent explores approaches and produces a specification (`/new-spec`).
