@@ -19,6 +19,7 @@ Before the first action of a request — including a clarifying question, a code
 |---|---|
 | A feature request or problem needs a design before anything is built | `brainstorm`, then `new-spec` |
 | The project has no S-000, or is being adopted into the ai-team process | `new-system-overview` |
+| S-000 is approved and no task names S-000 as its source spec | Suggest the project bootstrap (`spec-breakdown` on S-000) to the human |
 | A small change does not warrant a full spec | `change-request` |
 | A spec, ADR, or change-request was created or changed | `architecture-consistency-review` |
 | An approved spec needs a task breakdown | `spec-breakdown`, then `spec-breakdown-review` |
@@ -33,6 +34,8 @@ Before the first action of a request — including a clarifying question, a code
 | The human asks for project state or Gate 5 context | none — `status-report` is human-invoked; tell the human to run `/status-report` |
 
 When `ai-team list specs` shows no `S-000`, suggest to the human starting with the system overview (`new-system-overview`) before writing a feature spec; the human decides. If the human declines, continue as before; the suggestion is not repeated in the same session.
+
+When S-000 is approved and `ai-team list tasks` shows no task naming S-000 as its source spec, suggest the project bootstrap to the human: `spec-breakdown` on S-000, which plans the bootstrap tasks only; the human decides. If the human declines, continue as before; the suggestion is not repeated in the same session.
 
 `dev-loop` and `bug-loop` start only when the human invokes them. Never start either on your own.
 
